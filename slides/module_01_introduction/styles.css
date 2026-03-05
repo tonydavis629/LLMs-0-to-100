@@ -1,0 +1,361 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ===========================================
+   CSS VARIABLES
+   =========================================== */
+:root {
+  --background-color: #0a0e1a;
+  --section-divider-bg: #0d1225;
+
+  --heading-font: "Space Grotesk", Helvetica, sans-serif;
+  --body-font: "Inter", Helvetica, sans-serif;
+  --base-font-size: 32px;
+  --text-size: 16pt;
+  --h1-size: 48pt;
+  --h2-size: 36pt;
+  --h3-size: 24pt;
+  --footnote-size: 11pt;
+
+  --primary-color: #4a9eff;
+  --secondary-color: #f5a623;
+  --text-color: #e8eaf0;
+  --muted-color: #8892a4;
+  --line-color: #2a3450;
+
+  --slide-padding: 60px;
+  --slide-padding-top: 40px;
+  --content-gap: 30px;
+
+  --box-radius: 8px;
+}
+
+/* ===========================================
+   BASE STYLES
+   =========================================== */
+
+.reveal {
+  font-family: var(--body-font);
+  font-size: var(--base-font-size);
+}
+
+.reveal strong,
+.reveal b {
+  font-weight: bold;
+}
+
+.reveal-viewport {
+  background-color: var(--background-color);
+}
+
+.reveal-viewport.is-section-divider .slide-background.present {
+  background-color: var(--section-divider-bg) !important;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  font-family: var(--heading-font);
+  text-transform: none;
+  color: var(--text-color);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.reveal h1 { font-size: var(--h1-size); }
+.reveal h2 { font-size: var(--h2-size); margin-bottom: 0; }
+.reveal h3 { font-size: var(--h3-size); }
+
+.reveal p,
+.reveal li,
+.reveal td,
+.reveal th,
+.reveal blockquote {
+  font-size: var(--text-size);
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+/* ===========================================
+   LISTS
+   =========================================== */
+
+.reveal ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 15px 0;
+}
+
+.reveal ul li {
+  position: relative;
+  padding-left: 25px;
+  margin-bottom: 10px;
+}
+
+.reveal ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 8px;
+  height: 8px;
+  background: var(--primary-color);
+  border-radius: 50%;
+}
+
+.reveal ul ul li::before {
+  background: var(--muted-color);
+  width: 6px;
+  height: 6px;
+}
+
+.reveal blockquote p {
+  font-size: inherit;
+}
+
+/* ===========================================
+   SLIDE LAYOUT
+   =========================================== */
+
+.reveal .slides section {
+  height: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: var(--slide-padding-top) var(--slide-padding) var(--slide-padding) var(--slide-padding) !important;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.reveal .slides section.stack {
+  padding: 0 !important;
+}
+
+.reveal .slides section > .content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: var(--content-gap);
+  text-align: left;
+}
+
+.reveal .slides section > .footnote {
+  position: absolute;
+  bottom: 15px;
+  left: var(--slide-padding);
+  right: var(--slide-padding);
+  font-size: var(--footnote-size);
+  color: var(--muted-color);
+}
+
+/* ===========================================
+   SECTION DIVIDERS
+   =========================================== */
+
+.reveal .slides section.section-divider {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center;
+}
+
+.reveal .slides section.section-divider h1 {
+  font-size: 56pt;
+  text-align: center;
+  color: var(--primary-color);
+}
+
+.reveal .slides section.section-divider p {
+  font-size: 20pt;
+  color: var(--muted-color);
+}
+
+/* ===========================================
+   TEXT SIZE UTILITIES
+   =========================================== */
+
+.text-lg { font-size: 18pt !important; }
+.text-xl { font-size: 20pt !important; }
+.text-2xl { font-size: 24pt !important; }
+.text-3xl { font-size: 28pt !important; }
+.text-4xl { font-size: 32pt !important; }
+
+.text-muted { color: var(--muted-color) !important; }
+.text-center { text-align: center !important; }
+.text-uppercase { text-transform: uppercase; letter-spacing: 0.1em; }
+.font-light { font-weight: 300; }
+.font-bold { font-weight: 600; }
+
+/* ===========================================
+   BLOCKQUOTES
+   =========================================== */
+
+.reveal blockquote {
+  border-left: 4px solid var(--primary-color);
+  padding-left: 20px;
+  margin: 20px 0;
+  font-style: italic;
+  background: none;
+  box-shadow: none;
+  width: 100%;
+  max-width: none;
+}
+
+.reveal blockquote cite {
+  display: block;
+  margin-top: 10px;
+  font-style: normal;
+  color: var(--muted-color);
+}
+
+/* ===========================================
+   ACCENT UNDERLINE ON TITLES
+   =========================================== */
+
+.reveal .slides section > h2 {
+  flex-shrink: 0;
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--line-color);
+}
+
+/* ===========================================
+   FIGURE CARD - for notable figures slides
+   =========================================== */
+
+.figure-card {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.figure-card img {
+  border-radius: var(--box-radius);
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(74, 158, 255, 0.15);
+}
+
+.figure-card .figure-info h3 {
+  margin: 0 0 5px 0;
+  color: var(--secondary-color);
+  font-size: 14pt;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ===========================================
+   ERA BADGE - for timeline labels
+   =========================================== */
+
+.era-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12pt;
+  font-weight: 500;
+}
+
+.era-badge.summer {
+  background: rgba(245, 166, 35, 0.2);
+  color: var(--secondary-color);
+}
+
+.era-badge.winter {
+  background: rgba(74, 158, 255, 0.15);
+  color: #6cb4ff;
+}
+
+.era-badge.spring {
+  background: rgba(80, 200, 120, 0.2);
+  color: #50c878;
+}
+
+/* ===========================================
+   HIGHLIGHT BOX
+   =========================================== */
+
+.highlight-box {
+  background: rgba(74, 158, 255, 0.08);
+  border: 1px solid rgba(74, 158, 255, 0.25);
+  border-radius: var(--box-radius);
+  padding: 20px 25px;
+}
+
+/* ===========================================
+   TURNING POINT SLIDE
+   =========================================== */
+
+.turning-point h2 {
+  border-bottom-color: var(--secondary-color) !important;
+}
+
+/* ===========================================
+   CODE BLOCKS
+   =========================================== */
+
+.reveal pre code {
+  font-size: 14pt;
+  line-height: 1.4;
+  padding: 15px 20px;
+  border-radius: var(--box-radius);
+  background: rgba(20, 25, 45, 0.8);
+  color: var(--text-color);
+}
+
+.reveal pre code .hljs-keyword,
+.reveal pre code .hljs-built_in {
+  color: #c792ea;
+}
+
+.reveal pre code .hljs-string {
+  color: #c3e88d;
+}
+
+.reveal pre code .hljs-comment {
+  color: #546e7a;
+}
+
+.reveal pre code .hljs-number {
+  color: #f78c6c;
+}
+
+.reveal code {
+  color: var(--text-color);
+}
+
+/* ===========================================
+   VIDEO CONTAINERS
+   =========================================== */
+
+.video-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-container video {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--box-radius);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* ===========================================
+   SIDE QUEST BADGE
+   =========================================== */
+
+.side-quest-badge {
+  display: inline-block;
+  background: rgba(245, 166, 35, 0.15);
+  color: var(--secondary-color);
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 12pt;
+  font-weight: 500;
+  margin-bottom: 10px;
+}

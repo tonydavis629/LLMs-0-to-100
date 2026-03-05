@@ -1,9 +1,7 @@
 [project]
 name = "llms-0-to-100"
 version = "0.1.0"
-description = "Add your description here"
+description = "LLMs 0 to 100: A hands-on course from fundamentals to deployment"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [
-    "manim>=0.20.1",
-]
+dependencies = []

@@ -1,3 +1,6 @@
+.claude/
 reveal.js/
 media/
 screenshots/
+**.pyc
+.DS_Store

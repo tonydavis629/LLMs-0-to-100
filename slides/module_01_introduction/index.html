@@ -1,0 +1,919 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLMs 0 to 100 - Module 1</title>
+
+  <!-- Reveal.js core -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+
+  <!-- Syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Chart.js for data visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============================================================
+           TITLE
+           ============================================================ -->
+
+      <section id="title" class="section-divider" data-state="is-section-divider">
+        <h1>LLMs 0 to 100</h1>
+        <p>Module 1: Course Introduction</p>
+        <p class="text-muted" style="font-size: 14pt; margin-top: 20px;">From Shannon to ChatGPT</p>
+      </section>
+
+      <!-- ============================================================
+           NOTABLE FIGURE: Grace Hopper (before introductions)
+           ============================================================ -->
+
+      <section id="figure-hopper-1" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="hopper-img" src="images/hopper.jpg" alt="Grace Hopper" style="border-radius: 8px; height: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+        </div>
+      </section>
+
+      <section id="figure-hopper-2" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="hopper-img" src="images/hopper.jpg" alt="Grace Hopper" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          <h2 data-id="hopper-name" style="margin-top: 20px; border: none;">Grace Hopper</h2>
+        </div>
+      </section>
+
+      <section id="figure-hopper-3" data-auto-animate>
+        <h2 data-id="hopper-name" style="border-bottom: 2px solid var(--line-color);">Grace Hopper</h2>
+        <div class="content">
+          <div class="figure-card">
+            <img data-id="hopper-img" src="images/hopper.jpg" alt="Grace Hopper">
+            <div class="figure-info">
+              <h3>Pioneered the First Compiler</h3>
+              <ul class="text-lg">
+                <li>Created the A-0 System (1952) -- the first compiler</li>
+                <li>Believed computers should speak human languages, not the other way around</li>
+                <li>Led development of COBOL -- programs written in near-English</li>
+                <li>Rear Admiral in the U.S. Navy</li>
+                <li><strong>LLMs are the next step:</strong> natural language compilers that translate plain text into tasks</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           COURSE STRUCTURE (3 slides, detailed)
+           ============================================================ -->
+
+      <section id="course-structure-1">
+        <h2>Course Structure</h2>
+        <div class="content">
+          <p class="text-xl" style="margin-bottom: 15px;">12 modules from fundamentals to deployment. Each module includes a lecture, a coding exercise, and a quiz.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+            <div>
+              <h3>Foundations (Modules 1-4)</h3>
+              <ul class="text-lg">
+                <li><strong>1. Introduction</strong> -- information theory, n-gram models</li>
+                <li><strong>2. Perceptrons</strong> -- neural networks, backprop, optimization</li>
+                <li><strong>3. Attention</strong> -- Q/K/V, multi-head self-attention</li>
+                <li><strong>4. Transformers</strong> -- encoder-decoder, BERT, GPT</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Training (Modules 5-7)</h3>
+              <ul class="text-lg">
+                <li><strong>5. Pretraining</strong> -- masked LM, autoregressive training</li>
+                <li><strong>6. Finetuning</strong> -- InstructGPT, LoRA</li>
+                <li><strong>7. RL Post-Training</strong> -- RLHF, GRPO, DPO</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="course-structure-2">
+        <h2>Course Structure (continued)</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
+            <div>
+              <h3>Advanced (Modules 8-10)</h3>
+              <ul class="text-lg">
+                <li><strong>8. Multimodal</strong> -- vision, audio, CLIP</li>
+                <li><strong>9. Deployment</strong> -- HBM bottleneck, MoE, vLLM</li>
+                <li><strong>10. Applications</strong> -- RAG, agents, tool use</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Evaluation &amp; Future (Modules 11-12)</h3>
+              <ul class="text-lg">
+                <li><strong>11. Evaluation</strong> -- benchmarks, red teaming</li>
+                <li><strong>12. The Future</strong> -- scaling laws, SSM/Mamba, diffusion</li>
+              </ul>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 20px;">Expect: <strong>programming</strong>, <strong>history</strong>, <strong>math</strong>, and challenging learning tasks. Each module builds on the previous ones.</p>
+        </div>
+      </section>
+
+      <section id="course-structure-3">
+        <h2>How Each Module Works</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px;">
+            <div class="highlight-box">
+              <h3>Lecture</h3>
+              <ul>
+                <li>Reveal.js slides</li>
+                <li>Animated diagrams (Manim)</li>
+                <li>Notable figures in context</li>
+                <li>Side quests for curious minds</li>
+              </ul>
+            </div>
+            <div class="highlight-box">
+              <h3>Exercise</h3>
+              <ul>
+                <li>Real Python project (not Jupyter)</li>
+                <li>Skeleton with one-line TODOs</li>
+                <li>Reference solution provided</li>
+                <li>Stretch goals for extra challenge</li>
+              </ul>
+            </div>
+            <div class="highlight-box">
+              <h3>Quiz</h3>
+              <ul>
+                <li>Standalone Python scripts</li>
+                <li>Fill in one line to make it run</li>
+                <li>Tests your understanding</li>
+                <li>Instant feedback on run</li>
+              </ul>
+            </div>
+          </div>
+          <p class="text-muted" style="margin-top: 15px; font-size: 13pt;">Companion resource: <a href="https://huggingface.co/learn/llm-course/chapter1/1" style="color: var(--primary-color);">HuggingFace LLM Course</a></p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION: We Built Talking Machines
+           ============================================================ -->
+
+      <section id="divider-talking-machines" class="section-divider" data-state="is-section-divider">
+        <h1>We Built Talking Machines</h1>
+        <p>WHAT? How?</p>
+      </section>
+
+      <!-- Timeline animation on its own slide -->
+      <section id="timeline">
+        <h2>The Road to LLMs</h2>
+        <div class="content">
+          <div class="video-container">
+            <video class="manim-stepper" data-manim-scene="AITimelineScene" playsinline></video>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           NOTABLE FIGURE: Claude Shannon (before information theory)
+           ============================================================ -->
+
+      <section id="figure-shannon-1" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="shannon-img" src="images/shannon.jpg" alt="Claude Shannon" style="border-radius: 8px; height: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+        </div>
+      </section>
+
+      <section id="figure-shannon-2" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="shannon-img" src="images/shannon.jpg" alt="Claude Shannon" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          <h2 data-id="shannon-name" style="margin-top: 20px; border: none;">Claude Shannon</h2>
+        </div>
+      </section>
+
+      <section id="figure-shannon-3" data-auto-animate>
+        <h2 data-id="shannon-name" style="border-bottom: 2px solid var(--line-color);">Claude Shannon</h2>
+        <div class="content">
+          <div class="figure-card">
+            <img data-id="shannon-img" src="images/shannon.jpg" alt="Claude Shannon">
+            <div class="figure-info">
+              <h3>The Father of Information Theory</h3>
+              <ul class="text-lg">
+                <li>Created the mathematical theory of communication (1948)</li>
+                <li>Defined the <strong>"bit"</strong> as a unit of information</li>
+                <li>Showed that language has measurable statistical structure</li>
+                <li>Proved reliable communication is possible over noisy channels</li>
+                <li>His work is the theoretical foundation of every LLM</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           Information Theory
+           ============================================================ -->
+
+      <section id="info-theory">
+        <h2>Information Theory (1940s-50s)</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <ul class="text-lg">
+                <li class="fragment"><strong>Shannon</strong> proved communication could be quantified in <em>bits</em></li>
+                <li class="fragment">Any signal can be transmitted reliably through a noisy channel</li>
+                <li class="fragment">Gave us a formal way to think about <strong>language as information</strong></li>
+              </ul>
+            </div>
+            <div>
+              <ul class="text-lg">
+                <li class="fragment"><strong>Von Neumann</strong> laid mathematical foundations for computing</li>
+                <li class="fragment">The stored-program architecture made general computation possible</li>
+                <li class="fragment">Together: the theoretical bedrock for everything that follows</li>
+              </ul>
+            </div>
+          </div>
+          <blockquote class="fragment" style="margin-top: 20px;">
+            <p>"The fundamental problem of communication is that of reproducing at one point either exactly or approximately a message selected at another point."</p>
+            <cite>-- Claude Shannon, 1948</cite>
+          </blockquote>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           NOTABLE FIGURE: Von Neumann (after information theory)
+           ============================================================ -->
+
+      <section id="figure-vonneumann-1" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="vn-img" src="images/vonneumann.gif" alt="John von Neumann" style="border-radius: 8px; height: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+        </div>
+      </section>
+
+      <section id="figure-vonneumann-2" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="vn-img" src="images/vonneumann.gif" alt="John von Neumann" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          <h2 data-id="vn-name" style="margin-top: 20px; border: none;">John von Neumann</h2>
+        </div>
+      </section>
+
+      <section id="figure-vonneumann-3" data-auto-animate>
+        <h2 data-id="vn-name" style="border-bottom: 2px solid var(--line-color);">John von Neumann</h2>
+        <div class="content">
+          <div class="figure-card">
+            <img data-id="vn-img" src="images/vonneumann.gif" alt="John von Neumann">
+            <div class="figure-info">
+              <h3>The Architecture of Computation</h3>
+              <ul class="text-lg">
+                <li>Designed the stored-program architecture (von Neumann architecture)</li>
+                <li>Programs and data stored in the same memory -- the basis of all modern computers</li>
+                <li>Contributed to game theory, quantum mechanics, and nuclear physics</li>
+                <li>Worked on ENIAC and EDVAC at Los Alamos</li>
+                <li>Without his architecture, training neural networks would not be possible</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           GOFAI
+           ============================================================ -->
+
+      <section id="gofai">
+        <h2>GOFAI (1950s-80s)</h2>
+        <div class="content">
+          <p class="text-xl" style="color: var(--secondary-color); margin-bottom: 10px;"><strong>"Good Old-Fashioned AI"</strong></p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <h3>The Approach</h3>
+              <ul class="text-lg">
+                <li class="fragment">Hand-written rules and symbolic logic</li>
+                <li class="fragment">Expert systems, search trees, knowledge bases</li>
+                <li class="fragment">If-then rules authored by domain experts</li>
+              </ul>
+            </div>
+            <div>
+              <h3>The Problem</h3>
+              <ul class="text-lg">
+                <li class="fragment">Worked for narrow, well-defined tasks</li>
+                <li class="fragment">Couldn't handle ambiguity</li>
+                <li class="fragment">Couldn't scale to real language</li>
+                <li class="fragment">Brittle: one unexpected input breaks everything</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GOFAI diagram on its own slide -->
+      <section id="gofai-diagram">
+        <h2>GOFAI vs. Learned Models</h2>
+        <div class="content">
+          <div class="video-container">
+            <video class="manim-stepper" data-manim-scene="GOFAIDiagramScene" playsinline></video>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SIDE QUEST: ELIZA (inline, no divider)
+           ============================================================ -->
+
+      <section id="eliza">
+        <h2><span class="side-quest-badge">Side Quest</span> ELIZA (1966)</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+            <div>
+              <ul class="text-lg">
+                <li class="fragment"><strong>Joseph Weizenbaum's</strong> chatbot at MIT</li>
+                <li class="fragment">Simple pattern matching that convinced people it was a <strong>therapist</strong></li>
+                <li class="fragment">The <strong>"ELIZA effect":</strong> people attribute understanding to systems that have none</li>
+                <li class="fragment">A reminder to be skeptical about AI "understanding"</li>
+              </ul>
+            </div>
+            <div style="text-align: center;">
+              <img src="images/eliza.png" alt="ELIZA conversation" style="border-radius: 8px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+              <p class="text-muted" style="font-size: 11pt; margin-top: 8px;">An ELIZA conversation (1966)</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           AI Summers and Winters (chart)
+           ============================================================ -->
+
+      <section id="summers-winters" style="display: flex !important; flex-direction: column !important; height: 100%; padding: 40px 60px 60px 60px !important;">
+        <h2 style="flex-shrink: 0; margin: 0; padding-bottom: 12px; border-bottom: 2px solid var(--line-color);">AI Summers and Winters</h2>
+        <p style="font-size: 14pt; color: var(--muted-color); margin-top: 10px; flex-shrink: 0;">Cycles of hype and disappointment. Funding surged when demos impressed, collapsed when promises weren't met.</p>
+        <div style="flex: 1; position: relative; min-height: 0; margin-top: 10px;">
+          <canvas id="hypeChart"></canvas>
+        </div>
+        <div class="footnote">Dartmouth (1956) | Lighthill Report (1974) | Expert Systems (1980s) | Deep Learning (2012) | Transformers (2017)</div>
+      </section>
+
+      <!-- ============================================================
+           Deep Learning Revolution
+           ============================================================ -->
+
+      <section id="deep-learning">
+        <h2>Deep Learning Revolution</h2>
+        <div class="content">
+          <p class="text-xl">Instead of writing rules, <strong>learn patterns from data</strong>.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 15px;">
+            <div>
+              <h3>The Breakthrough</h3>
+              <ul class="text-lg">
+                <li class="fragment"><strong>AlexNet (2012)</strong> -- Krizhevsky, Sutskever, Hinton</li>
+                <li class="fragment">Trained a deep neural network on an <strong>NVIDIA GPU</strong></li>
+                <li class="fragment">Crushed the ImageNet competition</li>
+                <li class="fragment">Error rate: 26% &#8594; 16% (overnight)</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Why It Mattered</h3>
+              <ul class="text-lg">
+                <li class="fragment">Proved GPUs could make deep learning practical</li>
+                <li class="fragment">Jensen Huang bet NVIDIA's future on this</li>
+                <li class="fragment">Neural networks with <strong>many layers</strong> trained on <strong>large datasets</strong></li>
+                <li class="fragment">Scale was the missing ingredient</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           NOTABLE FIGURE: Jensen Huang (after deep learning)
+           ============================================================ -->
+
+      <section id="figure-huang-1" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="huang-img" src="images/huang.jpg" alt="Jensen Huang" style="border-radius: 8px; height: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+        </div>
+      </section>
+
+      <section id="figure-huang-2" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="huang-img" src="images/huang.jpg" alt="Jensen Huang" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          <h2 data-id="huang-name" style="margin-top: 20px; border: none;">Jensen Huang</h2>
+        </div>
+      </section>
+
+      <section id="figure-huang-3" data-auto-animate>
+        <h2 data-id="huang-name" style="border-bottom: 2px solid var(--line-color);">Jensen Huang</h2>
+        <div class="content">
+          <div class="figure-card">
+            <img data-id="huang-img" src="images/huang.jpg" alt="Jensen Huang">
+            <div class="figure-info">
+              <h3>The Man Behind the GPU Revolution</h3>
+              <ul class="text-lg">
+                <li>Co-founded NVIDIA in 1993</li>
+                <li>Bet the company's future on GPU computing for AI</li>
+                <li>CUDA (2006) gave researchers programmable parallel computing</li>
+                <li>GPUs became the backbone of deep learning</li>
+                <li>NVIDIA is now the most valuable company in the world</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           Transformers
+           ============================================================ -->
+
+      <section id="transformers" class="turning-point">
+        <h2>Transformers (2017)</h2>
+        <div class="content" style="justify-content: center;">
+          <blockquote style="margin-bottom: 25px;">
+            <p>"Attention Is All You Need"</p>
+            <cite>-- Vaswani et al., 2017</cite>
+          </blockquote>
+          <ul class="text-xl">
+            <li class="fragment">Replaced recurrence with <strong>self-attention</strong></li>
+            <li class="fragment">Enabled <strong>massive parallelism</strong> -- every token attends to every other token simultaneously</li>
+            <li class="fragment">No more sequential bottleneck of RNNs/LSTMs</li>
+            <li class="fragment">The architecture behind <strong>every modern LLM</strong></li>
+          </ul>
+          <p class="fragment text-muted text-center" style="margin-top: 20px; font-size: 14pt;">We'll build one from scratch in Module 4.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           From Prediction to Assistants
+           ============================================================ -->
+
+      <section id="prediction-to-assistants">
+        <h2>From Prediction to Assistants</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <h3>Two Learning Strategies</h3>
+              <ul>
+                <li class="fragment"><strong>Masked LM (BERT)</strong><br><span class="text-muted" style="font-size: 14pt;">Predict a hidden word. Devlin et al., 2018.</span></li>
+                <li class="fragment"><strong>Next Token (GPT)</strong><br><span class="text-muted" style="font-size: 14pt;">Predict the next word. Radford et al., 2018.</span></li>
+                <li class="fragment">Sutskever showed next token prediction at scale produces <strong>surprisingly capable</strong> models</li>
+              </ul>
+            </div>
+            <div>
+              <h3>The Assistant Era</h3>
+              <ul>
+                <li class="fragment"><strong>InstructGPT (2022)</strong><br><span class="text-muted" style="font-size: 14pt;">Trained GPT to follow instructions using human feedback</span></li>
+                <li class="fragment">Turned a text predictor into an <strong>assistant</strong></li>
+                <li class="fragment"><strong>RL post-training</strong><br><span class="text-muted" style="font-size: 14pt;">RLHF, GRPO, DPO -- aligns models to desired behavior</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION: Language as Prediction
+           ============================================================ -->
+
+      <section id="divider-prediction" class="section-divider" data-state="is-section-divider">
+        <h1>Language as Prediction</h1>
+        <p>The core insight behind every LLM</p>
+      </section>
+
+      <section id="shannon-insight">
+        <h2>Shannon's Key Insight (1948)</h2>
+        <div class="content">
+          <ul class="text-lg">
+            <li class="fragment"><strong>Language is not random.</strong> Given context, the next letter or word is partially predictable.</li>
+            <li class="fragment">Shannon asked humans to guess the next character in a sequence -- they did <strong>far better than chance</strong></li>
+            <li class="fragment">This is the same idea behind modern LLMs, just at vastly greater scale with learned representations</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Shannon prediction animation on its own slide -->
+      <section id="shannon-prediction-anim">
+        <h2>Shannon's Prediction Experiment</h2>
+        <div class="content">
+          <div class="video-container">
+            <video class="manim-stepper" data-manim-scene="ShannonPredictionScene" playsinline></video>
+          </div>
+        </div>
+      </section>
+
+      <section id="ngram-models">
+        <h2>Building N-gram Models</h2>
+        <div class="content">
+          <p class="text-lg" style="margin-bottom: 15px;">All of this starts with one idea -- predicting the next symbol. Let's go back to 1948 and build it ourselves.</p>
+          <ul>
+            <li><strong>Order 0:</strong> uniform random characters</li>
+            <li><strong>Order 1:</strong> character frequencies (unigrams)</li>
+            <li><strong>Order 2:</strong> bigrams -- P(next | previous)</li>
+            <li><strong>Order 3:</strong> trigrams -- P(next | prev 2)</li>
+          </ul>
+          <p class="text-muted" style="font-size: 13pt; margin-top: 10px;">Each order captures more context, producing more coherent text.</p>
+        </div>
+      </section>
+
+      <!-- N-gram order animation on its own slide -->
+      <section id="ngram-order-anim">
+        <h2>N-gram Model Quality</h2>
+        <div class="content">
+          <div class="video-container">
+            <video class="manim-stepper" data-manim-scene="NgramOrderScene" playsinline></video>
+          </div>
+        </div>
+      </section>
+
+      <section id="entropy">
+        <h2>Entropy and Compression</h2>
+        <div class="content">
+          <ul class="text-lg">
+            <li class="fragment"><strong>Shannon entropy</strong> measures uncertainty / information content</li>
+            <li class="fragment">Uniform distribution = maximum entropy (most uncertain)</li>
+            <li class="fragment">Higher-order models = lower entropy = <strong>better predictions</strong></li>
+            <li class="fragment"><strong>Perplexity</strong> = 2<sup>entropy</sup> -- "how confused is the model?"</li>
+          </ul>
+          <p class="fragment text-muted" style="font-size: 13pt; margin-top: 10px;">Lower perplexity = better model. A perplexity of 10 means the model is as uncertain as choosing uniformly from 10 options.</p>
+        </div>
+      </section>
+
+      <!-- Language as compression animation on its own slide -->
+      <section id="compression-anim">
+        <h2>Language as Compression</h2>
+        <div class="content">
+          <div class="video-container">
+            <video class="manim-stepper" data-manim-scene="LanguageAsCompressionScene" playsinline></video>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION: Environment Setup
+           ============================================================ -->
+
+      <section id="divider-setup" class="section-divider" data-state="is-section-divider">
+        <h1>Getting Set Up</h1>
+        <p>Python environment with uv</p>
+      </section>
+
+      <section id="setup-uv">
+        <h2>Setting Up Your Environment</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <h3>1. Install uv</h3>
+              <pre><code class="language-bash"># macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Verify
+uv --version</code></pre>
+              <p class="text-muted" style="font-size: 13pt; margin-top: 10px;">uv is a fast Python package manager. It replaces pip, venv, and pyenv.</p>
+            </div>
+            <div>
+              <h3>2. Set up the course</h3>
+              <pre><code class="language-bash"># Clone and sync
+git clone &lt;repository-url&gt;
+cd LLMs-0-to-100
+uv sync
+
+# Verify
+uv run python -c "print('Ready.')"</code></pre>
+              <p class="text-muted" style="font-size: 13pt; margin-top: 10px;">One environment for all modules. Run <code>uv sync</code> once.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION: Exercise walkthrough
+           ============================================================ -->
+
+      <section id="divider-exercise" class="section-divider" data-state="is-section-divider">
+        <h1>Exercise</h1>
+        <p>N-gram Language Models</p>
+      </section>
+
+      <section id="exercise-overview">
+        <h2>Exercise: N-gram Language Models</h2>
+        <div class="content">
+          <p class="text-lg">Build character-level and word-level n-gram models to generate text from <strong>Alice in Wonderland</strong>.</p>
+          <p class="text-lg" style="margin-top: 10px;">Each function is mostly written for you. You fill in <strong>one key line</strong> per function.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 15px;">
+            <div>
+              <h3>Functions</h3>
+              <ul>
+                <li><code>load_text()</code> -- strip Gutenberg headers</li>
+                <li><code>char_uniform()</code> -- 0th order random</li>
+                <li><code>char_unigram()</code> -- 1st order frequencies</li>
+                <li><code>build_char_ngram_model()</code> -- bigrams/trigrams</li>
+                <li><code>word_unigram()</code>, <code>build_word_ngram_model()</code></li>
+              </ul>
+            </div>
+            <div>
+              <h3>Stretch Goals</h3>
+              <ul>
+                <li><code>cross_entropy()</code> -- bits per character</li>
+                <li><code>perplexity()</code> -- 2^(cross-entropy)</li>
+                <li>Compare model quality quantitatively</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-walkthrough-1">
+        <h2>Exercise Walkthrough: char_uniform()</h2>
+        <div class="content" style="justify-content: center;">
+          <pre><code class="language-python">def char_uniform(length: int = 500) -> str:
+    alphabet = list("abcdefghijklmnopqrstuvwxyz ")
+
+    # TODO: sample `length` characters uniformly at random
+    return ___</code></pre>
+          <p class="text-lg" style="margin-top: 20px;">Hint: <code>random.choices(population, k=length)</code> returns a list of random picks. Join them into a string.</p>
+        </div>
+      </section>
+
+      <section id="exercise-walkthrough-2">
+        <h2>Exercise Walkthrough: build_char_ngram_model()</h2>
+        <div class="content" style="justify-content: center;">
+          <pre><code class="language-python">def build_char_ngram_model(text: str, n: int) -> dict[str, Counter]:
+    text = text.lower()
+    model: dict[str, Counter] = {}
+
+    for i in range(len(text) - n + 1):
+        context = text[i : i + n - 1]
+        next_char = text[i + n - 1]
+        if context not in model:
+            model[context] = Counter()
+
+        # TODO: count this (context, next_char) occurrence
+        ___
+
+    return model</code></pre>
+          <p class="text-lg" style="margin-top: 20px;">For n=2 (bigram): <code>model["th"]["e"] += 1</code> every time "the" appears.</p>
+        </div>
+      </section>
+
+      <section id="exercise-walkthrough-3">
+        <h2>Exercise Walkthrough: generate_from_char_model()</h2>
+        <div class="content" style="justify-content: center;">
+          <pre><code class="language-python">while len(result) < length:
+    context = "".join(result[-(n - 1) :])
+    if context in model:
+        counter = model[context]
+        chars = list(counter.keys())
+        weights = list(counter.values())
+
+        # TODO: sample one character using the weights
+        next_char = ___
+    else:
+        # fallback: pick a random context
+        ...</code></pre>
+          <p class="text-lg" style="margin-top: 20px;">Hint: <code>random.choices(chars, weights=weights, k=1)[0]</code></p>
+        </div>
+      </section>
+
+      <section id="exercise-run">
+        <h2>Running the Exercise</h2>
+        <div class="content" style="justify-content: center;">
+          <pre><code class="language-bash"># Run with a specific model
+uv run python -m exercises.module_01_introduction.src.generate \
+    exercises/module_01_introduction/data/alice.txt --model char3</code></pre>
+          <p class="text-lg" style="margin-top: 20px;">You should see increasingly coherent text as model order increases:</p>
+          <ul>
+            <li><strong>Order 0:</strong> <code>xqj bz fmk ort wc aelp</code></li>
+            <li><strong>Order 1:</strong> <code>e tah oin sr dlcu mfpg</code></li>
+            <li><strong>Order 2:</strong> <code>th an in he re ou at on</code></li>
+            <li><strong>Order 3:</strong> <code>the ing and tion for ent</code></li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           Quiz walkthrough
+           ============================================================ -->
+
+      <section id="quiz-overview">
+        <h2>Quiz</h2>
+        <div class="content">
+          <p class="text-lg">5 standalone Python scripts. Each one fails until you fill in the answer. Run them individually:</p>
+          <pre><code class="language-bash">uv run python -m exercises.module_01_introduction.quiz.q1_most_common_character
+uv run python -m exercises.module_01_introduction.quiz.q2_model_order
+uv run python -m exercises.module_01_introduction.quiz.q3_conditional_probability
+uv run python -m exercises.module_01_introduction.quiz.q4_entropy
+uv run python -m exercises.module_01_introduction.quiz.q5_shannons_insight</code></pre>
+        </div>
+      </section>
+
+      <section id="quiz-walkthrough-1">
+        <h2>Quiz Q1: Character Frequency</h2>
+        <div class="content" style="justify-content: center;">
+          <pre><code class="language-python"># q1_most_common_character.py
+
+# What is the most common character in English text
+# (including spaces)?
+
+# TODO: Replace the right-hand side with your answer
+ANSWER = ...</code></pre>
+          <p class="text-lg" style="margin-top: 20px;">Hint: it's not 'e'. What separates every single word?</p>
+        </div>
+      </section>
+
+      <section id="quiz-walkthrough-2">
+        <h2>Quiz Q3: Conditional Probability</h2>
+        <div class="content" style="justify-content: center;">
+          <pre><code class="language-python"># Given this bigram model fragment:
+# model["th"] = Counter({"e": 50, "a": 20, "i": 15, "o": 10, "u": 5})
+#
+# What is P('e' | 'th')?
+
+ANSWER = ...</code></pre>
+          <p class="text-lg" style="margin-top: 20px;">Conditional probability = count of target / total count for that context.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           END
+           ============================================================ -->
+
+      <section id="end" class="section-divider" data-state="is-section-divider">
+        <h1>Questions?</h1>
+        <p style="margin-top: 30px;">Next: Module 2 -- Perceptrons and Optimization</p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script>
+    // ---- Manim section step-through player ----
+    // Each .manim-stepper video loads its sections from a JSON manifest.
+    // Clicking the slide (or pressing right arrow) plays the next section.
+    // Sections play sequentially; once all are done, the next click advances the slide.
+    var manimSteppers = {};
+
+    function initManimStepper(video) {
+      var scene = video.getAttribute('data-manim-scene');
+      var state = { sections: [], current: -1, playing: false, loaded: false, video: video, scene: scene };
+      manimSteppers[scene] = state;
+
+      fetch('media/sections/' + scene + '.json')
+        .then(function(r) { return r.json(); })
+        .then(function(sections) {
+          state.sections = sections;
+          state.loaded = true;
+          // Preload first section
+          if (sections.length > 0) {
+            video.src = 'media/sections/' + sections[0].video;
+            video.load();
+          }
+        });
+
+      video.addEventListener('ended', function() {
+        state.playing = false;
+      });
+    }
+
+    function advanceManimStepper(scene) {
+      var state = manimSteppers[scene];
+      if (!state || !state.loaded || state.playing) return false;
+      if (state.current >= state.sections.length - 1) return false; // all done
+
+      state.current++;
+      state.playing = true;
+      var section = state.sections[state.current];
+      state.video.src = 'media/sections/' + section.video;
+      state.video.load();
+      state.video.play().catch(function() { state.playing = false; });
+      return true; // consumed the event
+    }
+
+    function resetManimStepper(scene) {
+      var state = manimSteppers[scene];
+      if (!state) return;
+      state.current = -1;
+      state.playing = false;
+      if (state.sections.length > 0) {
+        state.video.src = 'media/sections/' + state.sections[0].video;
+        state.video.load();
+      }
+    }
+
+    // ---- Initialize Reveal.js ----
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0,
+      controls: true,
+      progress: true,
+      slideNumber: false,
+      hash: true,
+      transition: 'slide',
+      center: false,
+      autoAnimateDuration: 0.8,
+      plugins: [ RevealHighlight ]
+    });
+
+    // Initialize all manim steppers after reveal loads
+    document.querySelectorAll('.manim-stepper').forEach(initManimStepper);
+
+    // Intercept keyboard/click navigation on manim slides
+    Reveal.on('slidechanged', function(event) {
+      // Reset steppers when leaving a slide
+      Object.keys(manimSteppers).forEach(function(scene) {
+        var stepper = manimSteppers[scene];
+        if (!event.currentSlide.querySelector('[data-manim-scene="' + scene + '"]')) {
+          resetManimStepper(scene);
+        }
+      });
+    });
+
+    // Override the default key handler to intercept right arrow / space on manim slides
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        var currentSlide = Reveal.getCurrentSlide();
+        var stepper = currentSlide.querySelector('.manim-stepper');
+        if (stepper) {
+          var scene = stepper.getAttribute('data-manim-scene');
+          if (advanceManimStepper(scene)) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        }
+      }
+    }, true); // capture phase to intercept before reveal.js
+
+    // Also handle click on the video itself
+    document.querySelectorAll('.manim-stepper').forEach(function(video) {
+      video.addEventListener('click', function(e) {
+        var scene = video.getAttribute('data-manim-scene');
+        advanceManimStepper(scene);
+        e.stopPropagation();
+      });
+    });
+
+    // ---- AI Summers and Winters chart ----
+    Reveal.on('slidechanged', function(event) {
+      if (event.currentSlide.id === 'summers-winters') {
+        var canvas = document.getElementById('hypeChart');
+        if (canvas && !canvas._chartCreated) {
+          canvas._chartCreated = true;
+          new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+              labels: [
+                '1950', '1953', '1956', '1958', '1960', '1963', '1965', '1968',
+                '1970', '1972', '1974', '1976', '1978', '1980', '1982', '1984',
+                '1986', '1988', '1990', '1993', '1996', '2000', '2004', '2008',
+                '2012', '2014', '2016', '2017', '2018', '2019', '2020', '2021',
+                '2022', '2023', '2024'
+              ],
+              datasets: [{
+                label: 'AI Hype / Investment',
+                data: [
+                  10, 30, 75, 70, 65, 55, 50, 35,
+                  25, 18, 10, 8, 10, 35, 50, 65,
+                  70, 50, 35, 18, 15, 20, 22, 28,
+                  50, 55, 65, 75, 85, 95, 110, 140,
+                  200, 320, 500
+                ],
+                borderColor: '#4a9eff',
+                backgroundColor: 'rgba(74, 158, 255, 0.08)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+                borderWidth: 2.5
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: { duration: 1200 },
+              scales: {
+                x: {
+                  title: { display: true, text: 'Year', color: '#8892a4', font: { size: 13 } },
+                  ticks: { color: '#8892a4', maxTicksLimit: 12, font: { size: 11 } },
+                  grid: { color: 'rgba(42, 52, 80, 0.5)' }
+                },
+                y: {
+                  title: { display: true, text: 'Hype / Investment', color: '#8892a4', font: { size: 13 } },
+                  ticks: { display: false },
+                  grid: { color: 'rgba(42, 52, 80, 0.5)' },
+                  min: 0,
+                  max: 550
+                }
+              },
+              plugins: {
+                legend: { display: false }
+              }
+            }
+          });
+        }
+      }
+    });
+  </script>
+</body>
+</html>
