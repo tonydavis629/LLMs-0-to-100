@@ -286,6 +286,94 @@
 }
 
 /* ===========================================
+   TERMINAL OUTPUT
+   =========================================== */
+
+.terminal-output {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.terminal-output .terminal-bar {
+  background: #161b22;
+  border-radius: 8px 8px 0 0;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.terminal-output .terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.terminal-output .terminal-dot.red { background: #ff5f57; }
+.terminal-output .terminal-dot.yellow { background: #febc2e; }
+.terminal-output .terminal-dot.green { background: #28c840; }
+
+.terminal-output .terminal-title {
+  color: #8b949e;
+  font-family: monospace;
+  font-size: 10pt;
+  margin-left: 8px;
+}
+
+.terminal-output .terminal-body {
+  padding: 15px 20px;
+}
+
+.terminal-output .terminal-body pre {
+  margin: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.reveal .terminal-output .terminal-body pre.terminal-pre {
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #e8eaf0;
+  background: none !important;
+  padding: 0;
+  box-shadow: none !important;
+  font-family: monospace;
+}
+
+.reveal .terminal-output .terminal-body pre code {
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #e8eaf0;
+  background: none !important;
+  padding: 0;
+  box-shadow: none !important;
+  font-family: monospace;
+}
+
+.terminal-output .terminal-body .prompt {
+  color: #8b949e;
+}
+
+.terminal-output .terminal-body .success {
+  color: #3fb950;
+}
+
+.terminal-output .terminal-body .header {
+  font-weight: bold;
+}
+
+.terminal-output .terminal-body .skipped {
+  color: #8b949e;
+  font-style: italic;
+}
+
+/* ===========================================
    TURNING POINT SLIDE
    =========================================== */
 
@@ -297,13 +385,22 @@
    CODE BLOCKS
    =========================================== */
 
+.reveal pre {
+  margin-bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: none !important;
+  background: none !important;
+}
+
 .reveal pre code {
   font-size: 14pt;
   line-height: 1.4;
-  padding: 15px 20px;
+  padding: 10px 20px;
   border-radius: var(--box-radius);
   background: rgba(20, 25, 45, 0.8);
   color: var(--text-color);
+  max-height: 400px;
 }
 
 .reveal pre code .hljs-keyword,
@@ -325,6 +422,23 @@
 
 .reveal code {
   color: var(--text-color);
+}
+
+/* ===========================================
+   MATH (KaTeX)
+   =========================================== */
+
+.katex {
+  color: var(--text-color);
+  font-size: 1.1em;
+}
+
+.katex-display {
+  margin: 15px 0;
+}
+
+.katex-display > .katex {
+  font-size: 1.3em;
 }
 
 /* ===========================================

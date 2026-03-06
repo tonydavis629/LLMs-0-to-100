@@ -12,11 +12,18 @@
   <!-- Syntax highlighting -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
 
+  <!-- KaTeX math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '\\(', right: '\\)', display: false}]});"></script>
+
   <!-- Custom styles -->
   <link rel="stylesheet" href="styles.css">
 
   <!-- Chart.js for data visualization -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
 </head>
 <body>
   <div class="reveal">
@@ -57,9 +64,9 @@
             <div class="figure-info">
               <h3>Pioneered the First Compiler</h3>
               <ul class="text-lg">
-                <li>Created the A-0 System (1952) -- the first compiler</li>
+                <li>Created the A-0 System (1952) &mdash; the first compiler</li>
                 <li>Believed computers should speak human languages, not the other way around</li>
-                <li>Led development of COBOL -- programs written in near-English</li>
+                <li>Led development of COBOL &mdash; programs written in near-English</li>
                 <li>Rear Admiral in the U.S. Navy</li>
                 <li><strong>LLMs are the next step:</strong> natural language compilers that translate plain text into tasks</li>
               </ul>
@@ -80,18 +87,18 @@
             <div>
               <h3>Foundations (Modules 1-4)</h3>
               <ul class="text-lg">
-                <li><strong>1. Introduction</strong> -- information theory, n-gram models</li>
-                <li><strong>2. Perceptrons</strong> -- neural networks, backprop, optimization</li>
-                <li><strong>3. Attention</strong> -- Q/K/V, multi-head self-attention</li>
-                <li><strong>4. Transformers</strong> -- encoder-decoder, BERT, GPT</li>
+                <li><strong>1. Introduction</strong> &mdash; information theory, n-gram models</li>
+                <li><strong>2. Perceptrons</strong> &mdash; neural networks, backprop, optimization</li>
+                <li><strong>3. Attention</strong> &mdash; Q/K/V, multi-head self-attention</li>
+                <li><strong>4. Transformers</strong> &mdash; encoder-decoder, BERT, GPT</li>
               </ul>
             </div>
             <div>
               <h3>Training (Modules 5-7)</h3>
               <ul class="text-lg">
-                <li><strong>5. Pretraining</strong> -- masked LM, autoregressive training</li>
-                <li><strong>6. Finetuning</strong> -- InstructGPT, LoRA</li>
-                <li><strong>7. RL Post-Training</strong> -- RLHF, GRPO, DPO</li>
+                <li><strong>5. Pretraining</strong> &mdash; masked LM, autoregressive training</li>
+                <li><strong>6. Finetuning</strong> &mdash; InstructGPT, LoRA</li>
+                <li><strong>7. RL Post-Training</strong> &mdash; RLHF, GRPO, DPO</li>
               </ul>
             </div>
           </div>
@@ -105,16 +112,16 @@
             <div>
               <h3>Advanced (Modules 8-10)</h3>
               <ul class="text-lg">
-                <li><strong>8. Multimodal</strong> -- vision, audio, CLIP</li>
-                <li><strong>9. Deployment</strong> -- HBM bottleneck, MoE, vLLM</li>
-                <li><strong>10. Applications</strong> -- RAG, agents, tool use</li>
+                <li><strong>8. Multimodal</strong> &mdash; vision, audio, CLIP</li>
+                <li><strong>9. Deployment</strong> &mdash; HBM bottleneck, MoE, vLLM</li>
+                <li><strong>10. Applications</strong> &mdash; RAG, agents, tool use</li>
               </ul>
             </div>
             <div>
               <h3>Evaluation &amp; Future (Modules 11-12)</h3>
               <ul class="text-lg">
-                <li><strong>11. Evaluation</strong> -- benchmarks, red teaming</li>
-                <li><strong>12. The Future</strong> -- scaling laws, SSM/Mamba, diffusion</li>
+                <li><strong>11. Evaluation</strong> &mdash; benchmarks, red teaming</li>
+                <li><strong>12. The Future</strong> &mdash; scaling laws, SSM/Mamba, diffusion</li>
               </ul>
             </div>
           </div>
@@ -129,32 +136,30 @@
             <div class="highlight-box">
               <h3>Lecture</h3>
               <ul>
-                <li>Reveal.js slides</li>
-                <li>Animated diagrams (Manim)</li>
-                <li>Notable figures in context</li>
+                <li>Slides with animated diagrams</li>
+                <li>History and key figures</li>
+                <li>Math and intuition</li>
                 <li>Side quests for curious minds</li>
               </ul>
             </div>
             <div class="highlight-box">
               <h3>Exercise</h3>
               <ul>
-                <li>Real Python project (not Jupyter)</li>
+                <li>Real Python project</li>
                 <li>Skeleton with one-line TODOs</li>
                 <li>Reference solution provided</li>
-                <li>Stretch goals for extra challenge</li>
+                <li>Extra credit for extra challenge</li>
               </ul>
             </div>
             <div class="highlight-box">
               <h3>Quiz</h3>
               <ul>
-                <li>Standalone Python scripts</li>
-                <li>Fill in one line to make it run</li>
-                <li>Tests your understanding</li>
-                <li>Instant feedback on run</li>
+                <li>Questions embedded in the lecture</li>
+                <li>Think first, then click for the answer</li>
+                <li>Tests your understanding of key concepts</li>
               </ul>
             </div>
           </div>
-          <p class="text-muted" style="margin-top: 15px; font-size: 13pt;">Companion resource: <a href="https://huggingface.co/learn/llm-course/chapter1/1" style="color: var(--primary-color);">HuggingFace LLM Course</a></p>
         </div>
       </section>
 
@@ -167,13 +172,75 @@
         <p>WHAT? How?</p>
       </section>
 
-      <!-- Timeline animation on its own slide -->
-      <section id="timeline">
+      <section id="timeline" style="padding: 40px 40px 50px 40px !important;">
         <h2>The Road to LLMs</h2>
-        <div class="content">
-          <div class="video-container">
-            <video class="manim-stepper" data-manim-scene="AITimelineScene" playsinline></video>
+        <div class="content" style="justify-content: center; padding-top: 15px;">
+          <!-- Proportionally scaled timeline: 1948-2024 = 76 years -->
+          <!-- All labels above the axis, alternating tall/short stems to avoid overlap in the dense right side -->
+          <div style="position: relative; width: 100%; height: 300px;">
+            <!-- Horizontal axis line at y=200px -->
+            <div style="position: absolute; top: 200px; left: 0; right: 0; height: 3px; background: #2a3450;"></div>
+            <!-- Tick marks on the axis for each milestone -->
+            <!-- 1948: 0% | 1965: 22.4% | 1986: 50% | 2012: 84.2% | 2017: 90.8% | 2018: 92.1% | 2022: 97.4% | 2024: 100% -->
+            <!-- All milestones: dot on axis, stem up, label above -->
+            <!-- 1948: 0%, tall stem -->
+            <div class="fragment" style="position: absolute; left: 0%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 80px;">
+              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">Information<br>Theory</p>
+              <p style="font-size: 11pt; color: #f5a623; font-weight: 600; margin: 2px 0 0 0;">1948</p>
+              <div style="width: 1px; height: 50px; background: #f5a623; margin: 2px auto 0; opacity: 0.5;"></div>
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #f5a623; margin: 0 auto;"></div>
+            </div>
+            <!-- ~1965: 22.4%, short stem -->
+            <div class="fragment" style="position: absolute; left: 22.4%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 80px;">
+              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">GOFAI Era</p>
+              <p style="font-size: 11pt; color: #6cb4ff; font-weight: 600; margin: 2px 0 0 0;">~1965</p>
+              <div style="width: 1px; height: 50px; background: #6cb4ff; margin: 2px auto 0; opacity: 0.5;"></div>
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #6cb4ff; margin: 0 auto;"></div>
+            </div>
+            <!-- 1986: 50%, tall stem -->
+            <div class="fragment" style="position: absolute; left: 50%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 80px;">
+              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">Back-<br>propagation</p>
+              <p style="font-size: 11pt; color: #f5a623; font-weight: 600; margin: 2px 0 0 0;">1986</p>
+              <div style="width: 1px; height: 50px; background: #f5a623; margin: 2px auto 0; opacity: 0.5;"></div>
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #f5a623; margin: 0 auto;"></div>
+            </div>
+            <!-- 2012: 84.2%, short stem -->
+            <div class="fragment" style="position: absolute; left: 84.2%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 60px;">
+              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">AlexNet</p>
+              <p style="font-size: 11pt; color: #50c878; font-weight: 600; margin: 2px 0 0 0;">2012</p>
+              <div style="width: 1px; height: 50px; background: #50c878; margin: 2px auto 0; opacity: 0.5;"></div>
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #50c878; margin: 0 auto;"></div>
+            </div>
+            <!-- 2017: 90.8%, tall stem (to clear 2018) -->
+            <div class="fragment" style="position: absolute; left: 90.8%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 70px;">
+              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">Transformers</p>
+              <p style="font-size: 11pt; color: #e06c75; font-weight: 600; margin: 2px 0 0 0;">2017</p>
+              <div style="width: 1px; height: 80px; background: #e06c75; margin: 2px auto 0; opacity: 0.5;"></div>
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #e06c75; margin: 0 auto;"></div>
+            </div>
+            <!-- 2018: 92.1%, below the line -->
+            <div class="fragment" style="position: absolute; left: 92.1%; top: 203px; transform: translateX(-50%); text-align: center; width: 70px;">
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #e06c75; margin: 0 auto;"></div>
+              <div style="width: 1px; height: 50px; background: #e06c75; margin: 0 auto; opacity: 0.5;"></div>
+              <p style="font-size: 11pt; color: #e06c75; font-weight: 600; margin: 0;">2018</p>
+              <p style="font-size: 10pt; color: var(--muted-color); margin: 2px 0 0 0; white-space: nowrap;">BERT / GPT</p>
+            </div>
+            <!-- 2022: 97.4%, tall stem -->
+            <div class="fragment" style="position: absolute; left: 97.4%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 60px;">
+              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">ChatGPT</p>
+              <p style="font-size: 11pt; color: #e06c75; font-weight: 600; margin: 2px 0 0 0;">2022</p>
+              <div style="width: 1px; height: 80px; background: #e06c75; margin: 2px auto 0; opacity: 0.5;"></div>
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #e06c75; margin: 0 auto;"></div>
+            </div>
+            <!-- 2024: 100%, below the line -->
+            <div class="fragment" style="position: absolute; right: 0; top: 203px; transform: translateX(50%); text-align: center; width: 70px;">
+              <div style="width: 10px; height: 10px; border-radius: 50%; background: #c792ea; margin: 0 auto;"></div>
+              <div style="width: 1px; height: 50px; background: #c792ea; margin: 0 auto; opacity: 0.5;"></div>
+              <p style="font-size: 11pt; color: #c792ea; font-weight: 600; margin: 0;">2024</p>
+              <p style="font-size: 10pt; color: var(--muted-color); margin: 2px 0 0 0; white-space: nowrap;">RL Post-<br>Training</p>
+            </div>
           </div>
+          <p class="fragment text-muted" style="font-size: 12pt; text-align: center;">Note the scale: decades of slow progress, then a burst of breakthroughs clustered in the last 10 years.</p>
         </div>
       </section>
 
@@ -214,37 +281,7 @@
       </section>
 
       <!-- ============================================================
-           Information Theory
-           ============================================================ -->
-
-      <section id="info-theory">
-        <h2>Information Theory (1940s-50s)</h2>
-        <div class="content">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-            <div>
-              <ul class="text-lg">
-                <li class="fragment"><strong>Shannon</strong> proved communication could be quantified in <em>bits</em></li>
-                <li class="fragment">Any signal can be transmitted reliably through a noisy channel</li>
-                <li class="fragment">Gave us a formal way to think about <strong>language as information</strong></li>
-              </ul>
-            </div>
-            <div>
-              <ul class="text-lg">
-                <li class="fragment"><strong>Von Neumann</strong> laid mathematical foundations for computing</li>
-                <li class="fragment">The stored-program architecture made general computation possible</li>
-                <li class="fragment">Together: the theoretical bedrock for everything that follows</li>
-              </ul>
-            </div>
-          </div>
-          <blockquote class="fragment" style="margin-top: 20px;">
-            <p>"The fundamental problem of communication is that of reproducing at one point either exactly or approximately a message selected at another point."</p>
-            <cite>-- Claude Shannon, 1948</cite>
-          </blockquote>
-        </div>
-      </section>
-
-      <!-- ============================================================
-           NOTABLE FIGURE: Von Neumann (after information theory)
+           NOTABLE FIGURE: Von Neumann (before information theory)
            ============================================================ -->
 
       <section id="figure-vonneumann-1" data-auto-animate>
@@ -269,13 +306,34 @@
               <h3>The Architecture of Computation</h3>
               <ul class="text-lg">
                 <li>Designed the stored-program architecture (von Neumann architecture)</li>
-                <li>Programs and data stored in the same memory -- the basis of all modern computers</li>
+                <li>Programs and data stored in the same memory &mdash; the basis of all modern computers</li>
                 <li>Contributed to game theory, quantum mechanics, and nuclear physics</li>
                 <li>Worked on ENIAC and EDVAC at Los Alamos</li>
                 <li>Without his architecture, training neural networks would not be possible</li>
               </ul>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           Information Theory
+           ============================================================ -->
+
+      <section id="info-theory">
+        <h2>Information Theory (1940s-50s)</h2>
+        <div class="content">
+          <ul class="text-lg">
+            <li class="fragment"><strong>Shannon</strong> proved communication could be quantified in <em>bits</em></li>
+            <li class="fragment">Any signal can be transmitted reliably through a noisy channel</li>
+            <li class="fragment">Gave us a formal way to think about <strong>language as information</strong></li>
+            <li class="fragment"><strong>Von Neumann's</strong> stored-program architecture made general computation possible</li>
+            <li class="fragment">Together: the theoretical bedrock for everything that follows</li>
+          </ul>
+          <blockquote class="fragment" style="margin-top: 20px;">
+            <p>"The fundamental problem of communication is that of reproducing at one point either exactly or approximately a message selected at another point."</p>
+            <cite>&mdash; Claude Shannon, 1948</cite>
+          </blockquote>
         </div>
       </section>
 
@@ -309,12 +367,39 @@
         </div>
       </section>
 
-      <!-- GOFAI diagram on its own slide -->
       <section id="gofai-diagram">
         <h2>GOFAI vs. Learned Models</h2>
         <div class="content">
-          <div class="video-container">
-            <video class="manim-stepper" data-manim-scene="GOFAIDiagramScene" playsinline></video>
+          <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px; align-items: start;">
+            <div class="fragment">
+              <h3 style="color: #6cb4ff; text-align: center;">Rule-Based (GOFAI)</h3>
+              <div style="background: rgba(74, 158, 255, 0.08); border: 1px solid rgba(74, 158, 255, 0.25); border-radius: 8px; padding: 15px; text-align: center;">
+                <p style="font-size: 14pt; color: var(--muted-color);">Input: "I went to the bank"</p>
+                <p style="font-size: 20pt; margin: 10px 0;">&#8595;</p>
+                <div style="border: 1px solid #6cb4ff; border-radius: 6px; padding: 10px; margin: 8px 0;">
+                  <p style="font-size: 13pt; font-family: monospace; color: #e8eaf0;">IF "bank" + "river" &#8594; riverbank</p>
+                  <p style="font-size: 13pt; font-family: monospace; color: #e8eaf0;">IF "bank" + "money" &#8594; financial</p>
+                </div>
+                <p style="font-size: 20pt; margin: 10px 0;">&#8595;</p>
+                <p style="font-size: 14pt; color: #e06c75; font-weight: bold;">??? (no matching rule)</p>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; padding-top: 60px;">
+              <span style="font-size: 14pt; color: var(--muted-color); writing-mode: vertical-lr; border-left: 1px dashed #2a3450; padding-left: 15px; padding-right: 15px; height: 200px;">&nbsp;</span>
+            </div>
+            <div class="fragment">
+              <h3 style="color: #50c878; text-align: center;">Learned Model</h3>
+              <div style="background: rgba(80, 200, 120, 0.08); border: 1px solid rgba(80, 200, 120, 0.25); border-radius: 8px; padding: 15px; text-align: center;">
+                <p style="font-size: 14pt; color: var(--muted-color);">Input: "I went to the bank"</p>
+                <p style="font-size: 20pt; margin: 10px 0;">&#8595;</p>
+                <div style="border: 1px solid #50c878; border-radius: 6px; padding: 10px; margin: 8px 0;">
+                  <p style="font-size: 14pt; color: #e8eaf0;">Neural Network</p>
+                  <p style="font-size: 12pt; color: var(--muted-color);">Learns patterns from data</p>
+                </div>
+                <p style="font-size: 20pt; margin: 10px 0;">&#8595;</p>
+                <p style="font-size: 14pt; color: #50c878; font-weight: bold;">financial (95%)</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -333,6 +418,7 @@
                 <li class="fragment">Simple pattern matching that convinced people it was a <strong>therapist</strong></li>
                 <li class="fragment">The <strong>"ELIZA effect":</strong> people attribute understanding to systems that have none</li>
                 <li class="fragment">A reminder to be skeptical about AI "understanding"</li>
+                <li class="fragment"><a href="https://www.masswerk.at/elizabot/" target="_blank" style="color: var(--primary-color);">Try ELIZA yourself</a></li>
               </ul>
             </div>
             <div style="text-align: center;">
@@ -353,7 +439,7 @@
         <div style="flex: 1; position: relative; min-height: 0; margin-top: 10px;">
           <canvas id="hypeChart"></canvas>
         </div>
-        <div class="footnote">Dartmouth (1956) | Lighthill Report (1974) | Expert Systems (1980s) | Deep Learning (2012) | Transformers (2017)</div>
+        <div class="footnote">Events are labeled on the chart with dashed vertical lines.</div>
       </section>
 
       <!-- ============================================================
@@ -368,7 +454,7 @@
             <div>
               <h3>The Breakthrough</h3>
               <ul class="text-lg">
-                <li class="fragment"><strong>AlexNet (2012)</strong> -- Krizhevsky, Sutskever, Hinton</li>
+                <li class="fragment"><strong>AlexNet (2012)</strong> &mdash; Krizhevsky, Sutskever, Hinton</li>
                 <li class="fragment">Trained a deep neural network on an <strong>NVIDIA GPU</strong></li>
                 <li class="fragment">Crushed the ImageNet competition</li>
                 <li class="fragment">Error rate: 26% &#8594; 16% (overnight)</li>
@@ -378,7 +464,6 @@
               <h3>Why It Mattered</h3>
               <ul class="text-lg">
                 <li class="fragment">Proved GPUs could make deep learning practical</li>
-                <li class="fragment">Jensen Huang bet NVIDIA's future on this</li>
                 <li class="fragment">Neural networks with <strong>many layers</strong> trained on <strong>large datasets</strong></li>
                 <li class="fragment">Scale was the missing ingredient</li>
               </ul>
@@ -413,7 +498,6 @@
               <h3>The Man Behind the GPU Revolution</h3>
               <ul class="text-lg">
                 <li>Co-founded NVIDIA in 1993</li>
-                <li>Bet the company's future on GPU computing for AI</li>
                 <li>CUDA (2006) gave researchers programmable parallel computing</li>
                 <li>GPUs became the backbone of deep learning</li>
                 <li>NVIDIA is now the most valuable company in the world</li>
@@ -432,11 +516,11 @@
         <div class="content" style="justify-content: center;">
           <blockquote style="margin-bottom: 25px;">
             <p>"Attention Is All You Need"</p>
-            <cite>-- Vaswani et al., 2017</cite>
+            <cite>&mdash; Vaswani et al., 2017</cite>
           </blockquote>
           <ul class="text-xl">
             <li class="fragment">Replaced recurrence with <strong>self-attention</strong></li>
-            <li class="fragment">Enabled <strong>massive parallelism</strong> -- every token attends to every other token simultaneously</li>
+            <li class="fragment">Enabled <strong>massive parallelism</strong> &mdash; every token attends to every other token simultaneously</li>
             <li class="fragment">No more sequential bottleneck of RNNs/LSTMs</li>
             <li class="fragment">The architecture behind <strong>every modern LLM</strong></li>
           </ul>
@@ -465,7 +549,7 @@
               <ul>
                 <li class="fragment"><strong>InstructGPT (2022)</strong><br><span class="text-muted" style="font-size: 14pt;">Trained GPT to follow instructions using human feedback</span></li>
                 <li class="fragment">Turned a text predictor into an <strong>assistant</strong></li>
-                <li class="fragment"><strong>RL post-training</strong><br><span class="text-muted" style="font-size: 14pt;">RLHF, GRPO, DPO -- aligns models to desired behavior</span></li>
+                <li class="fragment"><strong>RL post-training</strong><br><span class="text-muted" style="font-size: 14pt;">RLHF, GRPO, DPO &mdash; aligns models to desired behavior</span></li>
               </ul>
             </div>
           </div>
@@ -486,66 +570,165 @@
         <div class="content">
           <ul class="text-lg">
             <li class="fragment"><strong>Language is not random.</strong> Given context, the next letter or word is partially predictable.</li>
-            <li class="fragment">Shannon asked humans to guess the next character in a sequence -- they did <strong>far better than chance</strong></li>
+            <li class="fragment">Shannon asked humans to guess the next character in a sequence &mdash; they did <strong>far better than chance</strong></li>
             <li class="fragment">This is the same idea behind modern LLMs, just at vastly greater scale with learned representations</li>
           </ul>
         </div>
       </section>
 
-      <!-- Shannon prediction animation on its own slide -->
-      <section id="shannon-prediction-anim">
+      <section id="shannon-prediction-demo">
         <h2>Shannon's Prediction Experiment</h2>
         <div class="content">
-          <div class="video-container">
-            <video class="manim-stepper" data-manim-scene="ShannonPredictionScene" playsinline></video>
+          <p class="text-lg" style="font-family: monospace; text-align: center; margin-bottom: 15px;">THE NEXT LETTER IS PROBABLY _</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div class="fragment">
+              <h3 style="color: #50c878;">With context (English statistics)</h3>
+              <table style="width: 100%; font-size: 13pt; margin-top: 10px;">
+                <tr><td style="font-family: monospace; padding: 3px 8px;">' '</td><td style="padding: 3px 0;"><div style="background: #50c878; height: 14px; width: 88%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">22%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">E</td><td style="padding: 3px 0;"><div style="background: #50c878; height: 14px; width: 72%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">18%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">A</td><td style="padding: 3px 0;"><div style="background: #50c878; height: 14px; width: 48%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">12%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">T</td><td style="padding: 3px 0;"><div style="background: #50c878; height: 14px; width: 40%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">10%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">S</td><td style="padding: 3px 0;"><div style="background: #50c878; height: 14px; width: 32%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">8%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">other</td><td style="padding: 3px 0;"><div style="background: #50c878; height: 14px; width: 92%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">30%</td></tr>
+              </table>
+            </div>
+            <div class="fragment">
+              <h3 style="color: #e06c75;">Without context (uniform)</h3>
+              <table style="width: 100%; font-size: 13pt; margin-top: 10px;">
+                <tr><td style="font-family: monospace; padding: 3px 8px;">' '</td><td style="padding: 3px 0;"><div style="background: #e06c75; height: 14px; width: 15%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">3.7%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">E</td><td style="padding: 3px 0;"><div style="background: #e06c75; height: 14px; width: 15%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">3.7%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">A</td><td style="padding: 3px 0;"><div style="background: #e06c75; height: 14px; width: 15%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">3.7%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">T</td><td style="padding: 3px 0;"><div style="background: #e06c75; height: 14px; width: 15%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">3.7%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">S</td><td style="padding: 3px 0;"><div style="background: #e06c75; height: 14px; width: 15%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">3.7%</td></tr>
+                <tr><td style="font-family: monospace; padding: 3px 8px;">other</td><td style="padding: 3px 0;"><div style="background: #e06c75; height: 14px; width: 85%; opacity: 0.7;"></div></td><td style="padding: 3px 8px; color: var(--muted-color);">81%</td></tr>
+              </table>
+            </div>
           </div>
+          <p class="fragment text-xl" style="text-align: center; margin-top: 20px; color: #e5c07b; font-weight: 600;">Context makes prediction much easier.</p>
+        </div>
+      </section>
+
+      <section id="chain-rule">
+        <h2>The Chain Rule of Probability</h2>
+        <div class="content">
+          <p class="text-lg fragment">How do we compute the probability of an entire sequence \(P(w_1, w_2, \ldots, w_n)\)?</p>
+          <div class="fragment" style="margin: 20px 0; text-align: center;">
+            $$P(w_1 w_2 \ldots w_n) = \prod_{k=1}^{n} P(w_k \mid w_1 \ldots w_{k-1})$$
+          </div>
+          <p class="text-lg fragment">This decomposes a joint probability into a product of conditional probabilities. But we still need to estimate \(P(w_k \mid w_1 \ldots w_{k-1})\), and we cannot count occurrences of every possible history.</p>
+        </div>
+      </section>
+
+      <section id="markov-assumption">
+        <h2>The Markov Assumption</h2>
+        <div class="content">
+          <p class="text-lg fragment">Instead of conditioning on the <strong>entire</strong> history, approximate with just the last few symbols:</p>
+          <div class="fragment" style="margin: 20px 0; text-align: center;">
+            $$P(w_k \mid w_1 \ldots w_{k-1}) \approx P(w_k \mid w_{k-n+1} \ldots w_{k-1})$$
+          </div>
+          <p class="text-lg fragment">For example, instead of computing:</p>
+          <div class="fragment" style="text-align: center; margin: 10px 0;">
+            <p style="font-size: 14pt; color: var(--muted-color);">\(P(\texttt{blue} \mid \texttt{The water of Walden Pond is so beautifully})\)</p>
+          </div>
+          <p class="text-lg fragment">A bigram approximates this as:</p>
+          <div class="fragment" style="text-align: center; margin: 10px 0;">
+            <p style="font-size: 14pt; color: var(--secondary-color);">\(P(\texttt{blue} \mid \texttt{beautifully})\)</p>
+          </div>
+          <p class="fragment text-muted" style="font-size: 13pt; margin-top: 10px;">This is the core trade-off of n-gram models: more context is better, but the data becomes sparser.</p>
         </div>
       </section>
 
       <section id="ngram-models">
-        <h2>Building N-gram Models</h2>
+        <h2>N-gram Model Estimation</h2>
         <div class="content">
-          <p class="text-lg" style="margin-bottom: 15px;">All of this starts with one idea -- predicting the next symbol. Let's go back to 1948 and build it ourselves.</p>
+          <p class="text-lg" style="margin-bottom: 15px;">Given the Markov assumption, we estimate each conditional probability by counting:</p>
+          <div style="margin: 20px 0; text-align: center;">
+            $$P(c_t \mid c_{t-n+1}, \ldots, c_{t-1}) = \frac{\text{count}(c_{t-n+1} \ldots c_t)}{\text{count}(c_{t-n+1} \ldots c_{t-1})}$$
+          </div>
           <ul>
-            <li><strong>Order 0:</strong> uniform random characters</li>
-            <li><strong>Order 1:</strong> character frequencies (unigrams)</li>
-            <li><strong>Order 2:</strong> bigrams -- P(next | previous)</li>
-            <li><strong>Order 3:</strong> trigrams -- P(next | prev 2)</li>
+            <li class="fragment"><strong>Uniform random:</strong> \(P(c) = \frac{1}{27}\)</li>
+            <li class="fragment"><strong>Unigram:</strong> \(P(c) = \frac{\text{count}(c)}{\text{total characters}}\)</li>
+            <li class="fragment"><strong>Bigram:</strong> \(P(c_t \mid c_{t-1})\)</li>
+            <li class="fragment"><strong>Trigram:</strong> \(P(c_t \mid c_{t-2}, c_{t-1})\)</li>
           </ul>
-          <p class="text-muted" style="font-size: 13pt; margin-top: 10px;">Each order captures more context, producing more coherent text.</p>
+          <p class="text-muted fragment" style="font-size: 13pt; margin-top: 10px;">Shannon described this exact procedure in 1948. Let's build it ourselves.</p>
         </div>
       </section>
 
-      <!-- N-gram order animation on its own slide -->
-      <section id="ngram-order-anim">
+      <section id="ngram-order-demo">
         <h2>N-gram Model Quality</h2>
         <div class="content">
-          <div class="video-container">
-            <video class="manim-stepper" data-manim-scene="NgramOrderScene" playsinline></video>
+          <div class="fragment" style="margin-bottom: 18px;">
+            <p style="font-size: 14pt; color: #e06c75; font-weight: 600; margin-bottom: 4px;">Uniform Random</p>
+            <pre style="margin: 0; font-size: 13pt;"><code class="language-text" style="padding: 8px 15px;">xqj bz fmk ort wc aelp gh</code></pre>
+          </div>
+          <div class="fragment" style="margin-bottom: 18px;">
+            <p style="font-size: 14pt; color: #d19a66; font-weight: 600; margin-bottom: 4px;">Unigram</p>
+            <pre style="margin: 0; font-size: 13pt;"><code class="language-text" style="padding: 8px 15px;">e tah oin sr dlcu mfpg ywb</code></pre>
+          </div>
+          <div class="fragment" style="margin-bottom: 18px;">
+            <p style="font-size: 14pt; color: #e5c07b; font-weight: 600; margin-bottom: 4px;">Bigram</p>
+            <pre style="margin: 0; font-size: 13pt;"><code class="language-text" style="padding: 8px 15px;">th an in he re ou at on er</code></pre>
+          </div>
+          <div class="fragment" style="margin-bottom: 18px;">
+            <p style="font-size: 14pt; color: #50c878; font-weight: 600; margin-bottom: 4px;">Trigram</p>
+            <pre style="margin: 0; font-size: 13pt;"><code class="language-text" style="padding: 8px 15px;">the ing and ion tio for ent</code></pre>
           </div>
         </div>
       </section>
 
       <section id="entropy">
-        <h2>Entropy and Compression</h2>
+        <h2>Shannon Entropy</h2>
         <div class="content">
+          <p class="text-lg fragment">How many bits do we need, on average, to encode a symbol?</p>
+          <div class="fragment" style="margin: 20px 0; text-align: center;">
+            $$H(X) = -\sum_{i} \textcolor{#50c878}{p(x_i)} \log_2 p(x_i)$$
+          </div>
+          <div class="fragment" style="margin-top: 10px;">
+            <p class="text-lg">For a <strong>uniform</strong> distribution over 27 characters, every \(p(x_i) = \frac{1}{27}\):</p>
+            <div style="text-align: center; margin: 10px 0;">
+              $$H = -\sum_{i=1}^{27} \textcolor{#50c878}{\tfrac{1}{27}} \log_2 \tfrac{1}{27} = -27 \cdot \tfrac{1}{27} \cdot \log_2 \tfrac{1}{27} = \log_2(27) = 4.75 \text{ bits/char}$$
+            </div>
+          </div>
           <ul class="text-lg">
-            <li class="fragment"><strong>Shannon entropy</strong> measures uncertainty / information content</li>
-            <li class="fragment">Uniform distribution = maximum entropy (most uncertain)</li>
-            <li class="fragment">Higher-order models = lower entropy = <strong>better predictions</strong></li>
-            <li class="fragment"><strong>Perplexity</strong> = 2<sup>entropy</sup> -- "how confused is the model?"</li>
+            <li class="fragment">This is the <strong>maximum entropy</strong> for 27 symbols. Any structure in the distribution lowers it.</li>
+            <li class="fragment">English text: \(H \approx 1.0\text{--}1.5\) bits/char (Shannon, 1951). Most of each character is <strong>predictable</strong> from context.</li>
+            <li class="fragment">The gap (4.75 vs ~1.2) = the <strong>redundancy</strong> that makes language models possible.</li>
           </ul>
-          <p class="fragment text-muted" style="font-size: 13pt; margin-top: 10px;">Lower perplexity = better model. A perplexity of 10 means the model is as uncertain as choosing uniformly from 10 options.</p>
         </div>
       </section>
 
-      <!-- Language as compression animation on its own slide -->
-      <section id="compression-anim">
-        <h2>Language as Compression</h2>
+      <section id="cross-entropy">
+        <h2>Cross-Entropy</h2>
         <div class="content">
-          <div class="video-container">
-            <video class="manim-stepper" data-manim-scene="LanguageAsCompressionScene" playsinline></video>
+          <p class="text-lg fragment">How well does a <strong>model</strong> \(q\) predict text? For each character in the corpus, ask: how many bits does the model need to encode it?</p>
+          <div class="fragment" style="margin: 15px 0; text-align: center;">
+            $$H(q) = -\frac{1}{N} \sum_{i=1}^{N} \log_2 q(c_i \mid \text{context}_i)$$
           </div>
+          <p class="text-lg fragment">This is the average number of bits per character the model needs. For each character \(c_i\), the model assigns a probability \(q(c_i \mid \text{context})\). Higher probability = fewer bits (\(-\log_2\) of a large number is small).</p>
+          <p class="text-lg fragment" style="margin-top: 15px;"><strong>Perplexity</strong> converts this to an intuitive scale:</p>
+          <div class="fragment" style="margin: 15px 0; text-align: center;">
+            $$\text{Perplexity} = 2^{H(q)}$$
+          </div>
+          <p class="fragment text-muted" style="font-size: 13pt; margin-top: 5px;">A perplexity of 10 means the model is as uncertain as choosing uniformly from 10 options. Lower = better.</p>
+        </div>
+      </section>
+
+      <section id="compression-demo-1">
+        <div class="video-container">
+          <video data-autoplay src="media/compression_uniform.mp4"></video>
+        </div>
+      </section>
+
+      <section id="compression-demo-2">
+        <div class="video-container">
+          <video data-autoplay src="media/compression_code_table.mp4"></video>
+        </div>
+      </section>
+
+      <section id="compression-demo-3">
+        <div class="video-container">
+          <video data-autoplay src="media/compression_variable.mp4"></video>
         </div>
       </section>
 
@@ -595,142 +778,529 @@ uv run python -c "print('Ready.')"</code></pre>
         <p>N-gram Language Models</p>
       </section>
 
+      <!-- Running instructions FIRST -->
+      <section id="exercise-run">
+        <h2>Running the Exercise</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Open <code>exercises/module_01_introduction/src/ngrams.py</code> and fill in the <code>NotImplementedError</code> lines. Run after each step &mdash; unfinished functions are skipped automatically.</p>
+          <pre style="margin: 15px 0;"><code class="language-bash"># Run all models (skips any not yet implemented)
+uv run python -m exercises.module_01_introduction.src.main \
+    exercises/module_01_introduction/data/alice.txt
+
+# Run a single model
+uv run python -m exercises.module_01_introduction.src.main \
+    exercises/module_01_introduction/data/alice.txt --model char3</code></pre>
+        </div>
+      </section>
+
       <section id="exercise-overview">
         <h2>Exercise: N-gram Language Models</h2>
         <div class="content">
-          <p class="text-lg">Build character-level and word-level n-gram models to generate text from <strong>Alice in Wonderland</strong>.</p>
+          <p class="text-lg">We just learned that language has statistical structure. Now you will build models that exploit it, recreating Shannon's 1948 experiment.</p>
+          <p class="text-lg" style="margin-top: 10px;">Your goal: generate text from <strong>Alice in Wonderland</strong> (~144,000 characters), starting with pure randomness and progressively adding more structure.</p>
           <p class="text-lg" style="margin-top: 10px;">Each function is mostly written for you. You fill in <strong>one key line</strong> per function.</p>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 15px;">
-            <div>
-              <h3>Functions</h3>
-              <ul>
-                <li><code>load_text()</code> -- strip Gutenberg headers</li>
-                <li><code>char_uniform()</code> -- 0th order random</li>
-                <li><code>char_unigram()</code> -- 1st order frequencies</li>
-                <li><code>build_char_ngram_model()</code> -- bigrams/trigrams</li>
-                <li><code>word_unigram()</code>, <code>build_word_ngram_model()</code></li>
-              </ul>
+        </div>
+      </section>
+
+      <!-- Step 1: load_text -->
+      <section id="exercise-step1-context">
+        <h2>Step 1: Load the Training Data</h2>
+        <div class="content">
+          <p class="text-lg">Every language model needs a <strong>corpus</strong> &mdash; a body of text to learn from. The file comes from Project Gutenberg, which wraps the book in headers and footers. Strip those out.</p>
+          <div class="highlight-box" style="margin-top: 20px;">
+            <p class="text-lg" style="margin: 0;"><strong>Output:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-text">Loaded 144603 characters
+
+Alice's Adventures in Wonderland
+
+by Lewis Carroll
+
+CHAPTER I. Down the Rabbit-Hole ...</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-step1-code">
+        <h2>Step 1: load_text()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">    # Find the line numbers where the book starts and ends
+    start_idx = 0
+    end_idx = len(lines)
+    for i, line in enumerate(lines):
+        if start_marker in line.upper():
+            start_idx = i + 1       # book starts on the NEXT line
+        if end_marker in line.upper():
+            end_idx = i             # book ends BEFORE this line
+            break
+
+    # TODO: Join lines[start_idx:end_idx] with newlines and return the result
+    raise NotImplementedError("TODO: return the joined lines")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> Python's <code>str.join()</code> method can combine a list of strings with a separator.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">return "\n".join(lines[start_idx:end_idx])</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-step1-output">
+        <h2>Step 1: Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
             </div>
-            <div>
-              <h3>Stretch Goals</h3>
-              <ul>
-                <li><code>cross_entropy()</code> -- bits per character</li>
-                <li><code>perplexity()</code> -- 2^(cross-entropy)</li>
-                <li>Compare model quality quantitatively</li>
-              </ul>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+
+<span class="skipped">=== 0th Order: Uniform Random Characters ===
+  [skipped: TODO: return a random string of the given length]
+
+=== 1st Order: Character Unigrams ===
+  [skipped: TODO: return a frequency-weighted random string]
+
+=== 2nd Order: Character Bigrams ===
+  [skipped: TODO: set context and next_char from text[i:]]
+
+...</span></pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">The program loads the text, then skips every model you haven't built yet.</p>
+        </div>
+      </section>
+
+      <!-- Step 2: char_uniform -->
+      <section id="exercise-step2-context">
+        <h2>Step 2: The Null Hypothesis</h2>
+        <div class="content">
+          <p class="text-lg">What does text look like with <strong>zero knowledge</strong> of English? Pick each character uniformly at random from a-z and space. This is the baseline &mdash; 0th order.</p>
+          <div class="highlight-box" style="margin-top: 20px;">
+            <p class="text-lg" style="margin: 0;"><strong>Output:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-text">=== 0th Order: Uniform Random Characters ===
+rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</code></pre>
+          </div>
+          <p class="text-lg" style="margin-top: 15px;">No structure at all. Rare letters like <strong>q</strong>, <strong>x</strong>, <strong>z</strong> appear as often as <strong>e</strong> or <strong>t</strong>. This is maximum entropy.</p>
+        </div>
+      </section>
+
+      <section id="exercise-step2-code">
+        <h2>Step 2: char_uniform()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">    # The 27 characters we can pick from (26 letters + space)
+    alphabet = list("abcdefghijklmnopqrstuvwxyz ")
+
+    # TODO: Sample `length` random characters from alphabet and join into a string
+    # Use random.choices(population, k=...) to pick, then "".join() to combine
+    raise NotImplementedError("TODO: return a random string of the given length")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> <code>random.choices(population, k=...)</code> returns a list of <code>k</code> random items. Join them into a single string.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">return "".join(random.choices(alphabet, k=length))</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-step2-output">
+        <h2>Step 2: Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">python -m exercises...src.main data/alice.txt --model uniform</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+
+<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
+rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg
+iudmpwmvbyqkflxjiupmlehmjbkzqhsvchnyawijuydkl</pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">Pure noise. Rare letters appear as often as common ones.</p>
+        </div>
+      </section>
+
+      <!-- Step 3: char_unigram -->
+      <section id="exercise-step3-context">
+        <h2>Step 3: Learning Letter Frequencies</h2>
+        <div class="content">
+          <p class="text-lg">Now use the corpus. Count how often each character appears and sample proportionally. This is <strong>1st order</strong> &mdash; we know the frequency of each letter, but nothing about what follows what.</p>
+          <div class="highlight-box" style="margin-top: 20px;">
+            <p class="text-lg" style="margin: 0;"><strong>Output:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-text">=== 1st Order: Character Unigrams ===
+ irt  flniteit et b
+b as,allh b e"oeh h  itrltlr</code></pre>
+          </div>
+          <p class="text-lg" style="margin-top: 15px;">Better &mdash; <strong>e</strong>, <strong>t</strong>, and <strong>space</strong> now dominate. But still gibberish because we ignore which letters tend to follow each other.</p>
+        </div>
+      </section>
+
+      <section id="exercise-step3-code">
+        <h2>Step 3: char_unigram()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">    # Separate the characters and their counts into two parallel lists
+    chars = list(counts.keys())       # e.g. ["a", "b", " ", "e", ...]
+    weights = list(counts.values())   # e.g. [2, 1, 5, 3, ...]
+
+    # TODO: Sample `length` characters using the weights, join into a string
+    # Same as char_uniform but pass weights=weights to random.choices()
+    raise NotImplementedError("TODO: return a frequency-weighted random string")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> Same as Step 2, but <code>random.choices</code> accepts a <code>weights</code> parameter to bias toward more frequent characters.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">return "".join(random.choices(chars, weights=weights, k=length))</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-step3-output">
+        <h2>Step 3: Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+
+<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
+<span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+
+<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===</span>
+ irt  flniteit et b
+b as,allh b e"oeh h  itrltlr</pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">Spaces and <strong>e</strong> dominate now, but letters still appear in random order.</p>
+        </div>
+      </section>
+
+      <!-- Step 4: build_char_ngram_model -->
+      <section id="exercise-step4-context">
+        <h2>Step 4: Adding Context</h2>
+        <div class="content">
+          <p class="text-lg">This is the key insight. Instead of asking "how common is <strong>e</strong>?", ask "given the previous character was <strong>t</strong>, how common is <strong>e</strong>?" This is a <strong>bigram</strong> model (2nd order).</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+            <div class="highlight-box">
+              <p class="text-lg" style="margin: 0;"><strong>Bigram (n=2):</strong></p>
+              <pre style="margin: 10px 0 0 0;"><code class="language-text">_ s icha athap se cker lid
+the an n ch f auphtomothe</code></pre>
+            </div>
+            <div class="highlight-box">
+              <p class="text-lg" style="margin: 0;"><strong>Trigram (n=3):</strong></p>
+              <pre style="margin: 10px 0 0 0;"><code class="language-text">the glar all thed
+be falice moce lied alls</code></pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px;">With bigrams, common pairs like "th" and "he" emerge. With trigrams, fragments of real words: "the", "alice".</p>
+        </div>
+      </section>
+
+      <section id="exercise-step4-code">
+        <h2>Step 4: build_char_ngram_model()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">    # Slide a window of size n across the text
+    for i in range(len(text) - n + 1):
+        # TODO: Extract the context (first n-1 chars) and next_char (the nth char)
+        # context = text[i : i + n - 1], next_char = text[i + n - 1]
+        raise NotImplementedError("TODO: set context and next_char from text[i:]")
+
+        # Create a Counter for this context if we haven't seen it before
+        if context not in model:
+            model[context] = Counter()
+        # Increment the count for this (context -> next_char) pair
+        model[context][next_char] += 1</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> You have a window of <code>n</code> characters at position <code>i</code>. The context is the first <code>n-1</code>; the next character is the last one.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">context, next_char = text[i : i + n - 1], text[i + n - 1]</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-step4-output">
+        <h2>Step 4: Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+
+<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
+<span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+
+<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===</span>
+<span style="color: #8b949e;"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
+
+<span class="header" style="color: #e5c07b;">=== 2nd Order: Character Bigrams ===</span>
+<span class="skipped">[skipped: TODO: set context from the last n-1 chars of result]</span></pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">The model is built, but we can't generate from it yet &mdash; that's step 5.</p>
+        </div>
+      </section>
+
+      <!-- Step 5: generate_from_char_model -->
+      <section id="exercise-step5-context">
+        <h2>Step 5: Generating from the Model</h2>
+        <div class="content">
+          <p class="text-lg">Now that we have a table of "given context X, character Y appears Z times," we can <strong>generate</strong> text. Start with a seed, look up the context, sample the next character proportionally, repeat.</p>
+          <p class="text-lg" style="margin-top: 15px;">This is exactly what Shannon described in 1948 &mdash; and it is conceptually the same process used by modern language models, just with far more context and parameters.</p>
+        </div>
+      </section>
+
+      <section id="exercise-step5-code">
+        <h2>Step 5: generate_from_char_model()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">    while len(result) < length:
+        # TODO: Get the current context -- the last (n-1) characters joined together
+        # e.g. if n=3 and result ends with ['a','t'], context = "at"
+        raise NotImplementedError("TODO: set context from the last n-1 chars of result")
+
+        if context in model:
+            counter = model[context]
+            chars = list(counter.keys())
+            weights = list(counter.values())
+            next_char = random.choices(chars, weights=weights, k=1)[0]
+        else:
+            # fallback: pick a random context
+            ...</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> The context is the last <code>n-1</code> characters of the result so far. Use negative indexing, then join into a string.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">context = "".join(result[-(n - 1):])</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-step5-output">
+        <h2>Step 5: Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+
+<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
+<span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+
+<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===</span>
+<span style="color: #8b949e;"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
+
+<span class="header" style="color: #e5c07b;">=== 2nd Order: Character Bigrams ===</span>
+<span style="color: #8b949e;">_ s icha athap se cker lid the an n ch</span>
+
+<span class="header" style="color: #98c379;">=== 3rd Order: Character Trigrams ===</span>
+the glar all thed be falice moce lied alls
+she triede knigh yought alice begal senter</pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">Build + generate work together. Word fragments emerge: "the", "alice", "she".</p>
+        </div>
+      </section>
+
+      <!-- Step 6: word-level models -->
+      <section id="exercise-step6-context">
+        <h2>Step 6: From Characters to Words</h2>
+        <div class="content">
+          <p class="text-lg">The same n-gram idea works at the <strong>word level</strong>. Instead of predicting the next character, predict the next word given the previous words.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+            <div class="highlight-box">
+              <p class="text-lg" style="margin: 0;"><strong>Word unigram:</strong></p>
+              <pre style="margin: 10px 0 0 0;"><code class="language-text">"what the it sitting
+history, them," hare. of
+take the very said</code></pre>
+            </div>
+            <div class="highlight-box">
+              <p class="text-lg" style="margin: 0;"><strong>Word trigram:</strong></p>
+              <pre style="margin: 10px 0 0 0;"><code class="language-text">late much accustomed to
+usurpation and conquest.
+edwin and morcar, the earls</code></pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px;">Word trigrams produce surprisingly coherent phrases &mdash; sometimes entire sentences lifted from the source. The model is memorizing, not understanding.</p>
+        </div>
+      </section>
+
+      <section id="exercise-step6-code">
+        <h2>Step 6: Word N-gram Models</h2>
+        <div class="content">
+          <p class="text-lg" style="margin-bottom: 10px;">Same pattern as the character models but contexts are <strong>tuples of words</strong> instead of strings of characters.</p>
+          <pre style="font-size: 13pt;"><code class="language-python"># build_word_ngram_model:
+    for i in range(len(words) - n + 1):
+        # TODO: Extract context tuple and next_word
+        raise NotImplementedError("TODO: set context and next_word")
+
+# generate_from_word_model:
+    while len(result) < length:
+        # TODO: Get context as tuple of last (n-1) words
+        raise NotImplementedError("TODO: set context")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> Same as the character version, but use <code>tuple()</code> instead of <code>"".join()</code>.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python"># build:
+context, next_word = tuple(words[i : i + n - 1]), words[i + n - 1]
+# generate:
+context = tuple(result[-(n - 1):])</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-step6-output">
+        <h2>Step 6: Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+
+<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
+<span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===</span>
+<span style="color: #8b949e;"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
+<span class="header" style="color: #e5c07b;">=== 2nd Order: Character Bigrams ===</span>
+<span style="color: #8b949e;">_ s icha athap se cker lid the an n ch</span>
+<span class="header" style="color: #98c379;">=== 3rd Order: Character Trigrams ===</span>
+<span style="color: #8b949e;">the glar all thed be falice moce lied alls</span>
+<span class="header" style="color: #56b6c2;">=== Word Unigrams ===</span>
+<span style="color: #8b949e;">"what the it sitting history, them," hare.</span>
+
+<span class="header" style="color: #61afef;">=== Word Trigrams ===</span>
+late much accustomed to usurpation and conquest.
+edwin and morcar, the earls of mercia and</pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">Coherent phrases, sometimes entire sentences lifted from Alice in Wonderland.</p>
+        </div>
+      </section>
+
+      <!-- Putting it all together -->
+      <section id="exercise-together">
+        <h2>All Models: More Context, Better Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output" style="max-width: 900px;">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+
+<span class="fragment header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===
+<span style="color: #e8eaf0;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span></span>
+<span class="fragment header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===
+<span style="color: #e8eaf0;"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span></span>
+<span class="fragment header" style="color: #e5c07b;">=== 2nd Order: Character Bigrams ===
+<span style="color: #e8eaf0;">_ s icha athap se cker lid the an n ch</span></span>
+<span class="fragment header" style="color: #98c379;">=== 3rd Order: Character Trigrams ===
+<span style="color: #e8eaf0;">the glar all thed be falice moce lied alls</span></span>
+<span class="fragment header" style="color: #56b6c2;">=== Word Unigrams ===
+<span style="color: #e8eaf0;">"what the it sitting history, them," hare.</span></span>
+<span class="fragment header" style="color: #61afef;">=== Word Trigrams ===
+<span style="color: #e8eaf0;">late much accustomed to usurpation and conquest.</span></span></pre>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="exercise-walkthrough-1">
-        <h2>Exercise Walkthrough: char_uniform()</h2>
-        <div class="content" style="justify-content: center;">
-          <pre><code class="language-python">def char_uniform(length: int = 500) -> str:
-    alphabet = list("abcdefghijklmnopqrstuvwxyz ")
-
-    # TODO: sample `length` characters uniformly at random
-    return ___</code></pre>
-          <p class="text-lg" style="margin-top: 20px;">Hint: <code>random.choices(population, k=length)</code> returns a list of random picks. Join them into a string.</p>
-        </div>
-      </section>
-
-      <section id="exercise-walkthrough-2">
-        <h2>Exercise Walkthrough: build_char_ngram_model()</h2>
-        <div class="content" style="justify-content: center;">
-          <pre><code class="language-python">def build_char_ngram_model(text: str, n: int) -> dict[str, Counter]:
-    text = text.lower()
-    model: dict[str, Counter] = {}
-
-    for i in range(len(text) - n + 1):
-        context = text[i : i + n - 1]
-        next_char = text[i + n - 1]
-        if context not in model:
-            model[context] = Counter()
-
-        # TODO: count this (context, next_char) occurrence
-        ___
-
-    return model</code></pre>
-          <p class="text-lg" style="margin-top: 20px;">For n=2 (bigram): <code>model["th"]["e"] += 1</code> every time "the" appears.</p>
-        </div>
-      </section>
-
-      <section id="exercise-walkthrough-3">
-        <h2>Exercise Walkthrough: generate_from_char_model()</h2>
-        <div class="content" style="justify-content: center;">
-          <pre><code class="language-python">while len(result) < length:
-    context = "".join(result[-(n - 1) :])
-    if context in model:
-        counter = model[context]
-        chars = list(counter.keys())
-        weights = list(counter.values())
-
-        # TODO: sample one character using the weights
-        next_char = ___
-    else:
-        # fallback: pick a random context
-        ...</code></pre>
-          <p class="text-lg" style="margin-top: 20px;">Hint: <code>random.choices(chars, weights=weights, k=1)[0]</code></p>
-        </div>
-      </section>
-
-      <section id="exercise-run">
-        <h2>Running the Exercise</h2>
-        <div class="content" style="justify-content: center;">
-          <pre><code class="language-bash"># Run with a specific model
-uv run python -m exercises.module_01_introduction.src.generate \
-    exercises/module_01_introduction/data/alice.txt --model char3</code></pre>
-          <p class="text-lg" style="margin-top: 20px;">You should see increasingly coherent text as model order increases:</p>
+      <section id="exercise-extra-credit">
+        <h2>Extra Credit</h2>
+        <div class="content">
+          <p class="text-lg">If you finish early, try the optional extra credit:</p>
           <ul>
-            <li><strong>Order 0:</strong> <code>xqj bz fmk ort wc aelp</code></li>
-            <li><strong>Order 1:</strong> <code>e tah oin sr dlcu mfpg</code></li>
-            <li><strong>Order 2:</strong> <code>th an in he re ou at on</code></li>
-            <li><strong>Order 3:</strong> <code>the ing and tion for ent</code></li>
+            <li><strong><code>cross_entropy()</code></strong> &mdash; measure how surprised the model is: \(H(p, q) = -\frac{1}{N} \sum \log_2 q(c_i \mid \text{context})\)</li>
+            <li><strong><code>perplexity()</code></strong> &mdash; convert to perplexity: \(\text{PPL} = 2^{H(p,q)}\), a standard metric for language models</li>
           </ul>
+          <p class="text-lg" style="margin-top: 15px;">Lower perplexity = better model. You should see perplexity drop as you increase the n-gram order. This is the same metric used to evaluate GPT and other modern LLMs.</p>
         </div>
       </section>
 
       <!-- ============================================================
-           Quiz walkthrough
+           Quiz
            ============================================================ -->
 
-      <section id="quiz-overview">
-        <h2>Quiz</h2>
-        <div class="content">
-          <p class="text-lg">5 standalone Python scripts. Each one fails until you fill in the answer. Run them individually:</p>
-          <pre><code class="language-bash">uv run python -m exercises.module_01_introduction.quiz.q1_most_common_character
-uv run python -m exercises.module_01_introduction.quiz.q2_model_order
-uv run python -m exercises.module_01_introduction.quiz.q3_conditional_probability
-uv run python -m exercises.module_01_introduction.quiz.q4_entropy
-uv run python -m exercises.module_01_introduction.quiz.q5_shannons_insight</code></pre>
+      <section id="quiz-divider" class="section-divider" data-state="is-section-divider">
+        <h1>Quiz</h1>
+        <p>Test your understanding</p>
+      </section>
+
+      <section id="quiz-q1">
+        <h2>Q1: Why Not Just Use Rules?</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">GOFAI systems used hand-written rules to process language. Why did this approach ultimately fail for general language understanding?</p>
+          <div class="fragment highlight-box" style="margin-top: 30px;">
+            <p class="text-lg"><strong>Answer:</strong> Language is inherently ambiguous and context-dependent. You cannot enumerate rules for every possible meaning of every word in every context. "Bank" alone has dozens of meanings, and the rules would need to cover all of them and all their interactions. Statistical/learned models discover these patterns from data instead of requiring manual specification.</p>
+          </div>
         </div>
       </section>
 
-      <section id="quiz-walkthrough-1">
-        <h2>Quiz Q1: Character Frequency</h2>
+      <section id="quiz-q2">
+        <h2>Q2: Shannon's Entropy</h2>
         <div class="content" style="justify-content: center;">
-          <pre><code class="language-python"># q1_most_common_character.py
-
-# What is the most common character in English text
-# (including spaces)?
-
-# TODO: Replace the right-hand side with your answer
-ANSWER = ...</code></pre>
-          <p class="text-lg" style="margin-top: 20px;">Hint: it's not 'e'. What separates every single word?</p>
+          <p class="text-lg">Shannon estimated English has \(H \approx 1.0\text{--}1.5\) bits/char. A uniform 27-character alphabet has \(H = \log_2(27) = 4.75\) bits/char.</p>
+          <p class="text-2xl" style="margin-top: 20px;">What does this gap tell us about English as a communication system?</p>
+          <div class="fragment highlight-box" style="margin-top: 25px;">
+            <p class="text-lg"><strong>Answer:</strong> English is highly redundant. About 70-80% of each character is predictable from context. This redundancy is what makes autocomplete, spell-check, and language models possible, and it is why you can read text with missing letters. Shannon showed this redundancy is a measurable, mathematical property.</p>
+          </div>
         </div>
       </section>
 
-      <section id="quiz-walkthrough-2">
-        <h2>Quiz Q3: Conditional Probability</h2>
+      <section id="quiz-q3">
+        <h2>Q3: The Memorization Problem</h2>
         <div class="content" style="justify-content: center;">
-          <pre><code class="language-python"># Given this bigram model fragment:
-# model["th"] = Counter({"e": 50, "a": 20, "i": 15, "o": 10, "u": 5})
-#
-# What is P('e' | 'th')?
+          <p class="text-lg">A word-level 5-gram model trained on <em>Alice in Wonderland</em> produces output that is mostly exact quotes from the book.</p>
+          <p class="text-2xl" style="margin-top: 20px;">Why does this happen, and how do modern LLMs avoid it?</p>
+          <div class="fragment highlight-box" style="margin-top: 25px;">
+            <p class="text-lg"><strong>Answer:</strong> With high-order n-grams and limited training data, most contexts appear only once, so the model can only reproduce the original. Modern LLMs avoid this by (1) training on vastly more data, (2) using continuous representations instead of exact count tables, and (3) generalizing across similar contexts via learned embeddings.</p>
+          </div>
+        </div>
+      </section>
 
-ANSWER = ...</code></pre>
-          <p class="text-lg" style="margin-top: 20px;">Conditional probability = count of target / total count for that context.</p>
+      <section id="quiz-q4">
+        <h2>Q4: Conditional Probability</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">A trigram model trained on English text has these counts for the context "th":</p>
+          <pre><code class="language-python">model["th"] = Counter({"e": 50, "a": 20, "i": 15, "o": 10, "u": 5})</code></pre>
+          <p class="text-2xl" style="margin-top: 20px;">What is \(P(\texttt{e} \mid \texttt{th})\), and what does it mean for the model's behavior?</p>
+          <div class="fragment highlight-box" style="margin-top: 25px;">
+            <p class="text-lg"><strong>Answer:</strong> \(P(\texttt{e} \mid \texttt{th}) = \frac{50}{50+20+15+10+5} = \frac{50}{100} = 0.5\). Half the time the model encounters the context "th", it will generate "e" as the next character. This is a conditional probability: it only applies when "th" is already the context. The other half of the time, the model generates "a" (20%), "i" (15%), "o" (10%), or "u" (5%). This is why trigram output produces "the" so frequently, but also generates "tha", "thi", and other combinations.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="quiz-q5">
+        <h2>Q5: Compression and Prediction</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Shannon proved that a perfect language model would also be a perfect compressor, and vice versa.</p>
+          <p class="text-2xl" style="margin-top: 20px;">Why are prediction and compression fundamentally the same problem?</p>
+          <div class="fragment highlight-box" style="margin-top: 25px;">
+            <p class="text-lg"><strong>Answer:</strong> If you can predict the next symbol with high confidence, you need fewer bits to encode it: a symbol with probability \(p\) requires \(-\log_2(p)\) bits. A model that predicts perfectly (\(p = 1\)) needs 0 bits. Conversely, any compression scheme implicitly defines a probability model over the next symbol. Shannon's source coding theorem formalizes this: the minimum average code length equals the entropy \(H(X)\).</p>
+          </div>
         </div>
       </section>
 
@@ -738,9 +1308,24 @@ ANSWER = ...</code></pre>
            END
            ============================================================ -->
 
+      <section id="resources">
+        <h2>References and Further Reading</h2>
+        <div class="content">
+          <ul class="text-lg">
+            <li>Shannon, C. E. (1948). <a href="https://people.math.harvard.edu/~ctm/home/text/others/shannon/entropy/entropy.pdf" style="color: var(--primary-color);">"A Mathematical Theory of Communication"</a></li>
+            <li>Shannon, C. E. (1951). "Prediction and Entropy of Printed English." <em>Bell System Technical Journal</em>, 30(1), 50&ndash;64.</li>
+            <li>Von Neumann, J. (1945). "First Draft of a Report on the EDVAC." Moore School of Electrical Engineering.</li>
+            <li>Jurafsky &amp; Martin, <a href="https://web.stanford.edu/~jurafsky/slp3/" style="color: var(--primary-color);"><em>Speech and Language Processing</em></a>, Ch. 3 (N-gram Language Models)</li>
+            <li>Gleick, J. (2011). <em>The Information: A History, a Theory, a Flood</em></li>
+            <li>Weizenbaum, J. (1966). "ELIZA." <em>Communications of the ACM</em>, 9(1), 36&ndash;45. <a href="https://www.masswerk.at/elizabot/" style="color: var(--primary-color);">Try it yourself</a></li>
+            <li>Haugeland, J. (1985). <em>Artificial Intelligence: The Very Idea</em>. MIT Press.</li>
+          </ul>
+        </div>
+      </section>
+
       <section id="end" class="section-divider" data-state="is-section-divider">
         <h1>Questions?</h1>
-        <p style="margin-top: 30px;">Next: Module 2 -- Perceptrons and Optimization</p>
+        <p style="margin-top: 30px;">Next: Module 2 &mdash; Perceptrons and Optimization</p>
       </section>
 
     </div>
@@ -750,27 +1335,23 @@ ANSWER = ...</code></pre>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
   <script>
     // ---- Manim section step-through player ----
-    // Each .manim-stepper video loads its sections from a JSON manifest.
-    // Clicking the slide (or pressing right arrow) plays the next section.
-    // Sections play sequentially; once all are done, the next click advances the slide.
+    // Section video lists are inline to avoid fetch() issues with file:// protocol.
+    var MANIM_SECTIONS = {
+    };
+
     var manimSteppers = {};
 
     function initManimStepper(video) {
       var scene = video.getAttribute('data-manim-scene');
-      var state = { sections: [], current: -1, playing: false, loaded: false, video: video, scene: scene };
+      var sections = MANIM_SECTIONS[scene] || [];
+      var state = { sections: sections, current: -1, playing: false, video: video, scene: scene };
       manimSteppers[scene] = state;
 
-      fetch('media/sections/' + scene + '.json')
-        .then(function(r) { return r.json(); })
-        .then(function(sections) {
-          state.sections = sections;
-          state.loaded = true;
-          // Preload first section
-          if (sections.length > 0) {
-            video.src = 'media/sections/' + sections[0].video;
-            video.load();
-          }
-        });
+      // Set poster frame from first section
+      if (sections.length > 0) {
+        video.src = 'media/sections/' + sections[0];
+        video.load();
+      }
 
       video.addEventListener('ended', function() {
         state.playing = false;
@@ -779,16 +1360,16 @@ ANSWER = ...</code></pre>
 
     function advanceManimStepper(scene) {
       var state = manimSteppers[scene];
-      if (!state || !state.loaded || state.playing) return false;
-      if (state.current >= state.sections.length - 1) return false; // all done
+      if (!state || state.playing) return false;
+      if (state.current >= state.sections.length - 1) return false;
 
       state.current++;
       state.playing = true;
-      var section = state.sections[state.current];
-      state.video.src = 'media/sections/' + section.video;
+      var file = state.sections[state.current];
+      state.video.src = 'media/sections/' + file;
       state.video.load();
-      state.video.play().catch(function() { state.playing = false; });
-      return true; // consumed the event
+      state.video.play().then(function() {}).catch(function() { state.playing = false; });
+      return true;
     }
 
     function resetManimStepper(scene) {
@@ -796,8 +1377,9 @@ ANSWER = ...</code></pre>
       if (!state) return;
       state.current = -1;
       state.playing = false;
+      state.video.pause();
       if (state.sections.length > 0) {
-        state.video.src = 'media/sections/' + state.sections[0].video;
+        state.video.src = 'media/sections/' + state.sections[0];
         state.video.load();
       }
     }
@@ -820,22 +1402,30 @@ ANSWER = ...</code></pre>
     // Initialize all manim steppers after reveal loads
     document.querySelectorAll('.manim-stepper').forEach(initManimStepper);
 
-    // Intercept keyboard/click navigation on manim slides
+    // Re-render KaTeX in case any math was missed on initial load
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ]
+      });
+    }
+
+    // Reset steppers when leaving a slide
     Reveal.on('slidechanged', function(event) {
-      // Reset steppers when leaving a slide
       Object.keys(manimSteppers).forEach(function(scene) {
-        var stepper = manimSteppers[scene];
         if (!event.currentSlide.querySelector('[data-manim-scene="' + scene + '"]')) {
           resetManimStepper(scene);
         }
       });
     });
 
-    // Override the default key handler to intercept right arrow / space on manim slides
+    // Intercept right arrow / space / enter on manim slides to step through sections
     document.addEventListener('keydown', function(e) {
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
         var currentSlide = Reveal.getCurrentSlide();
-        var stepper = currentSlide.querySelector('.manim-stepper');
+        var stepper = currentSlide ? currentSlide.querySelector('.manim-stepper') : null;
         if (stepper) {
           var scene = stepper.getAttribute('data-manim-scene');
           if (advanceManimStepper(scene)) {
@@ -844,14 +1434,16 @@ ANSWER = ...</code></pre>
           }
         }
       }
-    }, true); // capture phase to intercept before reveal.js
+    }, true);
 
-    // Also handle click on the video itself
+    // Click on the video itself also advances
     document.querySelectorAll('.manim-stepper').forEach(function(video) {
+      video.style.cursor = 'pointer';
       video.addEventListener('click', function(e) {
         var scene = video.getAttribute('data-manim-scene');
         advanceManimStepper(scene);
         e.stopPropagation();
+        e.preventDefault();
       });
     });
 
@@ -861,8 +1453,55 @@ ANSWER = ...</code></pre>
         var canvas = document.getElementById('hypeChart');
         if (canvas && !canvas._chartCreated) {
           canvas._chartCreated = true;
+          // Custom plugin to draw labeled vertical lines (more reliable than annotation plugin on category axes)
+          var eventLinesPlugin = {
+            id: 'eventLines',
+            afterDraw: function(chart) {
+              var ctx = chart.ctx;
+              var xScale = chart.scales.x;
+              var yScale = chart.scales.y;
+              var events = [
+                { label: 'Dartmouth\nWorkshop', year: '1956', color: '#f5a623' },
+                { label: 'Lighthill\nReport', year: '1974', color: '#6cb4ff' },
+                { label: 'Expert\nSystems', year: '1984', color: '#f5a623' },
+                { label: '2nd AI\nWinter', year: '1993', color: '#6cb4ff' },
+                { label: 'AlexNet', year: '2012', color: '#50c878' },
+                { label: 'Transformers', year: '2017', color: '#f5a623' },
+                { label: 'LLM Era', year: '2024', color: '#f5a623' }
+              ];
+              events.forEach(function(ev) {
+                var labelIdx = chart.data.labels.indexOf(ev.year);
+                if (labelIdx === -1) return;
+                var x = xScale.getPixelForValue(labelIdx);
+                var yTop = yScale.top;
+                var yBottom = yScale.bottom;
+                // Dashed vertical line
+                ctx.save();
+                ctx.setLineDash([4, 4]);
+                ctx.strokeStyle = ev.color;
+                ctx.globalAlpha = 0.5;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, yTop);
+                ctx.lineTo(x, yBottom);
+                ctx.stroke();
+                ctx.restore();
+                // Label at top
+                ctx.save();
+                ctx.font = '10px Inter, sans-serif';
+                ctx.fillStyle = ev.color;
+                ctx.textAlign = 'center';
+                var lines = ev.label.split('\n');
+                for (var i = 0; i < lines.length; i++) {
+                  ctx.fillText(lines[i], x, yTop - (lines.length - i) * 12 + 10);
+                }
+                ctx.restore();
+              });
+            }
+          };
           new Chart(canvas.getContext('2d'), {
             type: 'line',
+            plugins: [eventLinesPlugin],
             data: {
               labels: [
                 '1950', '1953', '1956', '1958', '1960', '1963', '1965', '1968',
@@ -892,6 +1531,7 @@ ANSWER = ...</code></pre>
               responsive: true,
               maintainAspectRatio: false,
               animation: { duration: 1200 },
+              layout: { padding: { top: 30 } },
               scales: {
                 x: {
                   title: { display: true, text: 'Year', color: '#8892a4', font: { size: 13 } },

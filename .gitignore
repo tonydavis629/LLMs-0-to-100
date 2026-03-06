@@ -4,3 +4,4 @@ media/
 screenshots/
 **.pyc
 .DS_Store
+.playwright**
