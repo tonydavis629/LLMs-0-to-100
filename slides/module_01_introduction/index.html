@@ -682,12 +682,12 @@
         <div class="content">
           <p class="text-lg fragment">How many bits do we need, on average, to encode a symbol?</p>
           <div class="fragment" style="margin: 20px 0; text-align: center;">
-            $$H(X) = -\sum_{i} \textcolor{#50c878}{p(x_i)} \log_2 p(x_i)$$
+            $$H(X) = -\sum_{i} p(x_i) \log_2 p(x_i)$$
           </div>
           <div class="fragment" style="margin-top: 10px;">
             <p class="text-lg">For a <strong>uniform</strong> distribution over 27 characters, every \(p(x_i) = \frac{1}{27}\):</p>
             <div style="text-align: center; margin: 10px 0;">
-              $$H = -\sum_{i=1}^{27} \textcolor{#50c878}{\tfrac{1}{27}} \log_2 \tfrac{1}{27} = -27 \cdot \tfrac{1}{27} \cdot \log_2 \tfrac{1}{27} = \log_2(27) = 4.75 \text{ bits/char}$$
+              $$H = -\sum_{i=1}^{27} \tfrac{1}{27} \log_2 \tfrac{1}{27} = -27 \cdot \tfrac{1}{27} \cdot \log_2 \tfrac{1}{27} = \log_2(27) = 4.75 \text{ bits/char}$$
             </div>
           </div>
           <ul class="text-lg">

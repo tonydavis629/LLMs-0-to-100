@@ -132,7 +132,7 @@ class LanguageAsCompressionScene(Scene):
         ).next_to(subtitle, DOWN, buff=0.5).align_to(subtitle, LEFT)
 
         header_data = ["char", "count", "code", "bits"]
-        col_xs = [-3.5, -1.8, 0.0, 2.5]
+        col_xs = [-2.5, -1.0, 0.5, 2.0]
         header_y = prompt.get_bottom()[1] - 0.6
 
         headers = VGroup()
@@ -142,8 +142,8 @@ class LanguageAsCompressionScene(Scene):
             headers.add(h)
 
         header_line = Line(
-            start=[-4.5, header_y - 0.2, 0],
-            end=[3.5, header_y - 0.2, 0],
+            start=[-3.5, header_y - 0.2, 0],
+            end=[3.0, header_y - 0.2, 0],
             color=self.MUTED_COLOR, stroke_width=0.8,
         )
 
