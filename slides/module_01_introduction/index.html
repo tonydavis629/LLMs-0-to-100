@@ -82,59 +82,80 @@
       <section id="course-structure-1">
         <h2>Course Structure</h2>
         <div class="content">
-          <p class="text-xl" style="margin-bottom: 15px;">12 modules from fundamentals to deployment. Each module includes a lecture, a coding exercise, and a quiz.</p>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
-            <div>
-              <h3>Foundations (Modules 1-4)</h3>
-              <ul class="text-lg">
-                <li><strong>1. Introduction</strong> &mdash; information theory, n-gram models</li>
-                <li><strong>2. Perceptrons</strong> &mdash; neural networks, backprop, optimization</li>
-                <li><strong>3. Attention</strong> &mdash; Q/K/V, multi-head self-attention</li>
-                <li><strong>4. Transformers</strong> &mdash; encoder-decoder, BERT, GPT</li>
+          <p class="text-xl course-summary">The course has four module groups: foundations, training, applications, and evaluation.</p>
+          <div class="course-track-grid">
+            <div class="module-track-card">
+              <div class="module-track-kicker">Modules 1-4</div>
+              <h3>Foundations</h3>
+              <p class="module-track-intro">Concepts and vocabulary.</p>
+              <ul class="text-lg compact-list">
+                <li><strong>1. Introduction</strong> &mdash; information theory and n-gram models</li>
+                <li><strong>2. Perceptrons</strong> &mdash; the simplest neural network</li>
+                <li><strong>3. Attention</strong> &mdash; deciding which earlier words matter</li>
+                <li><strong>4. Transformers</strong> &mdash; GPT-style architectures</li>
               </ul>
             </div>
-            <div>
-              <h3>Training (Modules 5-7)</h3>
-              <ul class="text-lg">
-                <li><strong>5. Pretraining</strong> &mdash; masked LM, autoregressive training</li>
-                <li><strong>6. Finetuning</strong> &mdash; InstructGPT, LoRA</li>
-                <li><strong>7. RL Post-Training</strong> &mdash; RLHF, GRPO, DPO</li>
+            <div class="module-track-card">
+              <div class="module-track-kicker">Modules 5-7</div>
+              <h3>Training</h3>
+              <p class="module-track-intro">How models learn and improve.</p>
+              <ul class="text-lg compact-list">
+                <li><strong>5. Pretraining</strong> &mdash; learning broad patterns from large text corpora</li>
+                <li><strong>6. Fine-tuning</strong> &mdash; adapting a model to a task</li>
+                <li><strong>7. Feedback Training</strong> &mdash; improving responses with preference data</li>
               </ul>
             </div>
           </div>
+          <p class="text-lg course-note">No prior jargon assumed. New terms are introduced as they appear.</p>
         </div>
       </section>
 
       <section id="course-structure-2">
-        <h2>Course Structure (continued)</h2>
+        <h2>Course Structure</h2>
         <div class="content">
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px;">
-            <div>
-              <h3>Advanced (Modules 8-10)</h3>
-              <ul class="text-lg">
-                <li><strong>8. Multimodal</strong> &mdash; vision, audio, CLIP</li>
-                <li><strong>9. Deployment</strong> &mdash; HBM bottleneck, MoE, vLLM</li>
-                <li><strong>10. Applications</strong> &mdash; RAG, agents, tool use</li>
+          <p class="text-xl course-summary">The second half covers real-world use, evaluation, and newer research directions.</p>
+          <div class="course-track-grid">
+            <div class="module-track-card">
+              <div class="module-track-kicker">Modules 8-10</div>
+              <h3>Advanced Topics</h3>
+              <p class="module-track-intro">Systems and applications.</p>
+              <ul class="text-lg compact-list">
+                <li><strong>8. Multimodal</strong> &mdash; models that handle text plus images or audio</li>
+                <li><strong>9. Deployment</strong> &mdash; making models fast and reliable in production</li>
+                <li><strong>10. Applications</strong> &mdash; retrieval-augmented generation (RAG), agents, and tools</li>
               </ul>
             </div>
-            <div>
-              <h3>Evaluation &amp; Future (Modules 11-12)</h3>
-              <ul class="text-lg">
-                <li><strong>11. Evaluation</strong> &mdash; benchmarks, red teaming</li>
-                <li><strong>12. The Future</strong> &mdash; scaling laws, SSM/Mamba, diffusion</li>
+            <div class="module-track-card">
+              <div class="module-track-kicker">Modules 11-12</div>
+              <h3>Evaluation &amp; Future Directions</h3>
+              <p class="module-track-intro">Measurement and research frontiers.</p>
+              <ul class="text-lg compact-list">
+                <li><strong>11. Evaluation</strong> &mdash; measuring quality, safety, and failure modes</li>
+                <li><strong>12. Future Directions</strong> &mdash; scaling laws, state space models (SSMs), and diffusion</li>
               </ul>
             </div>
           </div>
-          <p class="text-lg" style="margin-top: 20px;">Expect: <strong>programming</strong>, <strong>history</strong>, <strong>math</strong>, and challenging learning tasks. Each module builds on the previous ones.</p>
+          <div class="course-glossary">
+            <div class="glossary-item">
+              <strong>RAG</strong>
+              <p>Retrieval-augmented generation: the model looks up outside information before answering.</p>
+            </div>
+            <div class="glossary-item">
+              <strong>SSM</strong>
+              <p>State space model: an alternative architecture for processing long sequences.</p>
+            </div>
+          </div>
         </div>
       </section>
 
       <section id="course-structure-3">
         <h2>How Each Module Works</h2>
         <div class="content">
+          <p class="text-xl course-summary">Each module follows the same pattern: lecture, exercise, quiz.</p>
           <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px;">
             <div class="highlight-box">
               <h3>Lecture</h3>
+              <p class="module-track-intro">Concepts, history, and intuition.</p>
               <ul>
                 <li>Slides with animated diagrams</li>
                 <li>History and key figures</li>
@@ -144,6 +165,7 @@
             </div>
             <div class="highlight-box">
               <h3>Exercise</h3>
+              <p class="module-track-intro">Code practice with small TODOs.</p>
               <ul>
                 <li>Real Python project</li>
                 <li>Skeleton with one-line TODOs</li>
@@ -153,6 +175,7 @@
             </div>
             <div class="highlight-box">
               <h3>Quiz</h3>
+              <p class="module-track-intro">Concept checks with click-to-reveal answers.</p>
               <ul>
                 <li>Questions embedded in the lecture</li>
                 <li>Think first, then click for the answer</li>
@@ -782,14 +805,13 @@ uv run python -c "print('Ready.')"</code></pre>
       <section id="exercise-run">
         <h2>Running the Exercise</h2>
         <div class="content" style="justify-content: center;">
-          <p class="text-lg">Open <code>exercises/module_01_introduction/src/ngrams.py</code> and fill in the <code>NotImplementedError</code> lines. Run after each step &mdash; unfinished functions are skipped automatically.</p>
+          <p class="text-lg">Open <code>module_01_introduction/src/ngrams.py</code> and fill in the <code>NotImplementedError</code> lines. Run after each step &mdash; unfinished functions are skipped automatically.</p>
           <pre style="margin: 15px 0;"><code class="language-bash"># Run all models (skips any not yet implemented)
-uv run python -m exercises.module_01_introduction.src.main \
-    exercises/module_01_introduction/data/alice.txt
+cd exercises
+uv run python module_01_introduction/src/main.py
 
 # Run a single model
-uv run python -m exercises.module_01_introduction.src.main \
-    exercises/module_01_introduction/data/alice.txt --model char3</code></pre>
+uv run python module_01_introduction/src/main.py --model char3</code></pre>
         </div>
       </section>
 
@@ -851,10 +873,10 @@ CHAPTER I. Down the Rabbit-Hole ...</code></pre>
               <span class="terminal-dot red"></span>
               <span class="terminal-dot yellow"></span>
               <span class="terminal-dot green"></span>
-              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
             </div>
             <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="skipped">=== 0th Order: Uniform Random Characters ===
   [skipped: TODO: return a random string of the given length]
@@ -911,10 +933,10 @@ rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</code></pre>
               <span class="terminal-dot red"></span>
               <span class="terminal-dot yellow"></span>
               <span class="terminal-dot green"></span>
-              <span class="terminal-title">python -m exercises...src.main data/alice.txt --model uniform</span>
+              <span class="terminal-title">uv run python module_01_introduction/src/main.py --model uniform</span>
             </div>
             <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
 rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg
@@ -966,10 +988,10 @@ b as,allh b e"oeh h  itrltlr</code></pre>
               <span class="terminal-dot red"></span>
               <span class="terminal-dot yellow"></span>
               <span class="terminal-dot green"></span>
-              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
             </div>
             <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
 <span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
@@ -1034,10 +1056,10 @@ be falice moce lied alls</code></pre>
               <span class="terminal-dot red"></span>
               <span class="terminal-dot yellow"></span>
               <span class="terminal-dot green"></span>
-              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
             </div>
             <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
 <span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
@@ -1094,10 +1116,10 @@ be falice moce lied alls</code></pre>
               <span class="terminal-dot red"></span>
               <span class="terminal-dot yellow"></span>
               <span class="terminal-dot green"></span>
-              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
             </div>
             <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
 <span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
@@ -1172,10 +1194,10 @@ context = tuple(result[-(n - 1):])</code></pre>
               <span class="terminal-dot red"></span>
               <span class="terminal-dot yellow"></span>
               <span class="terminal-dot green"></span>
-              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
             </div>
             <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
 <span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
@@ -1206,10 +1228,10 @@ edwin and morcar, the earls of mercia and</pre>
               <span class="terminal-dot red"></span>
               <span class="terminal-dot yellow"></span>
               <span class="terminal-dot green"></span>
-              <span class="terminal-title">python -m exercises...src.main data/alice.txt</span>
+              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
             </div>
             <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144,603 characters from data/alice.txt</span>
+              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="fragment header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===
 <span style="color: #e8eaf0;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span></span>

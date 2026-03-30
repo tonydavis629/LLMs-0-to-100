@@ -2,25 +2,41 @@
 Module 1 Exercise: N-gram Text Generator
 
 Run with:
-    uv run python -m exercises.module_01_introduction.src.main \
-        exercises/module_01_introduction/data/alice.txt
+    uv run python module_01_introduction/src/main.py
 """
 
 from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 
-from .ngrams import (
-    build_char_ngram_model,
-    build_word_ngram_model,
-    char_uniform,
-    char_unigram,
-    generate_from_char_model,
-    generate_from_word_model,
-    load_text,
-    word_unigram,
-)
+if __package__ in (None, ""):
+    from ngrams import (
+        build_char_ngram_model,
+        build_word_ngram_model,
+        char_uniform,
+        char_unigram,
+        generate_from_char_model,
+        generate_from_word_model,
+        load_text,
+        word_unigram,
+    )
+else:
+    from .ngrams import (
+        build_char_ngram_model,
+        build_word_ngram_model,
+        char_uniform,
+        char_unigram,
+        generate_from_char_model,
+        generate_from_word_model,
+        load_text,
+        word_unigram,
+    )
+
+
+DEFAULT_CORPUS = Path(__file__).resolve().parents[1] / "data" / "alice.txt"
+DEFAULT_CORPUS_LABEL = Path("module_01_introduction/data/alice.txt")
 
 
 def _try_run(label: str, fn, *args) -> None:
@@ -36,7 +52,6 @@ def _try_run(label: str, fn, *args) -> None:
 
 def main():
     parser = argparse.ArgumentParser(description="N-gram text generator")
-    parser.add_argument("corpus", help="Path to text file (e.g., data/alice.txt)")
     parser.add_argument(
         "--model",
         choices=["uniform", "char1", "char2", "char3", "word1", "word2", "word3", "all"],
@@ -48,8 +63,8 @@ def main():
 
     # Step 1: Load the corpus
     try:
-        text = load_text(args.corpus)
-        print(f"Loaded {len(text)} characters from {args.corpus}\n")
+        text = load_text(str(DEFAULT_CORPUS))
+        print(f"Loaded {len(text)} characters from {DEFAULT_CORPUS_LABEL}\n")
     except NotImplementedError as e:
         print(f"Cannot load text: {e}")
         print("Implement load_text() first, then re-run.")

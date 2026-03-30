@@ -1,7 +1,10 @@
 .claude/
+.agents/
 reveal.js/
 media/
 screenshots/
+.venv/
+exercises/.venv/
 **.pyc
 .DS_Store
 .playwright**

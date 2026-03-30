@@ -39,7 +39,18 @@ cd LLMs-0-to-100
 uv sync
 ```
 
-This creates a single virtual environment used throughout the entire course. You only need to do this once.
+This creates the course virtual environment at the repository root.
+
+### Set Up the Exercise Environment
+
+The `exercises/` folder has its own separate `uv` environment:
+
+```bash
+cd exercises
+uv sync
+```
+
+This creates `exercises/.venv`. Use it for exercise code only.
 
 ### Verify Your Setup
 
@@ -62,14 +73,12 @@ exercises/       -- coding exercises with TODOs for you to complete
 
 ### Working on an Exercise
 
-Each module's exercise is in `exercises/module_XX_name/`. The source code is in `src/` and quiz questions are in `quiz/`.
+Each module's exercise is in `exercises/module_XX_name/`. The source code is in `src/`.
 
 ```bash
-# Run exercise code (from the repo root)
-uv run python -m exercises.module_01_introduction.src.generate exercises/module_01_introduction/data/alice.txt
-
-# Run a quiz question
-uv run python -m exercises.module_01_introduction.quiz.q1_most_common_character
+# Shortest way to run Exercise 1
+cd exercises
+uv run python module_01_introduction/src/main.py
 ```
 
 Fill in the TODOs in the exercise files. Check the solution in `exercises/module_XX/solution/` if you get stuck.

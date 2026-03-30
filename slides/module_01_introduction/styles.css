@@ -286,6 +286,95 @@
 }
 
 /* ===========================================
+   COURSE STRUCTURE
+   =========================================== */
+
+.course-summary {
+  max-width: 1120px;
+  margin: 0 0 16px 0;
+  color: #f0f4fb;
+  font-size: 18pt !important;
+  line-height: 1.4 !important;
+}
+
+.course-track-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.module-track-card {
+  background: rgba(74, 158, 255, 0.07);
+  border: 1px solid rgba(74, 158, 255, 0.22);
+  border-radius: var(--box-radius);
+  padding: 20px 22px;
+}
+
+.module-track-kicker {
+  font-size: 12pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  margin-bottom: 8px;
+}
+
+.module-track-card h3 {
+  margin: 0 0 8px 0;
+}
+
+.module-track-intro {
+  font-size: 14pt !important;
+  color: #d7ddea !important;
+  margin: 0 0 10px 0;
+  line-height: 1.4 !important;
+}
+
+.compact-list {
+  margin: 0;
+}
+
+.reveal ul.compact-list li {
+  font-size: 16pt;
+  line-height: 1.35;
+  margin-bottom: 7px;
+  padding-left: 20px;
+}
+
+.course-note {
+  margin-top: 14px;
+  color: #d7ddea;
+  font-size: 15pt !important;
+  line-height: 1.35 !important;
+}
+
+.course-glossary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+  margin-top: 14px;
+}
+
+.glossary-item {
+  background: rgba(245, 166, 35, 0.08);
+  border: 1px solid rgba(245, 166, 35, 0.18);
+  border-radius: var(--box-radius);
+  padding: 12px 14px;
+}
+
+.glossary-item strong {
+  color: var(--secondary-color);
+}
+
+.glossary-item p {
+  font-size: 13pt !important;
+  color: #d7ddea !important;
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+}
+
+/* ===========================================
    TERMINAL OUTPUT
    =========================================== */
 
