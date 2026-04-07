@@ -1,0 +1,1295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLMs 0 to 100 - Module 2</title>
+
+  <!-- Reveal.js core -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+
+  <!-- Syntax highlighting -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+
+  <!-- KaTeX math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '\\(', right: '\\)', display: false}]});"></script>
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- ============================================================
+           TITLE
+           ============================================================ -->
+
+      <section id="title" class="section-divider" data-state="is-section-divider">
+        <h1>LLMs 0 to 100</h1>
+        <p>Module 2: Perceptrons and Optimization</p>
+        <p class="text-muted" style="font-size: 14pt; margin-top: 20px;">From Neurons to Networks</p>
+      </section>
+
+      <!-- ============================================================
+           REVIEW: Module 1 Concepts
+           ============================================================ -->
+
+      <section id="review-1">
+        <h2>Review: Module 1</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Shannon Entropy</p>
+              <p class="text-lg">Information is measurable. The entropy of a source measures the average surprise per symbol:</p>
+              <div style="margin: 15px 0; text-align: center;">
+                $$H(X) = -\sum_{i} p(x_i) \log_2 p(x_i)$$
+              </div>
+              <p class="text-lg">A good model assigns high probability to likely events &mdash; low surprise, few bits.</p>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">N-gram Models</p>
+              <p class="text-lg">Predict the next symbol from the previous \(n - 1\) symbols:</p>
+              <div style="margin: 15px 0; text-align: center;">
+                $$P(w_k \mid w_{k-n+1} \ldots w_{k-1})$$
+              </div>
+              <p class="text-lg">Higher order = more context = better predictions, but the number of possible contexts explodes exponentially.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="review-2">
+        <h2>Review: Cross-Entropy as a Loss</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">In Module 1, we used <strong>cross-entropy</strong> to evaluate how well an n-gram model predicts text:</p>
+          <div style="margin: 20px 0; text-align: center;">
+            $$H(p, q) = -\sum_{x} p(x) \log q(x)$$
+          </div>
+          <p class="text-lg">Today, the same formula becomes our <strong>training objective</strong>. Instead of just measuring model quality, we will minimize cross-entropy to make the model learn.</p>
+          <div class="highlight-box" style="margin-top: 25px;">
+            <p class="text-lg" style="margin: 0;"><strong>Key connection:</strong> The evaluation metric from Module 1 is the loss function for Module 2. Lower cross-entropy = better predictions = a model that has learned more structure.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           NOTABLE FIGURE: Frank Rosenblatt (before neuron model)
+           ============================================================ -->
+
+      <section id="figure-rosenblatt-1" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="rosenblatt-img" src="images/rosenblatt.jpg" alt="Frank Rosenblatt" style="border-radius: 8px; height: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+        </div>
+      </section>
+
+      <section id="figure-rosenblatt-2" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="rosenblatt-img" src="images/rosenblatt.jpg" alt="Frank Rosenblatt" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          <h2 data-id="rosenblatt-name" style="margin-top: 20px; border: none;">Frank Rosenblatt</h2>
+        </div>
+      </section>
+
+      <section id="figure-rosenblatt-3" data-auto-animate>
+        <h2 data-id="rosenblatt-name" style="border-bottom: 2px solid var(--line-color);">Frank Rosenblatt</h2>
+        <div class="content">
+          <div class="figure-card">
+            <img data-id="rosenblatt-img" src="images/rosenblatt.jpg" alt="Frank Rosenblatt">
+            <div class="figure-info">
+              <h3>Built the First Learning Machine</h3>
+              <ul class="text-lg">
+                <li>Psychologist at Cornell, not a mathematician</li>
+                <li>Built the Mark I Perceptron (1958) &mdash; a physical machine with photocells and motor-driven weight updates</li>
+                <li>The first machine that could learn to classify patterns from data</li>
+                <li>Proved the perceptron convergence theorem: if data is linearly separable, training converges in finite steps</li>
+                <li><strong>His equation is our starting point today</strong></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION A: The Neuron Model
+           ============================================================ -->
+
+      <section id="divider-neuron" class="section-divider" data-state="is-section-divider">
+        <h1>The Neuron Model</h1>
+        <p>Weighted sums, activations, and the simplest learning machine</p>
+      </section>
+
+      <section id="biological-analogy">
+        <h2>A Loose Biological Analogy</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start;">
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Biological Neuron</p>
+              <ul class="text-lg">
+                <li><strong>Dendrites</strong> receive signals from other neurons</li>
+                <li><strong>Cell body</strong> integrates incoming signals</li>
+                <li><strong>Axon</strong> fires an output if the signal is strong enough</li>
+              </ul>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Artificial Neuron</p>
+              <ul class="text-lg">
+                <li><strong>Inputs \(\mathbf{x}\)</strong> are multiplied by <strong>weights \(\mathbf{w}\)</strong></li>
+                <li><strong>Weighted sum</strong> plus a <strong>bias \(b\)</strong></li>
+                <li><strong>Activation function \(\sigma\)</strong> produces the output</li>
+              </ul>
+            </div>
+          </div>
+          <div class="highlight-box" style="margin-top: 30px;">
+            <p class="text-lg" style="margin: 0;">The analogy is useful for intuition but breaks down fast. Biological neurons use spike timing, complex dendritic computation, and diverse neurotransmitter systems &mdash; none of which are captured here.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="perceptron-equation">
+        <h2>The Perceptron</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">A single neuron computes:</p>
+          <div style="margin: 25px 0; text-align: center;">
+            $$y = \sigma(\mathbf{w} \cdot \mathbf{x} + b)$$
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 10px;">
+            <div>
+              <p class="text-lg" style="text-align: center;"><strong style="color: var(--primary-color);">\(\mathbf{w} \cdot \mathbf{x}\)</strong></p>
+              <p style="text-align: center; color: var(--muted-color);">Dot product of inputs and weights &mdash; how much each input matters</p>
+            </div>
+            <div>
+              <p class="text-lg" style="text-align: center;"><strong style="color: var(--primary-color);">\(+ \; b\)</strong></p>
+              <p style="text-align: center; color: var(--muted-color);">Bias term &mdash; shifts the decision boundary</p>
+            </div>
+            <div>
+              <p class="text-lg" style="text-align: center;"><strong style="color: var(--primary-color);">\(\sigma(\cdot)\)</strong></p>
+              <p style="text-align: center; color: var(--muted-color);">Activation function &mdash; introduces nonlinearity</p>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 30px;">This is a <strong>linear function</strong> followed by a <strong>nonlinearity</strong>. That pattern is the fundamental building block of every neural network.</p>
+        </div>
+      </section>
+
+      <section id="activation-functions">
+        <h2>Activation Functions</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+              <p class="text-lg"><strong style="color: var(--secondary-color);">Step</strong> (original perceptron)</p>
+              <p>$$\sigma(z) = \begin{cases} 1 & z \geq 0 \\ 0 & z < 0 \end{cases}$$</p>
+              <p style="color: var(--muted-color);">Binary output. Not differentiable at \(z = 0\).</p>
+            </div>
+            <div>
+              <p class="text-lg"><strong style="color: var(--secondary-color);">Sigmoid</strong></p>
+              <p>$$\sigma(z) = \frac{1}{1 + e^{-z}}$$</p>
+              <p style="color: var(--muted-color);">Smooth, output in \((0, 1)\). Interpretable as probability. Vanishing gradients when \(|z|\) is large.</p>
+            </div>
+            <div>
+              <p class="text-lg"><strong style="color: var(--secondary-color);">Tanh</strong></p>
+              <p>$$\sigma(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}$$</p>
+              <p style="color: var(--muted-color);">Zero-centered, output in \((-1, 1)\). Same vanishing gradient issue.</p>
+            </div>
+            <div>
+              <p class="text-lg"><strong style="color: var(--secondary-color);">ReLU</strong></p>
+              <p>$$\sigma(z) = \max(0, z)$$</p>
+              <p style="color: var(--muted-color);">Cheap to compute. Avoids vanishing gradients. Dominates modern networks.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="why-nonlinearity">
+        <h2>Why Nonlinearity Matters</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Without an activation function, stacking layers collapses to a single linear transformation:</p>
+          <div style="margin: 25px 0; text-align: center;">
+            $$W_2(W_1 \mathbf{x} + b_1) + b_2 = \underbrace{W_2 W_1}_{W'} \mathbf{x} + \underbrace{W_2 b_1 + b_2}_{b'}$$
+          </div>
+          <p class="text-lg">No matter how many linear layers you stack, the result is always a single linear function. Adding layers without nonlinearity gains <strong>nothing</strong>.</p>
+          <p class="text-lg" style="margin-top: 20px;">The activation function between layers is what gives neural networks their power. Each nonlinear transformation lets the network represent increasingly complex relationships.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           NOTABLE FIGURE: George Cybenko (universal approximation)
+           ============================================================ -->
+
+      <section id="figure-cybenko-1" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="cybenko-img" src="images/cybenko.jpg" alt="George Cybenko" style="border-radius: 8px; height: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+        </div>
+      </section>
+
+      <section id="figure-cybenko-2" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="cybenko-img" src="images/cybenko.jpg" alt="George Cybenko" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          <h2 data-id="cybenko-name" style="margin-top: 20px; border: none;">George Cybenko</h2>
+        </div>
+      </section>
+
+      <section id="figure-cybenko-3" data-auto-animate>
+        <h2 data-id="cybenko-name" style="border-bottom: 2px solid var(--line-color);">George Cybenko</h2>
+        <div class="content">
+          <div class="figure-card">
+            <img data-id="cybenko-img" src="images/cybenko.jpg" alt="George Cybenko">
+            <div class="figure-info">
+              <h3>Proved the Universal Approximation Theorem</h3>
+              <ul class="text-lg">
+                <li>Professor at Dartmouth College</li>
+                <li>Proved (1989) that a feedforward network with one hidden layer and sufficient neurons can approximate any continuous function on a compact set</li>
+                <li>The theorem says such a network <strong>exists</strong> &mdash; not that gradient descent will find it</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="universal-approximation">
+        <h2>Universal Approximation Theorem</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="highlight-box">
+            <p class="text-lg" style="margin: 0;">A feedforward network with a single hidden layer containing a finite number of neurons can approximate any continuous function on a compact subset of \(\mathbb{R}^n\), given sufficient neurons.</p>
+          </div>
+          <p class="text-lg" style="margin-top: 25px;"><strong>The caveat:</strong> The theorem is existential. It does not guarantee that gradient descent will find the right weights, that the required number of neurons is tractable, or that the network will generalize to new data.</p>
+          <p class="text-lg" style="margin-top: 15px;"><strong>Analogy:</strong> A Fourier series can approximate any periodic function, but computing the right coefficients for an arbitrary function is nontrivial. The universal approximation theorem plays the same role for neural networks.</p>
+          <p class="text-lg" style="margin-top: 15px;"><strong>Module 1 connection:</strong> N-gram models are also universal approximators of language given enough order. But they don't scale &mdash; the number of parameters grows exponentially with context length.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION B: The Matrix-Graph Equivalence
+           ============================================================ -->
+
+      <section id="divider-matrix-graph" class="section-divider" data-state="is-section-divider">
+        <h1>Networks as Matrices</h1>
+        <p>Why GPUs matter</p>
+      </section>
+
+      <section id="matrix-graph">
+        <h2>Matrix-Graph Equivalence</h2>
+        <div class="content">
+          <p class="text-lg">A neural network is a directed graph. Each layer's connections can be represented as a <strong>weight matrix</strong>.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 20px;">
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Forward Pass</p>
+              <div style="text-align: center; margin: 15px 0;">
+                $$\mathbf{h} = \sigma(W\mathbf{x} + \mathbf{b})$$
+              </div>
+              <ul>
+                <li>\(W\) &mdash; weight matrix</li>
+                <li>\(\mathbf{x}\) &mdash; input vector</li>
+                <li>\(\mathbf{b}\) &mdash; bias vector</li>
+                <li>\(\sigma\) &mdash; elementwise nonlinearity</li>
+              </ul>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Why GPUs?</p>
+              <p class="text-lg">Matrix multiplication is embarrassingly parallel: each output element is an independent dot product.</p>
+              <p class="text-lg" style="margin-top: 10px;">A GPU has thousands of cores optimized for exactly this operation. Neural network training is dominated by matrix multiplications.</p>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 20px;"><strong>Module 1 connection:</strong> Jensen Huang and NVIDIA bet that GPU computing would become essential. This is why that bet paid off.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           NOTABLE FIGURE: Minsky & Papert (before XOR)
+           ============================================================ -->
+
+      <section id="figure-minsky-1" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <div style="display: flex; gap: 30px;">
+            <img data-id="minsky-img" src="images/minsky.jpg" alt="Marvin Minsky" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+            <img data-id="papert-img" src="images/papert.jpg" alt="Seymour Papert" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          </div>
+        </div>
+      </section>
+
+      <section id="figure-minsky-2" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <div style="display: flex; gap: 30px;">
+            <img data-id="minsky-img" src="images/minsky.jpg" alt="Marvin Minsky" style="border-radius: 8px; height: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+            <img data-id="papert-img" src="images/papert.jpg" alt="Seymour Papert" style="border-radius: 8px; height: 300px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          </div>
+          <h2 data-id="minsky-name" style="margin-top: 20px; border: none;">Marvin Minsky &amp; Seymour Papert</h2>
+        </div>
+      </section>
+
+      <section id="figure-minsky-3" data-auto-animate>
+        <h2 data-id="minsky-name" style="border-bottom: 2px solid var(--line-color);">Minsky &amp; Papert</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 200px 1fr; gap: 30px; align-items: start;">
+            <div>
+              <img data-id="minsky-img" src="images/minsky.jpg" alt="Marvin Minsky" style="border-radius: 8px; width: 100%; box-shadow: 0 4px 20px rgba(74, 158, 255, 0.15);">
+              <img data-id="papert-img" src="images/papert.jpg" alt="Seymour Papert" style="border-radius: 8px; width: 100%; margin-top: 10px; box-shadow: 0 4px 20px rgba(74, 158, 255, 0.15);">
+            </div>
+            <div>
+              <h3 style="margin: 0 0 5px 0; color: var(--secondary-color); font-size: 14pt; text-transform: uppercase; letter-spacing: 0.1em;">Killed Neural Networks for a Decade</h3>
+              <ul class="text-lg">
+                <li>Published <em>Perceptrons</em> (1969) &mdash; proved single-layer nets cannot compute XOR, parity, or connectedness</li>
+                <li>The result was widely interpreted as showing neural networks were fundamentally limited</li>
+                <li>Funding dried up for over a decade &mdash; the first AI winter for connectionism</li>
+                <li>Minsky was co-founder of MIT's AI Lab and a leading proponent of symbolic AI</li>
+                <li><strong>They knew multi-layer nets could solve these problems.</strong> The critique was that no one knew how to <em>train</em> them.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION C: XOR Problem
+           ============================================================ -->
+
+      <section id="divider-xor" class="section-divider" data-state="is-section-divider">
+        <h1>The XOR Problem</h1>
+        <p>The limitation that froze a field</p>
+      </section>
+
+      <section id="linear-separability">
+        <h2>Linear Separability</h2>
+        <div class="content">
+          <p class="text-lg">A single perceptron defines a <strong>hyperplane</strong> in the input space &mdash; a line in 2D, a plane in 3D.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-top: 20px;">
+            <div style="text-align: center;">
+              <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">AND</p>
+              <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
+                <tr><td style="padding: 4px 12px;">0, 0</td><td style="padding: 4px 12px;">0</td></tr>
+                <tr><td style="padding: 4px 12px;">0, 1</td><td style="padding: 4px 12px;">0</td></tr>
+                <tr><td style="padding: 4px 12px;">1, 0</td><td style="padding: 4px 12px;">0</td></tr>
+                <tr><td style="padding: 4px 12px;">1, 1</td><td style="padding: 4px 12px;">1</td></tr>
+              </table>
+              <p style="color: #3fb950;">One line separates them.</p>
+            </div>
+            <div style="text-align: center;">
+              <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">OR</p>
+              <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
+                <tr><td style="padding: 4px 12px;">0, 0</td><td style="padding: 4px 12px;">0</td></tr>
+                <tr><td style="padding: 4px 12px;">0, 1</td><td style="padding: 4px 12px;">1</td></tr>
+                <tr><td style="padding: 4px 12px;">1, 0</td><td style="padding: 4px 12px;">1</td></tr>
+                <tr><td style="padding: 4px 12px;">1, 1</td><td style="padding: 4px 12px;">1</td></tr>
+              </table>
+              <p style="color: #3fb950;">One line separates them.</p>
+            </div>
+            <div style="text-align: center;">
+              <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">XOR</p>
+              <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
+                <tr><td style="padding: 4px 12px;">0, 0</td><td style="padding: 4px 12px;">0</td></tr>
+                <tr><td style="padding: 4px 12px;">0, 1</td><td style="padding: 4px 12px;">1</td></tr>
+                <tr><td style="padding: 4px 12px;">1, 0</td><td style="padding: 4px 12px;">1</td></tr>
+                <tr><td style="padding: 4px 12px;">1, 1</td><td style="padding: 4px 12px;">0</td></tr>
+              </table>
+              <p style="color: #e74c3c;">No single line works.</p>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 20px;">XOR is <strong>not linearly separable</strong> &mdash; you cannot draw one line to separate the classes. This is what Minsky and Papert proved formally in 1969.</p>
+        </div>
+      </section>
+
+      <section id="anim-xor">
+        <div class="video-container">
+          <video class="manim-stepper" data-manim-scene="xor-viz" preload="auto"></video>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION D: Solving XOR with a Hidden Layer
+           ============================================================ -->
+
+      <section id="xor-hidden-layer">
+        <h2>Solving XOR with a Hidden Layer</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Two neurons in a hidden layer can each learn a linear boundary. The output neuron combines them.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 25px;">
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">Hidden Neuron 1</p>
+              <p class="text-lg">Learns one boundary (e.g., \(x_1 + x_2 > 0.5\))</p>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">Hidden Neuron 2</p>
+              <p class="text-lg">Learns another boundary (e.g., \(x_1 + x_2 < 1.5\))</p>
+            </div>
+          </div>
+          <div style="margin-top: 25px;">
+            <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">Output Neuron</p>
+            <p class="text-lg">Combines them with AND-like logic: output is 1 only when both hidden neurons agree.</p>
+          </div>
+          <p class="text-lg" style="margin-top: 25px;">This is the simplest demonstration of why <strong>depth matters</strong>. One layer cannot do what two layers can.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION E: Folding in High-Dimensional Space
+           ============================================================ -->
+
+      <section id="folding">
+        <h2>Folding in High-Dimensional Space</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">A single perceptron splits the input space with a hyperplane. Each hidden layer applies a nonlinear transformation that <strong>folds</strong> the space.</p>
+          <div class="highlight-box" style="margin-top: 20px;">
+            <p class="text-lg" style="margin: 0;"><strong>Visual intuition:</strong> Imagine a sheet of paper with two colors of dots mixed together. A single fold (one hidden layer) can bring same-colored dots together. Multiple folds (a deep network) can handle arbitrarily complex arrangements.</p>
+          </div>
+          <ul class="text-lg" style="margin-top: 20px;">
+            <li>Points that were entangled can be <strong>separated</strong></li>
+            <li>Points that were distant can be <strong>brought together</strong></li>
+            <li>With enough folds (layers), you can separate arbitrarily complex class boundaries</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="anim-folding">
+        <div class="video-container">
+          <video class="manim-stepper" data-manim-scene="folding-viz" preload="auto"></video>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SIDE QUEST: Biological Analogy
+           ============================================================ -->
+
+      <section id="side-quest-bio">
+        <h2><span class="side-quest-badge">Side Quest</span> The Perceptron vs. the Cortex</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            <div>
+              <p class="text-lg" style="color: #3fb950; font-weight: 600; margin-bottom: 10px;">Where the analogy holds</p>
+              <ul class="text-lg">
+                <li>Both aggregate inputs</li>
+                <li>Both apply a threshold or nonlinearity</li>
+                <li>Both propagate signals forward</li>
+              </ul>
+            </div>
+            <div>
+              <p class="text-lg" style="color: #e74c3c; font-weight: 600; margin-bottom: 10px;">Where it breaks</p>
+              <ul class="text-lg">
+                <li>Biological neurons use <strong>spikes with precise timing</strong>, not continuous values</li>
+                <li>Dendrites perform complex computation on their own</li>
+                <li>Diverse neurotransmitter systems &mdash; not just one "weight"</li>
+                <li>Synaptic plasticity far more varied than gradient descent</li>
+                <li>The brain is recurrent, not feedforward</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           NOTABLE FIGURE: Rumelhart, Hinton, Williams (before backprop)
+           ============================================================ -->
+
+      <section id="figure-hinton-1" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="hinton-img" src="images/hinton.jpg" alt="Geoffrey Hinton" style="border-radius: 8px; height: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+        </div>
+      </section>
+
+      <section id="figure-hinton-2" data-auto-animate>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+          <img data-id="hinton-img" src="images/hinton.jpg" alt="Geoffrey Hinton" style="border-radius: 8px; height: 350px; box-shadow: 0 4px 20px rgba(0,0,0,0.4);">
+          <h2 data-id="hinton-name" style="margin-top: 20px; border: none;">Geoffrey Hinton</h2>
+        </div>
+      </section>
+
+      <section id="figure-hinton-3" data-auto-animate>
+        <h2 data-id="hinton-name" style="border-bottom: 2px solid var(--line-color);">Geoffrey Hinton</h2>
+        <div class="content">
+          <div class="figure-card">
+            <img data-id="hinton-img" src="images/hinton.jpg" alt="Geoffrey Hinton">
+            <div class="figure-info">
+              <h3>Revived Neural Networks with Backpropagation</h3>
+              <ul class="text-lg">
+                <li>With David Rumelhart and Ronald Williams, published "Learning Representations by Back-Propagating Errors" in <em>Nature</em> (1986)</li>
+                <li>Showed how to train multi-layer networks &mdash; the missing piece that Minsky and Papert identified</li>
+                <li>The chain rule was discovered independently multiple times (Werbos, 1974), but this paper popularized it</li>
+                <li>Received the 2024 Nobel Prize in Physics for foundational work enabling machine learning with artificial neural networks</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION F: Backpropagation
+           ============================================================ -->
+
+      <section id="divider-backprop" class="section-divider" data-state="is-section-divider">
+        <h1>Backpropagation</h1>
+        <p>The chain rule, applied systematically</p>
+      </section>
+
+      <section id="loss-functions">
+        <h2>Loss Functions</h2>
+        <div class="content">
+          <p class="text-lg">Before we can train, we need a way to measure how wrong our predictions are. The <strong>loss function</strong> quantifies the gap between prediction and truth.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 15px;">
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Mean Squared Error (Regression)</p>
+              <div style="text-align: center; margin: 15px 0;">
+                $$L = \frac{1}{N}\sum_{i=1}^{N}(y_i - \hat{y}_i)^2$$
+              </div>
+              <p>Penalizes large errors quadratically. Standard for predicting continuous values.</p>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Binary Cross-Entropy (Classification)</p>
+              <div style="text-align: center; margin: 15px 0;">
+                $$L = -\frac{1}{N}\sum_{i=1}^{N}\left[y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \hat{y}_i)\right]$$
+              </div>
+              <p>Measures surprise under the model's predictions. High loss when confident and wrong.</p>
+            </div>
+          </div>
+          <div class="highlight-box" style="margin-top: 25px;">
+            <p class="text-lg" style="margin: 0;"><strong>Module 1 connection:</strong> This is Shannon's entropy applied as a training objective. Cross-entropy appeared in Module 1 as an evaluation metric for n-gram models. Here, the same formula drives learning.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="backprop-overview">
+        <h2>The Backpropagation Algorithm</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Forward Pass</p>
+              <p class="text-lg">Compute the output of each layer sequentially. Store intermediate values.</p>
+              <p class="text-lg" style="margin-top: 10px; color: var(--muted-color);">Input \(\rightarrow\) Hidden \(\rightarrow\) Output \(\rightarrow\) Loss</p>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">Backward Pass</p>
+              <p class="text-lg">Starting from the loss, compute \(\frac{\partial L}{\partial w}\) for each weight by propagating gradients backward through the computation graph.</p>
+              <p class="text-lg" style="margin-top: 10px; color: var(--muted-color);">Loss \(\rightarrow\) Output \(\rightarrow\) Hidden \(\rightarrow\) Weights</p>
+            </div>
+          </div>
+          <div style="margin-top: 30px;">
+            <p class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;">For sigmoid + BCE, the gradients simplify elegantly:</p>
+            <div style="text-align: center; margin: 10px 0;">
+              $$\frac{\partial L}{\partial w_j} = (\hat{y} - y) \cdot x_j \qquad \frac{\partial L}{\partial b} = \hat{y} - y$$
+            </div>
+            <p style="color: var(--muted-color);">The gradient is just the prediction error times the input. This is why sigmoid + BCE is such a natural pairing.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="backprop-without">
+        <h2>Without Backprop</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">The naive alternative: perturb each weight by a small \(\epsilon\), recompute the loss, and estimate the gradient numerically:</p>
+          <div style="margin: 20px 0; text-align: center;">
+            $$\frac{\partial L}{\partial w} \approx \frac{L(w + \epsilon) - L(w)}{\epsilon}$$
+          </div>
+          <p class="text-lg">This requires one forward pass <strong>per weight</strong> &mdash; \(O(n)\) passes for \(n\) weights. You cannot perturb multiple weights simultaneously because you would have no way to attribute the loss change to individual parameters.</p>
+          <p class="text-lg" style="margin-top: 15px;">For modern networks with <strong>billions</strong> of parameters, this is completely infeasible. Backpropagation computes all gradients in <strong>one backward pass</strong> &mdash; roughly the same cost as one forward pass.</p>
+        </div>
+      </section>
+
+      <section id="computation-graphs">
+        <h2>Computation Graphs</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Frameworks like PyTorch build a <strong>dynamic computation graph</strong> during the forward pass.</p>
+          <ul class="text-lg" style="margin-top: 15px;">
+            <li>Each operation records its inputs and the function used</li>
+            <li>The backward pass walks this graph in reverse, applying the chain rule at each node</li>
+            <li>Users define only the forward pass &mdash; the framework derives the backward pass automatically</li>
+          </ul>
+          <div class="highlight-box" style="margin-top: 25px;">
+            <p class="text-lg" style="margin: 0;">This is called <strong>automatic differentiation</strong> (autograd). It is the reason you can prototype complex architectures in a few lines of code without manually deriving gradients.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION G: Gradient Descent
+           ============================================================ -->
+
+      <section id="divider-gradient-descent" class="section-divider" data-state="is-section-divider">
+        <h1>Gradient Descent</h1>
+        <p>Walking downhill on the loss surface</p>
+      </section>
+
+      <section id="gradient-descent-rule">
+        <h2>The Update Rule</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Compute the gradient of the loss with respect to all weights, then take a step in the negative gradient direction:</p>
+          <div style="margin: 30px 0; text-align: center;">
+            $$w \leftarrow w - \eta \frac{\partial L}{\partial w}$$
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px;">
+            <div style="text-align: center;">
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">\(\eta\) too large</p>
+              <p>Overshoots the minimum and may diverge entirely</p>
+            </div>
+            <div style="text-align: center;">
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">\(\eta\) too small</p>
+              <p>Converges very slowly, may get stuck in local minima</p>
+            </div>
+            <div style="text-align: center;">
+              <p class="text-lg" style="color: #3fb950; font-weight: 600;">\(\eta\) just right</p>
+              <p>Steady convergence toward a good minimum</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="anim-gradient-descent">
+        <div class="video-container">
+          <video class="manim-stepper" data-manim-scene="gd-viz" preload="auto"></video>
+        </div>
+      </section>
+
+      <section id="sgd">
+        <h2>Stochastic Gradient Descent</h2>
+        <div class="content">
+          <p class="text-lg">Instead of computing the gradient over the entire dataset (batch gradient descent), <strong>SGD</strong> computes it over a random subset (mini-batch).</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">Small batch (e.g., 32)</p>
+              <ul>
+                <li>Noisier gradient estimates</li>
+                <li>Faster per step</li>
+                <li>Noise helps escape local minima</li>
+              </ul>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">Large batch (e.g., 256)</p>
+              <ul>
+                <li>Smoother gradient estimates</li>
+                <li>More memory required</li>
+                <li>May converge to sharper minima</li>
+              </ul>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 20px;"><strong>Typical batch sizes:</strong> 32, 64, 128, 256. The trade-off between noise and stability is a practical tuning decision.</p>
+        </div>
+      </section>
+
+      <section id="adam">
+        <h2>Adam Optimizer</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg"><strong>Adam</strong> (Adaptive Moment Estimation) maintains per-parameter learning rates based on the history of gradients.</p>
+          <ul class="text-lg" style="margin-top: 15px;">
+            <li>Tracks the first moment (mean) and second moment (variance) of each parameter's gradient</li>
+            <li>Parameters with consistently large gradients get smaller learning rates</li>
+            <li>Parameters with small or noisy gradients get larger learning rates</li>
+          </ul>
+          <div class="highlight-box" style="margin-top: 25px;">
+            <p class="text-lg" style="margin: 0;">Adam is the <strong>default optimizer</strong> in practice for most deep learning tasks. When in doubt, start with Adam.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTIONS H-I: Loss Landscape, Overfitting, Embedding Side Quest
+           ============================================================ -->
+
+      <section id="loss-landscape">
+        <h2>Loss Landscape</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">The loss function defines a surface in weight space. For a network with \(n\) weights, this is a surface in \((n + 1)\)-dimensional space.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-top: 25px;">
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">Sharp Minima</p>
+              <p class="text-lg">Small weight perturbations cause large loss changes. Tend to <strong>generalize poorly</strong>.</p>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">Flat Minima</p>
+              <p class="text-lg">Robust to small perturbations. Tend to <strong>generalize better</strong> to new data.</p>
+            </div>
+            <div>
+              <p class="text-lg" style="color: var(--secondary-color); font-weight: 600;">Saddle Points</p>
+              <p class="text-lg">Gradient is zero but not a minimum. In high dimensions, <strong>far more common</strong> than local minima.</p>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 25px;">The learning rate affects which kind of minimum the optimizer finds. SGD noise helps escape sharp minima and saddle points.</p>
+          <p class="footnote">Li et al. 2018, "Visualizing the Loss Landscape of Neural Nets"</p>
+        </div>
+      </section>
+
+      <section id="anim-loss-landscape">
+        <div class="video-container">
+          <video class="manim-stepper" data-manim-scene="landscape-viz" preload="auto"></video>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION I: Overfitting and Generalization
+           ============================================================ -->
+
+      <section id="overfitting">
+        <h2>Overfitting and Generalization</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">A network with enough parameters can <strong>memorize</strong> any training set &mdash; achieving zero training loss but failing on new data.</p>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 25px;">
+            <div>
+              <p class="text-lg" style="color: #e74c3c; font-weight: 600;">Overfitting</p>
+              <ul class="text-lg">
+                <li>Training loss goes to zero</li>
+                <li>Test loss stays high or increases</li>
+                <li>The model has memorized the training data, not learned the pattern</li>
+              </ul>
+            </div>
+            <div>
+              <p class="text-lg" style="color: #3fb950; font-weight: 600;">Generalization</p>
+              <ul class="text-lg">
+                <li>Low loss on both training and test data</li>
+                <li>The model has learned the underlying structure</li>
+                <li>Performs well on data it has never seen</li>
+              </ul>
+            </div>
+          </div>
+          <div style="margin-top: 25px;">
+            <p class="text-lg"><strong>Regularization techniques</strong> (named here, covered in later modules): <strong>dropout</strong> (randomly zero out neurons during training) and <strong>weight decay</strong> (penalize large weights with \(\lambda \|\mathbf{w}\|^2\)).</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="anim-overfitting">
+        <div class="video-container">
+          <video class="manim-stepper" data-manim-scene="overfit-viz" preload="auto"></video>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SIDE QUEST: Embedding Arithmetic
+           ============================================================ -->
+
+      <section id="side-quest-embeddings">
+        <h2><span class="side-quest-badge">Side Quest</span> Embedding Arithmetic</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Word embeddings map words to dense vectors where geometric relationships encode semantic relationships.</p>
+          <div style="margin: 25px 0; text-align: center;">
+            $$\vec{\text{king}} - \vec{\text{man}} + \vec{\text{woman}} \approx \vec{\text{queen}}$$
+          </div>
+          <ul class="text-lg">
+            <li>Each word is a point in high-dimensional space</li>
+            <li>The vector from "man" to "king" captures the concept of royalty</li>
+            <li>Applying that same vector to "woman" lands near "queen"</li>
+            <li>This is a preview of concepts that become central in Module 3 (attention and embeddings)</li>
+          </ul>
+          <p class="footnote">Mikolov et al. 2013, "Efficient Estimation of Word Representations in Vector Space"</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           SECTION: Exercise walkthrough
+           ============================================================ -->
+
+      <section id="divider-exercise" class="section-divider" data-state="is-section-divider">
+        <h1>Exercise</h1>
+        <p>Text Classifier with Decision Boundary Visualization</p>
+      </section>
+
+      <!-- Running instructions FIRST -->
+      <section id="exercise-run">
+        <h2>Running the Exercise</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Open <code>module_02_perceptrons/src/neuron.py</code> and fill in the <code>NotImplementedError</code> lines. Run after each step &mdash; unfinished functions are skipped automatically.</p>
+          <pre style="margin: 15px 0;"><code class="language-bash"># Run the exercise (skips any not yet implemented)
+cd exercises
+uv run python module_02_perceptrons/src/main.py</code></pre>
+          <p class="text-lg" style="margin-top: 15px;">The exercise trains a single-neuron classifier and an MLP on 2D data, visualizing how they learn to separate classes. Check the <code>output/</code> directory for plots after each run.</p>
+        </div>
+      </section>
+
+      <section id="exercise-overview">
+        <h2>Exercise: Perceptrons and Neural Networks</h2>
+        <div class="content">
+          <p class="text-lg">We just learned how neurons compute, how to measure error, and how to update weights. Now you will build it from scratch using only numpy.</p>
+          <p class="text-lg" style="margin-top: 10px;">Your goal: train a single neuron on linearly separable data, observe it fail on XOR-like data, then build an MLP that succeeds.</p>
+          <p class="text-lg" style="margin-top: 10px;">Each function is mostly written for you. You fill in <strong>one key line</strong> per function.</p>
+        </div>
+      </section>
+
+      <section id="exercise-data-viz">
+        <h2>The Datasets</h2>
+        <div class="video-container">
+          <video class="manim-stepper" data-manim-scene="data-viz" preload="auto"></video>
+        </div>
+      </section>
+
+      <!-- Step 1: forward -->
+      <section id="exercise-step1-code">
+        <h2>Step 1: forward()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
+    """Compute the output of a single neuron.
+
+    A neuron computes: sigmoid(dot(x, weights) + bias)
+    """
+    # TODO: Compute the neuron's output in one line
+    raise NotImplementedError("TODO: implement the forward pass")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> Compute <code>z = np.dot(x, weights) + bias</code>, then return <code>sigmoid(z)</code>.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">return sigmoid(np.dot(x, weights) + bias)</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: binary_cross_entropy -->
+      <section id="exercise-step2-code">
+        <h2>Step 2: binary_cross_entropy()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">def binary_cross_entropy(y_true: float, y_pred: float) -> float:
+    """Compute binary cross-entropy loss for one sample.
+
+    BCE = -[y * log(p) + (1 - y) * log(1 - p)]
+    """
+    # Clip prediction to avoid log(0) which gives -infinity
+    eps = 1e-15
+    y_pred = np.clip(y_pred, eps, 1 - eps)
+
+    # TODO: Compute and return the BCE loss using the formula in the docstring
+    raise NotImplementedError("TODO: implement binary cross-entropy")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> This is the same cross-entropy formula from Module 1, applied to a single sample.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">return -(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: compute_gradients -->
+      <section id="exercise-step3-code">
+        <h2>Step 3: compute_gradients()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">def compute_gradients(
+    x: np.ndarray, y_true: float, y_pred: float
+) -> tuple[np.ndarray, float]:
+    """Compute gradients of BCE loss w.r.t. weights and bias.
+
+    For sigmoid + BCE, the math simplifies to:
+        dL/dw = (y_pred - y_true) * x
+        dL/db = (y_pred - y_true)
+    """
+    # TODO: Compute the gradients using the formulas in the docstring
+    raise NotImplementedError("TODO: implement gradient computation")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> The error is just <code>y_pred - y_true</code>. The weight gradient is <code>error * x</code>, the bias gradient is <code>error</code>.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">error = y_pred - y_true
+return (error * x, error)</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: update_parameters -->
+      <section id="exercise-step4-code">
+        <h2>Step 4: update_parameters()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">def update_parameters(
+    weights: np.ndarray, bias: float,
+    dw: np.ndarray, db: float, learning_rate: float,
+) -> tuple[np.ndarray, float]:
+    """Update weights and bias using gradient descent.
+
+    Gradient descent subtracts a fraction (learning_rate) of the gradient
+    from each parameter, moving downhill on the loss surface.
+    """
+    # TODO: Apply the gradient descent update rule
+    raise NotImplementedError("TODO: implement parameter update")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> Subtract <code>learning_rate * dw</code> from weights, <code>learning_rate * db</code> from bias.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">return (weights - learning_rate * dw, bias - learning_rate * db)</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 5: Training output (linear data) -->
+      <section id="exercise-step5-output">
+        <h2>Steps 1&ndash;5: Training Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="header">============================================================
+STEP 1-5: Single Neuron on Linearly Separable Data
+============================================================</span>
+<span class="success">Loaded 150 samples from linear_separable.csv</span>
+
+  Epoch  20/100  loss=0.0757
+  Epoch  40/100  loss=0.0537
+  Epoch  60/100  loss=0.0457
+  Epoch  80/100  loss=0.0416
+  Epoch 100/100  loss=0.0391
+
+Final weights: [2.4542, 1.7006], bias: 0.1064
+<span class="success">Accuracy: 149/150 (99.3%)</span>
+Saved plot to output/step5_linear_perceptron.png
+
+<span class="skipped">=== STEP 6-7 skipped: TODO ===</span></pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">99.3% accuracy &mdash; the single neuron draws a clean decision boundary through linearly separable data.</p>
+        </div>
+      </section>
+
+      <!-- Step 6: XOR failure -->
+      <section id="exercise-step6-context">
+        <h2>Step 6: Try Non-Linearly Separable Data</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">The same single neuron on XOR-like data. <strong>No code to write</strong> &mdash; the runner trains it automatically on the second dataset.</p>
+          <div class="terminal-output" style="margin-top: 20px;">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="header">============================================================
+STEP 1-5: Single Neuron on Linearly Separable Data
+============================================================</span>
+<span class="success">Loaded 150 samples from linear_separable.csv</span>
+  ...
+<span class="success">Accuracy: 149/150 (99.3%)</span>
+
+<span class="header">============================================================
+STEP 6: Single Neuron on Non-Linearly Separable Data (XOR)
+============================================================</span>
+Loaded 160 samples from non_linear_separable.csv
+
+  Epoch  20/100  loss=0.6926
+  Epoch  40/100  loss=0.6926
+  Epoch  60/100  loss=0.6926
+  Epoch  80/100  loss=0.6926
+  Epoch 100/100  loss=0.6926
+
+Final weights: [0.0070, -0.0399], bias: -0.0016
+<span style="color: #e74c3c;">Accuracy: 80/160 (50.0%)</span>
+(A single neuron cannot solve this non-linearly-separable problem.)
+
+<span class="skipped">=== STEP 7 skipped: TODO ===</span></pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">50% accuracy is random chance. The loss plateaus at 0.693 &mdash; exactly \(\ln(2)\), the entropy of a fair coin.</p>
+        </div>
+      </section>
+
+      <!-- Step 7: MLP -->
+      <section id="exercise-step7-code">
+        <h2>Step 7: mlp_forward()</h2>
+        <div class="content">
+          <pre style="font-size: 13pt;"><code class="language-python">def mlp_forward(x, W1, b1, W2, b2) -> float:
+    """Forward pass through a two-layer MLP.
+
+    Layer 1: hidden = sigmoid(W1 @ x + b1)
+    Layer 2: output = sigmoid(W2 @ hidden + b2)
+    """
+    # TODO: Compute the two-layer forward pass
+    raise NotImplementedError("TODO: implement MLP forward pass")</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> Two lines: <code>hidden = sigmoid(W1 @ x + b1)</code>, then <code>output = sigmoid(W2 @ hidden + b2)</code>.</p>
+          <div class="fragment highlight-box" style="margin-top: 10px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">hidden = sigmoid(W1 @ x + b1)
+output = sigmoid(W2 @ hidden + b2)
+return output[0]</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 7: MLP output -->
+      <section id="exercise-step7-output">
+        <h2>Step 7: MLP Output</h2>
+        <div class="content" style="justify-content: center;">
+          <div class="terminal-output">
+            <div class="terminal-bar">
+              <span class="terminal-dot red"></span>
+              <span class="terminal-dot yellow"></span>
+              <span class="terminal-dot green"></span>
+              <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
+            </div>
+            <div class="terminal-body">
+              <pre class="terminal-pre"><span class="header">============================================================
+STEP 1-5: Single Neuron on Linearly Separable Data
+============================================================</span>
+<span class="success">Accuracy: 149/150 (99.3%)</span>
+
+<span class="header">============================================================
+STEP 6: Single Neuron on Non-Linearly Separable Data (XOR)
+============================================================</span>
+<span style="color: #e74c3c;">Accuracy: 80/160 (50.0%)</span>
+
+<span class="header">============================================================
+STEP 7: MLP on Non-Linearly Separable Data
+============================================================</span>
+  Epoch 100/500  loss=0.4330
+  Epoch 200/500  loss=0.1602
+  Epoch 300/500  loss=0.1101
+  Epoch 400/500  loss=0.0873
+  Epoch 500/500  loss=0.0725
+
+<span class="success">Accuracy: 156/160 (97.5%)</span>
+Saved comparison plot to output/step7_comparison.png
+
+<span class="header">============================================================
+Done! Check the output/ directory for plots.
+============================================================</span></pre>
+            </div>
+          </div>
+          <p class="text-lg" style="margin-top: 15px; text-align: center;">97.5% &mdash; the hidden layer lets the MLP learn a non-linear decision boundary that the single neuron could not.</p>
+        </div>
+      </section>
+
+      <!-- Extra credit -->
+      <section id="exercise-extra-credit">
+        <h2>Extra Credit: MLP Backpropagation</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Implement <code>mlp_gradients()</code> &mdash; backpropagation through both layers of the MLP.</p>
+          <pre style="font-size: 12pt; margin-top: 15px;"><code class="language-python"># Forward pass (save intermediates)
+z1 = W1 @ x + b1
+hidden = sigmoid(z1)
+z2 = W2 @ hidden + b2
+output = sigmoid(z2)
+
+# Output layer gradients
+error_out = output - y_true
+dW2 = error_out[:, None] * hidden[None, :]
+db2 = error_out
+
+# Hidden layer gradients (backpropagate through sigmoid)
+error_hidden = (W2.T @ error_out) * hidden * (1 - hidden)
+dW1 = error_hidden[:, None] * x[None, :]
+db1 = error_hidden</code></pre>
+          <p class="text-lg" style="margin-top: 15px;">This is the chain rule applied twice: once through the output layer, once through the hidden layer. The term <code>hidden * (1 - hidden)</code> is the derivative of sigmoid.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           QUIZ
+           ============================================================ -->
+
+      <section id="divider-quiz" class="section-divider" data-state="is-section-divider">
+        <h1>Quiz</h1>
+        <p>Test your understanding</p>
+      </section>
+
+      <section id="quiz-q1">
+        <h2>Q1: Why Nonlinearity?</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">A student proposes building a "deep" network with 100 linear layers (no activation functions) to model a complex relationship.</p>
+          <p class="text-2xl" style="margin-top: 20px;">What will this network compute, and why is the student's approach fundamentally flawed?</p>
+          <div class="fragment highlight-box" style="margin-top: 30px;">
+            <p class="text-lg"><strong>Answer:</strong> The composition of any number of linear transformations is still a single linear transformation: \(W_{100} \cdots W_2 W_1 \mathbf{x} = W' \mathbf{x}\). The 100-layer network has exactly the same representational power as a single layer. Without nonlinear activation functions between layers, depth adds nothing.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="quiz-q2">
+        <h2>Q2: The XOR Barrier</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">In the exercise, the single neuron achieved 50% accuracy on XOR-like data, with the loss stuck at 0.693.</p>
+          <p class="text-2xl" style="margin-top: 20px;">Why exactly 50%, and what is special about the number 0.693?</p>
+          <div class="fragment highlight-box" style="margin-top: 30px;">
+            <p class="text-lg"><strong>Answer:</strong> 50% is random chance for a binary classification problem &mdash; the neuron cannot do better than guessing. The loss 0.693 is \(\ln(2) \approx 0.6931\), which is the cross-entropy of a fair coin (maximum uncertainty for two classes). The neuron converges to predicting ~0.5 for everything because no linear boundary can improve on random guessing for XOR-structured data.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="quiz-q3">
+        <h2>Q3: Gradient Descent Trade-offs</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">You are training a neural network and notice the loss is oscillating wildly instead of decreasing smoothly.</p>
+          <p class="text-2xl" style="margin-top: 20px;">Name two possible causes and what you would try for each.</p>
+          <div class="fragment highlight-box" style="margin-top: 30px;">
+            <p class="text-lg"><strong>Answer:</strong> (1) <strong>Learning rate too high</strong> &mdash; the optimizer overshoots the minimum on each step. Fix: reduce the learning rate. (2) <strong>Batch size too small</strong> &mdash; the gradient estimate is very noisy, causing erratic updates. Fix: increase the batch size for smoother gradients. A third possibility: the loss landscape itself is very rugged, in which case switching to Adam (which adapts per-parameter learning rates) can help.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="quiz-q4">
+        <h2>Q4: Backpropagation Efficiency</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">GPT-4 is estimated to have over one trillion parameters.</p>
+          <p class="text-2xl" style="margin-top: 20px;">Without backpropagation, how many forward passes would you need to estimate the gradient for a single training step? Why is this infeasible?</p>
+          <div class="fragment highlight-box" style="margin-top: 30px;">
+            <p class="text-lg"><strong>Answer:</strong> You would need at least one forward pass per parameter to numerically estimate each partial derivative &mdash; over one trillion forward passes for a single update step. At any realistic speed, this would take years for one step. Backpropagation computes all gradients in a single backward pass, reducing the cost to roughly 2&ndash;3x a single forward pass regardless of parameter count.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="quiz-q5">
+        <h2>Q5: Sharp vs. Flat Minima</h2>
+        <div class="content" style="justify-content: center;">
+          <p class="text-lg">Two networks achieve the same training loss. Network A sits in a sharp minimum; Network B sits in a flat minimum.</p>
+          <p class="text-2xl" style="margin-top: 20px;">Which network would you expect to generalize better to new data, and why?</p>
+          <div class="fragment highlight-box" style="margin-top: 30px;">
+            <p class="text-lg"><strong>Answer:</strong> Network B (flat minimum) should generalize better. In a flat minimum, small perturbations to the weights &mdash; which naturally occur when the model encounters slightly different data &mdash; do not significantly change the loss. A sharp minimum is fragile: small weight changes can dramatically increase the loss. This is also why SGD noise and small batch sizes can help generalization &mdash; the noise pushes the optimizer away from sharp minima toward flatter regions.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+           RESOURCES + END
+           ============================================================ -->
+
+      <section id="resources">
+        <h2>References and Further Reading</h2>
+        <div class="content">
+          <ul class="text-lg">
+            <li>Rosenblatt, F. (1958). "The Perceptron: A Probabilistic Model for Information Storage and Organization in the Brain." <em>Psychological Review</em>, 65(6).</li>
+            <li>Minsky, M. &amp; Papert, S. (1969). <em>Perceptrons: An Introduction to Computational Geometry</em>. MIT Press.</li>
+            <li>Rumelhart, D. E., Hinton, G. E., &amp; Williams, R. J. (1986). "Learning Representations by Back-Propagating Errors." <em>Nature</em>, 323, 533&ndash;536.</li>
+            <li>Cybenko, G. (1989). "Approximation by Superpositions of a Sigmoidal Function." <em>Mathematics of Control, Signals, and Systems</em>, 2, 303&ndash;314.</li>
+            <li>Kingma, D. P. &amp; Ba, J. (2015). "Adam: A Method for Stochastic Optimization." <em>ICLR</em>.</li>
+            <li>Li, H. et al. (2018). "Visualizing the Loss Landscape of Neural Nets." <em>NeurIPS</em>.</li>
+            <li><a href="https://github.com/MITDeepLearning/introtodeeplearning" style="color: var(--primary-color);">MIT Intro to Deep Learning Labs</a> &mdash; neural nets and optimization</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="end" class="section-divider" data-state="is-section-divider">
+        <h1>Questions?</h1>
+        <p style="margin-top: 30px;">Next: Module 3 &mdash; Attention and Embeddings</p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+  <script>
+    // ---- Manim section step-through player ----
+    var MANIM_SECTIONS = {
+      "xor-viz": [
+        "XORVisualizationScene_0000_xor_points.mp4",
+        "XORVisualizationScene_0001_xor_line_rotate.mp4",
+        "XORVisualizationScene_0002_xor_conclusion.mp4"
+      ],
+      "folding-viz": [
+        "FoldingScene_0000_fold_input.mp4",
+        "FoldingScene_0001_fold_transform.mp4",
+        "FoldingScene_0002_fold_separate.mp4"
+      ],
+      "gd-viz": [
+        "GradientDescentScene_0000_gd_curve.mp4",
+        "GradientDescentScene_0001_gd_gradient.mp4",
+        "GradientDescentScene_0002_gd_steps.mp4",
+        "GradientDescentScene_0003_gd_converged.mp4"
+      ],
+      "landscape-viz": [
+        "LossLandscapeScene_0000_landscape_surface.mp4",
+        "LossLandscapeScene_0001_landscape_sharp.mp4",
+        "LossLandscapeScene_0002_landscape_flat.mp4",
+        "LossLandscapeScene_0003_landscape_saddle.mp4"
+      ],
+      "overfit-viz": [
+        "OverfittingCurveScene_0000_overfit_axes.mp4",
+        "OverfittingCurveScene_0001_overfit_train.mp4",
+        "OverfittingCurveScene_0002_overfit_val.mp4",
+        "OverfittingCurveScene_0003_overfit_region.mp4"
+      ],
+      "data-viz": [
+        "DataVisualizationScene_0000_data_linear.mp4",
+        "DataVisualizationScene_0001_data_xor.mp4"
+      ]
+    };
+
+    var manimSteppers = {};
+
+    function initManimStepper(video) {
+      var scene = video.getAttribute('data-manim-scene');
+      var sections = MANIM_SECTIONS[scene] || [];
+      var state = { sections: sections, current: -1, playing: false, video: video, scene: scene };
+      manimSteppers[scene] = state;
+      if (sections.length > 0) {
+        video.src = 'media/sections/' + sections[0];
+        video.load();
+      }
+      video.addEventListener('ended', function() {
+        state.playing = false;
+      });
+    }
+
+    function advanceManimStepper(scene) {
+      var state = manimSteppers[scene];
+      if (!state || state.playing) return false;
+      if (state.current >= state.sections.length - 1) return false;
+      state.current++;
+      state.playing = true;
+      var file = state.sections[state.current];
+      state.video.src = 'media/sections/' + file;
+      state.video.load();
+      state.video.play().then(function() {}).catch(function() { state.playing = false; });
+      return true;
+    }
+
+    function resetManimStepper(scene) {
+      var state = manimSteppers[scene];
+      if (!state) return;
+      state.current = -1;
+      state.playing = false;
+      state.video.pause();
+      if (state.sections.length > 0) {
+        state.video.src = 'media/sections/' + state.sections[0];
+        state.video.load();
+      }
+    }
+
+    // ---- Initialize Reveal.js ----
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0,
+      controls: true,
+      progress: true,
+      slideNumber: false,
+      hash: true,
+      transition: 'slide',
+      center: false,
+      autoAnimateDuration: 0.8,
+      plugins: [ RevealHighlight ]
+    });
+
+    document.querySelectorAll('.manim-stepper').forEach(initManimStepper);
+
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\(', right: '\\)', display: false}
+        ]
+      });
+    }
+
+    Reveal.on('slidechanged', function(event) {
+      Object.keys(manimSteppers).forEach(function(scene) {
+        if (!event.currentSlide.querySelector('[data-manim-scene="' + scene + '"]')) {
+          resetManimStepper(scene);
+        }
+      });
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+        var currentSlide = Reveal.getCurrentSlide();
+        var stepper = currentSlide ? currentSlide.querySelector('.manim-stepper') : null;
+        if (stepper) {
+          var scene = stepper.getAttribute('data-manim-scene');
+          if (advanceManimStepper(scene)) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+          }
+        }
+      }
+    }, true);
+
+    document.querySelectorAll('.manim-stepper').forEach(function(video) {
+      video.style.cursor = 'pointer';
+      video.addEventListener('click', function(e) {
+        var scene = video.getAttribute('data-manim-scene');
+        advanceManimStepper(scene);
+        e.stopPropagation();
+        e.preventDefault();
+      });
+    });
+  </script>
+</body>
+</html>

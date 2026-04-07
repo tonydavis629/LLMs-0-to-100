@@ -1,0 +1,192 @@
+# Module 2: Perceptrons and Optimization — Lecture Notes
+
+Citations, math, and explanations for every claim in the presentation.
+
+## The Neuron Model
+
+### Biological Analogy
+- The artificial neuron is loosely inspired by biological neurons: dendrites receive signals (inputs), the cell body integrates them (weighted sum), and the axon fires an output (activation).
+- The analogy is limited. Biological neurons communicate with spikes (timing matters), use complex dendritic computation, and exhibit plasticity mechanisms far beyond gradient descent.
+- **Reference:** McCulloch, W. S. & Pitts, W. (1943). "A Logical Calculus of the Ideas Immanent in Nervous Activity." *Bulletin of Mathematical Biophysics*, 5, 115-133.
+
+### The Perceptron
+- A single artificial neuron computes:
+
+$$y = \sigma(\mathbf{w} \cdot \mathbf{x} + b)$$
+
+where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the bias, and $\sigma$ is the activation function.
+
+- **Reference:** Rosenblatt, F. (1958). "The Perceptron: A Probabilistic Model for Information Storage and Organization in the Brain." *Psychological Review*, 65(6), 386-408.
+
+### Activation Functions
+- **Step function (original perceptron):** $\sigma(z) = 1$ if $z \geq 0$, else $0$. Not differentiable at $z = 0$.
+- **Sigmoid:** $\sigma(z) = \frac{1}{1 + e^{-z}}$. Smooth, output in $(0, 1)$, interpretable as probability. Suffers from vanishing gradients when $|z|$ is large.
+- **Tanh:** $\sigma(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}$. Zero-centered, output in $(-1, 1)$. Same vanishing gradient issue.
+- **ReLU:** $\sigma(z) = \max(0, z)$. Cheap to compute, avoids vanishing gradient for $z > 0$. Can suffer "dying ReLU" when neurons get stuck at zero.
+- **Reference:** Nair, V. & Hinton, G. E. (2010). "Rectified Linear Units Improve Restricted Boltzmann Machines." *ICML*.
+
+### Why Nonlinearity Matters
+- Without an activation function, a composition of linear transformations is still linear: $W_2(W_1 \mathbf{x} + b_1) + b_2 = W_2 W_1 \mathbf{x} + (W_2 b_1 + b_2) = W' \mathbf{x} + b'$. Adding layers without nonlinearity gains nothing.
+
+### Loss Functions
+
+- **Mean Squared Error (MSE):** $L = \frac{1}{N}\sum_{i=1}^{N}(y_i - \hat{y}_i)^2$. Standard for regression tasks.
+- **Binary Cross-Entropy (BCE):** $L = -\frac{1}{N}\sum_{i=1}^{N}[y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \hat{y}_i)]$. Standard for binary classification. This is Shannon's entropy applied as a loss function: it measures the expected number of bits needed to encode the true labels under the model's predicted distribution.
+- **Connection to Module 1:** Cross-entropy appeared in Module 1 as a way to evaluate n-gram models. Here the same formula becomes the training objective.
+
+## Universal Approximation Theorem
+
+- **Theorem (informal):** A feedforward network with a single hidden layer containing a finite number of neurons can approximate any continuous function on a compact subset of $\mathbb{R}^n$, given sufficient neurons.
+- **Paper:** Cybenko, G. (1989). "Approximation by Superpositions of a Sigmoidal Function." *Mathematics of Control, Signals, and Systems*, 2, 303-314.
+- **Also:** Hornik, K. (1991). "Approximation Capabilities of Multilayer Feedforward Networks." *Neural Networks*, 4(2), 251-257. Generalized the result beyond sigmoidal activations.
+- **Important caveat:** The theorem is existential. It says such a network exists but does not guarantee that gradient descent will find it, that the required number of neurons is tractable, or that the network will generalize.
+- **Analogy to Fourier series:** Any periodic function can be approximated by a Fourier series, but computing the coefficients for an arbitrary function is nontrivial. The universal approximation theorem plays a similar role for neural networks.
+
+## Matrix-Graph Equivalence
+
+- A neural network is a directed acyclic graph (DAG). Each layer's connections can be written as a weight matrix.
+- Forward pass through one layer: $\mathbf{h} = \sigma(W\mathbf{x} + \mathbf{b})$, where $W$ is the weight matrix, $\mathbf{x}$ is the input vector, $\mathbf{b}$ is the bias vector, and $\sigma$ is an elementwise nonlinearity.
+- Matrix multiplication is $O(n^3)$ for dense $n \times n$ matrices but is embarrassingly parallel: each output element is an independent dot product. GPUs exploit this with thousands of cores executing in parallel.
+- **Connection to Module 1:** Jensen Huang and NVIDIA bet that GPU computing would become essential. Neural network training is dominated by matrix multiplications, making GPUs the ideal hardware.
+
+## XOR Problem
+
+### Linear Separability
+- A single perceptron defines a hyperplane in the input space. It can classify any linearly separable dataset: AND, OR, NAND.
+- XOR is not linearly separable. No single hyperplane can separate $(0,0)$ and $(1,1)$ (output 0) from $(0,1)$ and $(1,0)$ (output 1).
+
+### Minsky and Papert
+- **Book:** Minsky, M. & Papert, S. (1969). *Perceptrons: An Introduction to Computational Geometry*. MIT Press.
+- Proved that single-layer perceptrons cannot compute XOR, parity, or connectedness.
+- This result was widely interpreted as showing neural networks were fundamentally limited. Funding for neural network research dried up for over a decade (often called the "connectionist AI winter").
+- **Note:** Minsky and Papert knew multi-layer nets could solve these problems. Their critique was that no one knew how to train multi-layer nets at the time.
+
+### The Hidden Layer Solution
+- Two neurons in a hidden layer create two linear boundaries. The output neuron combines them with AND-like logic, implementing XOR.
+- This is the simplest example of why depth (multiple layers) adds computational power.
+
+### Perceptron Convergence Theorem
+- **Theorem:** If a training set is linearly separable, the perceptron learning algorithm will converge in a finite number of steps.
+- **Paper:** Rosenblatt, F. (1962). *Principles of Neurodynamics: Perceptrons and the Theory of Brain Mechanisms*. Spartan Books.
+- **Also:** Novikoff, A. B. (1962). "On convergence proofs on perceptrons." *Symposium on the Mathematical Theory of Automata*, 12, 615-622.
+
+## Folding in High-Dimensional Space
+
+- A single perceptron splits the input space with a hyperplane: a line in 2D, a plane in 3D, a hyperplane in higher dimensions.
+- Each hidden layer applies a nonlinear transformation that "folds" the space. Points that were entangled can be separated; points that were distant can be brought together.
+- With enough layers (depth), a network can separate arbitrarily complex class boundaries.
+- **Visual intuition:** Imagine a sheet of paper with two colors of dots mixed together. A single fold (one hidden layer) can bring same-colored dots together. Multiple folds (deep network) can handle more complex arrangements.
+
+## Backpropagation
+
+### The Algorithm
+- Backpropagation computes the gradient of the loss with respect to every weight in the network by applying the chain rule of calculus through the computation graph.
+- **Forward pass:** Compute the output of each layer sequentially. Store intermediate values.
+- **Backward pass:** Starting from the loss, compute $\frac{\partial L}{\partial w}$ for each weight $w$ by propagating gradients backward.
+- For a single neuron with sigmoid activation and BCE loss:
+
+$$\frac{\partial L}{\partial w_j} = (\hat{y} - y) \cdot x_j$$
+$$\frac{\partial L}{\partial b} = \hat{y} - y$$
+
+This elegant simplification occurs because the derivative of sigmoid times BCE loss simplifies to the prediction error.
+
+- **Paper:** Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). "Learning Representations by Back-Propagating Errors." *Nature*, 323, 533-536.
+- **Historical note:** The chain rule application was discovered independently multiple times. Werbos (1974) described it in his PhD thesis; Rumelhart, Hinton, and Williams popularized it in 1986.
+
+### Without Backprop
+- The naive alternative: perturb each weight by a small $\epsilon$, recompute the loss, and estimate the gradient numerically as $\frac{L(w + \epsilon) - L(w)}{\epsilon}$. This requires $O(n)$ forward passes for $n$ weights. For modern networks with billions of parameters, this is completely infeasible.
+
+### Computation Graphs
+- Frameworks like PyTorch build a dynamic computation graph during the forward pass. Each operation records its inputs and the function used. The backward pass walks this graph in reverse, applying the chain rule at each node.
+- This automates gradient computation: users define the forward pass, and the framework derives the backward pass.
+
+## Gradient Descent
+
+### The Update Rule
+$$w \leftarrow w - \eta \frac{\partial L}{\partial w}$$
+
+where $\eta$ is the learning rate.
+
+### Stochastic Gradient Descent (SGD)
+- Instead of computing the gradient over the entire dataset (batch gradient descent), SGD computes it over a random subset (mini-batch).
+- Trade-offs: mini-batch gradients are noisier but much faster to compute. The noise can actually help escape local minima and saddle points.
+- **Typical batch sizes:** 32, 64, 128, 256. Larger batches give smoother gradients but require more memory and may converge to sharper minima.
+- **Reference:** Bottou, L. (2010). "Large-Scale Machine Learning with Stochastic Gradient Descent." *COMPSTAT*.
+
+### Adam Optimizer
+- Adam (Adaptive Moment Estimation) maintains per-parameter learning rates based on the first and second moments of the gradient history.
+- **Paper:** Kingma, D. P. & Ba, J. (2015). "Adam: A Method for Stochastic Optimization." *ICLR*.
+- Adam is the default optimizer in practice for most deep learning tasks.
+
+## Loss Landscape Visualizations
+
+- The loss function defines a surface in weight space. For a network with $n$ weights, this is a surface in $(n+1)$-dimensional space.
+- Visualizations project this surface down to 2D or 3D using random directions or principal components.
+- **Sharp vs flat minima:** Flat minima tend to generalize better because small perturbations to the weights do not significantly change the loss. Sharp minima are more sensitive to perturbation.
+- **Saddle points:** In high-dimensional spaces, saddle points are far more common than local minima. At a saddle point, the gradient is zero but the Hessian has both positive and negative eigenvalues.
+- **Paper:** Li, H., Xu, Z., Taylor, G., Studer, C., & Goldstein, T. (2018). "Visualizing the Loss Landscape of Neural Nets." *NeurIPS*.
+- **Also:** Dauphin, Y. et al. (2014). "Identifying and attacking the saddle point problem in high-dimensional non-convex optimization." *NeurIPS*.
+
+## Overfitting and Generalization
+
+- A network with enough parameters can memorize any finite training set, achieving zero training loss.
+- **Paper:** Zhang, C. et al. (2017). "Understanding Deep Learning Requires Rethinking Generalization." *ICLR*. Showed that deep networks can fit random labels, demonstrating that model capacity alone does not explain generalization.
+- **Regularization techniques (named but not covered deeply):**
+  - **Dropout:** Srivastava, N. et al. (2014). "Dropout: A Simple Way to Prevent Neural Networks from Overfitting." *JMLR*.
+  - **Weight decay (L2 regularization):** Adding $\lambda \|\mathbf{w}\|^2$ to the loss penalizes large weights.
+
+## Notable Figures
+
+### Frank Rosenblatt (1928-1971)
+- Psychologist at Cornell. Built the Mark I Perceptron (1958), a machine that could learn to classify visual patterns.
+- **Paper:** Rosenblatt, F. (1958). "The Perceptron: A Probabilistic Model for Information Storage and Organization in the Brain." *Psychological Review*, 65(6).
+- The Mark I Perceptron was a physical machine with photocells, potentiometers for weights, and motor-driven weight updates.
+
+### Marvin Minsky (1927-2016) and Seymour Papert (1928-2016)
+- **Book:** Minsky, M. & Papert, S. (1969). *Perceptrons*. MIT Press.
+- Their formal proof that single-layer perceptrons cannot solve XOR was widely interpreted as showing neural networks were dead ends. Minsky was co-founder of MIT's AI Lab and a leading proponent of symbolic AI.
+
+### David Rumelhart (1942-2011), Geoffrey Hinton (b. 1947), and Ronald Williams
+- **Paper:** Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). "Learning Representations by Back-Propagating Errors." *Nature*, 323, 533-536.
+- Popularized backpropagation for training multi-layer networks, reviving neural network research after over a decade of winter.
+- Hinton went on to pioneer deep learning and received the 2024 Nobel Prize in Physics (shared with John Hopfield) for foundational discoveries enabling machine learning with artificial neural networks.
+
+### George Cybenko (b. 1952)
+- **Paper:** Cybenko, G. (1989). "Approximation by Superpositions of a Sigmoidal Function." *Mathematics of Control, Signals, and Systems*, 2, 303-314.
+- Professor at Dartmouth. Proved the universal approximation theorem for single hidden layer networks with sigmoidal activation functions.
+
+## Side Quest: Embedding Arithmetic
+
+- Word embeddings map words to dense vectors where geometric relationships encode semantic relationships.
+- **Classic example:** $\vec{\text{king}} - \vec{\text{man}} + \vec{\text{woman}} \approx \vec{\text{queen}}$
+- **Paper:** Mikolov, T. et al. (2013). "Efficient Estimation of Word Representations in Vector Space." *ICLR Workshop*.
+- This is a preview of concepts that become central in Module 3 (attention and embeddings).
+
+## Side Quest: Biological Analogy
+
+- **Where the analogy holds:** Both biological and artificial neurons aggregate inputs, apply a threshold/nonlinearity, and propagate signals forward.
+- **Where it breaks:** Biological neurons use spikes with precise timing (not continuous values), exhibit complex dendritic computation, have diverse neurotransmitter systems, show synaptic plasticity mechanisms far more varied than gradient descent, and operate in recurrent circuits (not feedforward layers).
+- **Reference:** Hassabis, D. et al. (2017). "Neuroscience-Inspired Artificial Intelligence." *Neuron*, 95(2), 245-258.
+
+## Exercise Notes
+
+### Datasets
+- **linear_separable.csv:** 150 samples from two Gaussian clusters centered at $(-1.5, -1.0)$ and $(1.5, 1.0)$ with standard deviations $\sigma_x = 0.8, \sigma_y = 0.7$. Generated with numpy seed 42.
+- **non_linear_separable.csv:** 160 samples in an XOR-like pattern. Four Gaussian clusters at $(\pm 1.5, \pm 1.5)$ with $\sigma = 0.5$. Diagonal pairs share labels (top-left/bottom-right = class 0, top-right/bottom-left = class 1). Generated with numpy seed 42.
+
+### Gradient Derivation for Sigmoid + BCE
+For a single neuron with sigmoid activation and binary cross-entropy loss:
+
+$$L = -[y \ln(\hat{y}) + (1-y)\ln(1-\hat{y})]$$
+
+where $\hat{y} = \sigma(z)$ and $z = \mathbf{w} \cdot \mathbf{x} + b$.
+
+Using the chain rule and the fact that $\sigma'(z) = \sigma(z)(1 - \sigma(z))$:
+
+$$\frac{\partial L}{\partial z} = \hat{y} - y$$
+
+$$\frac{\partial L}{\partial w_j} = (\hat{y} - y) x_j$$
+
+$$\frac{\partial L}{\partial b} = \hat{y} - y$$
+
+This simplification is why sigmoid + BCE is a natural pairing for binary classification.
