@@ -102,11 +102,10 @@
               <ul class="text-lg compact-list">
                 <li><strong>5. Pretraining</strong> &mdash; learning broad patterns from large text corpora</li>
                 <li><strong>6. Fine-tuning</strong> &mdash; adapting a model to a task</li>
-                <li><strong>7. Feedback Training</strong> &mdash; improving responses with preference data</li>
+                <li><strong>7. Reinforcement Learning</strong> &mdash; improving responses with preference data</li>
               </ul>
             </div>
           </div>
-          <p class="text-lg course-note">No prior jargon assumed. New terms are introduced as they appear.</p>
         </div>
       </section>
 
@@ -178,7 +177,7 @@
               <p class="module-track-intro">Concept checks with click-to-reveal answers.</p>
               <ul>
                 <li>Questions embedded in the lecture</li>
-                <li>Think first, then click for the answer</li>
+                <li>Answer to yourself first, next slide reveals answer</li>
                 <li>Tests your understanding of key concepts</li>
               </ul>
             </div>
@@ -1032,18 +1031,23 @@ be falice moce lied alls</code></pre>
           <pre style="font-size: 13pt;"><code class="language-python">    # Slide a window of size n across the text
     for i in range(len(text) - n + 1):
         # TODO: Extract the context (first n-1 chars) and next_char (the nth char)
-        # context = text[i : i + n - 1], next_char = text[i + n - 1]
-        raise NotImplementedError("TODO: set context and next_char from text[i:]")
+        context = None
+        next_char = None
+        if context is None or next_char is None:
+            raise NotImplementedError("TODO: set context and next_char from text[i:]")
 
         # Create a Counter for this context if we haven't seen it before
         if context not in model:
             model[context] = Counter()
         # Increment the count for this (context -> next_char) pair
-        model[context][next_char] += 1</code></pre>
+        model[context][next_char] += 1
+
+    return model</code></pre>
           <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> You have a window of <code>n</code> characters at position <code>i</code>. The context is the first <code>n-1</code>; the next character is the last one.</p>
           <div class="fragment highlight-box" style="margin-top: 10px;">
             <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
-            <pre style="margin: 10px 0 0 0;"><code class="language-python">context, next_char = text[i : i + n - 1], text[i + n - 1]</code></pre>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">context = text[i : i + n - 1]
+next_char = text[i + n - 1]</code></pre>
           </div>
         </div>
       </section>
@@ -1087,10 +1091,12 @@ be falice moce lied alls</code></pre>
       <section id="exercise-step5-code">
         <h2>Step 5: generate_from_char_model()</h2>
         <div class="content">
-          <pre style="font-size: 13pt;"><code class="language-python">    while len(result) < length:
+          <pre style="font-size: 11.5pt;"><code class="language-python">    while len(result) < length:
         # TODO: Get the current context -- the last (n-1) characters joined together
-        # e.g. if n=3 and result ends with ['a','t'], context = "at"
-        raise NotImplementedError("TODO: set context from the last n-1 chars of result")
+        # e.g. if n=3 and result ends with ['a','t'], the context should be "at"
+        context = None
+        if context is None:
+            raise NotImplementedError("TODO: set context from the last n-1 chars of result")
 
         if context in model:
             counter = model[context]
@@ -1098,8 +1104,16 @@ be falice moce lied alls</code></pre>
             weights = list(counter.values())
             next_char = random.choices(chars, weights=weights, k=1)[0]
         else:
-            # fallback: pick a random context
-            ...</code></pre>
+            # Context not in model -- fall back to a random context
+            context = random.choice(list(model.keys()))
+            counter = model[context]
+            chars = list(counter.keys())
+            weights = list(counter.values())
+            next_char = random.choices(chars, weights=weights, k=1)[0]
+        result.append(next_char)
+
+    # Join all characters into a single string and return
+    return "".join(result[:length])</code></pre>
           <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> The context is the last <code>n-1</code> characters of the result so far. Use negative indexing, then join into a string.</p>
           <div class="fragment highlight-box" style="margin-top: 10px;">
             <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
@@ -1163,25 +1177,59 @@ edwin and morcar, the earls</code></pre>
       </section>
 
       <section id="exercise-step6-code">
-        <h2>Step 6: Word N-gram Models</h2>
+        <h2>Step 6: build_word_ngram_model()</h2>
         <div class="content">
-          <p class="text-lg" style="margin-bottom: 10px;">Same pattern as the character models but contexts are <strong>tuples of words</strong> instead of strings of characters.</p>
-          <pre style="font-size: 13pt;"><code class="language-python"># build_word_ngram_model:
-    for i in range(len(words) - n + 1):
-        # TODO: Extract context tuple and next_word
-        raise NotImplementedError("TODO: set context and next_word")
+          <p class="text-lg" style="margin-bottom: 10px;">Same pattern as the character model, but the context is now a <strong>tuple of words</strong> instead of a string of characters.</p>
+          <pre style="font-size: 12pt; margin: 0;"><code class="language-python">for i in range(len(words) - n + 1):
+    # TODO: Extract context tuple and next_word
+    context = None
+    next_word = None
+    if context is None or next_word is None:
+        raise NotImplementedError("TODO: set context and next_word from words[i:]")
 
-# generate_from_word_model:
-    while len(result) < length:
-        # TODO: Get context as tuple of last (n-1) words
-        raise NotImplementedError("TODO: set context")</code></pre>
-          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> Same as the character version, but use <code>tuple()</code> instead of <code>"".join()</code>.</p>
+    if context not in model:
+        model[context] = Counter()
+    model[context][next_word] += 1
+
+return model</code></pre>
+          <p class="fragment text-lg" style="margin-top: 25px;"><strong>Hint:</strong> Use the same slicing pattern as Step 4, but wrap the previous words in <code>tuple(...)</code>.</p>
           <div class="fragment highlight-box" style="margin-top: 10px;">
             <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
-            <pre style="margin: 10px 0 0 0;"><code class="language-python"># build:
-context, next_word = tuple(words[i : i + n - 1]), words[i + n - 1]
-# generate:
-context = tuple(result[-(n - 1):])</code></pre>
+            <pre style="margin: 10px 0 0 0;"><code class="language-python">context = tuple(words[i : i + n - 1])
+next_word = words[i + n - 1]</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <section id="exercise-step6-code-generate">
+        <h2>Step 6: generate_from_word_model()</h2>
+        <div class="content">
+          <p class="text-lg" style="margin-bottom: 8px;">Generation is also the same pattern as Step 5, except the current context is a tuple of the last <code>n-1</code> words.</p>
+          <pre style="font-size: 10pt; margin: 0;"><code class="language-python">while len(result) < length:
+    # TODO: Get the current context as a tuple of the last (n-1) words
+    # Same as the char version but use tuple() instead of "".join()
+    context = None
+    if context is None:
+        raise NotImplementedError("TODO: set context from the last n-1 words of result")
+
+    if context in model:
+        counter = model[context]
+        words = list(counter.keys())
+        weights = list(counter.values())
+        next_word = random.choices(words, weights=weights, k=1)[0]
+    else:
+        context = random.choice(list(model.keys()))
+        counter = model[context]
+        words = list(counter.keys())
+        weights = list(counter.values())
+        next_word = random.choices(words, weights=weights, k=1)[0]
+    result.append(next_word)
+
+return " ".join(result[:length])</code></pre>
+          <p class="fragment text-lg" style="margin-top: 16px;"><strong>Hint:</strong> Same as the character version, but use <code>tuple()</code> instead of <code>"".join()</code>.</p>
+          <div class="fragment highlight-box" style="margin-top: 6px; padding: 16px 20px;">
+            <p class="text-lg" style="margin: 0;"><strong>Answer:</strong></p>
+            <pre style="margin: 6px 0 0 0;"><code class="language-python">context = tuple(result[-(n - 1):])</code></pre>
           </div>
         </div>
       </section>

@@ -103,8 +103,10 @@ def build_char_ngram_model(text: str, n: int) -> dict[str, Counter]:
     # Slide a window of size n across the text
     for i in range(len(text) - n + 1):
         # TODO: Extract the context (first n-1 chars) and next_char (the nth char)
-        # context = text[i : i + n - 1], next_char = text[i + n - 1]
-        raise NotImplementedError("TODO: set context and next_char from text[i:]")
+        context = None
+        next_char = None
+        if context is None or next_char is None:
+            raise NotImplementedError("TODO: set context and next_char from text[i:]")
 
         # Create a Counter for this context if we haven't seen it before
         if context not in model:
@@ -134,8 +136,10 @@ def generate_from_char_model(
 
     while len(result) < length:
         # TODO: Get the current context -- the last (n-1) characters joined together
-        # e.g. if n=3 and result ends with ['a','t'], context = "at"
-        raise NotImplementedError("TODO: set context from the last n-1 chars of result")
+        # e.g. if n=3 and result ends with ['a','t'], the context should be "at"
+        context = None
+        if context is None:
+            raise NotImplementedError("TODO: set context from the last n-1 chars of result")
 
         if context in model:
             # Look up what characters follow this context
@@ -196,8 +200,10 @@ def build_word_ngram_model(text: str, n: int) -> dict[tuple[str, ...], Counter]:
 
     for i in range(len(words) - n + 1):
         # TODO: Extract context tuple and next_word
-        # context = tuple(words[i : i + n - 1]), next_word = words[i + n - 1]
-        raise NotImplementedError("TODO: set context and next_word from words[i:]")
+        context = None
+        next_word = None
+        if context is None or next_word is None:
+            raise NotImplementedError("TODO: set context and next_word from words[i:]")
 
         if context not in model:
             model[context] = Counter()
@@ -224,7 +230,9 @@ def generate_from_word_model(
     while len(result) < length:
         # TODO: Get the current context as a tuple of the last (n-1) words
         # Same as the char version but use tuple() instead of "".join()
-        raise NotImplementedError("TODO: set context from the last n-1 words of result")
+        context = None
+        if context is None:
+            raise NotImplementedError("TODO: set context from the last n-1 words of result")
 
         if context in model:
             counter = model[context]
