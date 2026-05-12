@@ -15,40 +15,27 @@ from pathlib import Path
 
 import numpy as np
 
-if __package__ in (None, ""):
-    from neuron import (
-        forward,
-        binary_cross_entropy,
-        compute_gradients,
-        update_parameters,
-        mlp_forward,
-        mlp_gradients,
-        sigmoid,
-    )
-    from visualization import (
-        load_csv,
-        plot_data,
-        plot_decision_boundary,
-        plot_loss_curve,
-        save_comparison,
-    )
-else:
-    from .neuron import (
-        forward,
-        binary_cross_entropy,
-        compute_gradients,
-        update_parameters,
-        mlp_forward,
-        mlp_gradients,
-        sigmoid,
-    )
-    from .visualization import (
-        load_csv,
-        plot_data,
-        plot_decision_boundary,
-        plot_loss_curve,
-        save_comparison,
-    )
+# Make the module root (parent of src/) importable so we can `import exercise`
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+# Also ensure src/ is on the path so we can import sibling helpers
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from exercise import (
+    forward,
+    binary_cross_entropy,
+    compute_gradients,
+    update_parameters,
+    mlp_forward,
+    mlp_gradients,
+    sigmoid,
+)
+from visualization import (
+    load_csv,
+    plot_data,
+    plot_decision_boundary,
+    plot_loss_curve,
+    save_comparison,
+)
 
 import matplotlib
 matplotlib.use("Agg")
