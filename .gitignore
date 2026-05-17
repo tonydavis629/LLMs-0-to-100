@@ -8,3 +8,4 @@ exercises/.venv/
 **.pyc
 .DS_Store
 .playwright**
+node_modules
