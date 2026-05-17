@@ -22,7 +22,8 @@ where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the b
 - **Step function (original perceptron):** $\sigma(z) = 1$ if $z \geq 0$, else $0$. Not differentiable at $z = 0$.
 - **Sigmoid:** $\sigma(z) = \frac{1}{1 + e^{-z}}$. Smooth, output in $(0, 1)$, interpretable as probability. Suffers from vanishing gradients when $|z|$ is large.
 - **Tanh:** $\sigma(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}}$. Zero-centered, output in $(-1, 1)$. Same vanishing gradient issue.
-- **ReLU:** $\sigma(z) = \max(0, z)$. Cheap to compute, avoids vanishing gradient for $z > 0$. Can suffer "dying ReLU" when neurons get stuck at zero.
+- **ReLU:** $\sigma(z) = \max(0, z)$. Cheap to compute, avoids vanishing gradient for $z > 0$. Can suffer "dying ReLU" when neurons get stuck at zero. Derivative is $1$ for $z > 0$ and $0$ otherwise.
+- **In this course:** the exercise MLP uses **ReLU on the hidden layer** and **sigmoid on the output neuron** (so the output is a probability usable with binary cross-entropy). This ReLU-hidden / sigmoid-output pairing is the standard modern choice for a binary classifier.
 - **Reference:** Nair, V. & Hinton, G. E. (2010). "Rectified Linear Units Improve Restricted Boltzmann Machines." *ICML*.
 
 ### Why Nonlinearity Matters
@@ -77,13 +78,20 @@ where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the b
 - With enough layers (depth), a network can separate arbitrarily complex class boundaries.
 - **Visual intuition:** Imagine a sheet of paper with two colors of dots mixed together. A single fold (one hidden layer) can bring same-colored dots together. Multiple folds (deep network) can handle more complex arrangements.
 
+## Multi-Layer Decision Boundaries
+
+- A ReLU network is a composition of linear pieces. Each hidden neuron defines one hyperplane ($\mathbf{w} \cdot \mathbf{x} + b = 0$); ReLU makes that neuron active on one side of the line and zero on the other.
+- Combining several half-plane indicators partitions the input space into polygonal regions, so the overall decision boundary is **piecewise-linear**. It looks curved only because it is built from many short straight segments.
+- More hidden units means more lines, so the boundary can wrap arbitrarily tightly around a class. This is the constructive counterpart to the universal approximation theorem.
+
 ## Backpropagation
 
 ### The Algorithm
 - Backpropagation computes the gradient of the loss with respect to every weight in the network by applying the chain rule of calculus through the computation graph.
 - **Forward pass:** Compute the output of each layer sequentially. Store intermediate values.
 - **Backward pass:** Starting from the loss, compute $\frac{\partial L}{\partial w}$ for each weight $w$ by propagating gradients backward.
-- For a single neuron with sigmoid activation and BCE loss:
+- **The path (shown as the diagram on the slide):** loss $\rightarrow$ output $\hat{y}$ $\rightarrow$ pre-activation $z$ $\rightarrow$ weight $w$. The chain rule multiplies one local derivative per stage: $\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}}\cdot\frac{\partial \hat{y}}{\partial z}\cdot\frac{\partial z}{\partial w}$. The update rule then takes a step: $w \leftarrow w - \eta\,\frac{\partial L}{\partial w}$.
+- For a single neuron with sigmoid activation and BCE loss (the exercise's steps 1&ndash;4):
 
 $$\frac{\partial L}{\partial w_j} = (\hat{y} - y) \cdot x_j$$
 $$\frac{\partial L}{\partial b} = \hat{y} - y$$
@@ -124,6 +132,7 @@ where $\eta$ is the learning rate.
 - Visualizations project this surface down to 2D or 3D using random directions or principal components.
 - **Sharp vs flat minima:** Flat minima tend to generalize better because small perturbations to the weights do not significantly change the loss. Sharp minima are more sensitive to perturbation.
 - **Saddle points:** In high-dimensional spaces, saddle points are far more common than local minima. At a saddle point, the gradient is zero but the Hessian has both positive and negative eigenvalues.
+- **Course visualization:** a 2-weight perceptron has a loss surface over $(w_1, w_2)$. We plot the loss as 3D height and color, then trace batch gradient descent, mini-batch SGD (a visibly noisier path), and Adam (faster, well-damped path) on the same surface. The two surface axes are color-matched to the two weights in the perceptron diagram, so moving the weights visibly moves the point on the landscape.
 - **Paper:** Li, H., Xu, Z., Taylor, G., Studer, C., & Goldstein, T. (2018). "Visualizing the Loss Landscape of Neural Nets." *NeurIPS*.
 - **Also:** Dauphin, Y. et al. (2014). "Identifying and attacking the saddle point problem in high-dimensional non-convex optimization." *NeurIPS*.
 
@@ -155,19 +164,6 @@ where $\eta$ is the learning rate.
 - **Paper:** Cybenko, G. (1989). "Approximation by Superpositions of a Sigmoidal Function." *Mathematics of Control, Signals, and Systems*, 2, 303-314.
 - Professor at Dartmouth. Proved the universal approximation theorem for single hidden layer networks with sigmoidal activation functions.
 
-## Side Quest: Embedding Arithmetic
-
-- Word embeddings map words to dense vectors where geometric relationships encode semantic relationships.
-- **Classic example:** $\vec{\text{king}} - \vec{\text{man}} + \vec{\text{woman}} \approx \vec{\text{queen}}$
-- **Paper:** Mikolov, T. et al. (2013). "Efficient Estimation of Word Representations in Vector Space." *ICLR Workshop*.
-- This is a preview of concepts that become central in Module 3 (attention and embeddings).
-
-## Side Quest: Biological Analogy
-
-- **Where the analogy holds:** Both biological and artificial neurons aggregate inputs, apply a threshold/nonlinearity, and propagate signals forward.
-- **Where it breaks:** Biological neurons use spikes with precise timing (not continuous values), exhibit complex dendritic computation, have diverse neurotransmitter systems, show synaptic plasticity mechanisms far more varied than gradient descent, and operate in recurrent circuits (not feedforward layers).
-- **Reference:** Hassabis, D. et al. (2017). "Neuroscience-Inspired Artificial Intelligence." *Neuron*, 95(2), 245-258.
-
 ## Exercise Notes
 
 ### Datasets
@@ -189,4 +185,13 @@ $$\frac{\partial L}{\partial w_j} = (\hat{y} - y) x_j$$
 
 $$\frac{\partial L}{\partial b} = \hat{y} - y$$
 
-This simplification is why sigmoid + BCE is a natural pairing for binary classification.
+This simplification is why sigmoid + BCE is a natural pairing for binary classification. It covers steps 1&ndash;4 (the single neuron).
+
+### Exercise Structure
+- The single student-facing file is `exercises/module_02_perceptrons/exercise.py`. Steps: (1) `forward` single neuron, (2) `binary_cross_entropy`, (3) `compute_gradients`, (4) `update_parameters`, (5) observe the single neuron fail on XOR (no code), (6) `relu`, (7) `mlp_forward`, extra credit `mlp_gradients`.
+- The runner prints three parts: PART 1 (single neuron, linear data, ~99.3%), PART 2 (single neuron, XOR data, ~50%, loss plateau at $\ln 2 \approx 0.693$), PART 3 (MLP, XOR data).
+
+### MLP with ReLU Hidden Layer
+- `mlp_forward`: `hidden = relu(W1 @ x + b1)`, `output = sigmoid(W2 @ hidden + b2)`. ReLU on the hidden layer, sigmoid on the output so the result is a probability for BCE.
+- Backprop through ReLU (extra credit): identical to the sigmoid-hidden derivation except the hidden-layer activation derivative. With $z_1 = W_1 x + b_1$, ReLU's derivative is the indicator $\mathbb{1}[z_1 > 0]$, so $\text{error\_hidden} = (W_2^\top\,\text{error\_out}) \odot \mathbb{1}[z_1 > 0]$.
+- With `hidden_size = 8`, learning rate $1.0$, 500 epochs (numpy seed 42), the ReLU MLP reaches 160/160 (100%) on the XOR-like dataset, with training loss dropping to ≈0.0024 (much faster than a sigmoid hidden layer).

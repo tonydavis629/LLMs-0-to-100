@@ -170,10 +170,10 @@ def main():
     OUTPUT_DIR.mkdir(exist_ok=True)
 
     # ------------------------------------------------------------------
-    # Steps 1-5: Train single neuron on linearly separable data
+    # Part 1: Train single neuron on linearly separable data
     # ------------------------------------------------------------------
     print("=" * 60)
-    print("STEP 1-5: Single Neuron on Linearly Separable Data")
+    print("PART 1: Single Neuron on Linearly Separable Data")
     print("=" * 60)
 
     try:
@@ -210,10 +210,10 @@ def main():
         print(f"  [skipped: {e}]\n")
 
     # ------------------------------------------------------------------
-    # Step 6: Same single neuron on non-linearly-separable data
+    # Part 2: Same single neuron on non-linearly-separable data
     # ------------------------------------------------------------------
     print("=" * 60)
-    print("STEP 6: Single Neuron on Non-Linearly Separable Data (XOR)")
+    print("PART 2: Single Neuron on Non-Linearly Separable Data (XOR)")
     print("=" * 60)
 
     try:
@@ -251,10 +251,10 @@ def main():
         print(f"  [skipped: {e}]\n")
 
     # ------------------------------------------------------------------
-    # Step 7: MLP on non-linearly-separable data
+    # Part 3: MLP on non-linearly-separable data
     # ------------------------------------------------------------------
     print("=" * 60)
-    print("STEP 7: MLP on Non-Linearly Separable Data")
+    print("PART 3: MLP on Non-Linearly Separable Data")
     print("=" * 60)
 
     try:

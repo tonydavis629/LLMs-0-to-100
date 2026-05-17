@@ -2,7 +2,7 @@
 Module 2 Solution: Perceptrons and Neural Networks
 
 Complete reference implementation of the single-neuron classifier
-and multi-layer perceptron.
+and multi-layer perceptron (ReLU hidden layer, sigmoid output).
 """
 
 from __future__ import annotations
@@ -11,13 +11,23 @@ import numpy as np
 
 
 # ---------------------------------------------------------------------------
-# Step 1: Forward pass (single neuron)
+# Activation functions
 # ---------------------------------------------------------------------------
 
 
 def sigmoid(z: np.ndarray) -> np.ndarray:
     """The sigmoid activation function: 1 / (1 + exp(-z))."""
     return 1.0 / (1.0 + np.exp(-z))
+
+
+def relu(z: np.ndarray) -> np.ndarray:
+    """The ReLU activation function: max(0, z)."""
+    return np.maximum(0.0, z)
+
+
+# ---------------------------------------------------------------------------
+# Step 1: Forward pass (single neuron)
+# ---------------------------------------------------------------------------
 
 
 def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
@@ -67,7 +77,7 @@ def update_parameters(
 
 
 # ---------------------------------------------------------------------------
-# Step 7: MLP forward pass
+# Step 5: MLP forward pass (ReLU hidden layer, sigmoid output)
 # ---------------------------------------------------------------------------
 
 
@@ -78,8 +88,8 @@ def mlp_forward(
     W2: np.ndarray,
     b2: np.ndarray,
 ) -> float:
-    """Forward pass through a two-layer MLP."""
-    hidden = sigmoid(W1 @ x + b1)
+    """Forward pass through a two-layer MLP: ReLU hidden, sigmoid output."""
+    hidden = relu(W1 @ x + b1)
     output = sigmoid(W2 @ hidden + b2)
     return output[0]
 
@@ -100,18 +110,19 @@ def mlp_gradients(
     """Compute gradients for the two-layer MLP using backpropagation."""
     # Forward pass (save intermediates)
     z1 = W1 @ x + b1
-    hidden = sigmoid(z1)
+    hidden = relu(z1)
     z2 = W2 @ hidden + b2
     output = sigmoid(z2)
 
     # Output layer gradients
-    error_out = output - y_true              # shape (1,)
-    dW2 = error_out[:, None] * hidden[None, :]  # shape (1, hidden_size)
-    db2 = error_out                          # shape (1,)
+    error_out = output - y_true                 # shape (1,)
+    dW2 = error_out[:, None] * hidden[None, :]   # shape (1, hidden_size)
+    db2 = error_out                             # shape (1,)
 
-    # Hidden layer gradients (backpropagate through sigmoid)
-    error_hidden = (W2.T @ error_out) * hidden * (1 - hidden)  # shape (hidden_size,)
+    # Hidden layer gradients (backpropagate through ReLU)
+    relu_grad = (z1 > 0).astype(float)          # ReLU derivative: 1 if z1 > 0 else 0
+    error_hidden = (W2.T @ error_out) * relu_grad  # shape (hidden_size,)
     dW1 = error_hidden[:, None] * x[None, :]    # shape (hidden_size, 2)
-    db1 = error_hidden                       # shape (hidden_size,)
+    db1 = error_hidden                          # shape (hidden_size,)
 
     return dW1, db1, dW2, db2

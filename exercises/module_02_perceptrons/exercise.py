@@ -14,7 +14,7 @@ import numpy as np
 
 
 # ---------------------------------------------------------------------------
-# Step 1: Forward pass (single neuron)
+# Activation functions
 # ---------------------------------------------------------------------------
 
 
@@ -22,10 +22,34 @@ def sigmoid(z: np.ndarray) -> np.ndarray:
     """The sigmoid activation function: 1 / (1 + exp(-z)).
 
     Maps any real number to the range (0, 1), interpreting the output
-    as a probability.
+    as a probability. We use it on the OUTPUT neuron so the network
+    produces a probability for binary classification.
     """
     # This one is provided for you
     return 1.0 / (1.0 + np.exp(-z))
+
+
+def relu(z: np.ndarray) -> np.ndarray:
+    """The ReLU (Rectified Linear Unit) activation: max(0, z).
+
+    ReLU keeps positive values unchanged and clamps negatives to zero.
+    It is cheap to compute and avoids the vanishing-gradient problem,
+    which is why it dominates the HIDDEN layers of modern networks.
+
+    Args:
+        z: A scalar or numpy array (the pre-activation values)
+
+    Returns:
+        The elementwise maximum of 0 and z (same shape as z)
+    """
+    # TODO: Return the elementwise max of 0 and z in one line
+    # Hint: numpy has a function that takes the elementwise maximum.
+    raise NotImplementedError("TODO: implement the ReLU activation")
+
+
+# ---------------------------------------------------------------------------
+# Step 1: Forward pass (single neuron)
+# ---------------------------------------------------------------------------
 
 
 def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
@@ -133,7 +157,7 @@ def update_parameters(
 
 
 # ---------------------------------------------------------------------------
-# Step 7: MLP forward pass
+# Step 5: MLP forward pass (ReLU hidden layer, sigmoid output)
 # ---------------------------------------------------------------------------
 
 
@@ -146,11 +170,13 @@ def mlp_forward(
 ) -> float:
     """Forward pass through a two-layer MLP.
 
-    Layer 1: hidden = sigmoid(W1 @ x + b1)
-    Layer 2: output = sigmoid(W2 @ hidden + b2)
+    Layer 1 (hidden):  hidden = relu(W1 @ x + b1)
+    Layer 2 (output):  output = sigmoid(W2 @ hidden + b2)
 
-    This is the simplest network that can solve non-linearly-separable problems
-    like XOR.
+    The hidden layer uses ReLU (the modern default for hidden layers).
+    The output neuron uses sigmoid so the network produces a probability.
+    This is the simplest network that can solve non-linearly-separable
+    problems like XOR.
 
     Args:
         x: Input vector, shape (2,)
@@ -162,7 +188,9 @@ def mlp_forward(
     Returns:
         Output probability (scalar between 0 and 1)
     """
-    # TODO: Compute the two-layer forward pass
+    # TODO: Compute the two-layer forward pass.
+    # Use relu(...) for the hidden layer and sigmoid(...) for the output,
+    # then return the single output value (output[0]).
     raise NotImplementedError("TODO: implement MLP forward pass")
 
 
@@ -182,14 +210,20 @@ def mlp_gradients(
     """Compute gradients for the two-layer MLP using backpropagation.
 
     This is the chain rule applied through two layers. The math:
-        hidden = sigmoid(W1 @ x + b1)
-        output = sigmoid(W2 @ hidden + b2)
-        error_out = output - y_true
-        dW2 = error_out * hidden^T
-        db2 = error_out
-        error_hidden = (W2^T @ error_out) * hidden * (1 - hidden)
-        dW1 = error_hidden @ x^T
-        db1 = error_hidden
+        z1     = W1 @ x + b1
+        hidden = relu(z1)
+        z2     = W2 @ hidden + b2
+        output = sigmoid(z2)
+
+        error_out    = output - y_true
+        dW2          = error_out * hidden^T
+        db2          = error_out
+        error_hidden = (W2^T @ error_out) * relu'(z1)   # relu'(z1) = (z1 > 0)
+        dW1          = error_hidden @ x^T
+        db1          = error_hidden
+
+    The only change from a sigmoid hidden layer is the derivative term:
+    ReLU's derivative is 1 where z1 > 0 and 0 elsewhere.
 
     Returns:
         (dW1, db1, dW2, db2)
