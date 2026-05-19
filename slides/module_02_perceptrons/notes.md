@@ -77,6 +77,7 @@ where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the b
 - Each hidden layer applies a nonlinear transformation that "folds" the space. Points that were entangled can be separated; points that were distant can be brought together.
 - With enough layers (depth), a network can separate arbitrarily complex class boundaries.
 - **Visual intuition:** Imagine a sheet of paper with two colors of dots mixed together. A single fold (one hidden layer) can bring same-colored dots together. Multiple folds (deep network) can handle more complex arrangements.
+- **Interactive widget (replaces the former Manim folding clip):** the slide now hosts a live `:::interactive widget="folding"` element. The left pane is the input space showing each hidden neuron's decision line $\mathbf{w}_j \cdot \mathbf{x} + b_j = 0$; the right pane is the hidden space after $h_j = \mathrm{ReLU}(\mathbf{w}_j \cdot \mathbf{x} + b_j)$. Sliders for each neuron's $w_1, w_2, b$ move the lines and refold the points simultaneously, making the equivalence "a neuron's boundary $\equiv$ an axis of the fold" explicit. The neuron-count toggle (1/2/3) shows that one ReLU line cannot fold XOR apart while two parallel folds can; a nearest-centroid separator reports whether the folded layout is linearly separable.
 
 ## Multi-Layer Decision Boundaries
 

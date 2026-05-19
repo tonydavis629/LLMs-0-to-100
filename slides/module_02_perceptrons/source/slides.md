@@ -1,10 +1,6 @@
-<!-- .slide: id="title" class="section-divider" data-state="is-section-divider" -->
-
-# LLMs 0 to 100
-
-Module 2: Perceptrons and Optimization
-
+:::divider id="title" title="LLMs 0 to 100" sub="Module 2: Perceptrons and Optimization"
 From Neurons to Networks
+:::
 
 ---
 
@@ -12,10 +8,7 @@ From Neurons to Networks
 
 ## Review: Module 1
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-
-<div>
-
+:::columns cols="2" gap="30px"
 **Shannon Entropy**
 
 Information is measurable. The entropy of a source measures the average surprise per symbol:
@@ -23,11 +16,7 @@ Information is measurable. The entropy of a source measures the average surprise
 $$H(X) = -\sum_{i} p(x_i) \log_2 p(x_i)$$
 
 A good model assigns high probability to likely events — low surprise, few bits.
-
-</div>
-
-<div>
-
++++
 **N-gram Models**
 
 Predict the next symbol from the previous $n - 1$ symbols:
@@ -35,10 +24,7 @@ Predict the next symbol from the previous $n - 1$ symbols:
 $$P(w_k \mid w_{k-n+1} \ldots w_{k-1})$$
 
 Higher order = more context = better predictions, but the number of possible contexts explodes exponentially.
-
-</div>
-
-</div>
+:::
 
 ---
 
@@ -52,7 +38,9 @@ $$H(p, q) = -\sum_{x} p(x) \log q(x)$$
 
 The same formula is now a **training objective**: we adjust the model to make this number as small as possible. Smaller cross-entropy means predictions closer to the truth.
 
-> **Key idea:** Module 1 used cross-entropy to *score* a model. Module 2 uses it to *train* one.
+:::note
+**Key idea:** Module 1 used cross-entropy to *score* a model. Module 2 uses it to *train* one.
+:::
 
 ---
 
@@ -66,11 +54,8 @@ The same formula is now a **training objective**: we adjust the model to make th
 
 ---
 
-<!-- .slide: id="divider-neuron" class="section-divider" data-state="is-section-divider" -->
-
-# The Neuron Model
-
-Weighted sums, activations, and the simplest learning machine
+:::divider id="divider-neuron" title="The Neuron Model" sub="Weighted sums, activations, and the simplest learning machine"
+:::
 
 ---
 
@@ -78,8 +63,7 @@ Weighted sums, activations, and the simplest learning machine
 
 ## A Loose Biological Analogy
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; margin-top: 10px;">
-
+:::columns cols="2" gap="30px" valign="center"
 <div style="text-align: center;">
 <p class="text-lg" style="color: var(--primary-color); font-weight: 600; margin-bottom: 6px;">Biological Neuron</p>
 <svg viewBox="0 0 300 200" width="100%" style="max-height:240px;">
@@ -104,7 +88,7 @@ Weighted sums, activations, and the simplest learning machine
 </svg>
 <p class="text-lg" style="color: var(--muted-color); margin-top: 4px;">Dendrites in, cell body integrates, axon fires</p>
 </div>
-
++++
 <div style="text-align: center;">
 <p class="text-lg" style="color: var(--primary-color); font-weight: 600; margin-bottom: 6px;">Artificial Neuron</p>
 <svg viewBox="0 0 340 200" width="100%" style="max-height:240px;">
@@ -132,10 +116,11 @@ Weighted sums, activations, and the simplest learning machine
 </svg>
 <p class="text-lg" style="color: var(--muted-color); margin-top: 4px;">Inputs &times; weights, sum + bias, activation out</p>
 </div>
+:::
 
-</div>
-
-> The analogy aids intuition but breaks down fast: real neurons use spike timing, dendritic computation, and many neurotransmitters — none captured here.
+:::note
+The analogy aids intuition but breaks down fast: real neurons use spike timing, dendritic computation, and many neurotransmitters — none captured here.
+:::
 
 ---
 
@@ -147,33 +132,19 @@ A single neuron computes:
 
 $$y = \sigma(\mathbf{w} \cdot \mathbf{x} + b)$$
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 10px;">
-
-<div>
-
+:::columns cols="3" gap="20px"
 **$\mathbf{w} \cdot \mathbf{x}$**
 
 Dot product of inputs and weights — how much each input matters
-
-</div>
-
-<div>
-
++++
 **$+ \; b$**
 
 Bias term — shifts the decision boundary
-
-</div>
-
-<div>
-
++++
 **$\sigma(\cdot)$**
 
 Activation function — introduces nonlinearity
-
-</div>
-
-</div>
+:::
 
 This is a **linear function** followed by a **nonlinearity**. That pattern is the fundamental building block of every neural network.
 
@@ -183,8 +154,7 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 
 ## Activation Functions
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 18px; margin-top: 12px;">
-
+:::columns cols="4" gap="18px"
 <div style="text-align:center;">
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Step</p>
 <p style="color: var(--muted-color); margin:2px 0;">$\sigma(z)=\mathbb{1}[z \geq 0]$</p>
@@ -197,7 +167,7 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 </svg>
 <p style="color: var(--muted-color); font-size:13pt;">Binary; not differentiable at 0</p>
 </div>
-
++++
 <div style="text-align:center;">
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Sigmoid</p>
 <p style="color: var(--muted-color); margin:2px 0;">$\dfrac{1}{1 + e^{-z}}$</p>
@@ -208,7 +178,7 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 </svg>
 <p style="color: var(--muted-color); font-size:13pt;">(0,1); vanishing gradients</p>
 </div>
-
++++
 <div style="text-align:center;">
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Tanh</p>
 <p style="color: var(--muted-color); margin:2px 0;">$\dfrac{e^z - e^{-z}}{e^z + e^{-z}}$</p>
@@ -219,7 +189,7 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 </svg>
 <p style="color: var(--muted-color); font-size:13pt;">Zero-centered (-1,1)</p>
 </div>
-
++++
 <div style="text-align:center;">
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">ReLU</p>
 <p style="color: var(--muted-color); margin:2px 0;">$\max(0, z)$</p>
@@ -230,8 +200,7 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 </svg>
 <p style="color: var(--muted-color); font-size:13pt;">Cheap; the modern default</p>
 </div>
-
-</div>
+:::
 
 The course MLP uses **ReLU** in its hidden layer and **sigmoid** on the output (for a probability). <!-- .element: class="text-lg" style="text-align:center; color: var(--muted-color); margin-top: 14px;" -->
 
@@ -265,11 +234,9 @@ Any number of linear layers collapses to a single linear function, so depth alon
 
 ## Universal Approximation Theorem
 
-<div class="highlight-box">
-
+:::note
 One hidden layer with enough neurons can approximate any continuous function on a compact subset of $\mathbb{R}^n$.
-
-</div>
+:::
 
 **The catch:** the theorem only says such a network *exists*. It does not say gradient descent will find it, that the neuron count is practical, or that it will generalize.
 
@@ -277,11 +244,8 @@ One hidden layer with enough neurons can approximate any continuous function on 
 
 ---
 
-<!-- .slide: id="divider-matrix-graph" class="section-divider" data-state="is-section-divider" -->
-
-# Networks as Matrices
-
-Why GPUs matter
+:::divider id="divider-matrix-graph" title="Networks as Matrices" sub="Why GPUs matter"
+:::
 
 ---
 
@@ -326,34 +290,20 @@ A layer's connections **are** a weight matrix: edge weight from input $j$ to neu
 </svg>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 8px;">
-<div>
-
+:::columns cols="2" gap="36px"
 **Forward pass:** $\mathbf{h} = \sigma(W\mathbf{x} + \mathbf{b})$ <!-- .element: class="text-lg" style="color: var(--secondary-color); margin:0;" -->
 
 One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(--muted-color); margin:4px 0 0 0;" -->
-
-</div>
-<div>
-
++++
 **Why GPUs?** Each output is an independent dot product, so the work is massively parallel — exactly what a GPU's thousands of cores do best. <!-- .element: class="text-lg" style="margin:0;" -->
-
-</div>
-</div>
+:::
 
 ---
 
-<div class="content">
-
-<div style="display: grid; grid-template-columns: 200px 1fr; gap: 30px; align-items: start;">
-
-<div>
+:::columns grid="200px 1fr" gap="30px" valign="start"
 <img src="images/minsky.jpg" alt="Marvin Minsky" style="border-radius: 8px; width: 100%; box-shadow: 0 4px 20px rgba(74, 158, 255, 0.15);">
 <img src="images/papert.jpg" alt="Seymour Papert" style="border-radius: 8px; width: 100%; margin-top: 10px; box-shadow: 0 4px 20px rgba(74, 158, 255, 0.15);">
-</div>
-
-<div>
-
++++
 ## Minsky &amp; Papert <!-- .element: class="fragment fade-in" style="border: none; margin: 0 0 10px 0;" -->
 
 <div class="fragment fade-in">
@@ -367,20 +317,12 @@ One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(
 - **They knew multi-layer nets could solve these problems.** The critique was that no one knew how to *train* them.
 
 </div>
-
-</div>
-
-</div>
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="divider-xor" class="section-divider" data-state="is-section-divider" -->
-
-# The XOR Problem
-
-The limitation that froze a field
+:::divider id="divider-xor" title="The XOR Problem" sub="The limitation that froze a field"
+:::
 
 ---
 
@@ -390,7 +332,7 @@ The limitation that froze a field
 
 A single perceptron defines a **hyperplane** in the input space — a line in 2D, a plane in 3D.
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-top: 20px;">
+:::columns cols="3" gap="25px"
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">AND</p>
     <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
@@ -401,6 +343,7 @@ A single perceptron defines a **hyperplane** in the input space — a line in 2D
     </table>
     <p style="color: #3fb950;">One line separates them.</p>
   </div>
++++
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">OR</p>
     <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
@@ -411,6 +354,7 @@ A single perceptron defines a **hyperplane** in the input space — a line in 2D
     </table>
     <p style="color: #3fb950;">One line separates them.</p>
   </div>
++++
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">XOR</p>
     <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
@@ -421,7 +365,7 @@ A single perceptron defines a **hyperplane** in the input space — a line in 2D
     </table>
     <p style="color: #e74c3c;">No single line works.</p>
   </div>
-</div>
+:::
 
 XOR is **not linearly separable** — you cannot draw one line to separate the classes. This is what Minsky and Papert proved formally in 1969.
 
@@ -438,8 +382,7 @@ XOR is **not linearly separable** — you cannot draw one line to separate the c
 
 Two hidden neurons each learn one linear boundary; the output neuron combines them.
 
-<div style="display:grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items:center; margin-top:10px;">
-
+:::columns grid="1.1fr 1fr" gap="28px" valign="center"
 <div style="text-align:center;">
 <svg viewBox="0 0 480 230" width="100%" style="max-height:250px;">
   <defs>
@@ -472,21 +415,18 @@ Two hidden neurons each learn one linear boundary; the output neuron combines th
   </g>
 </svg>
 </div>
-
++++
 <div>
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Hidden neuron 1</p>
 <p class="text-lg" style="margin:2px 0 14px 0;">One line, e.g. $x_1 + x_2 > 0.5$</p>
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Hidden neuron 2</p>
 <p class="text-lg" style="margin:2px 0 0 0;">Another line, e.g. $x_1 + x_2 < 1.5$</p>
 </div>
+:::
 
-</div>
-
-<div class="highlight-box" style="margin-top:24px;">
-
+:::note
 **Output neuron** &mdash; fires only when *both* hidden neurons agree (AND-like logic). That intersection of two half-planes is the XOR region. <!-- .element: class="text-lg" style="margin:0;" -->
-
-</div>
+:::
 
 The simplest proof that **depth matters**: one layer cannot do what two can. <!-- .element: class="text-lg" style="margin-top:16px;" -->
 
@@ -498,13 +438,15 @@ The simplest proof that **depth matters**: one layer cannot do what two can. <!-
 
 A single perceptron only cuts the space with one flat hyperplane. A hidden layer applies $\sigma(W\mathbf{x}+\mathbf{b})$, which **folds** the space itself.
 
-> **Intuition:** picture a sheet of paper with two colors of dots mixed together. One fold (one hidden layer) can stack same-colored dots so a single straight cut separates them. More folds handle more tangled arrangements.
+:::note
+**Intuition:** picture a sheet of paper with two colors of dots mixed together. One fold (one hidden layer) can stack same-colored dots so a single straight cut separates them. More folds handle more tangled arrangements.
+:::
 
 The weight matrix $W$ **is** the fold: entangled points get pulled apart, distant points brought together.
 
 ---
 
-:::manim id="anim-folding" scene="folding-viz"
+:::interactive id="anim-folding" widget="folding" title="Folding: One Neuron to Many"
 :::
 
 ---
@@ -515,7 +457,9 @@ The weight matrix $W$ **is** the fold: entangled points get pulled apart, distan
 
 A ReLU network is still built from straight pieces. Each hidden neuron contributes **one** linear boundary; combining them carves the input space into regions.
 
-> The decision boundary *looks* curved, but up close it is **piecewise-linear** &mdash; many straight cuts from the hidden neurons.
+:::note
+The decision boundary *looks* curved, but up close it is **piecewise-linear** &mdash; many straight cuts from the hidden neurons.
+:::
 
 More hidden neurons means more cuts, so the boundary can wrap tightly around any class.
 
@@ -535,11 +479,8 @@ More hidden neurons means more cuts, so the boundary can wrap tightly around any
 
 ---
 
-<!-- .slide: id="divider-backprop" class="section-divider" data-state="is-section-divider" -->
-
-# Backpropagation
-
-The chain rule, applied systematically
+:::divider id="divider-backprop" title="Backpropagation" sub="The chain rule, applied systematically"
+:::
 
 ---
 
@@ -549,32 +490,23 @@ The chain rule, applied systematically
 
 A **loss function** measures how wrong a prediction is. Training minimizes it. <!-- .element: class="text-lg" -->
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 15px;">
-<div>
-
+:::columns cols="2" gap="40px"
 **Mean Squared Error (Regression)** <!-- .element: class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;" -->
 
 $$L = \frac{1}{N}\sum_{i=1}^{N}(y_i - \hat{y}_i)^2$$
 
 Penalizes large errors quadratically. Standard for predicting continuous values.
-
-</div>
-<div>
-
++++
 **Binary Cross-Entropy (Classification)** <!-- .element: class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;" -->
 
 $$L = -\frac{1}{N}\sum_{i=1}^{N}\left[y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \hat{y}_i)\right]$$
 
 Measures surprise under the model's predictions. High loss when confident and wrong.
+:::
 
-</div>
-</div>
-
-<div class="highlight-box" style="margin-top: 25px;">
-
+:::note
 **Module 1 connection:** binary cross-entropy is Shannon's entropy used as a training objective &mdash; the same formula that scored n-gram models now drives learning. <!-- .element: class="text-lg" style="margin: 0;" -->
-
-</div>
+:::
 
 ---
 
@@ -630,11 +562,8 @@ The chain rule multiplies one local derivative per stage along the path **loss &
 
 ---
 
-<!-- .slide: id="divider-gradient-descent" class="section-divider" data-state="is-section-divider" -->
-
-# Gradient Descent
-
-Walking downhill on the loss surface
+:::divider id="divider-gradient-descent" title="Gradient Descent" sub="Walking downhill on the loss surface"
+:::
 
 ---
 
@@ -645,7 +574,7 @@ Compute the gradient of the loss with respect to all weights, then take a step i
 
 $$w \leftarrow w - \eta \frac{\partial L}{\partial w}$$
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px;">
+:::columns cols="3" gap="25px"
 <div style="text-align: center;">
 
 **$\eta$ too large**
@@ -653,6 +582,7 @@ $$w \leftarrow w - \eta \frac{\partial L}{\partial w}$$
 Overshoots the minimum and may diverge entirely
 
 </div>
++++
 <div style="text-align: center;">
 
 **$\eta$ too small**
@@ -660,6 +590,7 @@ Overshoots the minimum and may diverge entirely
 Converges very slowly, may get stuck in local minima
 
 </div>
++++
 <div style="text-align: center;">
 
 **$\eta$ just right**
@@ -667,7 +598,7 @@ Converges very slowly, may get stuck in local minima
 Steady convergence toward a good minimum
 
 </div>
-</div>
+:::
 
 ---
 
@@ -676,26 +607,19 @@ Steady convergence toward a good minimum
 
 Instead of computing the gradient over the entire dataset (batch gradient descent), **SGD** computes it over a random subset (mini-batch).
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
-<div>
-
+:::columns cols="2" gap="30px"
 **Small batch (e.g., 32)**
 
 - Noisier gradient estimates
 - Faster per step
 - Noise helps escape local minima
-
-</div>
-<div>
-
++++
 **Large batch (e.g., 256)**
 
 - Smoother gradient estimates
 - More memory required
 - May converge to sharper minima
-
-</div>
-</div>
+:::
 
 **Typical batch sizes:** 32, 64, 128, 256. The trade-off between noise and stability is a practical tuning decision.
 
@@ -719,29 +643,19 @@ Adam is the **default optimizer** in practice for most deep learning tasks. When
 
 The loss function defines a surface in weight space. For a network with $n$ weights, this is a surface in $(n + 1)$-dimensional space.
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-top: 25px;">
-<div>
-
+:::columns cols="3" gap="25px"
 **Sharp Minima**
 
 Small weight perturbations cause large loss changes. Tend to **generalize poorly**.
-
-</div>
-<div>
-
++++
 **Flat Minima**
 
 Robust to small perturbations. Tend to **generalize better** to new data.
-
-</div>
-<div>
-
++++
 **Saddle Points**
 
 Gradient is zero but not a minimum. In high dimensions, **far more common** than local minima.
-
-</div>
-</div>
+:::
 
 The learning rate affects which kind of minimum the optimizer finds. SGD noise helps escape sharp minima and saddle points.
 
@@ -765,11 +679,9 @@ Frameworks like PyTorch build a **dynamic computation graph** as the forward pas
 - You write only the forward pass; the gradients come for free
 <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
-<div class="highlight-box" style="margin-top: 25px;">
-
+:::note
 This is **automatic differentiation** (autograd) &mdash; why you can prototype a new architecture in a few lines without deriving a single gradient by hand. <!-- .element: class="text-lg" style="margin: 0;" -->
-
-</div>
+:::
 
 ---
 
@@ -778,26 +690,19 @@ This is **automatic differentiation** (autograd) &mdash; why you can prototype a
 
 A network with enough parameters can **memorize** any training set &mdash; achieving zero training loss but failing on new data.
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 25px;">
-<div>
-
+:::columns cols="2" gap="40px"
 **Overfitting**
 
 - Training loss goes to zero
 - Test loss stays high or increases
 - The model has memorized the training data, not learned the pattern
-
-</div>
-<div>
-
++++
 **Generalization**
 
 - Low loss on both training and test data
 - The model has learned the underlying structure
 - Performs well on data it has never seen
-
-</div>
-</div>
+:::
 
 **Regularization techniques** (named here, covered in later modules): **dropout** (randomly zero out neurons during training) and **weight decay** (penalize large weights with $\lambda \|\mathbf{w}\|^2$).
 
@@ -808,11 +713,8 @@ A network with enough parameters can **memorize** any training set &mdash; achie
 
 ---
 
-<!-- .slide: id="divider-exercise" class="section-divider" data-state="is-section-divider" -->
-
-# Exercise
-
-Text Classifier with Decision Boundary Visualization
+:::divider id="divider-exercise" title="Exercise" sub="Text Classifier with Decision Boundary Visualization"
+:::
 
 ---
 
@@ -847,10 +749,7 @@ Each function is mostly written for you &mdash; you fill in **one key line**. <!
 
 ---
 
-<!-- .slide: id="exercise-step1-code" -->
-
-## Step 1: forward()
-
+:::step id="exercise-step1-code" title="Step 1: forward()"
 ```python
 def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
     """Compute the output of a single neuron.
@@ -860,29 +759,19 @@ def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
     # TODO: Compute the neuron's output in one line
     raise NotImplementedError("TODO: implement the forward pass")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** Compute `z = np.dot(x, weights) + bias`, then return `sigmoid(z)`.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
-**Answer:** <!-- .element: class="text-lg" -->
++++
+**Answer:**
 
 ```python
 return sigmoid(np.dot(x, weights) + bias)
 ```
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="exercise-step2-code" -->
-
-## Step 2: binary_cross_entropy()
-
+:::step id="exercise-step2-code" title="Step 2: binary_cross_entropy()"
 ```python
 def binary_cross_entropy(y_true: float, y_pred: float) -> float:
     """Compute binary cross-entropy loss for one sample.
@@ -896,29 +785,19 @@ def binary_cross_entropy(y_true: float, y_pred: float) -> float:
     # TODO: Compute and return the BCE loss using the formula in the docstring
     raise NotImplementedError("TODO: implement binary cross-entropy")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** This is the same cross-entropy formula from Module 1, applied to a single sample.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
-**Answer:** <!-- .element: class="text-lg" -->
++++
+**Answer:**
 
 ```python
 return -(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
 ```
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="exercise-step3-code" -->
-
-## Step 3: compute_gradients()
-
+:::step id="exercise-step3-code" title="Step 3: compute_gradients()"
 ```python
 def compute_gradients(
     x: np.ndarray, y_true: float, y_pred: float
@@ -932,30 +811,20 @@ def compute_gradients(
     # TODO: Compute the gradients using the formulas in the docstring
     raise NotImplementedError("TODO: implement gradient computation")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** The error is just `y_pred - y_true`. The weight gradient is `error * x`, the bias gradient is `error`.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
-**Answer:** <!-- .element: class="text-lg" -->
++++
+**Answer:**
 
 ```python
 error = y_pred - y_true
 return (error * x, error)
 ```
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="exercise-step4-code" -->
-
-## Step 4: update_parameters()
-
+:::step id="exercise-step4-code" title="Step 4: update_parameters()"
 ```python
 def update_parameters(
     weights: np.ndarray, bias: float,
@@ -969,22 +838,15 @@ def update_parameters(
     # TODO: Apply the gradient descent update rule
     raise NotImplementedError("TODO: implement parameter update")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** Subtract `learning_rate * dw` from weights, `learning_rate * db` from bias.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
-**Answer:** <!-- .element: class="text-lg" -->
++++
+**Answer:**
 
 ```python
 return (weights - learning_rate * dw, bias - learning_rate * db)
 ```
-
-</div>
+:::
 
 ---
 
@@ -1022,20 +884,15 @@ PART 3: MLP on Non-Linearly Separable Data
 
 PART 2 ran the **same** trained neuron on the XOR-like dataset. No new code &mdash; the runner does it automatically. <!-- .element: class="text-lg" -->
 
-<div class="highlight-box" style="margin-top: 20px;">
-
+:::note
 **50% accuracy is random guessing.** The loss flat-lines at **0.693**, which is exactly $\ln 2$ &mdash; the cross-entropy of a fair coin. <!-- .element: class="text-lg" style="margin:0;" -->
-
-</div>
+:::
 
 No straight line separates XOR, so the best a single linear neuron can do is shrug and predict 0.5 for everything. The fix is a **hidden layer with a nonlinearity**. <!-- .element: class="text-lg" style="margin-top: 18px;" -->
 
 ---
 
-<!-- .slide: id="exercise-step6-code" -->
-
-## Step 6: relu()
-
+:::step id="exercise-step6-code" title="Step 6: relu()"
 ```python
 def relu(z: np.ndarray) -> np.ndarray:
     """The ReLU activation: max(0, z).
@@ -1046,29 +903,19 @@ def relu(z: np.ndarray) -> np.ndarray:
     # TODO: Return the elementwise max of 0 and z in one line
     raise NotImplementedError("TODO: implement the ReLU activation")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** `np.maximum` takes the elementwise maximum of two arrays (or an array and a scalar).
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
-**Answer:** <!-- .element: class="text-lg" -->
++++
+**Answer:**
 
 ```python
 return np.maximum(0.0, z)
 ```
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="exercise-step7-code" -->
-
-## Step 7: mlp_forward()
-
+:::step id="exercise-step7-code" title="Step 7: mlp_forward()"
 ```python
 def mlp_forward(x, W1, b1, W2, b2) -> float:
     """Forward pass through a two-layer MLP.
@@ -1079,24 +926,17 @@ def mlp_forward(x, W1, b1, W2, b2) -> float:
     # TODO: Compute the two-layer forward pass
     raise NotImplementedError("TODO: implement MLP forward pass")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** ReLU on the hidden layer, sigmoid on the output (so it stays a probability).
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
-**Answer:** <!-- .element: class="text-lg" -->
++++
+**Answer:**
 
 ```python
 hidden = relu(W1 @ x + b1)
 output = sigmoid(W2 @ hidden + b2)
 return output[0]
 ```
-
-</div>
+:::
 
 ---
 
@@ -1160,91 +1000,58 @@ The chain rule applied twice: through the sigmoid output, then through the ReLU 
 
 ---
 
-<!-- .slide: id="divider-quiz" class="section-divider" data-state="is-section-divider" -->
-
-# Quiz
-
-Test your understanding
+:::divider id="divider-quiz" title="Quiz" sub="Test your understanding"
+:::
 
 ---
 
-<!-- .slide: id="quiz-q1" -->
+:::quiz id="quiz-q1" title="Q1: Why Nonlinearity?"
+A student proposes building a "deep" network with 100 linear layers (no activation functions) to model a complex relationship.
 
-## Q1: Why Nonlinearity?
-
-A student proposes building a "deep" network with 100 linear layers (no activation functions) to model a complex relationship. <!-- .element: class="text-lg" -->
-
-What will this network compute, and why is the student's approach fundamentally flawed? <!-- .element: class="text-2xl" -->
-
-<div class="fragment highlight-box" style="margin-top: 30px;">
-
-**Answer:** The composition of any number of linear transformations is still a single linear transformation: $W_{100} \cdots W_2 W_1 \mathbf{x} = W' \mathbf{x}$. The 100-layer network has exactly the same representational power as a single layer. Without nonlinear activation functions between layers, depth adds nothing. <!-- .element: class="text-lg" -->
-
-</div>
+What will this network compute, and why is the student's approach fundamentally flawed?
++++
+**Answer:** The composition of any number of linear transformations is still a single linear transformation: $W_{100} \cdots W_2 W_1 \mathbf{x} = W' \mathbf{x}$. The 100-layer network has exactly the same representational power as a single layer. Without nonlinear activation functions between layers, depth adds nothing.
+:::
 
 ---
 
-<!-- .slide: id="quiz-q2" -->
+:::quiz id="quiz-q2" title="Q2: The XOR Barrier"
+In the exercise, the single neuron achieved 50% accuracy on XOR-like data, with the loss stuck at 0.693.
 
-## Q2: The XOR Barrier
-
-In the exercise, the single neuron achieved 50% accuracy on XOR-like data, with the loss stuck at 0.693. <!-- .element: class="text-lg" -->
-
-Why exactly 50%, and what is special about the number 0.693? <!-- .element: class="text-2xl" -->
-
-<div class="fragment highlight-box" style="margin-top: 30px;">
-
-**Answer:** 50% is random chance for a binary classification problem &mdash; the neuron cannot do better than guessing. The loss 0.693 is $\ln(2) \approx 0.6931$, which is the cross-entropy of a fair coin (maximum uncertainty for two classes). The neuron converges to predicting ~0.5 for everything because no linear boundary can improve on random guessing for XOR-structured data. <!-- .element: class="text-lg" -->
-
-</div>
+Why exactly 50%, and what is special about the number 0.693?
++++
+**Answer:** 50% is random chance for a binary classification problem &mdash; the neuron cannot do better than guessing. The loss 0.693 is $\ln(2) \approx 0.6931$, which is the cross-entropy of a fair coin (maximum uncertainty for two classes). The neuron converges to predicting ~0.5 for everything because no linear boundary can improve on random guessing for XOR-structured data.
+:::
 
 ---
 
-<!-- .slide: id="quiz-q3" -->
+:::quiz id="quiz-q3" title="Q3: Gradient Descent Trade-offs"
+You are training a neural network and notice the loss is oscillating wildly instead of decreasing smoothly.
 
-## Q3: Gradient Descent Trade-offs
-
-You are training a neural network and notice the loss is oscillating wildly instead of decreasing smoothly. <!-- .element: class="text-lg" -->
-
-Name two possible causes and what you would try for each. <!-- .element: class="text-2xl" -->
-
-<div class="fragment highlight-box" style="margin-top: 30px;">
-
-**Answer:** (1) **Learning rate too high** &mdash; the optimizer overshoots the minimum on each step. Fix: reduce the learning rate. (2) **Batch size too small** &mdash; the gradient estimate is very noisy, causing erratic updates. Fix: increase the batch size for smoother gradients. A third possibility: the loss landscape itself is very rugged, in which case switching to Adam (which adapts per-parameter learning rates) can help. <!-- .element: class="text-lg" -->
-
-</div>
+Name two possible causes and what you would try for each.
++++
+**Answer:** (1) **Learning rate too high** &mdash; the optimizer overshoots the minimum on each step. Fix: reduce the learning rate. (2) **Batch size too small** &mdash; the gradient estimate is very noisy, causing erratic updates. Fix: increase the batch size for smoother gradients. A third possibility: the loss landscape itself is very rugged, in which case switching to Adam (which adapts per-parameter learning rates) can help.
+:::
 
 ---
 
-<!-- .slide: id="quiz-q4" -->
+:::quiz id="quiz-q4" title="Q4: Backpropagation Efficiency"
+GPT-4 is estimated to have over one trillion parameters.
 
-## Q4: Backpropagation Efficiency
-
-GPT-4 is estimated to have over one trillion parameters. <!-- .element: class="text-lg" -->
-
-Without backpropagation, how many forward passes would you need to estimate the gradient for a single training step? Why is this infeasible? <!-- .element: class="text-2xl" -->
-
-<div class="fragment highlight-box" style="margin-top: 30px;">
-
-**Answer:** You would need at least one forward pass per parameter to numerically estimate each partial derivative &mdash; over one trillion forward passes for a single update step. At any realistic speed, this would take years for one step. Backpropagation computes all gradients in a single backward pass, reducing the cost to roughly 2&ndash;3x a single forward pass regardless of parameter count. <!-- .element: class="text-lg" -->
-
-</div>
+Without backpropagation, how many forward passes would you need to estimate the gradient for a single training step? Why is this infeasible?
++++
+**Answer:** You would need at least one forward pass per parameter to numerically estimate each partial derivative &mdash; over one trillion forward passes for a single update step. At any realistic speed, this would take years for one step. Backpropagation computes all gradients in a single backward pass, reducing the cost to roughly 2&ndash;3x a single forward pass regardless of parameter count.
+:::
 
 ---
 
-<!-- .slide: id="quiz-q5" -->
+:::quiz id="quiz-q5" title="Q5: Sharp vs. Flat Minima"
+Two networks achieve the same training loss. Network A sits in a sharp minimum; Network B sits in a flat minimum.
 
-## Q5: Sharp vs. Flat Minima
-
-Two networks achieve the same training loss. Network A sits in a sharp minimum; Network B sits in a flat minimum. <!-- .element: class="text-lg" -->
-
-Which network would you expect to generalize better to new data, and why? <!-- .element: class="text-2xl" -->
-
-<div class="fragment highlight-box" style="margin-top: 30px;">
-
-**Answer:** Network B (flat minimum) should generalize better. In a flat minimum, small perturbations to the weights &mdash; which naturally occur when the model encounters slightly different data &mdash; do not significantly change the loss. A sharp minimum is fragile: small weight changes can dramatically increase the loss. This is also why SGD noise and small batch sizes can help generalization &mdash; the noise pushes the optimizer away from sharp minima toward flatter regions. <!-- .element: class="text-lg" -->
-
-</div>
+Which network would you expect to generalize better to new data, and why?
++++
+**Answer:** Network B (flat minimum) should generalize better. In a flat minimum, small perturbations to the weights &mdash; which naturally occur when the model encounters slightly different data &mdash; do not significantly change the loss. A sharp minimum is fragile: small weight changes can dramatically increase the loss. This is also why SGD noise and small batch sizes can help generalization &mdash; the noise pushes the optimizer away from sharp minima toward flatter regions.
+:::
 
 ---
 
@@ -1262,8 +1069,5 @@ Which network would you expect to generalize better to new data, and why? <!-- .
 
 ---
 
-<!-- .slide: id="end" class="section-divider" data-state="is-section-divider" -->
-
-# Questions?
-
-Next: Module 3 — Attention and Embeddings
+:::divider id="end" title="Questions?" sub="Next: Module 3 — Attention and Embeddings"
+:::

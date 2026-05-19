@@ -43,7 +43,7 @@ From Neurons to Networks
 
 ## Review: Module 1
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
@@ -83,7 +83,11 @@ $H(p, q) = -\sum_{x} p(x) \log q(x)$
 
 The same formula is now a **training objective**: we adjust the model to make this number as small as possible. Smaller cross-entropy means predictions closer to the truth.
 
-> **Key idea:** Module 1 used cross-entropy to *score* a model. Module 2 uses it to *train* one.
+<div class="note">
+
+**Key idea:** Module 1 used cross-entropy to *score* a model. Module 2 uses it to *train* one.
+
+</div>
 
 ---
 
@@ -119,13 +123,16 @@ The same formula is now a **training objective**: we adjust the model to make th
 
 Weighted sums, activations, and the simplest learning machine
 
+
 ---
 
 <!-- .slide: id="biological-analogy" -->
 
 ## A Loose Biological Analogy
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: center; margin-top: 10px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px; align-items: center;">
+
+<div>
 
 <div style="text-align: center;">
 <p class="text-lg" style="color: var(--primary-color); font-weight: 600; margin-bottom: 6px;">Biological Neuron</p>
@@ -151,6 +158,10 @@ Weighted sums, activations, and the simplest learning machine
 </svg>
 <p class="text-lg" style="color: var(--muted-color); margin-top: 4px;">Dendrites in, cell body integrates, axon fires</p>
 </div>
+
+</div>
+
+<div>
 
 <div style="text-align: center;">
 <p class="text-lg" style="color: var(--primary-color); font-weight: 600; margin-bottom: 6px;">Artificial Neuron</p>
@@ -182,7 +193,13 @@ Weighted sums, activations, and the simplest learning machine
 
 </div>
 
-> The analogy aids intuition but breaks down fast: real neurons use spike timing, dendritic computation, and many neurotransmitters — none captured here.
+</div>
+
+<div class="note">
+
+The analogy aids intuition but breaks down fast: real neurons use spike timing, dendritic computation, and many neurotransmitters — none captured here.
+
+</div>
 
 ---
 
@@ -194,7 +211,7 @@ A single neuron computes:
 
 $y = \sigma(\mathbf{w} \cdot \mathbf{x} + b)$
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 10px;">
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
 
 <div>
 
@@ -230,7 +247,9 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 
 ## Activation Functions
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 18px; margin-top: 12px;">
+<div class="slide-columns" style="grid-template-columns: repeat(4, 1fr); gap: 18px;">
+
+<div>
 
 <div style="text-align:center;">
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Step</p>
@@ -245,6 +264,10 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 <p style="color: var(--muted-color); font-size:13pt;">Binary; not differentiable at 0</p>
 </div>
 
+</div>
+
+<div>
+
 <div style="text-align:center;">
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Sigmoid</p>
 <p style="color: var(--muted-color); margin:2px 0;">$\dfrac{1}{1 + e^{-z}}$</p>
@@ -255,6 +278,10 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 </svg>
 <p style="color: var(--muted-color); font-size:13pt;">(0,1); vanishing gradients</p>
 </div>
+
+</div>
+
+<div>
 
 <div style="text-align:center;">
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Tanh</p>
@@ -267,6 +294,10 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
 <p style="color: var(--muted-color); font-size:13pt;">Zero-centered (-1,1)</p>
 </div>
 
+</div>
+
+<div>
+
 <div style="text-align:center;">
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">ReLU</p>
 <p style="color: var(--muted-color); margin:2px 0;">$\max(0, z)$</p>
@@ -276,6 +307,8 @@ This is a **linear function** followed by a **nonlinearity**. That pattern is th
   <polyline points="20,125 120,125 210,35" fill="none" stroke="#f5a623" stroke-width="3"/>
 </svg>
 <p style="color: var(--muted-color); font-size:13pt;">Cheap; the modern default</p>
+</div>
+
 </div>
 
 </div>
@@ -328,7 +361,7 @@ Any number of linear layers collapses to a single linear function, so depth alon
 
 ## Universal Approximation Theorem
 
-<div class="highlight-box">
+<div class="note">
 
 One hidden layer with enough neurons can approximate any continuous function on a compact subset of $\mathbb{R}^n$.
 
@@ -345,6 +378,7 @@ One hidden layer with enough neurons can approximate any continuous function on 
 # Networks as Matrices
 
 Why GPUs matter
+
 
 ---
 
@@ -389,7 +423,8 @@ A layer's connections **are** a weight matrix: edge weight from input $j$ to neu
 </svg>
 </div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 8px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 36px;">
+
 <div>
 
 **Forward pass:** $\mathbf{h} = \sigma(W\mathbf{x} + \mathbf{b})$ <!-- .element: class="text-lg" style="color: var(--secondary-color); margin:0;" -->
@@ -397,22 +432,24 @@ A layer's connections **are** a weight matrix: edge weight from input $j$ to neu
 One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(--muted-color); margin:4px 0 0 0;" -->
 
 </div>
+
 <div>
 
 **Why GPUs?** Each output is an independent dot product, so the work is massively parallel — exactly what a GPU's thousands of cores do best. <!-- .element: class="text-lg" style="margin:0;" -->
 
 </div>
+
 </div>
 
 ---
 
-<div class="content">
-
-<div style="display: grid; grid-template-columns: 200px 1fr; gap: 30px; align-items: start;">
+<div class="slide-columns" style="grid-template-columns: 200px 1fr; gap: 30px; align-items: start;">
 
 <div>
+
 <img src="images/minsky.jpg" alt="Marvin Minsky" style="border-radius: 8px; width: 100%; box-shadow: 0 4px 20px rgba(74, 158, 255, 0.15);">
 <img src="images/papert.jpg" alt="Seymour Papert" style="border-radius: 8px; width: 100%; margin-top: 10px; box-shadow: 0 4px 20px rgba(74, 158, 255, 0.15);">
+
 </div>
 
 <div>
@@ -435,8 +472,6 @@ One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(
 
 </div>
 
-</div>
-
 ---
 
 <!-- .slide: id="divider-xor" class="section-divider" data-state="is-section-divider" -->
@@ -444,6 +479,7 @@ One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(
 # The XOR Problem
 
 The limitation that froze a field
+
 
 ---
 
@@ -453,7 +489,10 @@ The limitation that froze a field
 
 A single perceptron defines a **hyperplane** in the input space — a line in 2D, a plane in 3D.
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-top: 20px;">
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 25px;">
+
+<div>
+
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">AND</p>
     <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
@@ -464,6 +503,11 @@ A single perceptron defines a **hyperplane** in the input space — a line in 2D
     </table>
     <p style="color: #3fb950;">One line separates them.</p>
   </div>
+
+</div>
+
+<div>
+
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">OR</p>
     <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
@@ -474,6 +518,11 @@ A single perceptron defines a **hyperplane** in the input space — a line in 2D
     </table>
     <p style="color: #3fb950;">One line separates them.</p>
   </div>
+
+</div>
+
+<div>
+
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">XOR</p>
     <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
@@ -484,6 +533,9 @@ A single perceptron defines a **hyperplane** in the input space — a line in 2D
     </table>
     <p style="color: #e74c3c;">No single line works.</p>
   </div>
+
+</div>
+
 </div>
 
 XOR is **not linearly separable** — you cannot draw one line to separate the classes. This is what Minsky and Papert proved formally in 1969.
@@ -504,7 +556,9 @@ XOR is **not linearly separable** — you cannot draw one line to separate the c
 
 Two hidden neurons each learn one linear boundary; the output neuron combines them.
 
-<div style="display:grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items:center; margin-top:10px;">
+<div class="slide-columns" style="grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: center;">
+
+<div>
 
 <div style="text-align:center;">
 <svg viewBox="0 0 480 230" width="100%" style="max-height:250px;">
@@ -539,6 +593,10 @@ Two hidden neurons each learn one linear boundary; the output neuron combines th
 </svg>
 </div>
 
+</div>
+
+<div>
+
 <div>
 <p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Hidden neuron 1</p>
 <p class="text-lg" style="margin:2px 0 14px 0;">One line, e.g. $x_1 + x_2 > 0.5$</p>
@@ -548,7 +606,9 @@ Two hidden neurons each learn one linear boundary; the output neuron combines th
 
 </div>
 
-<div class="highlight-box" style="margin-top:24px;">
+</div>
+
+<div class="note">
 
 **Output neuron** &mdash; fires only when *both* hidden neurons agree (AND-like logic). That intersection of two half-planes is the XOR region. <!-- .element: class="text-lg" style="margin:0;" -->
 
@@ -564,16 +624,19 @@ The simplest proof that **depth matters**: one layer cannot do what two can. <!-
 
 A single perceptron only cuts the space with one flat hyperplane. A hidden layer applies $\sigma(W\mathbf{x}+\mathbf{b})$, which **folds** the space itself.
 
-> **Intuition:** picture a sheet of paper with two colors of dots mixed together. One fold (one hidden layer) can stack same-colored dots so a single straight cut separates them. More folds handle more tangled arrangements.
+<div class="note">
+
+**Intuition:** picture a sheet of paper with two colors of dots mixed together. One fold (one hidden layer) can stack same-colored dots so a single straight cut separates them. More folds handle more tangled arrangements.
+
+</div>
 
 The weight matrix $W$ **is** the fold: entangled points get pulled apart, distant points brought together.
 
 ---
 
 <section id="anim-folding">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="folding-viz" preload="auto"></video>
-  </div>
+  <h2>Folding: One Neuron to Many</h2>
+  <div class="interactive-host" data-widget="folding"></div>
 </section>
 
 ---
@@ -584,7 +647,11 @@ The weight matrix $W$ **is** the fold: entangled points get pulled apart, distan
 
 A ReLU network is still built from straight pieces. Each hidden neuron contributes **one** linear boundary; combining them carves the input space into regions.
 
-> The decision boundary *looks* curved, but up close it is **piecewise-linear** &mdash; many straight cuts from the hidden neurons.
+<div class="note">
+
+The decision boundary *looks* curved, but up close it is **piecewise-linear** &mdash; many straight cuts from the hidden neurons.
+
+</div>
 
 More hidden neurons means more cuts, so the boundary can wrap tightly around any class.
 
@@ -629,6 +696,7 @@ More hidden neurons means more cuts, so the boundary can wrap tightly around any
 
 The chain rule, applied systematically
 
+
 ---
 
 <!-- .slide: id="loss-functions" -->
@@ -637,7 +705,8 @@ The chain rule, applied systematically
 
 A **loss function** measures how wrong a prediction is. Training minimizes it. <!-- .element: class="text-lg" -->
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 15px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 40px;">
+
 <div>
 
 **Mean Squared Error (Regression)** <!-- .element: class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;" -->
@@ -647,6 +716,7 @@ $L = \frac{1}{N}\sum_{i=1}^{N}(y_i - \hat{y}_i)^2$
 Penalizes large errors quadratically. Standard for predicting continuous values.
 
 </div>
+
 <div>
 
 **Binary Cross-Entropy (Classification)** <!-- .element: class="text-lg" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px;" -->
@@ -656,9 +726,10 @@ $L = -\frac{1}{N}\sum_{i=1}^{N}\left[y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \ha
 Measures surprise under the model's predictions. High loss when confident and wrong.
 
 </div>
+
 </div>
 
-<div class="highlight-box" style="margin-top: 25px;">
+<div class="note">
 
 **Module 1 connection:** binary cross-entropy is Shannon's entropy used as a training objective &mdash; the same formula that scored n-gram models now drives learning. <!-- .element: class="text-lg" style="margin: 0;" -->
 
@@ -724,6 +795,7 @@ The chain rule multiplies one local derivative per stage along the path **loss &
 
 Walking downhill on the loss surface
 
+
 ---
 
 <!-- .slide: id="gradient-descent-rule" -->
@@ -733,7 +805,10 @@ Compute the gradient of the loss with respect to all weights, then take a step i
 
 $w \leftarrow w - \eta \frac{\partial L}{\partial w}$
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px;">
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 25px;">
+
+<div>
+
 <div style="text-align: center;">
 
 **$\eta$ too large**
@@ -741,6 +816,11 @@ $w \leftarrow w - \eta \frac{\partial L}{\partial w}$
 Overshoots the minimum and may diverge entirely
 
 </div>
+
+</div>
+
+<div>
+
 <div style="text-align: center;">
 
 **$\eta$ too small**
@@ -748,6 +828,11 @@ Overshoots the minimum and may diverge entirely
 Converges very slowly, may get stuck in local minima
 
 </div>
+
+</div>
+
+<div>
+
 <div style="text-align: center;">
 
 **$\eta$ just right**
@@ -755,6 +840,9 @@ Converges very slowly, may get stuck in local minima
 Steady convergence toward a good minimum
 
 </div>
+
+</div>
+
 </div>
 
 ---
@@ -764,7 +852,8 @@ Steady convergence toward a good minimum
 
 Instead of computing the gradient over the entire dataset (batch gradient descent), **SGD** computes it over a random subset (mini-batch).
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
 <div>
 
 **Small batch (e.g., 32)**
@@ -774,6 +863,7 @@ Instead of computing the gradient over the entire dataset (batch gradient descen
 - Noise helps escape local minima
 
 </div>
+
 <div>
 
 **Large batch (e.g., 256)**
@@ -783,6 +873,7 @@ Instead of computing the gradient over the entire dataset (batch gradient descen
 - May converge to sharper minima
 
 </div>
+
 </div>
 
 **Typical batch sizes:** 32, 64, 128, 256. The trade-off between noise and stability is a practical tuning decision.
@@ -807,7 +898,8 @@ Adam is the **default optimizer** in practice for most deep learning tasks. When
 
 The loss function defines a surface in weight space. For a network with $n$ weights, this is a surface in $(n + 1)$-dimensional space.
 
-<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; margin-top: 25px;">
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 25px;">
+
 <div>
 
 **Sharp Minima**
@@ -815,6 +907,7 @@ The loss function defines a surface in weight space. For a network with $n$ weig
 Small weight perturbations cause large loss changes. Tend to **generalize poorly**.
 
 </div>
+
 <div>
 
 **Flat Minima**
@@ -822,6 +915,7 @@ Small weight perturbations cause large loss changes. Tend to **generalize poorly
 Robust to small perturbations. Tend to **generalize better** to new data.
 
 </div>
+
 <div>
 
 **Saddle Points**
@@ -829,6 +923,7 @@ Robust to small perturbations. Tend to **generalize better** to new data.
 Gradient is zero but not a minimum. In high dimensions, **far more common** than local minima.
 
 </div>
+
 </div>
 
 The learning rate affects which kind of minimum the optimizer finds. SGD noise helps escape sharp minima and saddle points.
@@ -856,7 +951,7 @@ Frameworks like PyTorch build a **dynamic computation graph** as the forward pas
 - You write only the forward pass; the gradients come for free
 <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
-<div class="highlight-box" style="margin-top: 25px;">
+<div class="note">
 
 This is **automatic differentiation** (autograd) &mdash; why you can prototype a new architecture in a few lines without deriving a single gradient by hand. <!-- .element: class="text-lg" style="margin: 0;" -->
 
@@ -869,7 +964,8 @@ This is **automatic differentiation** (autograd) &mdash; why you can prototype a
 
 A network with enough parameters can **memorize** any training set &mdash; achieving zero training loss but failing on new data.
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 25px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 40px;">
+
 <div>
 
 **Overfitting**
@@ -879,6 +975,7 @@ A network with enough parameters can **memorize** any training set &mdash; achie
 - The model has memorized the training data, not learned the pattern
 
 </div>
+
 <div>
 
 **Generalization**
@@ -888,6 +985,7 @@ A network with enough parameters can **memorize** any training set &mdash; achie
 - Performs well on data it has never seen
 
 </div>
+
 </div>
 
 **Regularization techniques** (named here, covered in later modules): **dropout** (randomly zero out neurons during training) and **weight decay** (penalize large weights with $\lambda \|\mathbf{w}\|^2$).
@@ -907,6 +1005,7 @@ A network with enough parameters can **memorize** any training set &mdash; achie
 # Exercise
 
 Text Classifier with Decision Boundary Visualization
+
 
 ---
 
@@ -959,15 +1058,15 @@ def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
     raise NotImplementedError("TODO: implement the forward pass")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** Compute `z = np.dot(x, weights) + bias`, then return `sigmoid(z)`.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
-**Answer:** <!-- .element: class="text-lg" -->
+**Answer:**
 
 ```python
 return sigmoid(np.dot(x, weights) + bias)
@@ -995,15 +1094,15 @@ def binary_cross_entropy(y_true: float, y_pred: float) -> float:
     raise NotImplementedError("TODO: implement binary cross-entropy")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** This is the same cross-entropy formula from Module 1, applied to a single sample.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
-**Answer:** <!-- .element: class="text-lg" -->
+**Answer:**
 
 ```python
 return -(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
@@ -1031,15 +1130,15 @@ def compute_gradients(
     raise NotImplementedError("TODO: implement gradient computation")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** The error is just `y_pred - y_true`. The weight gradient is `error * x`, the bias gradient is `error`.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
-**Answer:** <!-- .element: class="text-lg" -->
+**Answer:**
 
 ```python
 error = y_pred - y_true
@@ -1068,15 +1167,15 @@ def update_parameters(
     raise NotImplementedError("TODO: implement parameter update")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** Subtract `learning_rate * dw` from weights, `learning_rate * db` from bias.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
-**Answer:** <!-- .element: class="text-lg" -->
+**Answer:**
 
 ```python
 return (weights - learning_rate * dw, bias - learning_rate * db)
@@ -1134,7 +1233,7 @@ PART 3: MLP on Non-Linearly Separable Data
 
 PART 2 ran the **same** trained neuron on the XOR-like dataset. No new code &mdash; the runner does it automatically. <!-- .element: class="text-lg" -->
 
-<div class="highlight-box" style="margin-top: 20px;">
+<div class="note">
 
 **50% accuracy is random guessing.** The loss flat-lines at **0.693**, which is exactly $\ln 2$ &mdash; the cross-entropy of a fair coin. <!-- .element: class="text-lg" style="margin:0;" -->
 
@@ -1159,15 +1258,15 @@ def relu(z: np.ndarray) -> np.ndarray:
     raise NotImplementedError("TODO: implement the ReLU activation")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** `np.maximum` takes the elementwise maximum of two arrays (or an array and a scalar).
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
-**Answer:** <!-- .element: class="text-lg" -->
+**Answer:**
 
 ```python
 return np.maximum(0.0, z)
@@ -1192,15 +1291,15 @@ def mlp_forward(x, W1, b1, W2, b2) -> float:
     raise NotImplementedError("TODO: implement MLP forward pass")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** ReLU on the hidden layer, sigmoid on the output (so it stays a probability).
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
-**Answer:** <!-- .element: class="text-lg" -->
+**Answer:**
 
 ```python
 hidden = relu(W1 @ x + b1)
@@ -1292,19 +1391,24 @@ The chain rule applied twice: through the sigmoid output, then through the ReLU 
 
 Test your understanding
 
+
 ---
 
 <!-- .slide: id="quiz-q1" -->
 
 ## Q1: Why Nonlinearity?
 
-A student proposes building a "deep" network with 100 linear layers (no activation functions) to model a complex relationship. <!-- .element: class="text-lg" -->
+<div class="quiz-prompt">
 
-What will this network compute, and why is the student's approach fundamentally flawed? <!-- .element: class="text-2xl" -->
+A student proposes building a "deep" network with 100 linear layers (no activation functions) to model a complex relationship.
 
-<div class="fragment highlight-box" style="margin-top: 30px;">
+What will this network compute, and why is the student's approach fundamentally flawed?
 
-**Answer:** The composition of any number of linear transformations is still a single linear transformation: $W_{100} \cdots W_2 W_1 \mathbf{x} = W' \mathbf{x}$. The 100-layer network has exactly the same representational power as a single layer. Without nonlinear activation functions between layers, depth adds nothing. <!-- .element: class="text-lg" -->
+</div>
+
+<div class="fragment note quiz-answer">
+
+**Answer:** The composition of any number of linear transformations is still a single linear transformation: $W_{100} \cdots W_2 W_1 \mathbf{x} = W' \mathbf{x}$. The 100-layer network has exactly the same representational power as a single layer. Without nonlinear activation functions between layers, depth adds nothing.
 
 </div>
 
@@ -1314,13 +1418,17 @@ What will this network compute, and why is the student's approach fundamentally 
 
 ## Q2: The XOR Barrier
 
-In the exercise, the single neuron achieved 50% accuracy on XOR-like data, with the loss stuck at 0.693. <!-- .element: class="text-lg" -->
+<div class="quiz-prompt">
 
-Why exactly 50%, and what is special about the number 0.693? <!-- .element: class="text-2xl" -->
+In the exercise, the single neuron achieved 50% accuracy on XOR-like data, with the loss stuck at 0.693.
 
-<div class="fragment highlight-box" style="margin-top: 30px;">
+Why exactly 50%, and what is special about the number 0.693?
 
-**Answer:** 50% is random chance for a binary classification problem &mdash; the neuron cannot do better than guessing. The loss 0.693 is $\ln(2) \approx 0.6931$, which is the cross-entropy of a fair coin (maximum uncertainty for two classes). The neuron converges to predicting ~0.5 for everything because no linear boundary can improve on random guessing for XOR-structured data. <!-- .element: class="text-lg" -->
+</div>
+
+<div class="fragment note quiz-answer">
+
+**Answer:** 50% is random chance for a binary classification problem &mdash; the neuron cannot do better than guessing. The loss 0.693 is $\ln(2) \approx 0.6931$, which is the cross-entropy of a fair coin (maximum uncertainty for two classes). The neuron converges to predicting ~0.5 for everything because no linear boundary can improve on random guessing for XOR-structured data.
 
 </div>
 
@@ -1330,13 +1438,17 @@ Why exactly 50%, and what is special about the number 0.693? <!-- .element: clas
 
 ## Q3: Gradient Descent Trade-offs
 
-You are training a neural network and notice the loss is oscillating wildly instead of decreasing smoothly. <!-- .element: class="text-lg" -->
+<div class="quiz-prompt">
 
-Name two possible causes and what you would try for each. <!-- .element: class="text-2xl" -->
+You are training a neural network and notice the loss is oscillating wildly instead of decreasing smoothly.
 
-<div class="fragment highlight-box" style="margin-top: 30px;">
+Name two possible causes and what you would try for each.
 
-**Answer:** (1) **Learning rate too high** &mdash; the optimizer overshoots the minimum on each step. Fix: reduce the learning rate. (2) **Batch size too small** &mdash; the gradient estimate is very noisy, causing erratic updates. Fix: increase the batch size for smoother gradients. A third possibility: the loss landscape itself is very rugged, in which case switching to Adam (which adapts per-parameter learning rates) can help. <!-- .element: class="text-lg" -->
+</div>
+
+<div class="fragment note quiz-answer">
+
+**Answer:** (1) **Learning rate too high** &mdash; the optimizer overshoots the minimum on each step. Fix: reduce the learning rate. (2) **Batch size too small** &mdash; the gradient estimate is very noisy, causing erratic updates. Fix: increase the batch size for smoother gradients. A third possibility: the loss landscape itself is very rugged, in which case switching to Adam (which adapts per-parameter learning rates) can help.
 
 </div>
 
@@ -1346,13 +1458,17 @@ Name two possible causes and what you would try for each. <!-- .element: class="
 
 ## Q4: Backpropagation Efficiency
 
-GPT-4 is estimated to have over one trillion parameters. <!-- .element: class="text-lg" -->
+<div class="quiz-prompt">
 
-Without backpropagation, how many forward passes would you need to estimate the gradient for a single training step? Why is this infeasible? <!-- .element: class="text-2xl" -->
+GPT-4 is estimated to have over one trillion parameters.
 
-<div class="fragment highlight-box" style="margin-top: 30px;">
+Without backpropagation, how many forward passes would you need to estimate the gradient for a single training step? Why is this infeasible?
 
-**Answer:** You would need at least one forward pass per parameter to numerically estimate each partial derivative &mdash; over one trillion forward passes for a single update step. At any realistic speed, this would take years for one step. Backpropagation computes all gradients in a single backward pass, reducing the cost to roughly 2&ndash;3x a single forward pass regardless of parameter count. <!-- .element: class="text-lg" -->
+</div>
+
+<div class="fragment note quiz-answer">
+
+**Answer:** You would need at least one forward pass per parameter to numerically estimate each partial derivative &mdash; over one trillion forward passes for a single update step. At any realistic speed, this would take years for one step. Backpropagation computes all gradients in a single backward pass, reducing the cost to roughly 2&ndash;3x a single forward pass regardless of parameter count.
 
 </div>
 
@@ -1362,13 +1478,17 @@ Without backpropagation, how many forward passes would you need to estimate the 
 
 ## Q5: Sharp vs. Flat Minima
 
-Two networks achieve the same training loss. Network A sits in a sharp minimum; Network B sits in a flat minimum. <!-- .element: class="text-lg" -->
+<div class="quiz-prompt">
 
-Which network would you expect to generalize better to new data, and why? <!-- .element: class="text-2xl" -->
+Two networks achieve the same training loss. Network A sits in a sharp minimum; Network B sits in a flat minimum.
 
-<div class="fragment highlight-box" style="margin-top: 30px;">
+Which network would you expect to generalize better to new data, and why?
 
-**Answer:** Network B (flat minimum) should generalize better. In a flat minimum, small perturbations to the weights &mdash; which naturally occur when the model encounters slightly different data &mdash; do not significantly change the loss. A sharp minimum is fragile: small weight changes can dramatically increase the loss. This is also why SGD noise and small batch sizes can help generalization &mdash; the noise pushes the optimizer away from sharp minima toward flatter regions. <!-- .element: class="text-lg" -->
+</div>
+
+<div class="fragment note quiz-answer">
+
+**Answer:** Network B (flat minimum) should generalize better. In a flat minimum, small perturbations to the weights &mdash; which naturally occur when the model encounters slightly different data &mdash; do not significantly change the loss. A sharp minimum is fragile: small weight changes can dramatically increase the loss. This is also why SGD noise and small batch sizes can help generalization &mdash; the noise pushes the optimizer away from sharp minima toward flatter regions.
 
 </div>
 
@@ -1394,6 +1514,7 @@ Which network would you expect to generalize better to new data, and why? <!-- .
 
 Next: Module 3 — Attention and Embeddings
 
+
         </textarea>
       </section>
     </div>
@@ -1410,11 +1531,6 @@ Next: Module 3 — Attention and Embeddings
         "LinearSeparabilityScene_0001_and_separable.mp4",
         "LinearSeparabilityScene_0002_or_separable.mp4",
         "LinearSeparabilityScene_0003_xor_fails.mp4"
-      ],
-      "folding-viz": [
-        "FoldingScene_0000_fold_input.mp4",
-        "FoldingScene_0001_fold_transform.mp4",
-        "FoldingScene_0002_fold_separate.mp4"
       ],
       "mlp-boundary-viz": [
         "MLPBoundaryScene_0000_data.mp4",
@@ -1569,6 +1685,356 @@ Next: Module 3 — Attention and Embeddings
         }
       }
     }, true);
+
+    // =====================================================================
+    // Interactive widgets (:::interactive). Each widget is a factory keyed
+    // by its `data-widget` value; it owns its host element and (re)draws
+    // whenever its slide becomes visible or the window resizes.
+    // =====================================================================
+    var INTERACTIVE_WIDGETS = {};
+
+    function hydrateInteractiveWidgets() {
+      document.querySelectorAll('.interactive-host[data-widget]').forEach(function(host) {
+        if (host.dataset.hydrated) return;
+        var factory = INTERACTIVE_WIDGETS[host.getAttribute('data-widget')];
+        if (!factory) return;
+        host.dataset.hydrated = '1';
+        host._widget = factory(host) || null;
+      });
+    }
+
+    function refreshInteractiveWidgets() {
+      document.querySelectorAll('.interactive-host[data-widget]').forEach(function(host) {
+        if (host._widget && typeof host._widget.resize === 'function') host._widget.resize();
+      });
+    }
+
+    Reveal.on('ready', function() {
+      var tries = 0;
+      var iv = setInterval(function() {
+        tries++;
+        if (document.querySelector('.interactive-host[data-widget]') || tries > 25) {
+          clearInterval(iv);
+          hydrateInteractiveWidgets();
+          requestAnimationFrame(refreshInteractiveWidgets);
+        }
+      }, 100);
+    });
+    Reveal.on('slidechanged', function() {
+      hydrateInteractiveWidgets();
+      requestAnimationFrame(refreshInteractiveWidgets);
+    });
+    window.addEventListener('resize', refreshInteractiveWidgets);
+
+    // ---- Folding widget: input space <-> hidden space, live ----
+    // One neuron j computes h_j = ReLU(w1_j*x1 + w2_j*x2 + b_j). The left
+    // pane shows each neuron's decision line w.x+b=0 in the input space;
+    // the right pane shows every point after the fold (h_1..h_K). Moving a
+    // slider moves a line on the left AND refolds the points on the right,
+    // making "a neuron's boundary == an axis of the fold" visible.
+    INTERACTIVE_WIDGETS.folding = function(host) {
+      var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+          LINEC = '#2a3450', TEXT = '#e8eaf0', SECON = '#f5a623';
+      var NEURON_COLORS = ['#4a9eff', '#f5a623', '#3fb950'];
+
+      // --- XOR-pattern data: opposite corners share a class ---
+      function mulberry32(a) {
+        return function() {
+          a |= 0; a = a + 0x6D2B79F5 | 0;
+          var t = Math.imul(a ^ a >>> 15, 1 | a);
+          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+      }
+      var rnd = mulberry32(42);
+      var clusters = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]];
+      var data = [];
+      clusters.forEach(function(c) {
+        for (var i = 0; i < 14; i++) {
+          data.push({
+            x: c[0] + (rnd() - 0.5) * 0.22,
+            y: c[1] + (rnd() - 0.5) * 0.22,
+            cls: c[2]
+          });
+        }
+      });
+
+      // Preset weights that fold XOR into a linearly separable layout.
+      function preset(k) {
+        var p = [
+          { w1: 1, w2: -1, b: 0.5 },
+          { w1: -1, w2: 1, b: 0.5 },
+          { w1: 1, w2: 1, b: -1.0 }
+        ];
+        return p.slice(0, k).map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
+      }
+      var state = { k: 2, neurons: preset(2) };
+
+      // --- DOM ---
+      host.innerHTML =
+        '<div class="fold-widget">' +
+          '<div class="fold-views">' +
+            '<figure class="fold-view"><figcaption>Input space</figcaption>' +
+              '<canvas class="fold-canvas" data-pane="input"></canvas></figure>' +
+            '<figure class="fold-view"><figcaption>Hidden space &mdash; h = ReLU(Wx + b)</figcaption>' +
+              '<canvas class="fold-canvas" data-pane="hidden"></canvas></figure>' +
+          '</div>' +
+          '<div class="fold-controls">' +
+            '<div class="fold-modes">' +
+              '<button data-neurons="1">1 neuron</button>' +
+              '<button data-neurons="2">2 neurons</button>' +
+              '<button data-neurons="3">3 neurons</button>' +
+              '<button class="fold-reset">Reset to XOR solution</button>' +
+            '</div>' +
+            '<div class="fold-sliders"></div>' +
+            '<p class="fold-readout"></p>' +
+          '</div>' +
+        '</div>';
+
+      var inCanvas = host.querySelector('[data-pane="input"]');
+      var hidCanvas = host.querySelector('[data-pane="hidden"]');
+      var slidersEl = host.querySelector('.fold-sliders');
+      var readoutEl = host.querySelector('.fold-readout');
+      var modeBtns = host.querySelectorAll('.fold-modes button[data-neurons]');
+
+      // Keep slider interaction from bubbling into reveal navigation.
+      ['pointerdown', 'keydown'].forEach(function(ev) {
+        host.addEventListener(ev, function(e) { e.stopPropagation(); });
+      });
+
+      function relu(z) { return z > 0 ? z : 0; }
+
+      function buildSliders() {
+        slidersEl.innerHTML = '';
+        state.neurons.forEach(function(n, idx) {
+          var color = NEURON_COLORS[idx];
+          [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(f) {
+            var key = f[0];
+            var row = document.createElement('div');
+            row.className = 'fold-slider';
+            var lab = document.createElement('label');
+            lab.textContent = 'N' + (idx + 1) + ' ' + f[1];
+            lab.style.color = color;
+            var inp = document.createElement('input');
+            inp.type = 'range';
+            inp.min = '-3'; inp.max = '3'; inp.step = '0.1';
+            inp.value = String(n[key]);
+            var val = document.createElement('p');
+            val.className = 'fold-val';
+            val.textContent = (+n[key]).toFixed(1);
+            inp.addEventListener('input', function() {
+              n[key] = parseFloat(inp.value);
+              val.textContent = n[key].toFixed(1);
+              draw();
+            });
+            row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+            slidersEl.appendChild(row);
+          });
+        });
+      }
+
+      function setK(k) {
+        state.k = k;
+        state.neurons = preset(k);
+        modeBtns.forEach(function(b) {
+          b.classList.toggle('active', +b.getAttribute('data-neurons') === k);
+        });
+        buildSliders();
+        draw();
+      }
+      modeBtns.forEach(function(b) {
+        b.addEventListener('click', function() { setK(+b.getAttribute('data-neurons')); });
+      });
+      host.querySelector('.fold-reset').addEventListener('click', function() {
+        state.neurons = preset(state.k);
+        buildSliders();
+        draw();
+      });
+
+      // --- canvas helpers ---
+      function fitCanvas(c) {
+        var dpr = window.devicePixelRatio || 1;
+        var w = c.clientWidth, h = c.clientHeight;
+        if (!w || !h) return null;
+        c.width = Math.round(w * dpr);
+        c.height = Math.round(h * dpr);
+        var ctx = c.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { ctx: ctx, w: w, h: h };
+      }
+
+      function makeMapper(w, h, xr, yr, pad) {
+        return function(x, y) {
+          return [
+            pad + (x - xr[0]) / (xr[1] - xr[0]) * (w - 2 * pad),
+            h - pad - (y - yr[0]) / (yr[1] - yr[0]) * (h - 2 * pad)
+          ];
+        };
+      }
+
+      function drawFrame(ctx, w, h, pad, xr, yr, xlab, ylab) {
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+        ctx.strokeRect(pad, pad, w - 2 * pad, h - 2 * pad);
+        var m = makeMapper(w, h, xr, yr, pad);
+        // zero axes if visible
+        ctx.strokeStyle = 'rgba(136,146,164,0.35)';
+        if (xr[0] < 0 && xr[1] > 0) {
+          var zx = m(0, yr[0])[0];
+          ctx.beginPath(); ctx.moveTo(zx, pad); ctx.lineTo(zx, h - pad); ctx.stroke();
+        }
+        if (yr[0] < 0 && yr[1] > 0) {
+          var zy = m(xr[0], 0)[1];
+          ctx.beginPath(); ctx.moveTo(pad, zy); ctx.lineTo(w - pad, zy); ctx.stroke();
+        }
+        ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'right'; ctx.fillText(xlab, w - pad - 4, h - pad - 6);
+        ctx.textAlign = 'left'; ctx.save();
+        ctx.translate(pad + 4, pad + 4); ctx.fillText(ylab, 0, 8); ctx.restore();
+        return m;
+      }
+
+      function dot(ctx, px, py, color, r) {
+        ctx.beginPath(); ctx.arc(px, py, r || 4.5, 0, 6.2832);
+        ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
+      }
+
+      // Hidden coords for a point: (h1, h2[, h3]) via ReLU(Wx+b).
+      function hidden(p) {
+        return state.neurons.map(function(n) {
+          return relu(n.w1 * p.x + n.w2 * p.y + n.b);
+        });
+      }
+
+      function draw() {
+        // ---- Input space (left): data + each neuron's decision line ----
+        var fi = fitCanvas(inCanvas);
+        if (fi) {
+          var pad = 26, xr = [-0.5, 1.5], yr = [-0.5, 1.5];
+          var m = drawFrame(fi.ctx, fi.w, fi.h, pad, xr, yr, 'x₁', 'x₂');
+          var ctx = fi.ctx;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(pad, pad, fi.w - 2 * pad, fi.h - 2 * pad);
+          ctx.clip();
+          state.neurons.forEach(function(n, idx) {
+            var a = n.w1, b = n.w2, c = n.b, p0, p1;
+            if (Math.abs(b) > 1e-9) {
+              p0 = m(xr[0], -(a * xr[0] + c) / b);
+              p1 = m(xr[1], -(a * xr[1] + c) / b);
+            } else if (Math.abs(a) > 1e-9) {
+              p0 = m(-c / a, yr[0]); p1 = m(-c / a, yr[1]);
+            } else { return; }
+            ctx.strokeStyle = NEURON_COLORS[idx];
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+          });
+          data.forEach(function(p) {
+            var q = m(p.x, p.y);
+            dot(ctx, q[0], q[1], p.cls ? GREEN : RED);
+          });
+          ctx.restore();
+        }
+
+        // ---- Hidden space (right): folded points + centroid separator ----
+        var fh = fitCanvas(hidCanvas);
+        if (!fh) { return; }
+        var H = data.map(function(p) { return { h: hidden(p), cls: p.cls }; });
+        var k = state.k;
+        // project to 2D: K=1 uses (h1, jitter); K>=2 uses (h1, h2)
+        var pts = H.map(function(o, i) {
+          if (k === 1) return { x: o.h[0], y: ((i % 7) - 3) * 0.12, cls: o.cls };
+          return { x: o.h[0], y: o.h[1], cls: o.cls };
+        });
+        var xs = pts.map(function(p) { return p.x; });
+        var ys = pts.map(function(p) { return p.y; });
+        function span(arr) {
+          var lo = Math.min.apply(null, arr), hi = Math.max.apply(null, arr);
+          if (hi - lo < 1e-6) { lo -= 0.5; hi += 0.5; }
+          var pd = (hi - lo) * 0.12;
+          return [lo - pd, hi + pd];
+        }
+        var hxr = span(xs), hyr = k === 1 ? [-1, 1] : span(ys);
+        var pad2 = 26;
+        var mh = drawFrame(fh.ctx, fh.w, fh.h, pad2, hxr, hyr,
+                           'h₁', k === 1 ? '' : 'h₂');
+        var ctx2 = fh.ctx;
+
+        // Pocket perceptron (Rosenblatt): guaranteed to find a separating
+        // line when one exists, and keeps the best line seen otherwise --
+        // exactly what "linearly separable" means, and on-topic for this
+        // module. Updates are scaled by `sc` only for numeric stability.
+        var oneD = (k === 1);
+        var sc = 1;
+        pts.forEach(function(p) {
+          sc = Math.max(sc, Math.abs(p.x), oneD ? 0 : Math.abs(p.y));
+        });
+        function lineAcc(W) {
+          var c = 0;
+          pts.forEach(function(p) {
+            var s = (W.wx * p.x + (oneD ? 0 : W.wy * p.y) + W.b) >= 0 ? 1 : 0;
+            if (s === p.cls) c++;
+          });
+          return c;
+        }
+        var cur = { wx: 0, wy: 0, b: 0 };
+        var sw = { wx: 0, wy: 0, b: 0 };
+        var best = lineAcc(sw);
+        for (var ep = 0; ep < 400 && best < pts.length; ep++) {
+          pts.forEach(function(p) {
+            var s = (cur.wx * p.x + (oneD ? 0 : cur.wy * p.y) + cur.b) >= 0 ? 1 : 0;
+            var e = p.cls - s; // -1, 0, or +1
+            if (e !== 0) {
+              cur.wx += e * p.x / sc;
+              if (!oneD) cur.wy += e * p.y / sc;
+              cur.b += e / sc;
+            }
+          });
+          var s2 = lineAcc(cur);
+          if (s2 > best) { best = s2; sw.wx = cur.wx; sw.wy = cur.wy; sw.b = cur.b; }
+        }
+        var acc = best / pts.length;
+
+        ctx2.save();
+        ctx2.beginPath();
+        ctx2.rect(pad2, pad2, fh.w - 2 * pad2, fh.h - 2 * pad2);
+        ctx2.clip();
+        if (Math.abs(sw.wx) + Math.abs(sw.wy) > 1e-6) {
+          // decision line sw.wx*x + sw.wy*y + sw.b = 0, clipped to frame
+          var e0, e1;
+          if (!oneD && Math.abs(sw.wy) > 1e-6) {
+            e0 = mh(hxr[0], -(sw.wx * hxr[0] + sw.b) / sw.wy);
+            e1 = mh(hxr[1], -(sw.wx * hxr[1] + sw.b) / sw.wy);
+          } else {
+            var xv = -sw.b / sw.wx;
+            e0 = mh(xv, hyr[0]); e1 = mh(xv, hyr[1]);
+          }
+          ctx2.strokeStyle = SECON; ctx2.lineWidth = 2;
+          ctx2.setLineDash([7, 6]);
+          ctx2.beginPath(); ctx2.moveTo(e0[0], e0[1]); ctx2.lineTo(e1[0], e1[1]); ctx2.stroke();
+          ctx2.setLineDash([]);
+        }
+        pts.forEach(function(p) {
+          var q = mh(p.x, p.y);
+          dot(ctx2, q[0], q[1], p.cls ? GREEN : RED);
+        });
+        ctx2.restore();
+
+        var sep = acc > 0.999;
+        readoutEl.innerHTML =
+          'Straight-line separator in hidden space: <strong>' +
+          (acc * 100).toFixed(0) + '%</strong> &mdash; ' +
+          (sep ? 'the fold made the classes linearly separable'
+               : 'still entangled: one flat cut cannot split them yet');
+      }
+
+      buildSliders();
+      modeBtns.forEach(function(b) {
+        b.classList.toggle('active', +b.getAttribute('data-neurons') === state.k);
+      });
+
+      return { resize: draw };
+    };
 
   </script>
 </body>

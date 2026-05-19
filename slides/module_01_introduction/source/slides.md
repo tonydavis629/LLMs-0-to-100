@@ -1,10 +1,6 @@
-<!-- .slide: id="title" class="section-divider" data-state="is-section-divider" -->
-
-# LLMs 0 to 100
-
-Module 1: Course Introduction
-
-From Shannon to ChatGPT <!-- .element: class="text-muted" style="font-size: 14pt; margin-top: 20px;" -->
+:::divider id="title" title="LLMs 0 to 100" sub="Module 1: Course Introduction"
+From Shannon to ChatGPT
+:::
 
 ---
 
@@ -167,11 +163,8 @@ Concept checks with click-to-reveal answers. <!-- .element: class="module-track-
 
 ---
 
-<!-- .slide: id="divider-talking-machines" class="section-divider" data-state="is-section-divider" -->
-
-# We Built Talking Machines
-
-WHAT? How?
+:::divider id="divider-talking-machines" title="We Built Talking Machines" sub="WHAT? How?"
+:::
 
 ---
 
@@ -290,19 +283,14 @@ WHAT? How?
 
 **"Good Old-Fashioned AI"** <!-- .element: class="text-xl" style="color: var(--secondary-color); margin-bottom: 10px;" -->
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-<div>
-
+:::columns cols="2"
 ### The Approach
 
 - Hand-written rules and symbolic logic
 - Expert systems, search trees, knowledge bases
 - If-then rules authored by domain experts
 <!-- .element: class="text-lg" -->
-
-</div>
-<div>
-
++++
 ### The Problem
 
 - Worked for narrow, well-defined tasks
@@ -310,9 +298,7 @@ WHAT? How?
 - Couldn't scale to real language
 - Brittle: one unexpected input breaks everything
 <!-- .element: class="text-lg" -->
-
-</div>
-</div>
+:::
 
 ---
 
@@ -469,34 +455,24 @@ We'll build one from scratch in Module 4. <!-- .element: class="text-muted text-
 
 ## From Prediction to Assistants
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-<div>
-
+:::columns cols="2"
 ### Two Learning Strategies
 
 - **Masked LM (BERT)**<br><span class="text-muted" style="font-size: 14pt;">Predict a hidden word. Devlin et al., 2018.</span>
 - **Next Token (GPT)**<br><span class="text-muted" style="font-size: 14pt;">Predict the next word. Radford et al., 2018.</span>
 - Sutskever showed next token prediction at scale produces **surprisingly capable** models
-
-</div>
-<div>
-
++++
 ### The Assistant Era
 
 - **InstructGPT (2022)**<br><span class="text-muted" style="font-size: 14pt;">Trained GPT to follow instructions using human feedback</span>
 - Turned a text predictor into an **assistant**
 - **RL post-training**<br><span class="text-muted" style="font-size: 14pt;">RLHF, GRPO, DPO &mdash; aligns models to desired behavior</span>
-
-</div>
-</div>
+:::
 
 ---
 
-<!-- .slide: id="divider-prediction" class="section-divider" data-state="is-section-divider" -->
-
-# Language as Prediction
-
-The core insight behind every LLM
+:::divider id="divider-prediction" title="Language as Prediction" sub="The core insight behind every LLM"
+:::
 
 ---
 
@@ -670,11 +646,8 @@ A perplexity of 10 means the model is as uncertain as choosing uniformly from 10
 
 ---
 
-<!-- .slide: id="divider-setup" class="section-divider" data-state="is-section-divider" -->
-
-# Getting Set Up
-
-Python environment with uv
+:::divider id="divider-setup" title="Getting Set Up" sub="Python environment with uv"
+:::
 
 ---
 
@@ -682,9 +655,7 @@ Python environment with uv
 
 ## Setting Up Your Environment
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-<div>
-
+:::columns cols="2"
 ### 1. Install uv
 
 ```bash
@@ -696,10 +667,7 @@ uv --version
 ```
 
 uv is a fast Python package manager. It replaces pip, venv, and pyenv. <!-- .element: class="text-muted" style="font-size: 13pt; margin-top: 10px;" -->
-
-</div>
-<div>
-
++++
 ### 2. Set up the course
 
 ```bash
@@ -713,17 +681,12 @@ uv run python -c "print('Ready.')"
 ```
 
 One environment for all modules. Run `uv sync` once. <!-- .element: class="text-muted" style="font-size: 13pt; margin-top: 10px;" -->
-
-</div>
-</div>
+:::
 
 ---
 
-<!-- .slide: id="divider-exercise" class="section-divider" data-state="is-section-divider" -->
-
-# Exercise
-
-N-gram Language Models
+:::divider id="divider-exercise" title="Exercise" sub="N-gram Language Models"
+:::
 
 ---
 
@@ -762,8 +725,7 @@ Each function is mostly written for you. You fill in **one key line** per functi
 
 Every language model needs a **corpus** &mdash; a body of text to learn from. The file comes from Project Gutenberg, which wraps the book in headers and footers. Strip those out. <!-- .element: class="text-lg" -->
 
-<div class="highlight-box" style="margin-top: 20px;">
-
+:::note
 **Output:** <!-- .element: class="text-lg" -->
 
 ```text
@@ -775,15 +737,11 @@ by Lewis Carroll
 
 CHAPTER I. Down the Rabbit-Hole ...
 ```
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="exercise-step1-code" -->
-
-## Step 1: load_text()
-
+:::step id="exercise-step1-code" title="Step 1: load_text()"
 ```python
     # Find the line numbers where the book starts and ends
     start_idx = 0
@@ -798,22 +756,15 @@ CHAPTER I. Down the Rabbit-Hole ...
     # TODO: Join lines[start_idx:end_idx] with newlines and return the result
     raise NotImplementedError("TODO: return the joined lines")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** Python's `str.join()` method can combine a list of strings with a separator.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
++++
 **Answer:** <!-- .element: class="text-lg" -->
 
 ```python
 return "\n".join(lines[start_idx:end_idx])
 ```
-
-</div>
+:::
 
 ---
 
@@ -840,25 +791,20 @@ return "\n".join(lines[start_idx:end_idx])
 
 What does text look like with **zero knowledge** of English? Pick each character uniformly at random from a-z and space. This is the baseline &mdash; 0th order. <!-- .element: class="text-lg" -->
 
-<div class="highlight-box" style="margin-top: 20px;">
-
+:::note
 **Output:** <!-- .element: class="text-lg" -->
 
 ```text
 === 0th Order: Uniform Random Characters ===
 rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg
 ```
-
-</div>
+:::
 
 No structure at all. Rare letters like **q**, **x**, **z** appear as often as **e** or **t**. This is maximum entropy. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
-<!-- .slide: id="exercise-step2-code" -->
-
-## Step 2: char_uniform()
-
+:::step id="exercise-step2-code" title="Step 2: char_uniform()"
 ```python
     # The 27 characters we can pick from (26 letters + space)
     alphabet = list("abcdefghijklmnopqrstuvwxyz ")
@@ -867,22 +813,15 @@ No structure at all. Rare letters like **q**, **x**, **z** appear as often as **
     # Use random.choices(population, k=...) to pick, then "".join() to combine
     raise NotImplementedError("TODO: return a random string of the given length")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** `random.choices(population, k=...)` returns a list of `k` random items. Join them into a single string.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
++++
 **Answer:** <!-- .element: class="text-lg" -->
 
 ```python
 return "".join(random.choices(alphabet, k=length))
 ```
-
-</div>
+:::
 
 ---
 
@@ -902,8 +841,7 @@ iudmpwmvbyqkflxjiupmlehmjbkzqhsvchnyawijuydkl
 
 Now use the corpus. Count how often each character appears and sample proportionally. This is **1st order** &mdash; we know the frequency of each letter, but nothing about what follows what. <!-- .element: class="text-lg" -->
 
-<div class="highlight-box" style="margin-top: 20px;">
-
+:::note
 **Output:** <!-- .element: class="text-lg" -->
 
 ```text
@@ -911,17 +849,13 @@ Now use the corpus. Count how often each character appears and sample proportion
  irt  flniteit et b
 b as,allh b e"oeh h  itrltlr
 ```
-
-</div>
+:::
 
 Better &mdash; **e**, **t**, and **space** now dominate. But still gibberish because we ignore which letters tend to follow each other. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
-<!-- .slide: id="exercise-step3-code" -->
-
-## Step 3: char_unigram()
-
+:::step id="exercise-step3-code" title="Step 3: char_unigram()"
 ```python
     # Separate the characters and their counts into two parallel lists
     chars = list(counts.keys())       # e.g. ["a", "b", " ", "e", ...]
@@ -931,22 +865,15 @@ Better &mdash; **e**, **t**, and **space** now dominate. But still gibberish bec
     # Same as char_uniform but pass weights=weights to random.choices()
     raise NotImplementedError("TODO: return a frequency-weighted random string")
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** Same as Step 2, but `random.choices` accepts a `weights` parameter to bias toward more frequent characters.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
++++
 **Answer:** <!-- .element: class="text-lg" -->
 
 ```python
 return "".join(random.choices(chars, weights=weights, k=length))
 ```
-
-</div>
+:::
 
 ---
 
@@ -969,8 +896,8 @@ b as,allh b e"oeh h  itrltlr
 
 This is the key insight. Instead of asking "how common is **e**?", ask "given the previous character was **t**, how common is **e**?" This is a **bigram** model (2nd order). <!-- .element: class="text-lg" -->
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-<div class="highlight-box">
+:::columns cols="2" gap="20px"
+<div class="note">
 
 **Bigram (n=2):** <!-- .element: class="text-lg" -->
 
@@ -980,7 +907,8 @@ the an n ch f auphtomothe
 ```
 
 </div>
-<div class="highlight-box">
++++
+<div class="note">
 
 **Trigram (n=3):** <!-- .element: class="text-lg" -->
 
@@ -990,16 +918,13 @@ be falice moce lied alls
 ```
 
 </div>
-</div>
+:::
 
 With bigrams, common pairs like "th" and "he" emerge. With trigrams, fragments of real words: "the", "alice". <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
-<!-- .slide: id="exercise-step4-code" -->
-
-## Step 4: build_char_ngram_model()
-
+:::step id="exercise-step4-code" title="Step 4: build_char_ngram_model()"
 ```python
     # Slide a window of size n across the text
     for i in range(len(text) - n + 1):
@@ -1017,23 +942,16 @@ With bigrams, common pairs like "th" and "he" emerge. With trigrams, fragments o
 
     return model
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** You have a window of `n` characters at position `i`. The context is the first `n-1`; the next character is the last one.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
++++
 **Answer:** <!-- .element: class="text-lg" -->
 
 ```python
 context = text[i : i + n - 1]
 next_char = text[i + n - 1]
 ```
-
-</div>
+:::
 
 ---
 
@@ -1062,10 +980,7 @@ This is exactly what Shannon described in 1948 — and it is conceptually the sa
 
 ---
 
-<!-- .slide: id="exercise-step5-code" -->
-
-## Step 5: generate_from_char_model()
-
+:::step id="exercise-step5-code" title="Step 5: generate_from_char_model()"
 ```python
     while len(result) < length:
         # TODO: Get the current context -- the last (n-1) characters joined together
@@ -1091,22 +1006,15 @@ This is exactly what Shannon described in 1948 — and it is conceptually the sa
     # Join all characters into a single string and return
     return "".join(result[:length])
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** The context is the last `n-1` characters of the result so far. Use negative indexing, then join into a string.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
++++
 **Answer:** <!-- .element: class="text-lg" -->
 
 ```python
 context = "".join(result[-(n - 1):])
 ```
-
-</div>
+:::
 
 ---
 
@@ -1135,8 +1043,8 @@ she triede knigh yought alice begal senter
 
 The same n-gram idea works at the **word level**. Instead of predicting the next character, predict the next word given the previous words. <!-- .element: class="text-lg" -->
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-<div class="highlight-box">
+:::columns cols="2" gap="20px"
+<div class="note">
 
 **Word unigram:** <!-- .element: class="text-lg" -->
 
@@ -1147,7 +1055,8 @@ take the very said
 ```
 
 </div>
-<div class="highlight-box">
++++
+<div class="note">
 
 **Word trigram:** <!-- .element: class="text-lg" -->
 
@@ -1158,16 +1067,13 @@ edwin and morcar, the earls
 ```
 
 </div>
-</div>
+:::
 
 Word trigrams produce surprisingly coherent phrases — sometimes entire sentences lifted from the source. The model is memorizing, not understanding. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
-<!-- .slide: id="exercise-step6-code" -->
-
-## Step 6: build_word_ngram_model()
-
+:::step id="exercise-step6-code" title="Step 6: build_word_ngram_model()"
 Same pattern as the character model, but the context is now a **tuple of words** instead of a string of characters. <!-- .element: class="text-lg" style="margin-bottom: 10px;" -->
 
 ```python
@@ -1184,30 +1090,20 @@ for i in range(len(words) - n + 1):
 
 return model
 ```
-
-<div class="fragment hint-box" style="margin-top: 25px;">
-
++++
 **Hint:** Use the same slicing pattern as Step 4, but wrap the previous words in `tuple(...)`.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 10px;">
-
++++
 **Answer:** <!-- .element: class="text-lg" -->
 
 ```python
 context = tuple(words[i : i + n - 1])
 next_word = words[i + n - 1]
 ```
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="exercise-step6-code-generate" -->
-
-## Step 6: generate_from_word_model()
-
+:::step id="exercise-step6-code-generate" title="Step 6: generate_from_word_model()"
 Generation is also the same pattern as Step 5, except the current context is a tuple of the last `n-1` words. <!-- .element: class="text-lg" style="margin-bottom: 8px;" -->
 
 ```python
@@ -1233,22 +1129,15 @@ while len(result) < length:
 
 return " ".join(result[:length])
 ```
-
-<div class="fragment hint-box" style="margin-top: 16px;">
-
++++
 **Hint:** Same as the character version, but use `tuple()` instead of `"".join()`.
-
-</div>
-
-<div class="fragment highlight-box" style="margin-top: 6px; padding: 16px 20px;">
-
++++
 **Answer:** <!-- .element: class="text-lg" -->
 
 ```python
 context = tuple(result[-(n - 1):])
 ```
-
-</div>
+:::
 
 ---
 
@@ -1305,64 +1194,40 @@ Lower perplexity = better model. You should see perplexity drop as you increase 
 
 ---
 
-<!-- .slide: id="quiz-divider" class="section-divider" data-state="is-section-divider" -->
-
-# Quiz
-
-Test your understanding
+:::divider id="quiz-divider" title="Quiz" sub="Test your understanding"
+:::
 
 ---
 
-<!-- .slide: id="quiz-q1" -->
-
-## Q1: Why Not Just Use Rules?
-
+:::quiz id="quiz-q1" title="Q1: Why Not Just Use Rules?"
 GOFAI systems used hand-written rules to process language. Why did this approach ultimately fail for general language understanding? <!-- .element: class="text-lg" -->
-
-<div class="fragment highlight-box" style="margin-top: 30px;">
-
++++
 **Answer:** Language is inherently ambiguous and context-dependent. You cannot enumerate rules for every possible meaning of every word in every context. "Bank" alone has dozens of meanings, and the rules would need to cover all of them and all their interactions. Statistical/learned models discover these patterns from data instead of requiring manual specification. <!-- .element: class="text-lg" -->
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="quiz-q2" -->
-
-## Q2: Shannon's Entropy
-
+:::quiz id="quiz-q2" title="Q2: Shannon's Entropy"
 Shannon estimated English has $H \approx 1.0\text{--}1.5$ bits/char. A uniform 27-character alphabet has $H = \log_2(27) = 4.75$ bits/char. <!-- .element: class="text-lg" -->
 
 What does this gap tell us about English as a communication system? <!-- .element: class="text-2xl" style="margin-top: 20px;" -->
-
-<div class="fragment highlight-box" style="margin-top: 25px;">
-
++++
 **Answer:** English is highly redundant. About 70-80% of each character is predictable from context. This redundancy is what makes autocomplete, spell-check, and language models possible, and it is why you can read text with missing letters. Shannon showed this redundancy is a measurable, mathematical property. <!-- .element: class="text-lg" -->
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="quiz-q3" -->
-
-## Q3: The Memorization Problem
-
+:::quiz id="quiz-q3" title="Q3: The Memorization Problem"
 A word-level 5-gram model trained on *Alice in Wonderland* produces output that is mostly exact quotes from the book. <!-- .element: class="text-lg" -->
 
 Why does this happen, and how do modern LLMs avoid it? <!-- .element: class="text-2xl" style="margin-top: 20px;" -->
-
-<div class="fragment highlight-box" style="margin-top: 25px;">
-
++++
 **Answer:** With high-order n-grams and limited training data, most contexts appear only once, so the model can only reproduce the original. Modern LLMs avoid this by (1) training on vastly more data, (2) using continuous representations instead of exact count tables, and (3) generalizing across similar contexts via learned embeddings. <!-- .element: class="text-lg" -->
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="quiz-q4" -->
-
-## Q4: Conditional Probability
-
+:::quiz id="quiz-q4" title="Q4: Conditional Probability"
 A trigram model trained on English text has these counts for the context "th": <!-- .element: class="text-lg" -->
 
 ```python
@@ -1370,28 +1235,19 @@ model["th"] = Counter({"e": 50, "a": 20, "i": 15, "o": 10, "u": 5})
 ```
 
 What is $P(\texttt{e} \mid \texttt{th})$, and what does it mean for the model's behavior? <!-- .element: class="text-2xl" style="margin-top: 20px;" -->
-
-<div class="fragment highlight-box" style="margin-top: 25px;">
-
++++
 **Answer:** $P(\texttt{e} \mid \texttt{th}) = \frac{50}{50+20+15+10+5} = \frac{50}{100} = 0.5$. Half the time the model encounters the context "th", it will generate "e" as the next character. This is a conditional probability: it only applies when "th" is already the context. The other half of the time, the model generates "a" (20%), "i" (15%), "o" (10%), or "u" (5%). This is why trigram output produces "the" so frequently, but also generates "tha", "thi", and other combinations. <!-- .element: class="text-lg" -->
-
-</div>
+:::
 
 ---
 
-<!-- .slide: id="quiz-q5" -->
-
-## Q5: Compression and Prediction
-
+:::quiz id="quiz-q5" title="Q5: Compression and Prediction"
 Shannon proved that a perfect language model would also be a perfect compressor, and vice versa. <!-- .element: class="text-lg" -->
 
 Why are prediction and compression fundamentally the same problem? <!-- .element: class="text-2xl" style="margin-top: 20px;" -->
-
-<div class="fragment highlight-box" style="margin-top: 25px;">
-
++++
 **Answer:** If you can predict the next symbol with high confidence, you need fewer bits to encode it: a symbol with probability $p$ requires $-\log_2(p)$ bits. A model that predicts perfectly ($p = 1$) needs 0 bits. Conversely, any compression scheme implicitly defines a probability model over the next symbol. Shannon's source coding theorem formalizes this: the minimum average code length equals the entropy $H(X)$. <!-- .element: class="text-lg" -->
-
-</div>
+:::
 
 ---
 
@@ -1410,8 +1266,5 @@ Why are prediction and compression fundamentally the same problem? <!-- .element
 
 ---
 
-<!-- .slide: id="end" class="section-divider" data-state="is-section-divider" -->
-
-# Questions?
-
-Next: Module 2 &mdash; Perceptrons and Optimization
+:::divider id="end" title="Questions?" sub="Next: Module 2 &mdash; Perceptrons and Optimization"
+:::

@@ -30,20 +30,29 @@ const rawMd = fs.readFileSync(mdPath, 'utf8');
 // ---------------------------------------------------------------------------
 // Component preprocessor.
 //
-// slides.md may use terse `:::name key="val"` ... `:::` fences for the bulky,
-// repeated slide patterns (notable-figure cards, terminal-output windows,
-// manim/video slides, multi-column grids). Each fence expands to the exact
-// reveal.js-Markdown HTML it replaces, with the blank-line structure preserved
-// so Markdown inside still parses. Authoring stays readable; the rendered deck
-// is unchanged.
+// slides.md is authored entirely from a limited, canonical set of `:::name
+// key="val"` ... `:::` fences. Each fence expands to the exact reveal.js
+// Markdown/HTML it replaces, with the blank-line structure preserved so
+// Markdown inside still parses. Authoring stays free of inline layout
+// styles; the rendered deck is unchanged.
 //
-// Fence syntax:
-//   :::figure img="..." name="..." kicker="..."
-//   <markdown body>
-//   :::
+// Canonical types:
+//   :::divider id="" title="" [sub=""]        - section title slide
+//   :::columns cols="2"|grid="" [gap=""] [valign=""]
+//                                             - N-column grid (+++ splits)
+//   :::note [reveal="fragment"] [variant="hint"]
+//                                             - callout box
+//   :::quiz id="" title=""                    - prompt +++ reveal answer
+//   :::step id="" title=""                    - code +++ hint +++ answer
+//   :::interactive id="" widget="" [title=""] - JS widget host slide
+//   :::figure img="" name="" kicker=""        - notable-figure card
+//   :::terminal id="" title="" cmd="" [...]   - terminal-output window
+//   :::manim id="" scene="" [title=""]        - manim step-through video
+//   :::video id="" src=""                     - autoplay video slide
+//
 // Attributes are `key="value"` pairs on the opening line. The body is every
-// line up to a line that is exactly `:::`. `:::cols` splits its body into
-// columns on lines that are exactly `+++`.
+// line up to a line that is exactly `:::`. Multi-part types split their body
+// on lines that are exactly `+++`.
 // ---------------------------------------------------------------------------
 
 function parseAttrs(s) {
@@ -57,6 +66,34 @@ function parseAttrs(s) {
 // Strip leading/trailing blank lines but keep interior whitespace intact.
 function trimBlankLines(text) {
   return text.replace(/^(?:[ \t]*\n)+/, '').replace(/(?:\n[ \t]*)+$/, '');
+}
+
+// Split a component body into parts on lines that are exactly `+++`.
+// Used by multi-part canonical types (columns, quiz, step).
+function splitParts(body) {
+  return body.split(/^\+\+\+[ \t]*$/m).map(trimBlankLines);
+}
+
+// Build the reveal-markdown per-slide attribute comment. This must be the
+// first line of a slide so reveal sets the attributes on the slide <section>
+// itself (needed for ids, section-divider class, and data-state).
+function slideComment(attrs) {
+  const parts = [];
+  if (attrs.id) parts.push(`id="${attrs.id}"`);
+  if (attrs.cls) parts.push(`class="${attrs.cls}"`);
+  if (attrs.state) parts.push(`data-state="${attrs.state}"`);
+  return `<!-- .slide: ${parts.join(' ')} -->`;
+}
+
+// A standard content slide: optional per-slide attrs comment, an `## h2`
+// title, then the markdown body. Blank lines are preserved so Markdown
+// inside still parses.
+function contentSlide(attrs, title, bodyMd) {
+  const out = [];
+  if (attrs.id || attrs.cls || attrs.state) out.push(slideComment(attrs), '');
+  if (title) out.push(`## ${title}`, '');
+  out.push(trimBlankLines(bodyMd));
+  return out.join('\n');
 }
 
 function need(attrs, keys, name) {
@@ -130,17 +167,98 @@ function expandComponent(name, attrs, body) {
         '</div>',
       ].join('\n');
     }
+    // --- Canonical slide types -------------------------------------------
+    // The limited set of structural patterns the decks are built from.
+    // Authoring stays terse; each fence expands to the exact reveal.js
+    // markup it replaces so slides.md carries no inline layout styles.
+
+    case 'divider': {
+      // Centered section title slide.
+      need(attrs, ['id', 'title'], name);
+      const a = { id: attrs.id, cls: 'section-divider', state: 'is-section-divider' };
+      const lines = [slideComment(a), '', `# ${attrs.title}`, ''];
+      if (attrs.sub !== undefined) lines.push(attrs.sub, '');
+      const b = trimBlankLines(body);
+      if (b) lines.push(b);
+      return lines.join('\n');
+    }
+
+    case 'columns':
     case 'cols': {
-      const grid = attrs.grid || '1fr 1fr';
+      // N-column grid. `cols="3"` -> three equal columns; `grid="1.1fr 1fr"`
+      // for an explicit template. Body columns are separated by `+++`.
+      const tmpl = attrs.grid
+        ? attrs.grid
+        : `repeat(${attrs.cols || '2'}, 1fr)`;
       const gap = attrs.gap || '30px';
-      const columns = body.split(/^\+\+\+[ \t]*$/m).map(trimBlankLines);
-      const out = [`<div style="display: grid; grid-template-columns: ${grid}; gap: ${gap};">`, ''];
-      for (const col of columns) {
-        out.push('<div>', '', col, '', '</div>', '');
-      }
+      const align = attrs.valign ? ` align-items: ${attrs.valign};` : '';
+      const cols = splitParts(body);
+      const out = [
+        `<div class="slide-columns" style="grid-template-columns: ${tmpl}; gap: ${gap};${align}">`, '',
+      ];
+      for (const col of cols) out.push('<div>', '', col, '', '</div>', '');
       out.push('</div>');
       return out.join('\n');
     }
+
+    case 'note': {
+      // Callout box. `reveal="fragment"` makes it click-to-reveal;
+      // `variant="hint"` uses the lighter hint styling.
+      const classes = ['note'];
+      if (attrs.variant === 'hint') classes.push('hint-box');
+      if (attrs.reveal === 'fragment') classes.unshift('fragment');
+      return [
+        `<div class="${classes.join(' ')}">`, '',
+        trimBlankLines(body), '',
+        '</div>',
+      ].join('\n');
+    }
+
+    case 'quiz': {
+      // Quiz slide: prompt, then `+++`, then a click-to-reveal answer.
+      need(attrs, ['id', 'title'], name);
+      const [prompt = '', answer = ''] = splitParts(body);
+      const md = [
+        '<div class="quiz-prompt">', '',
+        prompt, '',
+        '</div>', '',
+        '<div class="fragment note quiz-answer">', '',
+        answer, '',
+        '</div>',
+      ].join('\n');
+      return contentSlide({ id: attrs.id }, attrs.title, md);
+    }
+
+    case 'step': {
+      // Exercise walkthrough slide: code, then `+++` hint,
+      // then `+++` answer. Hint and answer reveal on click.
+      need(attrs, ['id', 'title'], name);
+      const [code = '', hint = '', answer = ''] = splitParts(body);
+      const md = [
+        code, '',
+        '<div class="fragment hint-box">', '',
+        hint, '',
+        '</div>', '',
+        '<div class="fragment note">', '',
+        answer, '',
+        '</div>',
+      ].join('\n');
+      return contentSlide({ id: attrs.id }, attrs.title, md);
+    }
+
+    case 'interactive': {
+      // Host slide for a vanilla-JS widget hydrated from source/index.html
+      // by its `widget` key. No video; the widget owns the slide.
+      need(attrs, ['id', 'widget'], name);
+      const lines = [`<section id="${attrs.id}">`];
+      if (attrs.title !== undefined) lines.push(`  <h2>${attrs.title}</h2>`);
+      lines.push(
+        `  <div class="interactive-host" data-widget="${attrs.widget}"></div>`,
+        '</section>',
+      );
+      return lines.join('\n');
+    }
+
     default:
       console.error(`ERROR: unknown component :::${name} in slides.md`);
       process.exit(1);

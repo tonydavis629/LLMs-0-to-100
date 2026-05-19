@@ -620,3 +620,207 @@
 .tl-node.below .tl-stem  { margin: 0 auto; }
 .tl-node.below .tl-year  { margin: 0; }
 .tl-node.below .tl-label { margin: 2px 0 0 0; }
+
+/* ===========================================
+   CANONICAL SLIDE TYPES
+   Backs the :::divider / :::columns / :::note /
+   :::quiz / :::step / :::interactive fences so
+   slides.md carries no inline layout styles.
+   (.section-divider, .figure-card, .terminal-output,
+    .hint-box are defined above and reused.)
+   =========================================== */
+
+/* :::columns - grid; template/gap/valign supplied by the build */
+.reveal .slide-columns {
+  display: grid;
+  align-items: start;
+  margin: 10px 0;
+}
+
+/* :::note - callout box (canonical replacement for .highlight-box) */
+.reveal .note {
+  background: rgba(74, 158, 255, 0.08);
+  border: 1px solid rgba(74, 158, 255, 0.25);
+  border-radius: var(--box-radius);
+  padding: 20px 25px;
+  margin: 20px 0;
+}
+
+.reveal .note p {
+  font-size: 18pt;
+  margin: 0;
+}
+
+.reveal .note p + p {
+  margin-top: 0.6em;
+}
+
+/* :::note variant="hint" - lighter, boxless (also used inside :::step) */
+.reveal .note.hint-box {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* :::quiz - prompt scales up; its last line is the question */
+.reveal .quiz-prompt p {
+  font-size: 18pt;
+  margin: 0 0 0.6em 0;
+}
+
+.reveal .quiz-prompt p:last-child {
+  font-size: 24pt;
+  color: var(--text-color);
+  margin: 0.5em 0 0 0;
+}
+
+.reveal .quiz-answer {
+  margin-top: 30px;
+}
+
+/* :::step - spacing between code, hint, and answer */
+.reveal .hint-box {
+  margin-top: 22px;
+}
+
+.reveal .hint-box + .note {
+  margin-top: 12px;
+}
+
+/* :::interactive - widget fills the slide body like a video */
+.reveal .interactive-host {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+}
+
+/* ===========================================
+   FOLDING WIDGET  (:::interactive widget="folding")
+   Linked input-space / hidden-space views with
+   per-neuron weight & bias sliders.
+   =========================================== */
+
+.fold-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+.fold-views {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  flex: 1;
+  min-height: 0;
+}
+
+.fold-view {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  min-height: 0;
+}
+
+.reveal .fold-view figcaption {
+  font-size: 14pt;
+  color: var(--primary-color);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.fold-canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: #0d1225;
+  border: 1px solid var(--line-color);
+  border-radius: var(--box-radius);
+}
+
+.fold-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fold-modes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.fold-modes button {
+  font-family: var(--body-font);
+  font-size: 13pt;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.fold-modes button.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #0a0e1a;
+  font-weight: 600;
+}
+
+.fold-modes button.fold-reset {
+  background: rgba(245, 166, 35, 0.12);
+  border-color: rgba(245, 166, 35, 0.40);
+  color: var(--secondary-color);
+}
+
+.fold-sliders {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 24px;
+}
+
+.fold-slider {
+  display: grid;
+  grid-template-columns: 70px 1fr 52px;
+  align-items: center;
+  gap: 10px;
+}
+
+.reveal .fold-slider label {
+  font-size: 12pt;
+  margin: 0;
+  font-family: var(--body-font);
+  font-weight: 600;
+}
+
+.fold-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary-color);
+}
+
+.reveal .fold-slider .fold-val {
+  font-size: 12pt;
+  color: var(--text-color);
+  font-family: monospace;
+  text-align: right;
+  margin: 0;
+}
+
+.reveal .fold-readout {
+  font-size: 13pt;
+  color: var(--muted-color);
+  text-align: center;
+  margin: 0;
+}
+
+.reveal .fold-readout strong {
+  color: var(--secondary-color);
+}

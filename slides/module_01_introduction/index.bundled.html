@@ -39,7 +39,7 @@
 
 Module 1: Course Introduction
 
-From Shannon to ChatGPT <!-- .element: class="text-muted" style="font-size: 14pt; margin-top: 20px;" -->
+From Shannon to ChatGPT
 
 ---
 
@@ -224,6 +224,7 @@ Concept checks with click-to-reveal answers. <!-- .element: class="module-track-
 
 WHAT? How?
 
+
 ---
 
       <section id="timeline" style="padding: 40px 40px 50px 40px !important;">
@@ -373,7 +374,8 @@ WHAT? How?
 
 **"Good Old-Fashioned AI"** <!-- .element: class="text-xl" style="color: var(--secondary-color); margin-bottom: 10px;" -->
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
 <div>
 
 ### The Approach
@@ -384,6 +386,7 @@ WHAT? How?
 <!-- .element: class="text-lg" -->
 
 </div>
+
 <div>
 
 ### The Problem
@@ -395,6 +398,7 @@ WHAT? How?
 <!-- .element: class="text-lg" -->
 
 </div>
+
 </div>
 
 ---
@@ -568,7 +572,8 @@ We'll build one from scratch in Module 4. <!-- .element: class="text-muted text-
 
 ## From Prediction to Assistants
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
 <div>
 
 ### Two Learning Strategies
@@ -578,6 +583,7 @@ We'll build one from scratch in Module 4. <!-- .element: class="text-muted text-
 - Sutskever showed next token prediction at scale produces **surprisingly capable** models
 
 </div>
+
 <div>
 
 ### The Assistant Era
@@ -587,6 +593,7 @@ We'll build one from scratch in Module 4. <!-- .element: class="text-muted text-
 - **RL post-training**<br><span class="text-muted" style="font-size: 14pt;">RLHF, GRPO, DPO &mdash; aligns models to desired behavior</span>
 
 </div>
+
 </div>
 
 ---
@@ -596,6 +603,7 @@ We'll build one from scratch in Module 4. <!-- .element: class="text-muted text-
 # Language as Prediction
 
 The core insight behind every LLM
+
 
 ---
 
@@ -784,13 +792,15 @@ A perplexity of 10 means the model is as uncertain as choosing uniformly from 10
 
 Python environment with uv
 
+
 ---
 
 <!-- .slide: id="setup-uv" -->
 
 ## Setting Up Your Environment
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
 <div>
 
 ### 1. Install uv
@@ -806,6 +816,7 @@ uv --version
 uv is a fast Python package manager. It replaces pip, venv, and pyenv. <!-- .element: class="text-muted" style="font-size: 13pt; margin-top: 10px;" -->
 
 </div>
+
 <div>
 
 ### 2. Set up the course
@@ -823,6 +834,7 @@ uv run python -c "print('Ready.')"
 One environment for all modules. Run `uv sync` once. <!-- .element: class="text-muted" style="font-size: 13pt; margin-top: 10px;" -->
 
 </div>
+
 </div>
 
 ---
@@ -832,6 +844,7 @@ One environment for all modules. Run `uv sync` once. <!-- .element: class="text-
 # Exercise
 
 N-gram Language Models
+
 
 ---
 
@@ -870,7 +883,7 @@ Each function is mostly written for you. You fill in **one key line** per functi
 
 Every language model needs a **corpus** &mdash; a body of text to learn from. The file comes from Project Gutenberg, which wraps the book in headers and footers. Strip those out. <!-- .element: class="text-lg" -->
 
-<div class="highlight-box" style="margin-top: 20px;">
+<div class="note">
 
 **Output:** <!-- .element: class="text-lg" -->
 
@@ -907,13 +920,13 @@ CHAPTER I. Down the Rabbit-Hole ...
     raise NotImplementedError("TODO: return the joined lines")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** Python's `str.join()` method can combine a list of strings with a separator.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -962,7 +975,7 @@ return "\n".join(lines[start_idx:end_idx])
 
 What does text look like with **zero knowledge** of English? Pick each character uniformly at random from a-z and space. This is the baseline &mdash; 0th order. <!-- .element: class="text-lg" -->
 
-<div class="highlight-box" style="margin-top: 20px;">
+<div class="note">
 
 **Output:** <!-- .element: class="text-lg" -->
 
@@ -990,13 +1003,13 @@ No structure at all. Rare letters like **q**, **x**, **z** appear as often as **
     raise NotImplementedError("TODO: return a random string of the given length")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** `random.choices(population, k=...)` returns a list of `k` random items. Join them into a single string.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -1038,7 +1051,7 @@ iudmpwmvbyqkflxjiupmlehmjbkzqhsvchnyawijuydkl</pre>
 
 Now use the corpus. Count how often each character appears and sample proportionally. This is **1st order** &mdash; we know the frequency of each letter, but nothing about what follows what. <!-- .element: class="text-lg" -->
 
-<div class="highlight-box" style="margin-top: 20px;">
+<div class="note">
 
 **Output:** <!-- .element: class="text-lg" -->
 
@@ -1068,13 +1081,13 @@ Better &mdash; **e**, **t**, and **space** now dominate. But still gibberish bec
     raise NotImplementedError("TODO: return a frequency-weighted random string")
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** Same as Step 2, but `random.choices` accepts a `weights` parameter to bias toward more frequent characters.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -1119,8 +1132,11 @@ b as,allh b e"oeh h  itrltlr</pre>
 
 This is the key insight. Instead of asking "how common is **e**?", ask "given the previous character was **t**, how common is **e**?" This is a **bigram** model (2nd order). <!-- .element: class="text-lg" -->
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-<div class="highlight-box">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 20px;">
+
+<div>
+
+<div class="note">
 
 **Bigram (n=2):** <!-- .element: class="text-lg" -->
 
@@ -1130,7 +1146,12 @@ the an n ch f auphtomothe
 ```
 
 </div>
-<div class="highlight-box">
+
+</div>
+
+<div>
+
+<div class="note">
 
 **Trigram (n=3):** <!-- .element: class="text-lg" -->
 
@@ -1140,6 +1161,9 @@ be falice moce lied alls
 ```
 
 </div>
+
+</div>
+
 </div>
 
 With bigrams, common pairs like "th" and "he" emerge. With trigrams, fragments of real words: "the", "alice". <!-- .element: class="text-lg" style="margin-top: 15px;" -->
@@ -1168,13 +1192,13 @@ With bigrams, common pairs like "th" and "he" emerge. With trigrams, fragments o
     return model
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** You have a window of `n` characters at position `i`. The context is the first `n-1`; the next character is the last one.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -1256,13 +1280,13 @@ This is exactly what Shannon described in 1948 — and it is conceptually the sa
     return "".join(result[:length])
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** The context is the last `n-1` characters of the result so far. Use negative indexing, then join into a string.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -1313,8 +1337,11 @@ she triede knigh yought alice begal senter</pre>
 
 The same n-gram idea works at the **word level**. Instead of predicting the next character, predict the next word given the previous words. <!-- .element: class="text-lg" -->
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
-<div class="highlight-box">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 20px;">
+
+<div>
+
+<div class="note">
 
 **Word unigram:** <!-- .element: class="text-lg" -->
 
@@ -1325,7 +1352,12 @@ take the very said
 ```
 
 </div>
-<div class="highlight-box">
+
+</div>
+
+<div>
+
+<div class="note">
 
 **Word trigram:** <!-- .element: class="text-lg" -->
 
@@ -1336,6 +1368,9 @@ edwin and morcar, the earls
 ```
 
 </div>
+
+</div>
+
 </div>
 
 Word trigrams produce surprisingly coherent phrases — sometimes entire sentences lifted from the source. The model is memorizing, not understanding. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
@@ -1363,13 +1398,13 @@ for i in range(len(words) - n + 1):
 return model
 ```
 
-<div class="fragment hint-box" style="margin-top: 25px;">
+<div class="fragment hint-box">
 
 **Hint:** Use the same slicing pattern as Step 4, but wrap the previous words in `tuple(...)`.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 10px;">
+<div class="fragment note">
 
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -1412,13 +1447,13 @@ while len(result) < length:
 return " ".join(result[:length])
 ```
 
-<div class="fragment hint-box" style="margin-top: 16px;">
+<div class="fragment hint-box">
 
 **Hint:** Same as the character version, but use `tuple()` instead of `"".join()`.
 
 </div>
 
-<div class="fragment highlight-box" style="margin-top: 6px; padding: 16px 20px;">
+<div class="fragment note">
 
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -1516,15 +1551,20 @@ Lower perplexity = better model. You should see perplexity drop as you increase 
 
 Test your understanding
 
+
 ---
 
 <!-- .slide: id="quiz-q1" -->
 
 ## Q1: Why Not Just Use Rules?
 
+<div class="quiz-prompt">
+
 GOFAI systems used hand-written rules to process language. Why did this approach ultimately fail for general language understanding? <!-- .element: class="text-lg" -->
 
-<div class="fragment highlight-box" style="margin-top: 30px;">
+</div>
+
+<div class="fragment note quiz-answer">
 
 **Answer:** Language is inherently ambiguous and context-dependent. You cannot enumerate rules for every possible meaning of every word in every context. "Bank" alone has dozens of meanings, and the rules would need to cover all of them and all their interactions. Statistical/learned models discover these patterns from data instead of requiring manual specification. <!-- .element: class="text-lg" -->
 
@@ -1536,11 +1576,15 @@ GOFAI systems used hand-written rules to process language. Why did this approach
 
 ## Q2: Shannon's Entropy
 
+<div class="quiz-prompt">
+
 Shannon estimated English has $H \approx 1.0\text{--}1.5$ bits/char. A uniform 27-character alphabet has $H = \log_2(27) = 4.75$ bits/char. <!-- .element: class="text-lg" -->
 
 What does this gap tell us about English as a communication system? <!-- .element: class="text-2xl" style="margin-top: 20px;" -->
 
-<div class="fragment highlight-box" style="margin-top: 25px;">
+</div>
+
+<div class="fragment note quiz-answer">
 
 **Answer:** English is highly redundant. About 70-80% of each character is predictable from context. This redundancy is what makes autocomplete, spell-check, and language models possible, and it is why you can read text with missing letters. Shannon showed this redundancy is a measurable, mathematical property. <!-- .element: class="text-lg" -->
 
@@ -1552,11 +1596,15 @@ What does this gap tell us about English as a communication system? <!-- .elemen
 
 ## Q3: The Memorization Problem
 
+<div class="quiz-prompt">
+
 A word-level 5-gram model trained on *Alice in Wonderland* produces output that is mostly exact quotes from the book. <!-- .element: class="text-lg" -->
 
 Why does this happen, and how do modern LLMs avoid it? <!-- .element: class="text-2xl" style="margin-top: 20px;" -->
 
-<div class="fragment highlight-box" style="margin-top: 25px;">
+</div>
+
+<div class="fragment note quiz-answer">
 
 **Answer:** With high-order n-grams and limited training data, most contexts appear only once, so the model can only reproduce the original. Modern LLMs avoid this by (1) training on vastly more data, (2) using continuous representations instead of exact count tables, and (3) generalizing across similar contexts via learned embeddings. <!-- .element: class="text-lg" -->
 
@@ -1568,6 +1616,8 @@ Why does this happen, and how do modern LLMs avoid it? <!-- .element: class="tex
 
 ## Q4: Conditional Probability
 
+<div class="quiz-prompt">
+
 A trigram model trained on English text has these counts for the context "th": <!-- .element: class="text-lg" -->
 
 ```python
@@ -1576,7 +1626,9 @@ model["th"] = Counter({"e": 50, "a": 20, "i": 15, "o": 10, "u": 5})
 
 What is $P(\texttt{e} \mid \texttt{th})$, and what does it mean for the model's behavior? <!-- .element: class="text-2xl" style="margin-top: 20px;" -->
 
-<div class="fragment highlight-box" style="margin-top: 25px;">
+</div>
+
+<div class="fragment note quiz-answer">
 
 **Answer:** $P(\texttt{e} \mid \texttt{th}) = \frac{50}{50+20+15+10+5} = \frac{50}{100} = 0.5$. Half the time the model encounters the context "th", it will generate "e" as the next character. This is a conditional probability: it only applies when "th" is already the context. The other half of the time, the model generates "a" (20%), "i" (15%), "o" (10%), or "u" (5%). This is why trigram output produces "the" so frequently, but also generates "tha", "thi", and other combinations. <!-- .element: class="text-lg" -->
 
@@ -1588,11 +1640,15 @@ What is $P(\texttt{e} \mid \texttt{th})$, and what does it mean for the model's 
 
 ## Q5: Compression and Prediction
 
+<div class="quiz-prompt">
+
 Shannon proved that a perfect language model would also be a perfect compressor, and vice versa. <!-- .element: class="text-lg" -->
 
 Why are prediction and compression fundamentally the same problem? <!-- .element: class="text-2xl" style="margin-top: 20px;" -->
 
-<div class="fragment highlight-box" style="margin-top: 25px;">
+</div>
+
+<div class="fragment note quiz-answer">
 
 **Answer:** If you can predict the next symbol with high confidence, you need fewer bits to encode it: a symbol with probability $p$ requires $-\log_2(p)$ bits. A model that predicts perfectly ($p = 1$) needs 0 bits. Conversely, any compression scheme implicitly defines a probability model over the next symbol. Shannon's source coding theorem formalizes this: the minimum average code length equals the entropy $H(X)$. <!-- .element: class="text-lg" -->
 
@@ -1620,6 +1676,7 @@ Why are prediction and compression fundamentally the same problem? <!-- .element
 # Questions?
 
 Next: Module 2 &mdash; Perceptrons and Optimization
+
 
         </textarea>
       </section>
@@ -1768,6 +1825,356 @@ Next: Module 2 &mdash; Perceptrons and Optimization
         }
       }
     }, true);
+
+    // =====================================================================
+    // Interactive widgets (:::interactive). Each widget is a factory keyed
+    // by its `data-widget` value; it owns its host element and (re)draws
+    // whenever its slide becomes visible or the window resizes.
+    // =====================================================================
+    var INTERACTIVE_WIDGETS = {};
+
+    function hydrateInteractiveWidgets() {
+      document.querySelectorAll('.interactive-host[data-widget]').forEach(function(host) {
+        if (host.dataset.hydrated) return;
+        var factory = INTERACTIVE_WIDGETS[host.getAttribute('data-widget')];
+        if (!factory) return;
+        host.dataset.hydrated = '1';
+        host._widget = factory(host) || null;
+      });
+    }
+
+    function refreshInteractiveWidgets() {
+      document.querySelectorAll('.interactive-host[data-widget]').forEach(function(host) {
+        if (host._widget && typeof host._widget.resize === 'function') host._widget.resize();
+      });
+    }
+
+    Reveal.on('ready', function() {
+      var tries = 0;
+      var iv = setInterval(function() {
+        tries++;
+        if (document.querySelector('.interactive-host[data-widget]') || tries > 25) {
+          clearInterval(iv);
+          hydrateInteractiveWidgets();
+          requestAnimationFrame(refreshInteractiveWidgets);
+        }
+      }, 100);
+    });
+    Reveal.on('slidechanged', function() {
+      hydrateInteractiveWidgets();
+      requestAnimationFrame(refreshInteractiveWidgets);
+    });
+    window.addEventListener('resize', refreshInteractiveWidgets);
+
+    // ---- Folding widget: input space <-> hidden space, live ----
+    // One neuron j computes h_j = ReLU(w1_j*x1 + w2_j*x2 + b_j). The left
+    // pane shows each neuron's decision line w.x+b=0 in the input space;
+    // the right pane shows every point after the fold (h_1..h_K). Moving a
+    // slider moves a line on the left AND refolds the points on the right,
+    // making "a neuron's boundary == an axis of the fold" visible.
+    INTERACTIVE_WIDGETS.folding = function(host) {
+      var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+          LINEC = '#2a3450', TEXT = '#e8eaf0', SECON = '#f5a623';
+      var NEURON_COLORS = ['#4a9eff', '#f5a623', '#3fb950'];
+
+      // --- XOR-pattern data: opposite corners share a class ---
+      function mulberry32(a) {
+        return function() {
+          a |= 0; a = a + 0x6D2B79F5 | 0;
+          var t = Math.imul(a ^ a >>> 15, 1 | a);
+          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+          return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+      }
+      var rnd = mulberry32(42);
+      var clusters = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]];
+      var data = [];
+      clusters.forEach(function(c) {
+        for (var i = 0; i < 14; i++) {
+          data.push({
+            x: c[0] + (rnd() - 0.5) * 0.22,
+            y: c[1] + (rnd() - 0.5) * 0.22,
+            cls: c[2]
+          });
+        }
+      });
+
+      // Preset weights that fold XOR into a linearly separable layout.
+      function preset(k) {
+        var p = [
+          { w1: 1, w2: -1, b: 0.5 },
+          { w1: -1, w2: 1, b: 0.5 },
+          { w1: 1, w2: 1, b: -1.0 }
+        ];
+        return p.slice(0, k).map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
+      }
+      var state = { k: 2, neurons: preset(2) };
+
+      // --- DOM ---
+      host.innerHTML =
+        '<div class="fold-widget">' +
+          '<div class="fold-views">' +
+            '<figure class="fold-view"><figcaption>Input space</figcaption>' +
+              '<canvas class="fold-canvas" data-pane="input"></canvas></figure>' +
+            '<figure class="fold-view"><figcaption>Hidden space &mdash; h = ReLU(Wx + b)</figcaption>' +
+              '<canvas class="fold-canvas" data-pane="hidden"></canvas></figure>' +
+          '</div>' +
+          '<div class="fold-controls">' +
+            '<div class="fold-modes">' +
+              '<button data-neurons="1">1 neuron</button>' +
+              '<button data-neurons="2">2 neurons</button>' +
+              '<button data-neurons="3">3 neurons</button>' +
+              '<button class="fold-reset">Reset to XOR solution</button>' +
+            '</div>' +
+            '<div class="fold-sliders"></div>' +
+            '<p class="fold-readout"></p>' +
+          '</div>' +
+        '</div>';
+
+      var inCanvas = host.querySelector('[data-pane="input"]');
+      var hidCanvas = host.querySelector('[data-pane="hidden"]');
+      var slidersEl = host.querySelector('.fold-sliders');
+      var readoutEl = host.querySelector('.fold-readout');
+      var modeBtns = host.querySelectorAll('.fold-modes button[data-neurons]');
+
+      // Keep slider interaction from bubbling into reveal navigation.
+      ['pointerdown', 'keydown'].forEach(function(ev) {
+        host.addEventListener(ev, function(e) { e.stopPropagation(); });
+      });
+
+      function relu(z) { return z > 0 ? z : 0; }
+
+      function buildSliders() {
+        slidersEl.innerHTML = '';
+        state.neurons.forEach(function(n, idx) {
+          var color = NEURON_COLORS[idx];
+          [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(f) {
+            var key = f[0];
+            var row = document.createElement('div');
+            row.className = 'fold-slider';
+            var lab = document.createElement('label');
+            lab.textContent = 'N' + (idx + 1) + ' ' + f[1];
+            lab.style.color = color;
+            var inp = document.createElement('input');
+            inp.type = 'range';
+            inp.min = '-3'; inp.max = '3'; inp.step = '0.1';
+            inp.value = String(n[key]);
+            var val = document.createElement('p');
+            val.className = 'fold-val';
+            val.textContent = (+n[key]).toFixed(1);
+            inp.addEventListener('input', function() {
+              n[key] = parseFloat(inp.value);
+              val.textContent = n[key].toFixed(1);
+              draw();
+            });
+            row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+            slidersEl.appendChild(row);
+          });
+        });
+      }
+
+      function setK(k) {
+        state.k = k;
+        state.neurons = preset(k);
+        modeBtns.forEach(function(b) {
+          b.classList.toggle('active', +b.getAttribute('data-neurons') === k);
+        });
+        buildSliders();
+        draw();
+      }
+      modeBtns.forEach(function(b) {
+        b.addEventListener('click', function() { setK(+b.getAttribute('data-neurons')); });
+      });
+      host.querySelector('.fold-reset').addEventListener('click', function() {
+        state.neurons = preset(state.k);
+        buildSliders();
+        draw();
+      });
+
+      // --- canvas helpers ---
+      function fitCanvas(c) {
+        var dpr = window.devicePixelRatio || 1;
+        var w = c.clientWidth, h = c.clientHeight;
+        if (!w || !h) return null;
+        c.width = Math.round(w * dpr);
+        c.height = Math.round(h * dpr);
+        var ctx = c.getContext('2d');
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { ctx: ctx, w: w, h: h };
+      }
+
+      function makeMapper(w, h, xr, yr, pad) {
+        return function(x, y) {
+          return [
+            pad + (x - xr[0]) / (xr[1] - xr[0]) * (w - 2 * pad),
+            h - pad - (y - yr[0]) / (yr[1] - yr[0]) * (h - 2 * pad)
+          ];
+        };
+      }
+
+      function drawFrame(ctx, w, h, pad, xr, yr, xlab, ylab) {
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+        ctx.strokeRect(pad, pad, w - 2 * pad, h - 2 * pad);
+        var m = makeMapper(w, h, xr, yr, pad);
+        // zero axes if visible
+        ctx.strokeStyle = 'rgba(136,146,164,0.35)';
+        if (xr[0] < 0 && xr[1] > 0) {
+          var zx = m(0, yr[0])[0];
+          ctx.beginPath(); ctx.moveTo(zx, pad); ctx.lineTo(zx, h - pad); ctx.stroke();
+        }
+        if (yr[0] < 0 && yr[1] > 0) {
+          var zy = m(xr[0], 0)[1];
+          ctx.beginPath(); ctx.moveTo(pad, zy); ctx.lineTo(w - pad, zy); ctx.stroke();
+        }
+        ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'right'; ctx.fillText(xlab, w - pad - 4, h - pad - 6);
+        ctx.textAlign = 'left'; ctx.save();
+        ctx.translate(pad + 4, pad + 4); ctx.fillText(ylab, 0, 8); ctx.restore();
+        return m;
+      }
+
+      function dot(ctx, px, py, color, r) {
+        ctx.beginPath(); ctx.arc(px, py, r || 4.5, 0, 6.2832);
+        ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
+      }
+
+      // Hidden coords for a point: (h1, h2[, h3]) via ReLU(Wx+b).
+      function hidden(p) {
+        return state.neurons.map(function(n) {
+          return relu(n.w1 * p.x + n.w2 * p.y + n.b);
+        });
+      }
+
+      function draw() {
+        // ---- Input space (left): data + each neuron's decision line ----
+        var fi = fitCanvas(inCanvas);
+        if (fi) {
+          var pad = 26, xr = [-0.5, 1.5], yr = [-0.5, 1.5];
+          var m = drawFrame(fi.ctx, fi.w, fi.h, pad, xr, yr, 'x₁', 'x₂');
+          var ctx = fi.ctx;
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(pad, pad, fi.w - 2 * pad, fi.h - 2 * pad);
+          ctx.clip();
+          state.neurons.forEach(function(n, idx) {
+            var a = n.w1, b = n.w2, c = n.b, p0, p1;
+            if (Math.abs(b) > 1e-9) {
+              p0 = m(xr[0], -(a * xr[0] + c) / b);
+              p1 = m(xr[1], -(a * xr[1] + c) / b);
+            } else if (Math.abs(a) > 1e-9) {
+              p0 = m(-c / a, yr[0]); p1 = m(-c / a, yr[1]);
+            } else { return; }
+            ctx.strokeStyle = NEURON_COLORS[idx];
+            ctx.lineWidth = 2.5;
+            ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+          });
+          data.forEach(function(p) {
+            var q = m(p.x, p.y);
+            dot(ctx, q[0], q[1], p.cls ? GREEN : RED);
+          });
+          ctx.restore();
+        }
+
+        // ---- Hidden space (right): folded points + centroid separator ----
+        var fh = fitCanvas(hidCanvas);
+        if (!fh) { return; }
+        var H = data.map(function(p) { return { h: hidden(p), cls: p.cls }; });
+        var k = state.k;
+        // project to 2D: K=1 uses (h1, jitter); K>=2 uses (h1, h2)
+        var pts = H.map(function(o, i) {
+          if (k === 1) return { x: o.h[0], y: ((i % 7) - 3) * 0.12, cls: o.cls };
+          return { x: o.h[0], y: o.h[1], cls: o.cls };
+        });
+        var xs = pts.map(function(p) { return p.x; });
+        var ys = pts.map(function(p) { return p.y; });
+        function span(arr) {
+          var lo = Math.min.apply(null, arr), hi = Math.max.apply(null, arr);
+          if (hi - lo < 1e-6) { lo -= 0.5; hi += 0.5; }
+          var pd = (hi - lo) * 0.12;
+          return [lo - pd, hi + pd];
+        }
+        var hxr = span(xs), hyr = k === 1 ? [-1, 1] : span(ys);
+        var pad2 = 26;
+        var mh = drawFrame(fh.ctx, fh.w, fh.h, pad2, hxr, hyr,
+                           'h₁', k === 1 ? '' : 'h₂');
+        var ctx2 = fh.ctx;
+
+        // Pocket perceptron (Rosenblatt): guaranteed to find a separating
+        // line when one exists, and keeps the best line seen otherwise --
+        // exactly what "linearly separable" means, and on-topic for this
+        // module. Updates are scaled by `sc` only for numeric stability.
+        var oneD = (k === 1);
+        var sc = 1;
+        pts.forEach(function(p) {
+          sc = Math.max(sc, Math.abs(p.x), oneD ? 0 : Math.abs(p.y));
+        });
+        function lineAcc(W) {
+          var c = 0;
+          pts.forEach(function(p) {
+            var s = (W.wx * p.x + (oneD ? 0 : W.wy * p.y) + W.b) >= 0 ? 1 : 0;
+            if (s === p.cls) c++;
+          });
+          return c;
+        }
+        var cur = { wx: 0, wy: 0, b: 0 };
+        var sw = { wx: 0, wy: 0, b: 0 };
+        var best = lineAcc(sw);
+        for (var ep = 0; ep < 400 && best < pts.length; ep++) {
+          pts.forEach(function(p) {
+            var s = (cur.wx * p.x + (oneD ? 0 : cur.wy * p.y) + cur.b) >= 0 ? 1 : 0;
+            var e = p.cls - s; // -1, 0, or +1
+            if (e !== 0) {
+              cur.wx += e * p.x / sc;
+              if (!oneD) cur.wy += e * p.y / sc;
+              cur.b += e / sc;
+            }
+          });
+          var s2 = lineAcc(cur);
+          if (s2 > best) { best = s2; sw.wx = cur.wx; sw.wy = cur.wy; sw.b = cur.b; }
+        }
+        var acc = best / pts.length;
+
+        ctx2.save();
+        ctx2.beginPath();
+        ctx2.rect(pad2, pad2, fh.w - 2 * pad2, fh.h - 2 * pad2);
+        ctx2.clip();
+        if (Math.abs(sw.wx) + Math.abs(sw.wy) > 1e-6) {
+          // decision line sw.wx*x + sw.wy*y + sw.b = 0, clipped to frame
+          var e0, e1;
+          if (!oneD && Math.abs(sw.wy) > 1e-6) {
+            e0 = mh(hxr[0], -(sw.wx * hxr[0] + sw.b) / sw.wy);
+            e1 = mh(hxr[1], -(sw.wx * hxr[1] + sw.b) / sw.wy);
+          } else {
+            var xv = -sw.b / sw.wx;
+            e0 = mh(xv, hyr[0]); e1 = mh(xv, hyr[1]);
+          }
+          ctx2.strokeStyle = SECON; ctx2.lineWidth = 2;
+          ctx2.setLineDash([7, 6]);
+          ctx2.beginPath(); ctx2.moveTo(e0[0], e0[1]); ctx2.lineTo(e1[0], e1[1]); ctx2.stroke();
+          ctx2.setLineDash([]);
+        }
+        pts.forEach(function(p) {
+          var q = mh(p.x, p.y);
+          dot(ctx2, q[0], q[1], p.cls ? GREEN : RED);
+        });
+        ctx2.restore();
+
+        var sep = acc > 0.999;
+        readoutEl.innerHTML =
+          'Straight-line separator in hidden space: <strong>' +
+          (acc * 100).toFixed(0) + '%</strong> &mdash; ' +
+          (sep ? 'the fold made the classes linearly separable'
+               : 'still entangled: one flat cut cannot split them yet');
+      }
+
+      buildSliders();
+      modeBtns.forEach(function(b) {
+        b.classList.toggle('active', +b.getAttribute('data-neurons') === state.k);
+      });
+
+      return { resize: draw };
+    };
 
     // ---- AI Summers and Winters chart ----
     Reveal.on('slidechanged', function(event) {
