@@ -2,12 +2,12 @@
 Module 2: Perceptrons and Optimization - Manim Animations
 
 Scenes:
-  - XORVisualizationScene: XOR points and rotating decision boundary
-  - FoldingScene: Hidden layer folds space to separate entangled classes
-  - GradientDescentScene: Ball stepping downhill on loss curve
-  - LossLandscapeScene: 3D loss surface with sharp/flat minima, saddle point
-  - OverfittingCurveScene: Training vs validation loss curves
-  - DataVisualizationScene: Scatter plots of the exercise datasets
+  - LinearSeparabilityScene: AND / OR separable, XOR fails
+  - FoldingScene: Hidden layer folds space to separate XOR
+  - MLPBoundaryScene: MLP boundary = many straight lines
+  - OptimizerLandscapeScene: 3D loss surface with GD, SGD, Adam
+  - OverfittingCurveScene: Train/val curves + 1D fits
+  - DataVisualizationScene: Scatter plots of exercise datasets (UNCHANGED)
 """
 
 from manim import *
@@ -28,20 +28,19 @@ HEADING_FONT = "Helvetica Neue"
 BODY_FONT = "Helvetica Neue"
 
 
-class XORVisualizationScene(Scene):
-    """Show XOR points on a 2D grid and animate a decision boundary rotating
-    through positions, demonstrating that no single line can separate them.
+class LinearSeparabilityScene(Scene):
+    """Show that AND and OR are linearly separable, but XOR is not.
 
     Sections (click-through):
-      1. Show axes and four XOR points with labels
-      2. Animate line rotating through several angles, each misclassifying
-      3. Show conclusion text
+      1. Perceptron as a line + half-plane tint.
+      2. AND: one line separates all four points.
+      3. OR: one line separates all four points.
+      4. XOR: rotating line always misclassifies.
     """
 
     def construct(self):
         self.camera.background_color = BG
 
-        # --- Setup axes ---
         axes = Axes(
             x_range=[-0.5, 1.5, 0.5],
             y_range=[-0.5, 1.5, 0.5],
@@ -63,23 +62,68 @@ class XORVisualizationScene(Scene):
             MathTex("x_2", color=TEXT, font_size=28), edge=LEFT, direction=LEFT, buff=0.3
         )
 
-        # XOR points: (0,0)=0, (0,1)=1, (1,0)=1, (1,1)=0
-        points_data = [
-            (0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0),
-        ]
-        dots = VGroup()
-        labels = VGroup()
-        for x, y, cls in points_data:
-            color = GREEN_C if cls == 1 else RED_C
-            pos = axes.c2p(x, y)
-            dot = Dot(pos, radius=0.15, color=color, fill_opacity=0.9)
-            label = Text(
-                f"({x},{y})={cls}", font=BODY_FONT, font_size=16, color=TEXT
-            ).next_to(dot, UR, buff=0.1)
-            dots.add(dot)
-            labels.add(label)
+        # ---- helpers ----
+        def build_line(a, b, c):
+            """Return a Line for a*x + b*y = c clipped to the frame."""
+            pts = []
+            bounds = [(-0.5, 1.5), (-0.5, 1.5)]
+            # x = xmin
+            if abs(b) > 1e-9:
+                y = (c - a * bounds[0][0]) / b
+                if bounds[1][0] <= y <= bounds[1][1]:
+                    pts.append((bounds[0][0], y))
+            # x = xmax
+            if abs(b) > 1e-9:
+                y = (c - a * bounds[0][1]) / b
+                if bounds[1][0] <= y <= bounds[1][1]:
+                    pts.append((bounds[0][1], y))
+            # y = ymin
+            if abs(a) > 1e-9:
+                x = (c - b * bounds[1][0]) / a
+                if bounds[0][0] <= x <= bounds[0][1]:
+                    pts.append((x, bounds[1][0]))
+            # y = ymax
+            if abs(a) > 1e-9:
+                x = (c - b * bounds[1][1]) / a
+                if bounds[0][0] <= x <= bounds[0][1]:
+                    pts.append((x, bounds[1][1]))
+            pts = list({(round(p[0], 6), round(p[1], 6)) for p in pts})
+            if len(pts) < 2:
+                return Line(ORIGIN, ORIGIN, color=SECONDARY)
+            pts.sort(key=lambda p: np.arctan2(p[1] - 0.5, p[0] - 0.5))
+            return Line(axes.c2p(pts[0][0], pts[0][1]), axes.c2p(pts[1][0], pts[1][1]), color=SECONDARY, stroke_width=3)
 
-        # Legend
+        def build_tint(w1, w2, b):
+            tint = VGroup()
+            xs = np.linspace(-0.3, 1.3, 14)
+            ys = np.linspace(-0.3, 1.3, 14)
+            for x in xs:
+                for y in ys:
+                    s = w1 * x + w2 * y + b
+                    if abs(s) < 0.06:
+                        continue
+                    color = GREEN_C if s > 0 else RED_C
+                    sq = Square(
+                        side_length=0.25,
+                        fill_color=color,
+                        fill_opacity=0.18,
+                        stroke_width=0,
+                    ).move_to(axes.c2p(x, y))
+                    tint.add(sq)
+            return tint
+
+        def make_points(coords, labels=None):
+            dots = VGroup()
+            lbls = VGroup()
+            for (x, y, cls) in coords:
+                color = GREEN_C if cls == 1 else RED_C
+                pos = axes.c2p(x, y)
+                dot = Dot(pos, radius=0.14, color=color, fill_opacity=0.9)
+                dots.add(dot)
+                txt = Text(f"({x},{y})={cls}", font=BODY_FONT, font_size=16, color=TEXT).next_to(dot, UR, buff=0.08)
+                lbls.add(txt)
+            return dots, lbls
+
         legend = VGroup(
             Dot(radius=0.08, color=GREEN_C),
             Text("Class 1", font=BODY_FONT, font_size=18, color=TEXT),
@@ -87,79 +131,103 @@ class XORVisualizationScene(Scene):
             Text("Class 0", font=BODY_FONT, font_size=18, color=TEXT),
         ).arrange(RIGHT, buff=0.15).to_corner(UR, buff=0.5)
 
-        # --- Section 1: Show points ---
-        self.next_section("xor_points", skip_animations=False)
+        # Legend stays for all sections
+        self.add(legend)
+
+        # ---- Section 1: Perceptron as line ----
+        self.next_section("perceptron_as_line", skip_animations=False)
         self.play(Create(axes), Write(x_label), Write(y_label), run_time=0.8)
-        self.play(
-            LaggedStart(*[GrowFromCenter(d) for d in dots], lag_ratio=0.2),
-            LaggedStart(*[FadeIn(l) for l in labels], lag_ratio=0.2),
-            FadeIn(legend),
-            run_time=1.0,
-        )
+        line_intro = build_line(1, 1, -1)
+        tint_intro = build_tint(1, 1, -1)
+        cap_intro = Text(
+            "The perceptron is a linear classifier; the line is its decision boundary",
+            font=BODY_FONT, font_size=20, color=TEXT,
+        ).to_edge(DOWN, buff=0.6)
+        self.play(FadeIn(tint_intro), Create(line_intro), Write(cap_intro), run_time=1.0)
         self.wait(0.3)
 
-        # --- Section 2: Rotating decision boundary ---
-        self.next_section("xor_line_rotate", skip_animations=False)
+        # ---- Section 2: AND separable ----
+        self.next_section("and_separable", skip_animations=False)
+        self.play(FadeOut(tint_intro), FadeOut(line_intro), FadeOut(cap_intro), run_time=0.3)
+        and_pts = [(0, 0, 0), (0, 1, 0), (1, 0, 0), (1, 1, 1)]
+        and_dots, and_lbls = make_points(and_pts)
+        line_and = build_line(1, 1, -1.5)
+        cap_and = Text("AND: one line works", font=BODY_FONT, font_size=22, color=GREEN_C).to_edge(DOWN, buff=0.6)
+        self.play(
+            LaggedStart(*[GrowFromCenter(d) for d in and_dots], lag_ratio=0.2),
+            LaggedStart(*[FadeIn(l) for l in and_lbls], lag_ratio=0.2),
+            run_time=0.8,
+        )
+        self.play(Create(line_and), Write(cap_and), run_time=0.6)
+        self.wait(0.3)
 
-        # Try several line angles: none can separate XOR
+        # ---- Section 3: OR separable ----
+        self.next_section("or_separable", skip_animations=False)
+        self.play(FadeOut(and_dots), FadeOut(and_lbls), FadeOut(line_and), FadeOut(cap_and), run_time=0.3)
+        or_pts = [(0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 1)]
+        or_dots, or_lbls = make_points(or_pts)
+        line_or = build_line(1, 1, -0.5)
+        cap_or = Text("OR: one line works", font=BODY_FONT, font_size=22, color=GREEN_C).to_edge(DOWN, buff=0.6)
+        self.play(
+            LaggedStart(*[GrowFromCenter(d) for d in or_dots], lag_ratio=0.2),
+            LaggedStart(*[FadeIn(l) for l in or_lbls], lag_ratio=0.2),
+            run_time=0.8,
+        )
+        self.play(Create(line_or), Write(cap_or), run_time=0.6)
+        self.wait(0.3)
+
+        # ---- Section 4: XOR fails ----
+        self.next_section("xor_fails", skip_animations=False)
+        self.play(FadeOut(or_dots), FadeOut(or_lbls), FadeOut(line_or), FadeOut(cap_or), run_time=0.3)
+        xor_pts = [(0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0)]
+        xor_dots, xor_lbls = make_points(xor_pts)
+        fail_text = Text("misclassifies!", font=BODY_FONT, font_size=20, color=RED_C).to_edge(DOWN, buff=0.6)
+        cap_xor = Text("XOR: no single line works", font=BODY_FONT, font_size=22, color=SECONDARY).to_edge(DOWN, buff=0.6)
+
+        self.play(
+            LaggedStart(*[GrowFromCenter(d) for d in xor_dots], lag_ratio=0.2),
+            LaggedStart(*[FadeIn(l) for l in xor_lbls], lag_ratio=0.2),
+            run_time=0.8,
+        )
+
+        # Rotate a line through several angles
+        cx, cy = 0.5, 0.5
+        line_len = 2.5
         angles_deg = [20, 70, 110, 160]
 
-        # Create a line that passes through center of the grid
-        cx, cy = 0.5, 0.5
-        line_length = 2.5
-
-        def make_line(angle_deg):
+        def make_rot_line(angle_deg):
             rad = angle_deg * DEGREES
-            dx = line_length * np.cos(rad)
-            dy = line_length * np.sin(rad)
-            start = axes.c2p(cx - dx, cy - dy)
-            end = axes.c2p(cx + dx, cy + dy)
-            return Line(start, end, color=SECONDARY, stroke_width=3)
+            dx = line_len * np.cos(rad)
+            dy = line_len * np.sin(rad)
+            return Line(axes.c2p(cx - dx, cy - dy), axes.c2p(cx + dx, cy + dy), color=SECONDARY, stroke_width=3)
 
-        current_line = make_line(angles_deg[0])
-        fail_text = Text(
-            "misclassifies!", font=BODY_FONT, font_size=20, color=RED_C
-        ).to_edge(DOWN, buff=0.6)
-
-        self.play(Create(current_line), run_time=0.5)
+        current_line = make_rot_line(angles_deg[0])
+        self.play(Create(current_line), run_time=0.4)
         self.play(FadeIn(fail_text), run_time=0.3)
-
         for angle in angles_deg[1:]:
-            new_line = make_line(angle)
+            new_line = make_rot_line(angle)
             self.play(Transform(current_line, new_line), run_time=0.6)
-            self.wait(0.3)
-
-        self.wait(0.3)
-
-        # --- Section 3: Conclusion ---
-        self.next_section("xor_conclusion", skip_animations=False)
+            self.wait(0.25)
 
         self.play(FadeOut(fail_text), FadeOut(current_line), run_time=0.3)
-
-        conclusion = Text(
-            "No single line can separate XOR",
-            font=HEADING_FONT, font_size=30, color=SECONDARY, weight=BOLD,
-        ).to_edge(DOWN, buff=0.6)
-
-        self.play(Write(conclusion), run_time=0.8)
+        self.play(Write(cap_xor), run_time=0.6)
         self.wait(0.5)
 
 
 class FoldingScene(Scene):
     """Demonstrate how a hidden layer transforms (folds) the input space
-    so that previously entangled classes become linearly separable.
+    so that XOR becomes linearly separable.
 
-    Uses a 2D XOR pattern. Shows:
-      1. Original input space with mixed classes
-      2. Arrow indicating transformation
-      3. Hidden representation space where classes are separated
-      4. A line separating them in the new space
+    Sections (click-through):
+      1. Input space with entangled classes.
+      2. Apply fold map to grid and points.
+      3. Draw separating line in hidden space.
     """
 
     def construct(self):
         self.camera.background_color = BG
 
-        # --- Input space (left) ---
+        # ---- Input space (left) ----
         ax_in = Axes(
             x_range=[-0.5, 1.5, 0.5],
             y_range=[-0.5, 1.5, 0.5],
@@ -169,344 +237,458 @@ class FoldingScene(Scene):
             tips=False,
         ).shift(LEFT * 3.5)
 
-        in_title = Text(
-            "Input Space", font=HEADING_FONT, font_size=24, color=PRIMARY, weight=BOLD
-        ).next_to(ax_in, UP, buff=0.3)
+        in_title = Text("Input Space", font=HEADING_FONT, font_size=24, color=PRIMARY, weight=BOLD).next_to(ax_in, UP, buff=0.3)
 
-        # XOR points with some noise for visual interest
-        rng = np.random.default_rng(42)
-        n_per_cluster = 8
-        clusters = [
-            (0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0),
-        ]
-        input_dots = VGroup()
-        input_coords = []
-        input_classes = []
-        for cx, cy, cls in clusters:
-            for _ in range(n_per_cluster):
-                x = cx + rng.normal(0, 0.08)
-                y = cy + rng.normal(0, 0.08)
-                color = GREEN_C if cls == 1 else RED_C
-                dot = Dot(ax_in.c2p(x, y), radius=0.07, color=color, fill_opacity=0.85)
-                input_dots.add(dot)
-                input_coords.append((x, y))
-                input_classes.append(cls)
-
-        # --- Hidden space (right) ---
+        # ---- Output / hidden space (right) ----
         ax_out = Axes(
-            x_range=[-0.2, 1.2, 0.5],
-            y_range=[-0.2, 1.2, 0.5],
+            x_range=[-2.5, 2.5, 1],
+            y_range=[-0.2, 2.5, 0.5],
             x_length=4,
             y_length=4,
             axis_config={"color": MUTED, "stroke_width": 2, "include_ticks": True, "tick_size": 0.06},
             tips=False,
         ).shift(RIGHT * 3.5)
 
-        out_title = Text(
-            "Hidden Space", font=HEADING_FONT, font_size=24, color=PRIMARY, weight=BOLD
-        ).next_to(ax_out, UP, buff=0.3)
-
+        out_title = Text("Hidden Space", font=HEADING_FONT, font_size=24, color=PRIMARY, weight=BOLD).next_to(ax_out, UP, buff=0.3)
         h1_label = MathTex("h_1", color=TEXT, font_size=24).next_to(ax_out, DOWN, buff=0.3)
         h2_label = MathTex("h_2", color=TEXT, font_size=24).next_to(ax_out, LEFT, buff=0.3)
 
-        # Compute hidden layer activations using a simple 2-neuron hidden layer
-        # that roughly solves XOR: h1 = sigmoid(x1 + x2 - 0.5), h2 = sigmoid(-x1 - x2 + 1.5)
-        def sigmoid(z):
-            return 1.0 / (1.0 + np.exp(-z))
-
+        # ---- Generate points with noise ----
+        rng = np.random.default_rng(42)
+        n_per_cluster = 10
+        clusters = [(0, 0, 0), (0, 1, 1), (1, 0, 1), (1, 1, 0)]
+        input_dots = VGroup()
         hidden_dots = VGroup()
-        for i, (x, y) in enumerate(input_coords):
-            h1 = sigmoid(10 * (x + y - 0.5))
-            h2 = sigmoid(10 * (-x - y + 1.5))
-            color = GREEN_C if input_classes[i] == 1 else RED_C
-            dot = Dot(ax_out.c2p(h1, h2), radius=0.07, color=color, fill_opacity=0.85)
-            hidden_dots.add(dot)
+        for cx, cy, cls in clusters:
+            for _ in range(n_per_cluster):
+                x = cx + rng.normal(0, 0.08)
+                y = cy + rng.normal(0, 0.08)
+                color = GREEN_C if cls == 1 else RED_C
+                input_dots.add(Dot(ax_in.c2p(x, y), radius=0.06, color=color, fill_opacity=0.85))
+                X = 1.3 * (x - y)
+                Y = 1.5 * abs((x + y) - 1)
+                hidden_dots.add(Dot(ax_out.c2p(X, Y), radius=0.06, color=color, fill_opacity=0.85))
 
-        # Arrow between spaces
+        # ---- Grid lines in input space + mapped targets ----
+        grid_lines = VGroup()
+        target_grid_lines = VGroup()
+        n_pts = 41
+        rng_grid = np.linspace(-0.3, 1.3, n_pts)
+        step_vals = np.arange(-0.3, 1.31, 0.15)
+
+        def fold_map(x, y):
+            return 1.3 * (x - y), 1.5 * abs((x + y) - 1)
+
+        for val in step_vals:
+            # horizontal
+            pts = [ax_in.c2p(x, val) for x in rng_grid]
+            t_pts = [ax_out.c2p(*fold_map(x, val)) for x in rng_grid]
+            line = VMobject(color=MUTED, stroke_width=1.5, stroke_opacity=0.5)
+            line.set_points_as_corners(pts)
+            t_line = VMobject(color=MUTED, stroke_width=1.5, stroke_opacity=0.5)
+            t_line.set_points_as_corners(t_pts)
+            grid_lines.add(line)
+            target_grid_lines.add(t_line)
+
+            # vertical
+            pts = [ax_in.c2p(val, y) for y in rng_grid]
+            t_pts = [ax_out.c2p(*fold_map(val, y)) for y in rng_grid]
+            line = VMobject(color=MUTED, stroke_width=1.5, stroke_opacity=0.5)
+            line.set_points_as_corners(pts)
+            t_line = VMobject(color=MUTED, stroke_width=1.5, stroke_opacity=0.5)
+            t_line.set_points_as_corners(t_pts)
+            grid_lines.add(line)
+            target_grid_lines.add(t_line)
+
+        # ---- Arrow + label ----
         arrow = Arrow(
             ax_in.get_right() + RIGHT * 0.2,
             ax_out.get_left() + LEFT * 0.2,
             color=SECONDARY, stroke_width=3, buff=0.1,
         )
-        arrow_label = MathTex(r"\sigma(W\mathbf{x} + \mathbf{b})", color=SECONDARY, font_size=22).next_to(arrow, UP, buff=0.15)
+        arrow_label = MathTex(r"\sigma(W\mathbf{x}+\mathbf{b})", color=SECONDARY, font_size=22).next_to(arrow, UP, buff=0.15)
 
-        # Separating line in hidden space
-        sep_start = ax_out.c2p(-0.1, 0.5)
-        sep_end = ax_out.c2p(1.1, 0.5)
-        sep_line = DashedLine(sep_start, sep_end, color=SECONDARY, stroke_width=2.5)
+        # ---- Separating line in hidden space ----
+        sep_line = DashedLine(
+            ax_out.c2p(-2.0, 0.75), ax_out.c2p(2.0, 0.75),
+            color=SECONDARY, stroke_width=2.5,
+        )
 
-        # --- Section 1: Show input space ---
+        # ---- Section 1: Input space ----
         self.next_section("fold_input", skip_animations=False)
         self.play(Create(ax_in), Write(in_title), run_time=0.6)
         self.play(
             LaggedStart(*[GrowFromCenter(d) for d in input_dots], lag_ratio=0.02),
             run_time=0.8,
         )
+        cap_input = Text("Not linearly separable", font=BODY_FONT, font_size=20, color=MUTED).to_edge(DOWN, buff=0.6)
+        self.play(Write(cap_input), run_time=0.4)
         self.wait(0.3)
 
-        # --- Section 2: Show transformation ---
+        # ---- Section 2: Transform ----
         self.next_section("fold_transform", skip_animations=False)
+        self.play(FadeOut(cap_input), run_time=0.2)
         self.play(Create(ax_out), Write(out_title), Write(h1_label), Write(h2_label), run_time=0.6)
         self.play(GrowArrow(arrow), Write(arrow_label), run_time=0.5)
-
-        # Animate dots moving from input to hidden space
-        hidden_dot_copies = VGroup()
-        for i in range(len(input_dots)):
-            d = input_dots[i].copy()
-            hidden_dot_copies.add(d)
-
         self.play(
-            *[
-                hidden_dot_copies[i].animate.move_to(hidden_dots[i].get_center())
-                for i in range(len(hidden_dots))
-            ],
-            run_time=1.5,
+            Transform(grid_lines, target_grid_lines),
+            Transform(input_dots, hidden_dots),
+            run_time=1.8,
             rate_func=smooth,
         )
         self.wait(0.3)
 
-        # --- Section 3: Show separating line ---
+        # ---- Section 3: Separate ----
         self.next_section("fold_separate", skip_animations=False)
-        sep_label = Text(
-            "Now linearly separable!", font=BODY_FONT, font_size=22, color=GREEN_C
-        ).to_edge(DOWN, buff=0.5)
-
+        sep_label = Text("Now linearly separable!", font=BODY_FONT, font_size=22, color=GREEN_C).to_edge(DOWN, buff=0.6)
+        cap_w = Text("The weight matrix W folds the space", font=BODY_FONT, font_size=20, color=TEXT).to_edge(DOWN, buff=0.9)
         self.play(Create(sep_line), Write(sep_label), run_time=0.6)
+        self.play(Write(cap_w), run_time=0.4)
         self.wait(0.5)
 
 
-class GradientDescentScene(Scene):
-    """Animate gradient descent on a 1D loss curve.
+class MLPBoundaryScene(Scene):
+    """Show that an MLP boundary is composed of multiple straight lines.
 
-    Sections:
-      1. Show loss curve and starting point
-      2. Show gradient (tangent) arrow
-      3. Animate steps toward minimum
-      4. Show convergence
+    Sections (click-through):
+      1. Scatter points: class 1 inside a diamond.
+      2. Add 4 hidden-neuron lines one at a time.
+      3. Shade the intersection region.
+      4. Highlight the final polygon boundary.
     """
 
     def construct(self):
         self.camera.background_color = BG
-
-        # Loss function: a slightly asymmetric bowl
-        def loss_fn(x):
-            return 0.15 * (x - 1) ** 2 + 0.05 * np.sin(2 * x) + 0.5
 
         axes = Axes(
-            x_range=[-3, 5, 1],
-            y_range=[0, 3, 0.5],
-            x_length=9,
-            y_length=5,
+            x_range=[-3, 3, 1],
+            y_range=[-3, 3, 1],
+            x_length=6.5,
+            y_length=6.5,
             axis_config={"color": MUTED, "stroke_width": 2, "include_ticks": True, "tick_size": 0.06},
             tips=False,
-        ).shift(DOWN * 0.3)
+        ).shift(DOWN * 0.2)
 
-        x_label = Text("weight", font=BODY_FONT, font_size=20, color=MUTED).next_to(axes.x_axis, DOWN, buff=0.25)
-        y_label = Text("loss", font=BODY_FONT, font_size=20, color=MUTED).next_to(axes.y_axis, LEFT, buff=0.25).shift(UP * 0.5)
+        title = Text("Many Lines Make a Curve", font=HEADING_FONT, font_size=28, color=TEXT, weight=BOLD).to_edge(UP, buff=0.3)
 
-        curve = axes.plot(loss_fn, x_range=[-2.5, 4.5], color=PRIMARY, stroke_width=3)
+        # ---- Generate data: diamond interior = class 1 ----
+        rng = np.random.default_rng(42)
+        n = 60
+        dots = VGroup()
+        c0, c1 = [], []
+        while len(c0) < n or len(c1) < n:
+            x = rng.uniform(-3, 3)
+            y = rng.uniform(-3, 3)
+            inside = abs(x) + abs(y) < 1.5
+            if inside and len(c1) < n:
+                c1.append((x, y))
+                dots.add(Dot(axes.c2p(x, y), radius=0.05, color=GREEN_C, fill_opacity=0.8))
+            elif not inside and len(c0) < n:
+                c0.append((x, y))
+                dots.add(Dot(axes.c2p(x, y), radius=0.05, color=RED_C, fill_opacity=0.8))
 
-        title = Text(
-            "Gradient Descent", font=HEADING_FONT, font_size=30, color=TEXT, weight=BOLD
-        ).to_edge(UP, buff=0.3)
+        legend = VGroup(
+            Dot(radius=0.06, color=GREEN_C),
+            Text("Class 1", font=BODY_FONT, font_size=16, color=TEXT),
+            Dot(radius=0.06, color=RED_C).shift(RIGHT * 0.2),
+            Text("Class 0", font=BODY_FONT, font_size=16, color=TEXT),
+        ).arrange(RIGHT, buff=0.1).to_corner(UR, buff=0.4)
 
-        # --- Section 1: Show curve and starting point ---
-        self.next_section("gd_curve", skip_animations=False)
-        self.play(Write(title), Create(axes), Write(x_label), Write(y_label), run_time=0.6)
-        self.play(Create(curve), run_time=0.8)
+        # ---- Diamond edges as lines ----
+        # x+y=1.5, -x+y=1.5, x+y=-1.5, x-y=1.5  => equivalently written as:
+        lines_data = [
+            (1, 1, 1.5, r"h_1"),
+            (-1, 1, 1.5, r"h_2"),
+            (1, 1, -1.5, r"h_3"),
+            (1, -1, 1.5, r"h_4"),
+        ]
 
-        # Starting point
-        x_val = 4.0
-        ball = Dot(axes.c2p(x_val, loss_fn(x_val)), radius=0.12, color=SECONDARY, fill_opacity=1.0)
-        self.play(GrowFromCenter(ball), run_time=0.4)
-        self.wait(0.3)
+        def frame_line(a, b, c):
+            pts = []
+            bounds = [(-3, 3), (-3, 3)]
+            if abs(b) > 1e-9:
+                y = (c - a * bounds[0][0]) / b
+                if bounds[1][0] <= y <= bounds[1][1]:
+                    pts.append((bounds[0][0], y))
+                y = (c - a * bounds[0][1]) / b
+                if bounds[1][0] <= y <= bounds[1][1]:
+                    pts.append((bounds[0][1], y))
+            if abs(a) > 1e-9:
+                x = (c - b * bounds[1][0]) / a
+                if bounds[0][0] <= x <= bounds[0][1]:
+                    pts.append((x, bounds[1][0]))
+                x = (c - b * bounds[1][1]) / a
+                if bounds[0][0] <= x <= bounds[0][1]:
+                    pts.append((x, bounds[1][1]))
+            pts = list({(round(p[0], 6), round(p[1], 6)) for p in pts})
+            if len(pts) < 2:
+                return None
+            # sort for consistent line drawing
+            pts.sort(key=lambda p: np.arctan2(p[1], p[0]))
+            return Line(axes.c2p(pts[0][0], pts[0][1]), axes.c2p(pts[1][0], pts[1][1]), color=PRIMARY, stroke_width=2.5)
 
-        # --- Section 2: Show gradient arrow ---
-        self.next_section("gd_gradient", skip_animations=False)
+        line_objs = []
+        line_labels = []
+        for a, b, c, lab in lines_data:
+            ln = frame_line(a, b, c)
+            if ln is None:
+                ln = Line(ORIGIN, ORIGIN, color=PRIMARY)
+            line_objs.append(ln)
+            mid = ln.get_center()
+            lbl = MathTex(lab, color=PRIMARY, font_size=22).move_to(mid + UR * 0.25)
+            line_labels.append(lbl)
 
-        # Approximate gradient
-        eps = 0.01
-        grad = (loss_fn(x_val + eps) - loss_fn(x_val - eps)) / (2 * eps)
-        # Arrow pointing in negative gradient direction
-        arrow_dx = -1.5 * np.sign(grad)
-        grad_arrow = Arrow(
-            axes.c2p(x_val, loss_fn(x_val)),
-            axes.c2p(x_val + arrow_dx, loss_fn(x_val)),
-            color=GREEN_C, stroke_width=3, buff=0,
+        # Diamond polygon fill
+        poly = Polygon(
+            axes.c2p(1.5, 0), axes.c2p(0, 1.5),
+            axes.c2p(-1.5, 0), axes.c2p(0, -1.5),
+            fill_color=GREEN_C, fill_opacity=0.15, stroke_width=0,
         )
-        grad_label = MathTex(r"-\eta \frac{\partial L}{\partial w}", color=GREEN_C, font_size=24).next_to(grad_arrow, UP, buff=0.15)
 
-        self.play(GrowArrow(grad_arrow), Write(grad_label), run_time=0.5)
+        # ---- Section 1: Data ----
+        self.next_section("data", skip_animations=False)
+        self.play(Write(title), Create(axes), run_time=0.6)
+        self.play(
+            LaggedStart(*[FadeIn(d, scale=0.5) for d in dots], lag_ratio=0.005),
+            FadeIn(legend),
+            run_time=1.0,
+        )
         self.wait(0.3)
 
-        # --- Section 3: Animate steps ---
-        self.next_section("gd_steps", skip_animations=False)
+        # ---- Section 2: Lines ----
+        self.next_section("lines", skip_animations=False)
+        for ln, lbl in zip(line_objs, line_labels):
+            self.play(Create(ln), Write(lbl), run_time=0.5)
+            self.wait(0.15)
 
-        self.play(FadeOut(grad_arrow), FadeOut(grad_label), run_time=0.3)
-
-        lr = 0.5
-        trajectory_dots = VGroup()
-        path_lines = VGroup()
-
-        for step in range(8):
-            grad = (loss_fn(x_val + eps) - loss_fn(x_val - eps)) / (2 * eps)
-            x_new = x_val - lr * grad
-            x_new = np.clip(x_new, -2.5, 4.5)
-
-            # Draw path line
-            line = Line(
-                axes.c2p(x_val, loss_fn(x_val)),
-                axes.c2p(x_new, loss_fn(x_new)),
-                color=SECONDARY, stroke_width=1.5, stroke_opacity=0.5,
-            )
-            path_lines.add(line)
-
-            # Small dot at each step
-            step_dot = Dot(
-                axes.c2p(x_val, loss_fn(x_val)),
-                radius=0.06, color=SECONDARY, fill_opacity=0.4,
-            )
-            trajectory_dots.add(step_dot)
-
-            self.play(
-                ball.animate.move_to(axes.c2p(x_new, loss_fn(x_new))),
-                Create(line),
-                FadeIn(step_dot),
-                run_time=0.4,
-            )
-
-            x_val = x_new
-
+        # ---- Section 3: Regions ----
+        self.next_section("regions", skip_animations=False)
+        cap_region = Text("Intersection of half-planes", font=BODY_FONT, font_size=20, color=MUTED).to_edge(DOWN, buff=0.6)
+        self.play(FadeIn(poly), Write(cap_region), run_time=0.6)
         self.wait(0.3)
 
-        # --- Section 4: Convergence ---
-        self.next_section("gd_converged", skip_animations=False)
-
-        converged = Text(
-            "Converged to minimum", font=BODY_FONT, font_size=22, color=GREEN_C
-        ).to_edge(DOWN, buff=0.5)
-
-        self.play(Write(converged), run_time=0.5)
+        # ---- Section 4: Boundary ----
+        self.next_section("boundary", skip_animations=False)
+        cap_bnd = Text(
+            "The curved-looking boundary is straight lines stitched together",
+            font=BODY_FONT, font_size=20, color=TEXT,
+        ).to_edge(DOWN, buff=0.6)
+        self.play(FadeOut(cap_region), run_time=0.2)
+        # Highlight polygon border
+        poly_border = Polygon(
+            axes.c2p(1.5, 0), axes.c2p(0, 1.5),
+            axes.c2p(-1.5, 0), axes.c2p(0, -1.5),
+            fill_color=GREEN_C, fill_opacity=0.0, stroke_color=GREEN_C, stroke_width=4,
+        )
+        self.play(Create(poly_border), Write(cap_bnd), run_time=0.8)
         self.wait(0.5)
 
 
-class LossLandscapeScene(ThreeDScene):
-    """3D loss surface visualization showing sharp minima, flat minima,
-    and a saddle point.
+class OptimizerLandscapeScene(ThreeDScene):
+    """3D loss surface with GD, SGD, and Adam trajectories.
 
-    Sections:
-      1. Show 3D surface with rotation
-      2. Label sharp minimum
-      3. Label flat minimum
-      4. Label saddle point
+    Sections (click-through):
+      1. Show 2-weight perceptron diagram.
+      2. Show 3D loss surface + brief ball movement.
+      3. Gradient Descent trajectory.
+      4. SGD trajectory.
+      5. Adam trajectory.
     """
 
     def construct(self):
         self.camera.background_color = BG
 
+        # ---- Fixed dataset ----
+        X = np.array([[-1.2, -0.9], [-0.8, -1.1], [-0.5, -0.8],
+                      [1.1, 0.8], [0.9, 1.1], [0.8, 0.5],
+                      [-0.7, 1.0], [1.0, -0.7]], dtype=float)
+        y = np.array([0, 0, 0, 1, 1, 1, 1, 0], dtype=float)
+
+        def loss_surface(u, v):
+            w = np.array([u, v])
+            z = 0.0
+            for xi, yi in zip(X, y):
+                z_i = np.dot(w, xi)
+                p = 1.0 / (1.0 + np.exp(-z_i))
+                eps = 1e-12
+                bce = -(yi * np.log(p + eps) + (1 - yi) * np.log(1 - p + eps))
+                z += bce
+            z = z / len(y) + 0.05 * np.dot(w, w)
+            return float(np.clip(z, 0.0, 6.0))
+
+        def compute_grad(w, idxs=None):
+            if idxs is None:
+                idxs = range(len(y))
+            grad = np.zeros(2)
+            for i in idxs:
+                z_i = np.dot(w, X[i])
+                p = 1.0 / (1.0 + np.exp(-z_i))
+                grad += (p - y[i]) * X[i]
+            grad = grad / len(idxs) + 0.1 * w
+            return grad
+
+        def compute_path(name, steps, lr, start_w):
+            w = np.array(start_w, dtype=float)
+            path = [(w[0], w[1], loss_surface(w[0], w[1]))]
+            m = np.zeros(2)
+            v = np.zeros(2)
+            t = 0
+            rng = np.random.default_rng(123)
+            for _ in range(steps):
+                if name == "gd":
+                    grad = compute_grad(w)
+                    w = w - lr * grad
+                elif name == "sgd":
+                    batch = rng.choice(len(y), size=3, replace=False)
+                    grad = compute_grad(w, batch)
+                    w = w - lr * grad
+                elif name == "adam":
+                    t += 1
+                    grad = compute_grad(w)
+                    m = 0.9 * m + 0.1 * grad
+                    v = 0.999 * v + 0.001 * (grad ** 2)
+                    m_hat = m / (1 - 0.9 ** t)
+                    v_hat = v / (1 - 0.999 ** t)
+                    w = w - lr * m_hat / (np.sqrt(v_hat) + 1e-8)
+                w = np.clip(w, -3.0, 3.0)
+                path.append((w[0], w[1], loss_surface(w[0], w[1])))
+            return path
+
+        # ---- 3D axes ----
         axes = ThreeDAxes(
             x_range=[-3, 3, 1],
             y_range=[-3, 3, 1],
-            z_range=[-1, 4, 1],
+            z_range=[0, 5, 1],
             x_length=6,
             y_length=6,
             z_length=4,
             axis_config={"color": MUTED, "stroke_width": 1.5},
         )
-
-        # Loss surface with interesting features:
-        # - A sharp minimum near (-1.5, -1.5)
-        # - A flat minimum near (1.5, 1.5)
-        # - A saddle point near (0, 0)
-        def loss_surface(u, v):
-            # Saddle component
-            saddle = 0.15 * (u ** 2 - v ** 2)
-            # Sharp minimum
-            r_sharp = np.sqrt((u + 1.5) ** 2 + (v + 1.5) ** 2)
-            sharp = -1.5 * np.exp(-2 * r_sharp ** 2)
-            # Flat minimum
-            r_flat = np.sqrt((u - 1.5) ** 2 + (v - 1.5) ** 2)
-            flat = -0.8 * np.exp(-0.3 * r_flat ** 2)
-            # Base bowl
-            base = 0.05 * (u ** 2 + v ** 2)
-            return base + saddle + sharp + flat + 2.0
+        axes.x_axis.set_color(PRIMARY)
+        axes.y_axis.set_color(SECONDARY)
 
         surface = axes.plot_surface(
             loss_surface,
             u_range=[-3, 3],
             v_range=[-3, 3],
-            resolution=(40, 40),
+            resolution=(28, 28),
             colorscale=[PRIMARY, "#2a6bbf", SECONDARY, RED_C],
             fill_opacity=0.75,
         )
 
-        title = Text(
-            "Loss Landscape", font=HEADING_FONT, font_size=28, color=TEXT, weight=BOLD
-        )
-        title.to_corner(UL, buff=0.4)
+        # ---- Fixed-in-frame diagram ----
+        neuron = Circle(radius=0.25, color=TEXT, stroke_width=2)
+        x1_lab = MathTex("x_1", color=TEXT, font_size=22).next_to(neuron, LEFT, buff=1.0).shift(UP * 0.35)
+        x2_lab = MathTex("x_2", color=TEXT, font_size=22).next_to(neuron, LEFT, buff=1.0).shift(DOWN * 0.35)
+        w1_line = Line(x1_lab.get_right(), neuron.get_left(), color=PRIMARY, stroke_width=2)
+        w2_line = Line(x2_lab.get_right(), neuron.get_left(), color=SECONDARY, stroke_width=2)
+        w1_txt = MathTex("w_1", color=PRIMARY, font_size=18).next_to(w1_line, UP, buff=0.08)
+        w2_txt = MathTex("w_2", color=SECONDARY, font_size=18).next_to(w2_line, DOWN, buff=0.08)
+        diag = VGroup(x1_lab, x2_lab, neuron, w1_line, w2_line, w1_txt, w2_txt)
+        diag.to_corner(UL, buff=0.4)
+        diag_cap = Text("(w_1, w_2) is one point in weight space", font=BODY_FONT, font_size=16, color=MUTED)
+        diag_cap.next_to(diag, DOWN, buff=0.15).align_to(diag, LEFT)
+        self.add_fixed_in_frame_mobjects(diag, diag_cap)
 
-        # --- Section 1: Show surface ---
-        self.next_section("landscape_surface", skip_animations=False)
         self.set_camera_orientation(phi=65 * DEGREES, theta=-50 * DEGREES)
-        self.add_fixed_in_frame_mobjects(title)
-        self.play(Write(title), run_time=0.3)
+
+        # ---- Section 1: Perceptron diagram ----
+        self.next_section("perceptron", skip_animations=False)
+        self.play(FadeIn(diag), FadeIn(diag_cap), run_time=0.4)
+        self.wait(0.3)
+
+        # ---- Section 2: Surface ----
+        self.next_section("surface", skip_animations=False)
         self.play(Create(axes), run_time=0.5)
         self.play(Create(surface), run_time=1.5)
+
+        start_w = [-2.5, 2.5]
+        ball = Dot3D(
+            axes.c2p(start_w[0], start_w[1], loss_surface(start_w[0], start_w[1])),
+            radius=0.12, color=WHITE,
+        )
+        self.play(GrowFromCenter(ball), run_time=0.3)
+        self.play(
+            ball.animate.move_to(axes.c2p(0, 0, loss_surface(0, 0))),
+            run_time=0.8,
+        )
+        self.play(
+            ball.animate.move_to(axes.c2p(start_w[0], start_w[1], loss_surface(start_w[0], start_w[1]))),
+            run_time=0.6,
+        )
         self.wait(0.3)
 
-        # --- Section 2: Label sharp minimum ---
-        self.next_section("landscape_sharp", skip_animations=False)
-        sharp_pos = axes.c2p(-1.5, -1.5, loss_surface(-1.5, -1.5))
-        sharp_dot = Dot3D(sharp_pos, radius=0.08, color=RED_C)
-        sharp_label = Text(
-            "Sharp minimum", font=BODY_FONT, font_size=20, color=RED_C
-        )
-        sharp_label.to_corner(DR, buff=0.5)
-        self.add_fixed_in_frame_mobjects(sharp_label)
-        self.play(GrowFromCenter(sharp_dot), Write(sharp_label), run_time=0.5)
+        # ---- Section 3: GD ----
+        self.next_section("gradient_descent", skip_animations=False)
+        gd_label = Text("Gradient Descent", font=BODY_FONT, font_size=20, color=PRIMARY)
+        gd_label.to_corner(DR, buff=0.4)
+        self.add_fixed_in_frame_mobjects(gd_label)
+        self.play(FadeIn(gd_label), run_time=0.3)
+
+        gd_pts = compute_path("gd", steps=12, lr=0.8, start_w=start_w)
+        gd_path = VMobject(color=PRIMARY, stroke_width=3)
+        gd_path.set_points_as_corners([axes.c2p(p[0], p[1], p[2]) for p in gd_pts])
+        self.play(Create(gd_path), MoveAlongPath(ball, gd_path), run_time=2.5)
         self.wait(0.3)
 
-        # --- Section 3: Label flat minimum ---
-        self.next_section("landscape_flat", skip_animations=False)
-        flat_pos = axes.c2p(1.5, 1.5, loss_surface(1.5, 1.5))
-        flat_dot = Dot3D(flat_pos, radius=0.08, color=GREEN_C)
-        flat_label = Text(
-            "Flat minimum (generalizes better)", font=BODY_FONT, font_size=20, color=GREEN_C
+        # ---- Section 4: SGD ----
+        self.next_section("sgd", skip_animations=False)
+        self.play(FadeOut(gd_label), FadeOut(gd_path), run_time=0.3)
+        sgd_label = Text("Stochastic GD", font=BODY_FONT, font_size=20, color=SECONDARY)
+        sgd_label.to_corner(DR, buff=0.4)
+        self.add_fixed_in_frame_mobjects(sgd_label)
+        self.play(FadeIn(sgd_label), run_time=0.3)
+
+        ball2 = Dot3D(
+            axes.c2p(start_w[0], start_w[1], loss_surface(start_w[0], start_w[1])),
+            radius=0.12, color=WHITE,
         )
-        flat_label.next_to(sharp_label, UP, buff=0.3)
-        self.add_fixed_in_frame_mobjects(flat_label)
-        self.play(GrowFromCenter(flat_dot), Write(flat_label), run_time=0.5)
+        sgd_pts = compute_path("sgd", steps=15, lr=1.0, start_w=start_w)
+        sgd_path = VMobject(color=SECONDARY, stroke_width=3)
+        sgd_path.set_points_as_corners([axes.c2p(p[0], p[1], p[2]) for p in sgd_pts])
+        self.play(GrowFromCenter(ball2), run_time=0.3)
+        self.play(Create(sgd_path), MoveAlongPath(ball2, sgd_path), run_time=2.5)
         self.wait(0.3)
 
-        # --- Section 4: Label saddle point ---
-        self.next_section("landscape_saddle", skip_animations=False)
-        saddle_pos = axes.c2p(0, 0, loss_surface(0, 0))
-        saddle_dot = Dot3D(saddle_pos, radius=0.08, color=SECONDARY)
-        saddle_label = Text(
-            "Saddle point", font=BODY_FONT, font_size=20, color=SECONDARY
-        )
-        saddle_label.next_to(flat_label, UP, buff=0.3)
-        self.add_fixed_in_frame_mobjects(saddle_label)
-        self.play(GrowFromCenter(saddle_dot), Write(saddle_label), run_time=0.5)
+        # ---- Section 5: Adam ----
+        self.next_section("adam", skip_animations=False)
+        self.play(FadeOut(sgd_label), FadeOut(sgd_path), run_time=0.3)
+        adam_label = Text("Adam", font=BODY_FONT, font_size=20, color=GREEN_C)
+        adam_label.to_corner(DR, buff=0.4)
+        self.add_fixed_in_frame_mobjects(adam_label)
+        self.play(FadeIn(adam_label), run_time=0.3)
 
-        # Slow camera rotation to show the 3D structure
-        self.begin_ambient_camera_rotation(rate=0.15)
-        self.wait(3)
-        self.stop_ambient_camera_rotation()
+        ball3 = Dot3D(
+            axes.c2p(start_w[0], start_w[1], loss_surface(start_w[0], start_w[1])),
+            radius=0.12, color=WHITE,
+        )
+        adam_pts = compute_path("adam", steps=12, lr=1.0, start_w=start_w)
+        adam_path = VMobject(color=GREEN_C, stroke_width=3)
+        adam_path.set_points_as_corners([axes.c2p(p[0], p[1], p[2]) for p in adam_pts])
+        self.play(GrowFromCenter(ball3), run_time=0.3)
+        self.play(Create(adam_path), MoveAlongPath(ball3, adam_path), run_time=2.5)
+        self.wait(0.5)
 
 
 class OverfittingCurveScene(Scene):
-    """Training loss vs validation loss curves, showing the overfitting point.
+    """Training/validation loss curves, best-model marker, and 1D fits.
 
-    Sections:
-      1. Show axes and legend
-      2. Draw training loss curve
-      3. Draw validation loss curve (diverges)
-      4. Mark the overfitting region
+    Sections (click-through):
+      1. Axes and legend.
+      2. Training loss curve.
+      3. Validation loss curve.
+      4. Best-model marker + overfitting region.
+      5. 1D underfit / good / overfit panels.
     """
 
     def construct(self):
         self.camera.background_color = BG
+
+        def train_loss(x):
+            return 2.0 * np.exp(-0.04 * x) + 0.1
+
+        def val_loss(x):
+            return 1.8 * np.exp(-0.06 * x) + 0.003 * (x - 30) ** 2 * (x > 30) + 0.3
 
         axes = Axes(
             x_range=[0, 100, 20],
@@ -520,22 +702,11 @@ class OverfittingCurveScene(Scene):
         x_label = Text("Epoch", font=BODY_FONT, font_size=20, color=MUTED).next_to(axes.x_axis, DOWN, buff=0.25)
         y_label = Text("Loss", font=BODY_FONT, font_size=20, color=MUTED).next_to(axes.y_axis, LEFT, buff=0.25).shift(UP * 0.5)
 
-        title = Text(
-            "Overfitting", font=HEADING_FONT, font_size=30, color=TEXT, weight=BOLD
-        ).to_edge(UP, buff=0.3)
-
-        # Training loss: monotonically decreasing
-        def train_loss(x):
-            return 2.0 * np.exp(-0.04 * x) + 0.1
-
-        # Validation loss: decreasing then increasing
-        def val_loss(x):
-            return 1.8 * np.exp(-0.06 * x) + 0.003 * (x - 30) ** 2 * (x > 30) + 0.3
+        title = Text("Overfitting", font=HEADING_FONT, font_size=30, color=TEXT, weight=BOLD).to_edge(UP, buff=0.3)
 
         train_curve = axes.plot(train_loss, x_range=[1, 100], color=PRIMARY, stroke_width=3)
         val_curve = axes.plot(val_loss, x_range=[1, 100], color=RED_C, stroke_width=3)
 
-        # Legend
         train_legend = VGroup(
             Line(ORIGIN, RIGHT * 0.5, color=PRIMARY, stroke_width=3),
             Text("Training loss", font=BODY_FONT, font_size=18, color=TEXT),
@@ -546,48 +717,106 @@ class OverfittingCurveScene(Scene):
         ).arrange(RIGHT, buff=0.1)
         legend = VGroup(train_legend, val_legend).arrange(DOWN, buff=0.15, aligned_edge=LEFT).to_corner(UR, buff=0.5)
 
-        # --- Section 1: Show axes ---
-        self.next_section("overfit_axes", skip_animations=False)
-        self.play(Write(title), Create(axes), Write(x_label), Write(y_label), run_time=0.6)
-        self.wait(0.2)
+        # ---- Compute best-model x numerically ----
+        xs_fine = np.linspace(1, 100, 2000)
+        sweet_x = float(xs_fine[np.argmin(val_loss(xs_fine))])
 
-        # --- Section 2: Training loss ---
-        self.next_section("overfit_train", skip_animations=False)
-        self.play(Create(train_curve), FadeIn(train_legend), run_time=1.0)
-        self.wait(0.3)
-
-        # --- Section 3: Validation loss ---
-        self.next_section("overfit_val", skip_animations=False)
-        self.play(Create(val_curve), FadeIn(val_legend), run_time=1.0)
-        self.wait(0.3)
-
-        # --- Section 4: Mark overfitting region ---
-        self.next_section("overfit_region", skip_animations=False)
-
-        # Vertical dashed line at the sweet spot (~30 epochs)
-        sweet_x = 30
         sweet_line = DashedLine(
             axes.c2p(sweet_x, 0), axes.c2p(sweet_x, 2.5),
             color=SECONDARY, stroke_width=2, dash_length=0.1,
         )
-        sweet_label = Text(
-            "Best model", font=BODY_FONT, font_size=18, color=SECONDARY
-        ).next_to(sweet_line, UP, buff=0.1)
+        sweet_label = Text("Best model", font=BODY_FONT, font_size=18, color=SECONDARY).next_to(sweet_line, UP, buff=0.1)
 
-        # Shaded overfitting region
         overfit_region = Polygon(
             axes.c2p(sweet_x, 0), axes.c2p(100, 0),
             axes.c2p(100, 2.5), axes.c2p(sweet_x, 2.5),
-            fill_color=RED_C, fill_opacity=0.08,
-            stroke_width=0,
+            fill_color=RED_C, fill_opacity=0.08, stroke_width=0,
         )
-        overfit_label = Text(
-            "Overfitting", font=BODY_FONT, font_size=20, color=RED_C
-        ).move_to(axes.c2p(65, 2.2))
+        overfit_label = Text("Overfitting", font=BODY_FONT, font_size=20, color=RED_C).move_to(axes.c2p(65, 2.2))
 
+        # ---- Section 1: Axes ----
+        self.next_section("overfit_axes", skip_animations=False)
+        self.play(Write(title), Create(axes), Write(x_label), Write(y_label), run_time=0.6)
+        self.wait(0.2)
+
+        # ---- Section 2: Train curve ----
+        self.next_section("overfit_train", skip_animations=False)
+        self.play(Create(train_curve), FadeIn(train_legend), run_time=1.0)
+        self.wait(0.3)
+
+        # ---- Section 3: Val curve ----
+        self.next_section("overfit_val", skip_animations=False)
+        self.play(Create(val_curve), FadeIn(val_legend), run_time=1.0)
+        self.wait(0.3)
+
+        # ---- Section 4: Region ----
+        self.next_section("overfit_region", skip_animations=False)
         self.play(
             Create(sweet_line), Write(sweet_label),
             FadeIn(overfit_region), Write(overfit_label),
+            run_time=0.8,
+        )
+        self.wait(0.5)
+
+        # ---- Section 5: 1D fits ----
+        self.next_section("fits", skip_animations=False)
+        main_group = VGroup(axes, x_label, y_label, train_curve, val_curve, legend,
+                            sweet_line, sweet_label, overfit_region, overfit_label)
+        self.play(FadeOut(main_group), run_time=0.4)
+
+        rng = np.random.default_rng(42)
+        n_samp = 15
+        samp_x = np.linspace(0, 6, n_samp)
+        samp_y = np.sin(1.2 * samp_x) + rng.normal(0, 0.25, n_samp)
+        true_fn = lambda x: np.sin(1.2 * x)
+
+        ax_cfg = dict(
+            x_range=[0, 6, 1], y_range=[-2, 2, 1],
+            x_length=2.8, y_length=2.0,
+            axis_config={"color": MUTED, "stroke_width": 1.5, "include_ticks": False},
+            tips=False,
+        )
+        ax_u = Axes(**ax_cfg).shift(LEFT * 3.5 + DOWN * 0.2)
+        ax_g = Axes(**ax_cfg).shift(DOWN * 0.2)
+        ax_o = Axes(**ax_cfg).shift(RIGHT * 3.5 + DOWN * 0.2)
+
+        # True function (faint)
+        for ax in (ax_u, ax_g, ax_o):
+            tc = ax.plot(true_fn, x_range=[0, 6], color=MUTED, stroke_width=1.5, stroke_opacity=0.4)
+            self.add(tc)
+
+        # Sample points
+        for ax in (ax_u, ax_g, ax_o):
+            for xi, yi in zip(samp_x, samp_y):
+                self.add(Dot(ax.c2p(xi, yi), radius=0.04, color=TEXT, fill_opacity=0.8))
+
+        # Fits
+        c1 = np.polyfit(samp_x, samp_y, 1)
+        c5 = np.polyfit(samp_x, samp_y, 5)
+        c14 = np.polyfit(samp_x, samp_y, min(14, n_samp - 1))
+
+        def make_poly_fn(coeffs):
+            return lambda x: np.clip(np.polyval(coeffs, x), -3, 3)
+
+        fit1 = ax_u.plot(make_poly_fn(c1), x_range=[0, 6], color=PRIMARY, stroke_width=2)
+        fit5 = ax_g.plot(make_poly_fn(c5), x_range=[0, 6], color=GREEN_C, stroke_width=2)
+        fit14 = ax_o.plot(make_poly_fn(c14), x_range=[0, 6], color=RED_C, stroke_width=2)
+
+        lbl_u = Text("Underfit", font=BODY_FONT, font_size=18, color=PRIMARY).next_to(ax_u, DOWN, buff=0.2)
+        lbl_g = Text("Good fit", font=BODY_FONT, font_size=18, color=GREEN_C).next_to(ax_g, DOWN, buff=0.2)
+        lbl_o = Text("Overfit", font=BODY_FONT, font_size=18, color=RED_C).next_to(ax_o, DOWN, buff=0.2)
+
+        fits_title = Text("Model Complexity", font=HEADING_FONT, font_size=26, color=TEXT, weight=BOLD).to_edge(UP, buff=0.4)
+
+        self.play(Write(fits_title), run_time=0.4)
+        self.play(
+            Create(ax_u), Create(ax_g), Create(ax_o),
+            run_time=0.5,
+        )
+        self.play(
+            Create(fit1), Write(lbl_u),
+            Create(fit5), Write(lbl_g),
+            Create(fit14), Write(lbl_o),
             run_time=0.8,
         )
         self.wait(0.5)

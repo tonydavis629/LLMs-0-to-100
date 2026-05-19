@@ -8,29 +8,13 @@ From Shannon to ChatGPT <!-- .element: class="text-muted" style="font-size: 14pt
 
 ---
 
-<div class="figure-card">
-
-![Grace Hopper](images/hopper.jpg)
-
-<div class="figure-info">
-
-## Grace Hopper <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Pioneered the First Compiler
-
+:::figure img="images/hopper.jpg" name="Grace Hopper" kicker="Pioneered the First Compiler"
 - Created the A-0 System (1952) &mdash; the first compiler
 - Believed computers should speak human languages, not the other way around
 - Led development of COBOL &mdash; programs written in near-English
 - Rear Admiral in the U.S. Navy
 - **LLMs are the next step:** natural language compilers that translate plain text into tasks
-
-</div>
-
-</div>
-
-</div>
+:::
 
 ---
 
@@ -203,60 +187,60 @@ WHAT? How?
             <!-- 1948: 0% | 1965: 22.4% | 1986: 50% | 2012: 84.2% | 2017: 90.8% | 2018: 92.1% | 2022: 97.4% | 2024: 100% -->
             <!-- All milestones: dot on axis, stem up, label above -->
             <!-- 1948: 0%, tall stem -->
-            <div class="fragment" style="position: absolute; left: 0%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 80px;">
-              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">Information<br>Theory</p>
-              <p style="font-size: 11pt; color: #f5a623; font-weight: 600; margin: 2px 0 0 0;">1948</p>
-              <div style="width: 1px; height: 50px; background: #f5a623; margin: 2px auto 0; opacity: 0.5;"></div>
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: #f5a623; margin: 0 auto;"></div>
+            <div class="fragment tl-node" style="left: 0%; bottom: 98px; width: 80px;">
+              <p class="tl-label">Information<br>Theory</p>
+              <p class="tl-year" style="color: #f5a623;">1948</p>
+              <div class="tl-stem" style="height: 50px; background: #f5a623;"></div>
+              <div class="tl-dot" style="background: #f5a623;"></div>
             </div>
             <!-- ~1965: 22.4%, short stem -->
-            <div class="fragment" style="position: absolute; left: 22.4%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 80px;">
-              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">GOFAI Era</p>
-              <p style="font-size: 11pt; color: #6cb4ff; font-weight: 600; margin: 2px 0 0 0;">~1965</p>
-              <div style="width: 1px; height: 50px; background: #6cb4ff; margin: 2px auto 0; opacity: 0.5;"></div>
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: #6cb4ff; margin: 0 auto;"></div>
+            <div class="fragment tl-node" style="left: 22.4%; bottom: 98px; width: 80px;">
+              <p class="tl-label">GOFAI Era</p>
+              <p class="tl-year" style="color: #6cb4ff;">~1965</p>
+              <div class="tl-stem" style="height: 50px; background: #6cb4ff;"></div>
+              <div class="tl-dot" style="background: #6cb4ff;"></div>
             </div>
             <!-- 1986: 50%, tall stem -->
-            <div class="fragment" style="position: absolute; left: 50%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 80px;">
-              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">Back-<br>propagation</p>
-              <p style="font-size: 11pt; color: #f5a623; font-weight: 600; margin: 2px 0 0 0;">1986</p>
-              <div style="width: 1px; height: 50px; background: #f5a623; margin: 2px auto 0; opacity: 0.5;"></div>
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: #f5a623; margin: 0 auto;"></div>
+            <div class="fragment tl-node" style="left: 50%; bottom: 98px; width: 80px;">
+              <p class="tl-label">Back-<br>propagation</p>
+              <p class="tl-year" style="color: #f5a623;">1986</p>
+              <div class="tl-stem" style="height: 50px; background: #f5a623;"></div>
+              <div class="tl-dot" style="background: #f5a623;"></div>
             </div>
             <!-- 2012: 84.2%, short stem -->
-            <div class="fragment" style="position: absolute; left: 84.2%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 60px;">
-              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">AlexNet</p>
-              <p style="font-size: 11pt; color: #50c878; font-weight: 600; margin: 2px 0 0 0;">2012</p>
-              <div style="width: 1px; height: 50px; background: #50c878; margin: 2px auto 0; opacity: 0.5;"></div>
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: #50c878; margin: 0 auto;"></div>
+            <div class="fragment tl-node" style="left: 84.2%; bottom: 98px; width: 60px;">
+              <p class="tl-label">AlexNet</p>
+              <p class="tl-year" style="color: #50c878;">2012</p>
+              <div class="tl-stem" style="height: 50px; background: #50c878;"></div>
+              <div class="tl-dot" style="background: #50c878;"></div>
             </div>
             <!-- 2017: 90.8%, tall stem (to clear 2018) -->
-            <div class="fragment" style="position: absolute; left: 90.8%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 70px;">
-              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">Transformers</p>
-              <p style="font-size: 11pt; color: #e06c75; font-weight: 600; margin: 2px 0 0 0;">2017</p>
-              <div style="width: 1px; height: 80px; background: #e06c75; margin: 2px auto 0; opacity: 0.5;"></div>
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: #e06c75; margin: 0 auto;"></div>
+            <div class="fragment tl-node" style="left: 90.8%; bottom: 98px; width: 70px;">
+              <p class="tl-label">Transformers</p>
+              <p class="tl-year" style="color: #e06c75;">2017</p>
+              <div class="tl-stem" style="height: 80px; background: #e06c75;"></div>
+              <div class="tl-dot" style="background: #e06c75;"></div>
             </div>
             <!-- 2018: 92.1%, below the line -->
-            <div class="fragment" style="position: absolute; left: 92.1%; top: 203px; transform: translateX(-50%); text-align: center; width: 70px;">
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: #e06c75; margin: 0 auto;"></div>
-              <div style="width: 1px; height: 50px; background: #e06c75; margin: 0 auto; opacity: 0.5;"></div>
-              <p style="font-size: 11pt; color: #e06c75; font-weight: 600; margin: 0;">2018</p>
-              <p style="font-size: 10pt; color: var(--muted-color); margin: 2px 0 0 0; white-space: nowrap;">BERT / GPT</p>
+            <div class="fragment tl-node below" style="left: 92.1%; top: 203px; width: 70px;">
+              <div class="tl-dot" style="background: #e06c75;"></div>
+              <div class="tl-stem" style="height: 50px; background: #e06c75;"></div>
+              <p class="tl-year" style="color: #e06c75;">2018</p>
+              <p class="tl-label">BERT / GPT</p>
             </div>
             <!-- 2022: 97.4%, tall stem -->
-            <div class="fragment" style="position: absolute; left: 97.4%; bottom: 98px; transform: translateX(-50%); text-align: center; width: 60px;">
-              <p style="font-size: 10pt; color: var(--muted-color); margin: 0; white-space: nowrap;">ChatGPT</p>
-              <p style="font-size: 11pt; color: #e06c75; font-weight: 600; margin: 2px 0 0 0;">2022</p>
-              <div style="width: 1px; height: 80px; background: #e06c75; margin: 2px auto 0; opacity: 0.5;"></div>
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: #e06c75; margin: 0 auto;"></div>
+            <div class="fragment tl-node" style="left: 97.4%; bottom: 98px; width: 60px;">
+              <p class="tl-label">ChatGPT</p>
+              <p class="tl-year" style="color: #e06c75;">2022</p>
+              <div class="tl-stem" style="height: 80px; background: #e06c75;"></div>
+              <div class="tl-dot" style="background: #e06c75;"></div>
             </div>
             <!-- 2024: 100%, below the line -->
-            <div class="fragment" style="position: absolute; right: 0; top: 203px; transform: translateX(50%); text-align: center; width: 70px;">
-              <div style="width: 10px; height: 10px; border-radius: 50%; background: #c792ea; margin: 0 auto;"></div>
-              <div style="width: 1px; height: 50px; background: #c792ea; margin: 0 auto; opacity: 0.5;"></div>
-              <p style="font-size: 11pt; color: #c792ea; font-weight: 600; margin: 0;">2024</p>
-              <p style="font-size: 10pt; color: var(--muted-color); margin: 2px 0 0 0; white-space: nowrap;">RL Post-<br>Training</p>
+            <div class="fragment tl-node below" style="right: 0; top: 203px; width: 70px; transform: translateX(50%);">
+              <div class="tl-dot" style="background: #c792ea;"></div>
+              <div class="tl-stem" style="height: 50px; background: #c792ea;"></div>
+              <p class="tl-year" style="color: #c792ea;">2024</p>
+              <p class="tl-label">RL Post-<br>Training</p>
             </div>
           </div>
         </div>
@@ -264,55 +248,23 @@ WHAT? How?
 
 ---
 
-<div class="figure-card">
-
-![Claude Shannon](images/shannon.jpg)
-
-<div class="figure-info">
-
-## Claude Shannon <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### The Father of Information Theory
-
+:::figure img="images/shannon.jpg" name="Claude Shannon" kicker="The Father of Information Theory"
 - Created the mathematical theory of communication (1948)
 - Defined the **"bit"** as a unit of information
 - Showed that language has measurable statistical structure
 - Proved reliable communication is possible over noisy channels
 - His work is the theoretical foundation of every LLM
-
-</div>
-
-</div>
-
-</div>
+:::
 
 ---
 
-<div class="figure-card">
-
-![John von Neumann](images/vonneumann.gif)
-
-<div class="figure-info">
-
-## John von Neumann <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### The Architecture of Computation
-
+:::figure img="images/vonneumann.gif" name="John von Neumann" kicker="The Architecture of Computation"
 - Designed the stored-program architecture (von Neumann architecture)
 - Programs and data stored in the same memory &mdash; the basis of all modern computers
 - Contributed to game theory, quantum mechanics, and nuclear physics
 - Worked on ENIAC and EDVAC at Los Alamos
 - Without his architecture, training neural networks would not be possible
-
-</div>
-
-</div>
-
-</div>
+:::
 
 ---
 
@@ -485,29 +437,13 @@ Instead of writing rules, **learn patterns from data**. <!-- .element: class="te
 
 ---
 
-<div class="figure-card">
-
-![Jensen Huang](images/huang.jpg)
-
-<div class="figure-info">
-
-## Jensen Huang <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### The Man Behind the GPU Revolution
-
+:::figure img="images/huang.jpg" name="Jensen Huang" kicker="The Man Behind the GPU Revolution"
 - Co-founded NVIDIA in 1993
 - CUDA (2006) gave researchers programmable parallel computing
 - GPUs became the backbone of deep learning
 - NVIDIA is now the most valuable company in the world
 <!-- .element: class="text-lg" -->
-
-</div>
-
-</div>
-
-</div>
+:::
 
 ---
 
@@ -719,27 +655,18 @@ A perplexity of 10 means the model is as uncertain as choosing uniformly from 10
 
 ---
 
-<!-- .slide: id="compression-demo-1" -->
-
-<div class="video-container">
-  <video data-autoplay src="media/compression_uniform.mp4"></video>
-</div>
+:::video id="compression-demo-1" src="media/compression_uniform.mp4"
+:::
 
 ---
 
-<!-- .slide: id="compression-demo-2" -->
-
-<div class="video-container">
-  <video data-autoplay src="media/compression_code_table.mp4"></video>
-</div>
+:::video id="compression-demo-2" src="media/compression_code_table.mp4"
+:::
 
 ---
 
-<!-- .slide: id="compression-demo-3" -->
-
-<div class="video-container">
-  <video data-autoplay src="media/compression_variable.mp4"></video>
-</div>
+:::video id="compression-demo-3" src="media/compression_variable.mp4"
+:::
 
 ---
 
@@ -872,7 +799,11 @@ CHAPTER I. Down the Rabbit-Hole ...
     raise NotImplementedError("TODO: return the joined lines")
 ```
 
-**Hint:** Python's `str.join()` method can combine a list of strings with a separator. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** Python's `str.join()` method can combine a list of strings with a separator.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -886,18 +817,8 @@ return "\n".join(lines[start_idx:end_idx])
 
 ---
 
-<section id="exercise-step1-output">
-  <h2>Step 1: Output</h2>
-  <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
-      <div class="terminal-bar">
-        <span class="terminal-dot red"></span>
-        <span class="terminal-dot yellow"></span>
-        <span class="terminal-dot green"></span>
-        <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
-      </div>
-      <div class="terminal-body">
-        <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
+:::terminal id="exercise-step1-output" title="Step 1: Output" cmd="uv run python module_01_introduction/src/main.py" caption="The program loads the text, then skips every model you haven't built yet."
+<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="skipped">=== 0th Order: Uniform Random Characters ===
   [skipped: TODO: return a random string of the given length]
@@ -908,12 +829,8 @@ return "\n".join(lines[start_idx:end_idx])
 === 2nd Order: Character Bigrams ===
   [skipped: TODO: set context and next_char from text[i:]]
 
-...</span></pre>
-      </div>
-    </div>
-    <p class="text-lg" style="margin-top: 15px; text-align: center;">The program loads the text, then skips every model you haven't built yet.</p>
-  </div>
-</section>
+...</span>
+:::
 
 ---
 
@@ -951,7 +868,11 @@ No structure at all. Rare letters like **q**, **x**, **z** appear as often as **
     raise NotImplementedError("TODO: return a random string of the given length")
 ```
 
-**Hint:** `random.choices(population, k=...)` returns a list of `k` random items. Join them into a single string. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** `random.choices(population, k=...)` returns a list of `k` random items. Join them into a single string.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -965,27 +886,13 @@ return "".join(random.choices(alphabet, k=length))
 
 ---
 
-<section id="exercise-step2-output">
-  <h2>Step 2: Output</h2>
-  <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
-      <div class="terminal-bar">
-        <span class="terminal-dot red"></span>
-        <span class="terminal-dot yellow"></span>
-        <span class="terminal-dot green"></span>
-        <span class="terminal-title">uv run python module_01_introduction/src/main.py --model uniform</span>
-      </div>
-      <div class="terminal-body">
-        <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
+:::terminal id="exercise-step2-output" title="Step 2: Output" cmd="uv run python module_01_introduction/src/main.py --model uniform" caption="Pure noise. Rare letters appear as often as common ones."
+<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
-<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
+<span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
 rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg
-iudmpwmvbyqkflxjiupmlehmjbkzqhsvchnyawijuydkl</pre>
-      </div>
-    </div>
-    <p class="text-lg" style="margin-top: 15px; text-align: center;">Pure noise. Rare letters appear as often as common ones.</p>
-  </div>
-</section>
+iudmpwmvbyqkflxjiupmlehmjbkzqhsvchnyawijuydkl
+:::
 
 ---
 
@@ -1025,7 +932,11 @@ Better &mdash; **e**, **t**, and **space** now dominate. But still gibberish bec
     raise NotImplementedError("TODO: return a frequency-weighted random string")
 ```
 
-**Hint:** Same as Step 2, but `random.choices` accepts a `weights` parameter to bias toward more frequent characters. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** Same as Step 2, but `random.choices` accepts a `weights` parameter to bias toward more frequent characters.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -1039,30 +950,16 @@ return "".join(random.choices(chars, weights=weights, k=length))
 
 ---
 
-<section id="exercise-step3-output">
-  <h2>Step 3: Output</h2>
-  <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
-      <div class="terminal-bar">
-        <span class="terminal-dot red"></span>
-        <span class="terminal-dot yellow"></span>
-        <span class="terminal-dot green"></span>
-        <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
-      </div>
-      <div class="terminal-body">
-        <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
+:::terminal id="exercise-step3-output" title="Step 3: Output" cmd="uv run python module_01_introduction/src/main.py" caption="Spaces and <strong>e</strong> dominate now, but letters still appear in random order."
+<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
-<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
-<span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+<span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
+<span class="t-gray">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
 
-<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===</span>
+<span class="header t-orange">=== 1st Order: Character Unigrams ===</span>
  irt  flniteit et b
-b as,allh b e"oeh h  itrltlr</pre>
-      </div>
-    </div>
-    <p class="text-lg" style="margin-top: 15px; text-align: center;">Spaces and <strong>e</strong> dominate now, but letters still appear in random order.</p>
-  </div>
-</section>
+b as,allh b e"oeh h  itrltlr
+:::
 
 ---
 
@@ -1121,7 +1018,11 @@ With bigrams, common pairs like "th" and "he" emerge. With trigrams, fragments o
     return model
 ```
 
-**Hint:** You have a window of `n` characters at position `i`. The context is the first `n-1`; the next character is the last one. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** You have a window of `n` characters at position `i`. The context is the first `n-1`; the next character is the last one.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -1136,32 +1037,18 @@ next_char = text[i + n - 1]
 
 ---
 
-<section id="exercise-step4-output">
-        <h2>Step 4: Output</h2>
-        <div class="content" style="justify-content: center;">
-          <div class="terminal-output">
-            <div class="terminal-bar">
-              <span class="terminal-dot red"></span>
-              <span class="terminal-dot yellow"></span>
-              <span class="terminal-dot green"></span>
-              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
-            </div>
-            <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
+:::terminal id="exercise-step4-output" title="Step 4: Output" cmd="uv run python module_01_introduction/src/main.py" caption="The model is built, but we can't generate from it yet &mdash; that's step 5."
+<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
-<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
-<span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+<span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
+<span class="t-gray">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
 
-<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===</span>
-<span style="color: #8b949e;"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
+<span class="header t-orange">=== 1st Order: Character Unigrams ===</span>
+<span class="t-gray"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
 
-<span class="header" style="color: #e5c07b;">=== 2nd Order: Character Bigrams ===</span>
-<span class="skipped">[skipped: TODO: set context from the last n-1 chars of result]</span></pre>
-            </div>
-          </div>
-          <p class="text-lg" style="margin-top: 15px; text-align: center;">The model is built, but we can't generate from it yet &mdash; that's step 5.</p>
-        </div>
-      </section>
+<span class="header t-yellow">=== 2nd Order: Character Bigrams ===</span>
+<span class="skipped">[skipped: TODO: set context from the last n-1 chars of result]</span>
+:::
 
 ---
 
@@ -1205,7 +1092,11 @@ This is exactly what Shannon described in 1948 — and it is conceptually the sa
     return "".join(result[:length])
 ```
 
-**Hint:** The context is the last `n-1` characters of the result so far. Use negative indexing, then join into a string. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** The context is the last `n-1` characters of the result so far. Use negative indexing, then join into a string.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -1219,36 +1110,22 @@ context = "".join(result[-(n - 1):])
 
 ---
 
-<section id="exercise-step5-output">
-        <h2>Step 5: Output</h2>
-        <div class="content" style="justify-content: center;">
-          <div class="terminal-output">
-            <div class="terminal-bar">
-              <span class="terminal-dot red"></span>
-              <span class="terminal-dot yellow"></span>
-              <span class="terminal-dot green"></span>
-              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
-            </div>
-            <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
+:::terminal id="exercise-step5-output" title="Step 5: Output" cmd="uv run python module_01_introduction/src/main.py" caption="Build + generate work together. Word fragments emerge: &quot;the&quot;, &quot;alice&quot;, &quot;she&quot;."
+<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
-<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
-<span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+<span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
+<span class="t-gray">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
 
-<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===</span>
-<span style="color: #8b949e;"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
+<span class="header t-orange">=== 1st Order: Character Unigrams ===</span>
+<span class="t-gray"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
 
-<span class="header" style="color: #e5c07b;">=== 2nd Order: Character Bigrams ===</span>
-<span style="color: #8b949e;">_ s icha athap se cker lid the an n ch</span>
+<span class="header t-yellow">=== 2nd Order: Character Bigrams ===</span>
+<span class="t-gray">_ s icha athap se cker lid the an n ch</span>
 
-<span class="header" style="color: #98c379;">=== 3rd Order: Character Trigrams ===</span>
+<span class="header t-green">=== 3rd Order: Character Trigrams ===</span>
 the glar all thed be falice moce lied alls
-she triede knigh yought alice begal senter</pre>
-            </div>
-          </div>
-          <p class="text-lg" style="margin-top: 15px; text-align: center;">Build + generate work together. Word fragments emerge: "the", "alice", "she".</p>
-        </div>
-      </section>
+she triede knigh yought alice begal senter
+:::
 
 ---
 
@@ -1308,7 +1185,11 @@ for i in range(len(words) - n + 1):
 return model
 ```
 
-**Hint:** Use the same slicing pattern as Step 4, but wrap the previous words in `tuple(...)`. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** Use the same slicing pattern as Step 4, but wrap the previous words in `tuple(...)`.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -1353,7 +1234,11 @@ while len(result) < length:
 return " ".join(result[:length])
 ```
 
-**Hint:** Same as the character version, but use `tuple()` instead of `"".join()`. <!-- .element: class="fragment text-lg" style="margin-top: 16px;" -->
+<div class="fragment hint-box" style="margin-top: 16px;">
+
+**Hint:** Same as the character version, but use `tuple()` instead of `"".join()`.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 6px; padding: 16px 20px;">
 
@@ -1367,70 +1252,43 @@ context = tuple(result[-(n - 1):])
 
 ---
 
-<section id="exercise-step6-output">
-        <h2>Step 6: Output</h2>
-        <div class="content" style="justify-content: center;">
-          <div class="terminal-output">
-            <div class="terminal-bar">
-              <span class="terminal-dot red"></span>
-              <span class="terminal-dot yellow"></span>
-              <span class="terminal-dot green"></span>
-              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
-            </div>
-            <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
+:::terminal id="exercise-step6-output" title="Step 6: Output" cmd="uv run python module_01_introduction/src/main.py" caption="Coherent phrases, sometimes entire sentences lifted from Alice in Wonderland."
+<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
-<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===</span>
-<span style="color: #8b949e;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
-<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===</span>
-<span style="color: #8b949e;"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
-<span class="header" style="color: #e5c07b;">=== 2nd Order: Character Bigrams ===</span>
-<span style="color: #8b949e;">_ s icha athap se cker lid the an n ch</span>
-<span class="header" style="color: #98c379;">=== 3rd Order: Character Trigrams ===</span>
-<span style="color: #8b949e;">the glar all thed be falice moce lied alls</span>
-<span class="header" style="color: #56b6c2;">=== Word Unigrams ===</span>
-<span style="color: #8b949e;">"what the it sitting history, them," hare.</span>
+<span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
+<span class="t-gray">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+<span class="header t-orange">=== 1st Order: Character Unigrams ===</span>
+<span class="t-gray"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
+<span class="header t-yellow">=== 2nd Order: Character Bigrams ===</span>
+<span class="t-gray">_ s icha athap se cker lid the an n ch</span>
+<span class="header t-green">=== 3rd Order: Character Trigrams ===</span>
+<span class="t-gray">the glar all thed be falice moce lied alls</span>
+<span class="header t-cyan">=== Word Unigrams ===</span>
+<span class="t-gray">"what the it sitting history, them," hare.</span>
 
-<span class="header" style="color: #61afef;">=== Word Trigrams ===</span>
+<span class="header t-blue">=== Word Trigrams ===</span>
 late much accustomed to usurpation and conquest.
-edwin and morcar, the earls of mercia and</pre>
-            </div>
-          </div>
-          <p class="text-lg" style="margin-top: 15px; text-align: center;">Coherent phrases, sometimes entire sentences lifted from Alice in Wonderland.</p>
-        </div>
-      </section>
+edwin and morcar, the earls of mercia and
+:::
 
 ---
 
-<section id="exercise-together">
-        <h2>All Models: More Context, Better Output</h2>
-        <div class="content" style="justify-content: center;">
-          <div class="terminal-output" style="max-width: 900px;">
-            <div class="terminal-bar">
-              <span class="terminal-dot red"></span>
-              <span class="terminal-dot yellow"></span>
-              <span class="terminal-dot green"></span>
-              <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
-            </div>
-            <div class="terminal-body">
-              <pre class="terminal-pre"><span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
+:::terminal id="exercise-together" title="All Models: More Context, Better Output" cmd="uv run python module_01_introduction/src/main.py" maxw="900px"
+<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
-<span class="header" style="color: #e06c75;">=== 0th Order: Uniform Random Characters ===
-<span style="color: #e8eaf0;">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span></span>
-<span class="header" style="color: #d19a66;">=== 1st Order: Character Unigrams ===
-<span style="color: #e8eaf0;"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span></span>
-<span class="header" style="color: #e5c07b;">=== 2nd Order: Character Bigrams ===
-<span style="color: #e8eaf0;">_ s icha athap se cker lid the an n ch</span></span>
-<span class="header" style="color: #98c379;">=== 3rd Order: Character Trigrams ===
-<span style="color: #e8eaf0;">the glar all thed be falice moce lied alls</span></span>
-<span class="header" style="color: #56b6c2;">=== Word Unigrams ===
-<span style="color: #e8eaf0;">"what the it sitting history, them," hare.</span></span>
-<span class="header" style="color: #61afef;">=== Word Trigrams ===
-<span style="color: #e8eaf0;">late much accustomed to usurpation and conquest.</span></span></pre>
-            </div>
-          </div>
-        </div>
-      </section>
+<span class="header t-red">=== 0th Order: Uniform Random Characters ===
+<span class="t-fg">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span></span>
+<span class="header t-orange">=== 1st Order: Character Unigrams ===
+<span class="t-fg"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span></span>
+<span class="header t-yellow">=== 2nd Order: Character Bigrams ===
+<span class="t-fg">_ s icha athap se cker lid the an n ch</span></span>
+<span class="header t-green">=== 3rd Order: Character Trigrams ===
+<span class="t-fg">the glar all thed be falice moce lied alls</span></span>
+<span class="header t-cyan">=== Word Unigrams ===
+<span class="t-fg">"what the it sitting history, them," hare.</span></span>
+<span class="header t-blue">=== Word Trigrams ===
+<span class="t-fg">late much accustomed to usurpation and conquest.</span></span>
+:::
 
 ---
 

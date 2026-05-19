@@ -56,29 +56,13 @@ The same formula is now a **training objective**: we adjust the model to make th
 
 ---
 
-<div class="figure-card">
-
-![Frank Rosenblatt](images/rosenblatt.jpg)
-
-<div class="figure-info">
-
-## Frank Rosenblatt <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Built the First Learning Machine
-
+:::figure img="images/rosenblatt.jpg" name="Frank Rosenblatt" kicker="Built the First Learning Machine"
 - Psychologist at Cornell, not a mathematician
 - Built the Mark I Perceptron (1958) &mdash; a physical machine with photocells and motor-driven weight updates
 - The first machine that could learn to classify patterns from data
 - Proved the perceptron convergence theorem: if data is linearly separable, training converges in finite steps
 - **His equation is our starting point today**
-
-</div>
-
-</div>
-
-</div>
+:::
 
 ---
 
@@ -269,27 +253,11 @@ Any number of linear layers collapses to a single linear function, so depth alon
 
 ---
 
-<div class="figure-card">
-
-![George Cybenko](images/cybenko.jpg)
-
-<div class="figure-info">
-
-## George Cybenko <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Proved the Universal Approximation Theorem
-
+:::figure img="images/cybenko.jpg" name="George Cybenko" kicker="Proved the Universal Approximation Theorem"
 - Professor at Dartmouth College
 - Proved (1989) that a feedforward network with one hidden layer and sufficient neurons can approximate any continuous function on a compact set
 - The theorem says such a network **exists** &mdash; not that gradient descent will find it
-
-</div>
-
-</div>
-
-</div>
+:::
 
 ---
 
@@ -459,11 +427,8 @@ XOR is **not linearly separable** — you cannot draw one line to separate the c
 
 ---
 
-      <section id="anim-linsep">
-        <div class="video-container">
-          <video class="manim-stepper" data-manim-scene="linsep-viz" preload="auto"></video>
-        </div>
-      </section>
+:::manim id="anim-linsep" scene="linsep-viz"
+:::
 
 ---
 
@@ -539,11 +504,8 @@ The weight matrix $W$ **is** the fold: entangled points get pulled apart, distan
 
 ---
 
-      <section id="anim-folding">
-        <div class="video-container">
-          <video class="manim-stepper" data-manim-scene="folding-viz" preload="auto"></video>
-        </div>
-      </section>
+:::manim id="anim-folding" scene="folding-viz"
+:::
 
 ---
 
@@ -559,36 +521,17 @@ More hidden neurons means more cuts, so the boundary can wrap tightly around any
 
 ---
 
-      <section id="anim-mlp-boundary">
-        <div class="video-container">
-          <video class="manim-stepper" data-manim-scene="mlp-boundary-viz" preload="auto"></video>
-        </div>
-      </section>
+:::manim id="anim-mlp-boundary" scene="mlp-boundary-viz"
+:::
 
 ---
 
-<div class="figure-card">
-
-![Geoffrey Hinton](images/hinton.jpg)
-
-<div class="figure-info">
-
-## Geoffrey Hinton <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Revived Neural Networks with Backpropagation
-
+:::figure img="images/hinton.jpg" name="Geoffrey Hinton" kicker="Revived Neural Networks with Backpropagation"
 - With David Rumelhart and Ronald Williams, published "Learning Representations by Back-Propagating Errors" in *Nature* (1986)
 - Showed how to train multi-layer networks &mdash; the missing piece that Minsky and Papert identified
 - The chain rule was discovered independently multiple times (Werbos, 1974), but this paper popularized it
 - Received the 2024 Nobel Prize in Physics for foundational work enabling machine learning with artificial neural networks
-
-</div>
-
-</div>
-
-</div>
+:::
 
 ---
 
@@ -806,11 +749,8 @@ The learning rate affects which kind of minimum the optimizer finds. SGD noise h
 
 ---
 
-<section id="anim-optimizer">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="optimizer-viz" preload="auto"></video>
-  </div>
-</section>
+:::manim id="anim-optimizer" scene="optimizer-viz"
+:::
 
 ---
 
@@ -863,11 +803,8 @@ A network with enough parameters can **memorize** any training set &mdash; achie
 
 ---
 
-<section id="anim-overfitting">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="overfit-viz" preload="auto"></video>
-  </div>
-</section>
+:::manim id="anim-overfitting" scene="overfit-viz"
+:::
 
 ---
 
@@ -905,12 +842,8 @@ Each function is mostly written for you &mdash; you fill in **one key line**. <!
 
 ---
 
-<section id="exercise-data-viz">
-  <h2>The Datasets</h2>
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="data-viz" preload="auto"></video>
-  </div>
-</section>
+:::manim id="exercise-data-viz" scene="data-viz" title="The Datasets"
+:::
 
 ---
 
@@ -928,7 +861,11 @@ def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
     raise NotImplementedError("TODO: implement the forward pass")
 ```
 
-**Hint:** Compute `z = np.dot(x, weights) + bias`, then return `sigmoid(z)`. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** Compute `z = np.dot(x, weights) + bias`, then return `sigmoid(z)`.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -960,7 +897,11 @@ def binary_cross_entropy(y_true: float, y_pred: float) -> float:
     raise NotImplementedError("TODO: implement binary cross-entropy")
 ```
 
-**Hint:** This is the same cross-entropy formula from Module 1, applied to a single sample. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** This is the same cross-entropy formula from Module 1, applied to a single sample.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -992,7 +933,11 @@ def compute_gradients(
     raise NotImplementedError("TODO: implement gradient computation")
 ```
 
-**Hint:** The error is just `y_pred - y_true`. The weight gradient is `error * x`, the bias gradient is `error`. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** The error is just `y_pred - y_true`. The weight gradient is `error * x`, the bias gradient is `error`.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -1025,7 +970,11 @@ def update_parameters(
     raise NotImplementedError("TODO: implement parameter update")
 ```
 
-**Hint:** Subtract `learning_rate * dw` from weights, `learning_rate * db` from bias. <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** Subtract `learning_rate * dw` from weights, `learning_rate * db` from bias.
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -1039,18 +988,8 @@ return (weights - learning_rate * dw, bias - learning_rate * db)
 
 ---
 
-<section id="exercise-step5-output">
-        <h2>Steps 1&ndash;4: Single Neuron Output</h2>
-        <div class="content" style="justify-content: center;">
-          <div class="terminal-output">
-            <div class="terminal-bar">
-              <span class="terminal-dot red"></span>
-              <span class="terminal-dot yellow"></span>
-              <span class="terminal-dot green"></span>
-              <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
-            </div>
-            <div class="terminal-body">
-              <pre class="terminal-pre"><span class="header">============================================================
+:::terminal id="exercise-step5-output" title="Steps 1&ndash;4: Single Neuron Output" cmd="uv run python module_02_perceptrons/src/main.py" caption="99.3% on linear data, but only 50% on XOR &mdash; a single neuron is a linear classifier."
+<span class="header">============================================================
 PART 1: Single Neuron on Linearly Separable Data
 ============================================================</span>
 <span class="success">Loaded 150 samples from linear_separable.csv</span>
@@ -1066,18 +1005,14 @@ PART 2: Single Neuron on Non-Linearly Separable Data (XOR)
 <span class="success">Loaded 160 samples from non_linear_separable.csv</span>
   Epoch  20/100  loss=0.6926
   Epoch 100/100  loss=0.6926
-<span style="color: #e74c3c;">Accuracy: 80/160 (50.0%)</span>
+<span class="t-fail">Accuracy: 80/160 (50.0%)</span>
 (A single neuron cannot solve this non-linearly-separable problem.)
 
 <span class="header">============================================================
 PART 3: MLP on Non-Linearly Separable Data
 ============================================================</span>
-<span class="skipped">  [skipped: TODO: implement MLP forward pass]</span></pre>
-            </div>
-          </div>
-          <p class="text-lg" style="margin-top: 15px; text-align: center;">99.3% on linear data, but only 50% on XOR &mdash; a single neuron is a linear classifier.</p>
-        </div>
-      </section>
+<span class="skipped">  [skipped: TODO: implement MLP forward pass]</span>
+:::
 
 ---
 
@@ -1112,7 +1047,11 @@ def relu(z: np.ndarray) -> np.ndarray:
     raise NotImplementedError("TODO: implement the ReLU activation")
 ```
 
-**Hint:** `np.maximum` takes the elementwise maximum of two arrays (or an array and a scalar). <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** `np.maximum` takes the elementwise maximum of two arrays (or an array and a scalar).
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -1141,7 +1080,11 @@ def mlp_forward(x, W1, b1, W2, b2) -> float:
     raise NotImplementedError("TODO: implement MLP forward pass")
 ```
 
-**Hint:** ReLU on the hidden layer, sigmoid on the output (so it stays a probability). <!-- .element: class="fragment text-lg" style="margin-top: 25px;" -->
+<div class="fragment hint-box" style="margin-top: 25px;">
+
+**Hint:** ReLU on the hidden layer, sigmoid on the output (so it stays a probability).
+
+</div>
 
 <div class="fragment highlight-box" style="margin-top: 10px;">
 
@@ -1157,18 +1100,8 @@ return output[0]
 
 ---
 
-<section id="exercise-step7-output">
-        <h2>Step 7: MLP Output</h2>
-        <div class="content" style="justify-content: center;">
-          <div class="terminal-output">
-            <div class="terminal-bar">
-              <span class="terminal-dot red"></span>
-              <span class="terminal-dot yellow"></span>
-              <span class="terminal-dot green"></span>
-              <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
-            </div>
-            <div class="terminal-body">
-              <pre class="terminal-pre"><span class="header">============================================================
+:::terminal id="exercise-step7-output" title="Step 7: MLP Output" cmd="uv run python module_02_perceptrons/src/main.py" caption="100% &mdash; the ReLU hidden layer lets the MLP learn a non-linear boundary the single neuron could not."
+<span class="header">============================================================
 PART 1: Single Neuron on Linearly Separable Data
 ============================================================</span>
 <span class="success">Accuracy: 149/150 (99.3%)</span>
@@ -1176,7 +1109,7 @@ PART 1: Single Neuron on Linearly Separable Data
 <span class="header">============================================================
 PART 2: Single Neuron on Non-Linearly Separable Data (XOR)
 ============================================================</span>
-<span style="color: #e74c3c;">Accuracy: 80/160 (50.0%)</span>
+<span class="t-fail">Accuracy: 80/160 (50.0%)</span>
 
 <span class="header">============================================================
 PART 3: MLP on Non-Linearly Separable Data
@@ -1193,12 +1126,8 @@ Saved MLP loss plot to output/step7_mlp_loss.png
 
 <span class="header">============================================================
 Done! Check the output/ directory for plots.
-============================================================</span></pre>
-            </div>
-          </div>
-          <p class="text-lg" style="margin-top: 15px; text-align: center;">100% &mdash; the ReLU hidden layer lets the MLP learn a non-linear boundary the single neuron could not.</p>
-        </div>
-      </section>
+============================================================</span>
+:::
 
 ---
 

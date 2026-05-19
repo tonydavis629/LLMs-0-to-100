@@ -78,6 +78,15 @@
   line-height: 1.5;
 }
 
+/* Vertical separation between newline-separated sentences on text slides.
+   Scoped to a slide's top-level paragraphs (the prose flow); paragraphs
+   nested inside components (terminal captions, figure cards, grid columns)
+   keep their own tighter spacing so dense component slides do not overflow.
+   Adjacent margins collapse, so the gap between two paragraphs is 0.9em. */
+.reveal .slides section > p {
+  margin: 0.4em 0 0.9em 0;
+}
+
 /* ===========================================
    LISTS
    =========================================== */
@@ -283,6 +292,15 @@
   border: 1px solid rgba(74, 158, 255, 0.25);
   border-radius: var(--box-radius);
   padding: 20px 25px;
+}
+
+/* Exercise hint: a single fragment that reveals the whole hint at once.
+   The wrapping .fragment div is what animates; this just sizes the text
+   (matching the old text-lg intent) and removes the global paragraph
+   margin so the one-line hint is not double-spaced. */
+.reveal .hint-box p {
+  font-size: 18pt;
+  margin: 0;
 }
 
 /* ===========================================
@@ -562,3 +580,43 @@
   font-weight: 500;
   margin-bottom: 10px;
 }
+
+/* ===========================================
+   TERMINAL OUTPUT - ANSI COLOR PALETTE
+   Replaces inline `style="color:#..."` on spans
+   inside .terminal-pre. A rule on the span itself
+   overrides the color inherited from .terminal-pre.
+   =========================================== */
+
+.terminal-output .terminal-body .t-red    { color: #e06c75; }
+.terminal-output .terminal-body .t-orange { color: #d19a66; }
+.terminal-output .terminal-body .t-yellow { color: #e5c07b; }
+.terminal-output .terminal-body .t-green  { color: #98c379; }
+.terminal-output .terminal-body .t-cyan   { color: #56b6c2; }
+.terminal-output .terminal-body .t-blue   { color: #61afef; }
+.terminal-output .terminal-body .t-gray   { color: #8b949e; }
+.terminal-output .terminal-body .t-fg     { color: #e8eaf0; }
+.terminal-output .terminal-body .t-fail   { color: #e74c3c; }
+
+.terminal-caption {
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* ===========================================
+   TIMELINE (module 1) - per-node structure
+   Positional left/width and per-era colors stay
+   inline; this captures the repeated boilerplate.
+   =========================================== */
+
+.tl-node  { position: absolute; transform: translateX(-50%); text-align: center; }
+/* .reveal prefix needed: `.reveal p` (0,1,1) sets color/font-size and would
+   otherwise beat a bare .tl-* class. The original used inline styles. */
+.reveal .tl-label { font-size: 10pt; color: var(--muted-color); white-space: nowrap; margin: 0; }
+.reveal .tl-year  { font-size: 11pt; font-weight: 600; margin: 2px 0 0 0; }
+.tl-stem  { width: 1px; opacity: 0.5; margin: 2px auto 0; }
+.tl-dot   { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto; }
+
+.tl-node.below .tl-stem  { margin: 0 auto; }
+.tl-node.below .tl-year  { margin: 0; }
+.tl-node.below .tl-label { margin: 2px 0 0 0; }
