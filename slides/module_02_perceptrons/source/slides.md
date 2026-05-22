@@ -786,7 +786,7 @@ def binary_cross_entropy(y_true: float, y_pred: float) -> float:
     raise NotImplementedError("TODO: implement binary cross-entropy")
 ```
 +++
-**Hint:** This is the same cross-entropy formula from Module 1, applied to a single sample.
+**Hint:** The same cross-entropy formula from Module 1 &mdash; in code, use `np.log` on `y_pred` and on `1 - y_pred`.
 +++
 **Answer:**
 
@@ -923,7 +923,7 @@ def mlp_forward(x, W1, b1, W2, b2) -> float:
     Layer 1 (hidden):  hidden = relu(W1 @ x + b1)
     Layer 2 (output):  output = sigmoid(W2 @ hidden + b2)
     """
-    # TODO: Compute the two-layer forward pass
+    # TODO: Compute the two-layer forward pass, then return the output value (output[0])
     raise NotImplementedError("TODO: implement MLP forward pass")
 ```
 +++

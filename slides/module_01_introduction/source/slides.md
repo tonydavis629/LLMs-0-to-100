@@ -762,11 +762,11 @@ CHAPTER I. Down the Rabbit-Hole ...
             end_idx = i             # book ends BEFORE this line
             break
 
-    # TODO: Join lines[start_idx:end_idx] with newlines and return the result
+    # TODO: return the cleaned book text
     raise NotImplementedError("TODO: return the joined lines")
 ```
 +++
-**Hint:** Python's `str.join()` method can combine a list of strings with a separator.
+**Hint:** Join `lines[start_idx:end_idx]` with newlines and return the result.
 +++
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -818,12 +818,11 @@ No structure at all. Rare letters like **q**, **x**, **z** appear as often as **
     # The 27 characters we can pick from (26 letters + space)
     alphabet = list("abcdefghijklmnopqrstuvwxyz ")
 
-    # TODO: Sample `length` random characters from alphabet and join into a string
-    # Use random.choices(population, k=...) to pick, then "".join() to combine
+    # TODO: Sample `length` random characters from alphabet and join them into a string
     raise NotImplementedError("TODO: return a random string of the given length")
 ```
 +++
-**Hint:** `random.choices(population, k=...)` returns a list of `k` random items. Join them into a single string.
+**Hint:** `random.choices(alphabet, k=length)` returns a list; `"".join(...)` combines it.
 +++
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -870,12 +869,11 @@ Better &mdash; **e**, **t**, and **space** now dominate. But still gibberish bec
     chars = list(counts.keys())       # e.g. ["a", "b", " ", "e", ...]
     weights = list(counts.values())   # e.g. [2, 1, 5, 3, ...]
 
-    # TODO: Sample `length` characters using the weights, join into a string
-    # Same as char_uniform but pass weights=weights to random.choices()
+    # TODO: Sample `length` characters using the weights, then join them into a string
     raise NotImplementedError("TODO: return a frequency-weighted random string")
 ```
 +++
-**Hint:** Same as Step 2, but `random.choices` accepts a `weights` parameter to bias toward more frequent characters.
+**Hint:** Same as `char_uniform`, but pass `weights=weights` to `random.choices()`.
 +++
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -952,7 +950,7 @@ With bigrams, common pairs like "th" and "he" emerge. With trigrams, fragments o
     return model
 ```
 +++
-**Hint:** You have a window of `n` characters at position `i`. The context is the first `n-1`; the next character is the last one.
+**Hint:** The window starts at `i` &mdash; the context is its first `n-1` characters, and `next_char` is the one right after.
 +++
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -993,7 +991,6 @@ This is exactly what Shannon described in 1948 — and it is conceptually the sa
 ```python
     while len(result) < length:
         # TODO: Get the current context -- the last (n-1) characters joined together
-        # e.g. if n=3 and result ends with ['a','t'], the context should be "at"
         context = None
         if context is None:
             raise NotImplementedError("TODO: set context from the last n-1 chars of result")
@@ -1016,7 +1013,7 @@ This is exactly what Shannon described in 1948 — and it is conceptually the sa
     return "".join(result[:length])
 ```
 +++
-**Hint:** The context is the last `n-1` characters of the result so far. Use negative indexing, then join into a string.
+**Hint:** `"".join(result[-(n - 1):])` gives the last `n-1` characters as a string.
 +++
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -1087,7 +1084,7 @@ Same pattern as the character model, but the context is now a **tuple of words**
 
 ```python
 for i in range(len(words) - n + 1):
-    # TODO: Extract context tuple and next_word
+    # TODO: Extract the context tuple (first n-1 words) and next_word (the nth word)
     context = None
     next_word = None
     if context is None or next_word is None:
@@ -1100,7 +1097,7 @@ for i in range(len(words) - n + 1):
 return model
 ```
 +++
-**Hint:** Use the same slicing pattern as Step 4, but wrap the previous words in `tuple(...)`.
+**Hint:** Like the char model &mdash; the context is the first `n-1` words as a tuple, and `next_word` is the one after.
 +++
 **Answer:** <!-- .element: class="text-lg" -->
 
@@ -1118,7 +1115,6 @@ Generation is also the same pattern as Step 5, except the current context is a t
 ```python
 while len(result) < length:
     # TODO: Get the current context as a tuple of the last (n-1) words
-    # Same as the char version but use tuple() instead of "".join()
     context = None
     if context is None:
         raise NotImplementedError("TODO: set context from the last n-1 words of result")
@@ -1139,7 +1135,7 @@ while len(result) < length:
 return " ".join(result[:length])
 ```
 +++
-**Hint:** Same as the character version, but use `tuple()` instead of `"".join()`.
+**Hint:** `tuple(result[-(n - 1):])` gives the last `n-1` words as a tuple.
 +++
 **Answer:** <!-- .element: class="text-lg" -->
 

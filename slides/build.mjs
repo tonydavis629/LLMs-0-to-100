@@ -2,10 +2,18 @@
 // Bundle a reveal.js slide deck into a single self-contained index.bundled.html
 // that can be opened directly with file:// (no server fetch of slides.md).
 //
-// Layout (per module):
-//   <module-dir>/source/index.html   <- editable source (inline JS)
-//   <module-dir>/source/slides.md    <- editable content
-//   <module-dir>/source/styles.css   <- editable styles
+// A shared master template drives every module. The repeated HTML/JS/CSS
+// lives once under slides/source/ and is composed with each module's content
+// at build time:
+//
+//   slides/source/base.html          <- shared HTML shell with {{placeholders}}
+//   slides/source/slides.js          <- shared deck logic (reads MODULE_CONFIG)
+//   slides/source/styles.css         <- shared base styles
+//
+//   <module-dir>/source/slides.md    <- module content (authored from :::fences)
+//   <module-dir>/source/config.js    <- sets window.MODULE_CONFIG (title, manim, hooks)
+//   <module-dir>/source/styles.css   <- OPTIONAL per-module style overrides
+//   <module-dir>/source/head.html    <- OPTIONAL per-module <head> includes
 //   <module-dir>/index.bundled.html  <- generated; the only html at the module root
 //
 // Usage: node slides/build.mjs <module-dir>
@@ -20,12 +28,20 @@ if (!moduleDir) {
   process.exit(1);
 }
 
-const indexPath = path.join(moduleDir, 'source', 'index.html');
-const mdPath = path.join(moduleDir, 'source', 'slides.md');
-const outPath = path.join(moduleDir, 'index.bundled.html');
+// Shared template lives alongside the module dirs (e.g. slides/source/).
+const sharedDir = path.join(path.dirname(moduleDir), 'source');
+const baseHtml = fs.readFileSync(path.join(sharedDir, 'base.html'), 'utf8');
+const sharedJs = fs.readFileSync(path.join(sharedDir, 'slides.js'), 'utf8');
+const sharedCss = fs.readFileSync(path.join(sharedDir, 'styles.css'), 'utf8');
 
-const html = fs.readFileSync(indexPath, 'utf8');
-const rawMd = fs.readFileSync(mdPath, 'utf8');
+// Per-module pieces. slides.md and config.js are required; styles.css and
+// head.html are optional overrides.
+const readOptional = (p) => (fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '');
+const rawMd = fs.readFileSync(path.join(moduleDir, 'source', 'slides.md'), 'utf8');
+const moduleConfig = fs.readFileSync(path.join(moduleDir, 'source', 'config.js'), 'utf8');
+const moduleCss = readOptional(path.join(moduleDir, 'source', 'styles.css'));
+const headExtra = readOptional(path.join(moduleDir, 'source', 'head.html'));
+const outPath = path.join(moduleDir, 'index.bundled.html');
 
 // ---------------------------------------------------------------------------
 // Component preprocessor.
@@ -296,27 +312,23 @@ if (md.includes('</textarea>')) {
   process.exit(1);
 }
 
-const sectionRegex = /<section\s+data-markdown="slides\.md"([\s\S]*?)>\s*<\/section>/;
-if (!sectionRegex.test(html)) {
-  console.error('ERROR: could not find <section data-markdown="slides.md" ...></section> in source/index.html');
-  process.exit(1);
+// Compose base.html by substituting each {{placeholder}}. The replacement is
+// passed as a FUNCTION so String.replace does not interpret `$` sequences in
+// the content (KaTeX `$...$`, JS regex, etc.) as replacement patterns.
+function fill(tpl, token, value) {
+  if (!tpl.includes(token)) {
+    console.error(`ERROR: base.html is missing the ${token} placeholder`);
+    process.exit(1);
+  }
+  return tpl.replace(token, () => value);
 }
 
-const replacement = `<section data-markdown$1>
-        <textarea data-template>
-${md}
-        </textarea>
-      </section>`;
-
-let bundled = html.replace(sectionRegex, replacement);
-
-// The bundle sits at the module root but styles.css lives in source/.
-// Repoint the stylesheet link so the root bundle resolves it.
-if (!bundled.includes('href="styles.css"')) {
-  console.error('ERROR: could not find <link ... href="styles.css"> to repoint to source/styles.css');
-  process.exit(1);
-}
-bundled = bundled.replace('href="styles.css"', 'href="source/styles.css"');
+let bundled = baseHtml;
+bundled = fill(bundled, '{{HEAD_EXTRA}}', headExtra);
+bundled = fill(bundled, '{{STYLES}}', sharedCss + '\n' + moduleCss);
+bundled = fill(bundled, '{{MODULE_CONFIG}}', moduleConfig);
+bundled = fill(bundled, '{{SHARED_JS}}', sharedJs);
+bundled = fill(bundled, '{{SLIDES_MD}}', md);
 
 fs.writeFileSync(outPath, bundled);
 

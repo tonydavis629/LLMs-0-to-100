@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LLMs 0 to 100 - Module 1</title>
+  <title>LLMs 0 to 100</title>
 
   <!-- Reveal.js core -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
@@ -18,12 +18,844 @@
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
     onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\(', right: '\\)', display: false}]});"></script>
 
-  <!-- Custom styles -->
-  <link rel="stylesheet" href="source/styles.css">
+  <!-- Module-specific <head> includes (e.g. Chart.js); empty for most modules -->
+  <!-- Chart.js for the AI Summers and Winters data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
 
-  <!-- Chart.js for data visualization -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
+
+  <!-- Shared styles + per-module overrides, inlined by the build -->
+  <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+/* ===========================================
+   CSS VARIABLES
+   =========================================== */
+:root {
+  --background-color: #0a0e1a;
+  --section-divider-bg: #0d1225;
+
+  --heading-font: "Space Grotesk", Helvetica, sans-serif;
+  --body-font: "Inter", Helvetica, sans-serif;
+  --base-font-size: 32px;
+  --text-size: 16pt;
+  --h1-size: 48pt;
+  --h2-size: 36pt;
+  --h3-size: 24pt;
+  --footnote-size: 11pt;
+
+  --primary-color: #4a9eff;
+  --secondary-color: #f5a623;
+  --text-color: #e8eaf0;
+  --muted-color: #8892a4;
+  --line-color: #2a3450;
+
+  --slide-padding: 60px;
+  --slide-padding-top: 24px;
+  --content-gap: 18px;
+
+  --box-radius: 8px;
+}
+
+/* ===========================================
+   BASE STYLES
+   =========================================== */
+
+.reveal {
+  font-family: var(--body-font);
+  font-size: var(--base-font-size);
+}
+
+.reveal strong,
+.reveal b {
+  font-weight: bold;
+}
+
+.reveal-viewport {
+  background-color: var(--background-color);
+}
+
+.reveal-viewport.is-section-divider .slide-background.present {
+  background-color: var(--section-divider-bg) !important;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  font-family: var(--heading-font);
+  text-transform: none;
+  color: var(--text-color);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.reveal h1 { font-size: var(--h1-size); }
+.reveal h2 { font-size: var(--h2-size); margin-bottom: 0; }
+.reveal h3 { font-size: var(--h3-size); }
+
+.reveal p,
+.reveal li,
+.reveal td,
+.reveal th,
+.reveal blockquote {
+  font-size: var(--text-size);
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+/* Vertical separation between newline-separated sentences on text slides.
+   Scoped to a slide's top-level paragraphs (the prose flow); paragraphs
+   nested inside components (terminal captions, figure cards, grid columns)
+   keep their own tighter spacing so dense component slides do not overflow.
+   Adjacent margins collapse, so the gap between two paragraphs is 0.9em. */
+.reveal .slides section > p {
+  margin: 0.4em 0 0.9em 0;
+}
+
+/* ===========================================
+   LISTS
+   =========================================== */
+
+.reveal ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 15px 0;
+}
+
+.reveal ul li {
+  position: relative;
+  padding-left: 25px;
+  margin-bottom: 10px;
+}
+
+.reveal ul li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6em;
+  width: 8px;
+  height: 8px;
+  background: var(--primary-color);
+  border-radius: 50%;
+}
+
+.reveal ul ul li::before {
+  background: var(--muted-color);
+  width: 6px;
+  height: 6px;
+}
+
+.reveal blockquote p {
+  font-size: inherit;
+}
+
+/* ===========================================
+   SLIDE LAYOUT
+   =========================================== */
+
+.reveal .slides section {
+  height: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: var(--slide-padding-top) var(--slide-padding) var(--slide-padding) var(--slide-padding) !important;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.reveal .slides section.stack {
+  padding: 0 !important;
+}
+
+.reveal .slides section > .content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: var(--content-gap);
+  text-align: left;
+}
+
+.reveal .slides section > .footnote {
+  position: absolute;
+  bottom: 15px;
+  left: var(--slide-padding);
+  right: var(--slide-padding);
+  font-size: var(--footnote-size);
+  color: var(--muted-color);
+}
+
+/* ===========================================
+   SECTION DIVIDERS
+   =========================================== */
+
+.reveal .slides section.section-divider {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center;
+}
+
+.reveal .slides section.section-divider h1 {
+  font-size: 56pt;
+  text-align: center;
+  color: var(--primary-color);
+}
+
+.reveal .slides section.section-divider p {
+  font-size: 20pt;
+  color: var(--muted-color);
+}
+
+/* ===========================================
+   TEXT SIZE UTILITIES
+   =========================================== */
+
+.text-lg { font-size: 18pt !important; }
+.text-xl { font-size: 20pt !important; }
+.text-2xl { font-size: 24pt !important; }
+.text-3xl { font-size: 28pt !important; }
+.text-4xl { font-size: 32pt !important; }
+
+.text-muted { color: var(--muted-color) !important; }
+.text-center { text-align: center !important; }
+.text-uppercase { text-transform: uppercase; letter-spacing: 0.1em; }
+.font-light { font-weight: 300; }
+.font-bold { font-weight: 600; }
+
+/* ===========================================
+   BLOCKQUOTES
+   =========================================== */
+
+.reveal blockquote {
+  border-left: 4px solid var(--primary-color);
+  padding-left: 20px;
+  margin: 20px 0;
+  font-style: italic;
+  background: none;
+  box-shadow: none;
+  width: 100%;
+  max-width: none;
+}
+
+.reveal blockquote cite {
+  display: block;
+  margin-top: 10px;
+  font-style: normal;
+  color: var(--muted-color);
+}
+
+/* ===========================================
+   ACCENT UNDERLINE ON TITLES
+   =========================================== */
+
+.reveal .slides section > h2 {
+  flex-shrink: 0;
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--line-color);
+}
+
+/* ===========================================
+   FIGURE CARD - for notable figures slides
+   =========================================== */
+
+.figure-card {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.figure-card img {
+  border-radius: var(--box-radius);
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(74, 158, 255, 0.15);
+}
+
+.figure-card .figure-info h3 {
+  margin: 0 0 5px 0;
+  color: var(--secondary-color);
+  font-size: 14pt;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* ===========================================
+   ERA BADGE - for timeline labels
+   =========================================== */
+
+.era-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12pt;
+  font-weight: 500;
+}
+
+.era-badge.summer {
+  background: rgba(245, 166, 35, 0.2);
+  color: var(--secondary-color);
+}
+
+.era-badge.winter {
+  background: rgba(74, 158, 255, 0.15);
+  color: #6cb4ff;
+}
+
+.era-badge.spring {
+  background: rgba(80, 200, 120, 0.2);
+  color: #50c878;
+}
+
+/* ===========================================
+   HIGHLIGHT BOX
+   =========================================== */
+
+.highlight-box {
+  background: rgba(74, 158, 255, 0.08);
+  border: 1px solid rgba(74, 158, 255, 0.25);
+  border-radius: var(--box-radius);
+  padding: 20px 25px;
+}
+
+/* Exercise hint: a single fragment that reveals the whole hint at once.
+   The wrapping .fragment div is what animates; this just sizes the text
+   (matching the old text-lg intent) and removes the global paragraph
+   margin so the one-line hint is not double-spaced. */
+.reveal .hint-box p {
+  font-size: 18pt;
+  margin: 0;
+}
+
+/* ===========================================
+   COURSE STRUCTURE
+   =========================================== */
+
+.course-summary {
+  max-width: 1120px;
+  margin: 0 0 16px 0;
+  color: #f0f4fb;
+  font-size: 18pt !important;
+  line-height: 1.4 !important;
+}
+
+.course-track-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.module-track-card {
+  background: rgba(74, 158, 255, 0.07);
+  border: 1px solid rgba(74, 158, 255, 0.22);
+  border-radius: var(--box-radius);
+  padding: 20px 22px;
+}
+
+.module-track-kicker {
+  font-size: 12pt;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--secondary-color);
+  margin-bottom: 8px;
+}
+
+.module-track-card h3 {
+  margin: 0 0 8px 0;
+}
+
+.module-track-intro {
+  font-size: 14pt !important;
+  color: #d7ddea !important;
+  margin: 0 0 10px 0;
+  line-height: 1.4 !important;
+}
+
+.compact-list {
+  margin: 0;
+}
+
+.reveal ul.compact-list li {
+  font-size: 16pt;
+  line-height: 1.35;
+  margin-bottom: 7px;
+  padding-left: 20px;
+}
+
+.course-note {
+  margin-top: 14px;
+  color: #d7ddea;
+  font-size: 15pt !important;
+  line-height: 1.35 !important;
+}
+
+.course-glossary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+  margin-top: 14px;
+}
+
+.glossary-item {
+  background: rgba(245, 166, 35, 0.08);
+  border: 1px solid rgba(245, 166, 35, 0.18);
+  border-radius: var(--box-radius);
+  padding: 12px 14px;
+}
+
+.glossary-item strong {
+  color: var(--secondary-color);
+}
+
+.glossary-item p {
+  font-size: 13pt !important;
+  color: #d7ddea !important;
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+}
+
+/* ===========================================
+   TERMINAL OUTPUT
+   =========================================== */
+
+.terminal-output {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 0;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.terminal-output .terminal-bar {
+  background: #161b22;
+  border-radius: 8px 8px 0 0;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.terminal-output .terminal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.terminal-output .terminal-dot.red { background: #ff5f57; }
+.terminal-output .terminal-dot.yellow { background: #febc2e; }
+.terminal-output .terminal-dot.green { background: #28c840; }
+
+.terminal-output .terminal-title {
+  color: #8b949e;
+  font-family: monospace;
+  font-size: 10pt;
+  margin-left: 8px;
+}
+
+.terminal-output .terminal-body {
+  padding: 15px 20px;
+}
+
+.terminal-output .terminal-body pre {
+  margin: 0;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+.reveal .terminal-output .terminal-body pre.terminal-pre {
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #e8eaf0;
+  background: none !important;
+  padding: 0;
+  box-shadow: none !important;
+  font-family: monospace;
+}
+
+.reveal .terminal-output .terminal-body pre code {
+  font-size: 11pt;
+  line-height: 1.5;
+  color: #e8eaf0;
+  background: none !important;
+  padding: 0;
+  box-shadow: none !important;
+  font-family: monospace;
+}
+
+.terminal-output .terminal-body .prompt {
+  color: #8b949e;
+}
+
+.terminal-output .terminal-body .success {
+  color: #3fb950;
+}
+
+.terminal-output .terminal-body .header {
+  font-weight: bold;
+}
+
+.terminal-output .terminal-body .skipped {
+  color: #8b949e;
+  font-style: italic;
+}
+
+/* ===========================================
+   TURNING POINT SLIDE
+   =========================================== */
+
+.turning-point h2 {
+  border-bottom-color: var(--secondary-color) !important;
+}
+
+/* ===========================================
+   CODE BLOCKS
+   =========================================== */
+
+.reveal pre {
+  margin-bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: none !important;
+  background: none !important;
+}
+
+.reveal pre code {
+  font-size: 14pt;
+  line-height: 1.4;
+  padding: 10px 20px;
+  border-radius: var(--box-radius);
+  background: rgba(20, 25, 45, 0.8);
+  color: var(--text-color);
+  max-height: 400px;
+}
+
+.reveal pre code .hljs-keyword,
+.reveal pre code .hljs-built_in {
+  color: #c792ea;
+}
+
+.reveal pre code .hljs-string {
+  color: #c3e88d;
+}
+
+.reveal pre code .hljs-comment {
+  color: #546e7a;
+}
+
+.reveal pre code .hljs-number {
+  color: #f78c6c;
+}
+
+.reveal code {
+  color: var(--text-color);
+}
+
+/* ===========================================
+   MATH (KaTeX)
+   =========================================== */
+
+.katex {
+  color: var(--text-color);
+  font-size: 1.1em;
+}
+
+.katex-display {
+  margin: 15px 0;
+}
+
+.katex-display > .katex {
+  font-size: 1.3em;
+}
+
+/* ===========================================
+   VIDEO CONTAINERS
+   =========================================== */
+
+.video-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-container video,
+.video-container img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--box-radius);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* ===========================================
+   SIDE QUEST BADGE
+   =========================================== */
+
+.side-quest-badge {
+  display: inline-block;
+  background: rgba(245, 166, 35, 0.15);
+  color: var(--secondary-color);
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 12pt;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+/* ===========================================
+   TERMINAL OUTPUT - ANSI COLOR PALETTE
+   Replaces inline `style="color:#..."` on spans
+   inside .terminal-pre. A rule on the span itself
+   overrides the color inherited from .terminal-pre.
+   =========================================== */
+
+.terminal-output .terminal-body .t-red    { color: #e06c75; }
+.terminal-output .terminal-body .t-orange { color: #d19a66; }
+.terminal-output .terminal-body .t-yellow { color: #e5c07b; }
+.terminal-output .terminal-body .t-green  { color: #98c379; }
+.terminal-output .terminal-body .t-cyan   { color: #56b6c2; }
+.terminal-output .terminal-body .t-blue   { color: #61afef; }
+.terminal-output .terminal-body .t-gray   { color: #8b949e; }
+.terminal-output .terminal-body .t-fg     { color: #e8eaf0; }
+.terminal-output .terminal-body .t-fail   { color: #e74c3c; }
+
+.terminal-caption {
+  margin-top: 15px;
+  text-align: center;
+}
+
+/* ===========================================
+   TIMELINE (module 1) - per-node structure
+   Positional left/width and per-era colors stay
+   inline; this captures the repeated boilerplate.
+   =========================================== */
+
+.tl-node  { position: absolute; transform: translateX(-50%); text-align: center; }
+/* .reveal prefix needed: `.reveal p` (0,1,1) sets color/font-size and would
+   otherwise beat a bare .tl-* class. The original used inline styles. */
+.reveal .tl-label { font-size: 10pt; color: var(--muted-color); white-space: nowrap; margin: 0; }
+.reveal .tl-year  { font-size: 11pt; font-weight: 600; margin: 2px 0 0 0; }
+.tl-stem  { width: 1px; opacity: 0.5; margin: 2px auto 0; }
+.tl-dot   { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto; }
+
+.tl-node.below .tl-stem  { margin: 0 auto; }
+.tl-node.below .tl-year  { margin: 0; }
+.tl-node.below .tl-label { margin: 2px 0 0 0; }
+
+/* ===========================================
+   CANONICAL SLIDE TYPES
+   Backs the :::divider / :::columns / :::note /
+   :::quiz / :::step / :::interactive fences so
+   slides.md carries no inline layout styles.
+   (.section-divider, .figure-card, .terminal-output,
+    .hint-box are defined above and reused.)
+   =========================================== */
+
+/* :::columns - grid; template/gap/valign supplied by the build */
+.reveal .slide-columns {
+  display: grid;
+  align-items: start;
+  margin: 10px 0;
+}
+
+/* :::note - callout box (canonical replacement for .highlight-box) */
+.reveal .note {
+  background: rgba(74, 158, 255, 0.08);
+  border: 1px solid rgba(74, 158, 255, 0.25);
+  border-radius: var(--box-radius);
+  padding: 20px 25px;
+  margin: 20px 0;
+}
+
+.reveal .note p {
+  font-size: 18pt;
+  margin: 0;
+}
+
+.reveal .note p + p {
+  margin-top: 0.6em;
+}
+
+/* :::note variant="hint" - lighter, boxless (also used inside :::step) */
+.reveal .note.hint-box {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* :::quiz - prompt scales up; its last line is the question */
+.reveal .quiz-prompt p {
+  font-size: 18pt;
+  margin: 0 0 0.6em 0;
+}
+
+.reveal .quiz-prompt p:last-child {
+  font-size: 24pt;
+  color: var(--text-color);
+  margin: 0.5em 0 0 0;
+}
+
+.reveal .quiz-answer {
+  margin-top: 30px;
+}
+
+/* :::step - spacing between code, hint, and answer */
+.reveal .hint-box {
+  margin-top: 22px;
+}
+
+.reveal .hint-box + .note {
+  margin-top: 12px;
+}
+
+/* :::interactive - widget fills the slide body like a video */
+.reveal .interactive-host {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+}
+
+/* ===========================================
+   FOLDING WIDGET  (:::interactive widget="folding")
+   Linked input-space / hidden-space views with
+   per-neuron weight & bias sliders.
+   =========================================== */
+
+.fold-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+.fold-views {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  flex: 1;
+  min-height: 0;
+}
+
+.fold-view {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  min-height: 0;
+}
+
+.reveal .fold-view figcaption {
+  font-size: 14pt;
+  color: var(--primary-color);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.fold-canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: #0d1225;
+  border: 1px solid var(--line-color);
+  border-radius: var(--box-radius);
+}
+
+.fold-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fold-modes {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.fold-modes button {
+  font-family: var(--body-font);
+  font-size: 13pt;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.fold-modes button.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #0a0e1a;
+  font-weight: 600;
+}
+
+.fold-modes button.fold-reset {
+  background: rgba(245, 166, 35, 0.12);
+  border-color: rgba(245, 166, 35, 0.40);
+  color: var(--secondary-color);
+}
+
+.fold-sliders {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 24px;
+}
+
+.fold-slider {
+  display: grid;
+  grid-template-columns: 70px 1fr 52px;
+  align-items: center;
+  gap: 10px;
+}
+
+.reveal .fold-slider label {
+  font-size: 12pt;
+  margin: 0;
+  font-family: var(--body-font);
+  font-weight: 600;
+}
+
+.fold-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary-color);
+}
+
+.reveal .fold-slider .fold-val {
+  font-size: 12pt;
+  color: var(--text-color);
+  font-family: monospace;
+  text-align: right;
+  margin: 0;
+}
+
+.reveal .fold-readout {
+  font-size: 13pt;
+  color: var(--muted-color);
+  text-align: center;
+  margin: 0;
+}
+
+.reveal .fold-readout strong {
+  color: var(--secondary-color);
+}
+
+
+  </style>
 </head>
 <body>
   <div class="reveal">
@@ -658,7 +1490,7 @@ The core insight behind every LLM
 
 How do we compute the probability of an entire sequence $P(w_1, w_2, \ldots, w_n)$? <!-- .element: class="text-lg" -->
 
-$P(w_1 w_2 \ldots w_n) = \prod_{k=1}^{n} P(w_k \mid w_1 \ldots w_{k-1})$
+$$P(w_1 w_2 \ldots w_n) = \prod_{k=1}^{n} P(w_k \mid w_1 \ldots w_{k-1})$$
 
 This decomposes a joint probability into a product of conditional probabilities. But we still need to estimate $P(w_k \mid w_1 \ldots w_{k-1})$, and we cannot count occurrences of every possible history. <!-- .element: class="text-lg" -->
 
@@ -670,7 +1502,7 @@ This decomposes a joint probability into a product of conditional probabilities.
 
 Instead of conditioning on the **entire** history, approximate with just the last few symbols: <!-- .element: class="text-lg" -->
 
-$P(w_k \mid w_1 \ldots w_{k-1}) \approx P(w_k \mid w_{k-n+1} \ldots w_{k-1})$
+$$P(w_k \mid w_1 \ldots w_{k-1}) \approx P(w_k \mid w_{k-n+1} \ldots w_{k-1})$$
 
 For example, instead of computing: <!-- .element: class="text-lg" -->
 
@@ -690,7 +1522,7 @@ This is the core trade-off of n-gram models: more context is better, but the dat
 
 Given the Markov assumption, we estimate each conditional probability by counting: <!-- .element: class="text-lg" -->
 
-$P(c_t \mid c_{t-n+1}, \ldots, c_{t-1}) = \frac{\text{count}(c_{t-n+1} \ldots c_t)}{\text{count}(c_{t-n+1} \ldots c_{t-1})}$
+$$P(c_t \mid c_{t-n+1}, \ldots, c_{t-1}) = \frac{\text{count}(c_{t-n+1} \ldots c_t)}{\text{count}(c_{t-n+1} \ldots c_{t-1})}$$
 
 - **Uniform random:** $P(c) = \frac{1}{27}$
 - **Unigram:** $P(c) = \frac{\text{count}(c)}{\text{total characters}}$
@@ -731,11 +1563,11 @@ Shannon described this exact procedure in 1948. Let's build it ourselves. <!-- .
 
 How many bits do we need, on average, to encode a symbol? <!-- .element: class="text-lg" -->
 
-$H(X) = -\sum_{i} p(x_i) \log_2 p(x_i)$
+$$H(X) = -\sum_{i} p(x_i) \log_2 p(x_i)$$
 
 For a **uniform** distribution over 27 characters, every $p(x_i) = \frac{1}{27}$: <!-- .element: class="text-lg" -->
 
-$H = -\sum_{i=1}^{27} \tfrac{1}{27} \log_2 \tfrac{1}{27} = -27 \cdot \tfrac{1}{27} \cdot \log_2 \tfrac{1}{27} = \log_2(27) = 4.75 \text{ bits/char}$
+$$H = -\sum_{i=1}^{27} \tfrac{1}{27} \log_2 \tfrac{1}{27} = -27 \cdot \tfrac{1}{27} \cdot \log_2 \tfrac{1}{27} = \log_2(27) = 4.75 \text{ bits/char}$$
 
 - This is the **maximum entropy** for 27 symbols. Any structure in the distribution lowers it.
 - English text: $H \approx 1.0\text{--}1.5$ bits/char (Shannon, 1951). Most of each character is **predictable** from context.
@@ -750,13 +1582,13 @@ $H = -\sum_{i=1}^{27} \tfrac{1}{27} \log_2 \tfrac{1}{27} = -27 \cdot \tfrac{1}{2
 
 How well does a **model** $q$ predict text? For each character in the corpus, ask: how many bits does the model need to encode it? <!-- .element: class="text-lg" -->
 
-$H(q) = -\frac{1}{N} \sum_{i=1}^{N} \log_2 q(c_i \mid \text{context}_i)$
+$$H(q) = -\frac{1}{N} \sum_{i=1}^{N} \log_2 q(c_i \mid \text{context}_i)$$
 
 This is the average number of bits per character the model needs. For each character $c_i$, the model assigns a probability $q(c_i \mid \text{context})$. Higher probability = fewer bits ($-\log_2$ of a large number is small). <!-- .element: class="text-lg" -->
 
 **Perplexity** converts this to an intuitive scale: <!-- .element: class="text-lg" -->
 
-$\text{Perplexity} = 2^{H(q)}$
+$$\text{Perplexity} = 2^{H(q)}$$
 
 A perplexity of 10 means the model is as uncertain as choosing uniformly from 10 options. Lower = better. <!-- .element: class="text-muted" style="font-size: 13pt;" -->
 
@@ -916,13 +1748,13 @@ CHAPTER I. Down the Rabbit-Hole ...
             end_idx = i             # book ends BEFORE this line
             break
 
-    # TODO: Join lines[start_idx:end_idx] with newlines and return the result
+    # TODO: return the cleaned book text
     raise NotImplementedError("TODO: return the joined lines")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** Python's `str.join()` method can combine a list of strings with a separator.
+**Hint:** Join `lines[start_idx:end_idx]` with newlines and return the result.
 
 </div>
 
@@ -998,14 +1830,13 @@ No structure at all. Rare letters like **q**, **x**, **z** appear as often as **
     # The 27 characters we can pick from (26 letters + space)
     alphabet = list("abcdefghijklmnopqrstuvwxyz ")
 
-    # TODO: Sample `length` random characters from alphabet and join into a string
-    # Use random.choices(population, k=...) to pick, then "".join() to combine
+    # TODO: Sample `length` random characters from alphabet and join them into a string
     raise NotImplementedError("TODO: return a random string of the given length")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** `random.choices(population, k=...)` returns a list of `k` random items. Join them into a single string.
+**Hint:** `random.choices(alphabet, k=length)` returns a list; `"".join(...)` combines it.
 
 </div>
 
@@ -1076,14 +1907,13 @@ Better &mdash; **e**, **t**, and **space** now dominate. But still gibberish bec
     chars = list(counts.keys())       # e.g. ["a", "b", " ", "e", ...]
     weights = list(counts.values())   # e.g. [2, 1, 5, 3, ...]
 
-    # TODO: Sample `length` characters using the weights, join into a string
-    # Same as char_uniform but pass weights=weights to random.choices()
+    # TODO: Sample `length` characters using the weights, then join them into a string
     raise NotImplementedError("TODO: return a frequency-weighted random string")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** Same as Step 2, but `random.choices` accepts a `weights` parameter to bias toward more frequent characters.
+**Hint:** Same as `char_uniform`, but pass `weights=weights` to `random.choices()`.
 
 </div>
 
@@ -1194,7 +2024,7 @@ With bigrams, common pairs like "th" and "he" emerge. With trigrams, fragments o
 
 <div class="fragment hint-box">
 
-**Hint:** You have a window of `n` characters at position `i`. The context is the first `n-1`; the next character is the last one.
+**Hint:** The window starts at `i` &mdash; the context is its first `n-1` characters, and `next_char` is the one right after.
 
 </div>
 
@@ -1257,7 +2087,6 @@ This is exactly what Shannon described in 1948 — and it is conceptually the sa
 ```python
     while len(result) < length:
         # TODO: Get the current context -- the last (n-1) characters joined together
-        # e.g. if n=3 and result ends with ['a','t'], the context should be "at"
         context = None
         if context is None:
             raise NotImplementedError("TODO: set context from the last n-1 chars of result")
@@ -1282,7 +2111,7 @@ This is exactly what Shannon described in 1948 — and it is conceptually the sa
 
 <div class="fragment hint-box">
 
-**Hint:** The context is the last `n-1` characters of the result so far. Use negative indexing, then join into a string.
+**Hint:** `"".join(result[-(n - 1):])` gives the last `n-1` characters as a string.
 
 </div>
 
@@ -1385,7 +2214,7 @@ Same pattern as the character model, but the context is now a **tuple of words**
 
 ```python
 for i in range(len(words) - n + 1):
-    # TODO: Extract context tuple and next_word
+    # TODO: Extract the context tuple (first n-1 words) and next_word (the nth word)
     context = None
     next_word = None
     if context is None or next_word is None:
@@ -1400,7 +2229,7 @@ return model
 
 <div class="fragment hint-box">
 
-**Hint:** Use the same slicing pattern as Step 4, but wrap the previous words in `tuple(...)`.
+**Hint:** Like the char model &mdash; the context is the first `n-1` words as a tuple, and `next_word` is the one after.
 
 </div>
 
@@ -1426,7 +2255,6 @@ Generation is also the same pattern as Step 5, except the current context is a t
 ```python
 while len(result) < length:
     # TODO: Get the current context as a tuple of the last (n-1) words
-    # Same as the char version but use tuple() instead of "".join()
     context = None
     if context is None:
         raise NotImplementedError("TODO: set context from the last n-1 words of result")
@@ -1449,7 +2277,7 @@ return " ".join(result[:length])
 
 <div class="fragment hint-box">
 
-**Hint:** Same as the character version, but use `tuple()` instead of `"".join()`.
+**Hint:** `tuple(result[-(n - 1):])` gives the last `n-1` words as a tuple.
 
 </div>
 
@@ -1686,525 +2514,16 @@ Next: Module 2 &mdash; Perceptrons and Optimization
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+
+  <!-- Per-module config: sets window.MODULE_CONFIG before the shared logic runs -->
   <script>
-    // ---- Manim section step-through player ----
-    // Section video lists are inline to avoid fetch() issues with file:// protocol.
-    var MANIM_SECTIONS = {
-    };
-
-    var manimSteppers = {};
-
-    function initManimStepper(video) {
-      var scene = video.getAttribute('data-manim-scene');
-      var sections = MANIM_SECTIONS[scene] || [];
-      var state = { sections: sections, current: -1, playing: false, video: video, scene: scene };
-      manimSteppers[scene] = state;
-
-      // Set poster frame from first section
-      if (sections.length > 0) {
-        video.src = 'media/sections/' + sections[0];
-        video.load();
-      }
-
-      video.addEventListener('ended', function() {
-        state.playing = false;
-      });
-    }
-
-    function advanceManimStepper(scene) {
-      var state = manimSteppers[scene];
-      if (!state || state.playing) return false;
-      if (state.current >= state.sections.length - 1) return false;
-
-      state.current++;
-      state.playing = true;
-      var file = state.sections[state.current];
-      state.video.src = 'media/sections/' + file;
-      state.video.load();
-      state.video.play().then(function() {}).catch(function() { state.playing = false; });
-      return true;
-    }
-
-    function resetManimStepper(scene) {
-      var state = manimSteppers[scene];
-      if (!state) return;
-      state.current = -1;
-      state.playing = false;
-      state.video.pause();
-      if (state.sections.length > 0) {
-        state.video.src = 'media/sections/' + state.sections[0];
-        state.video.load();
-      }
-    }
-
-    // ---- Initialize Reveal.js ----
-    Reveal.initialize({
-      width: 1280,
-      height: 720,
-      margin: 0,
-      controls: true,
-      progress: true,
-      slideNumber: false,
-      hash: true,
-      transition: 'slide',
-      center: false,
-      autoAnimateDuration: 0.8,
-      plugins: [ RevealHighlight, RevealMarkdown ]
-    });
-
-    // ---- Syntax highlighting ----
-    // reveal-markdown converts the inline <textarea> into <pre><code> blocks
-    // in a deferred microtask, AFTER the highlight plugin's init() has already
-    // run, so code ships un-highlighted. Re-trigger the plugin once the blocks
-    // exist (on ready) and for any added later (on slidechanged).
-    function highlightAllCodeBlocks() {
-      if (!Reveal.getPlugin) return;
-      var hl = Reveal.getPlugin('highlight');
-      if (!hl || typeof hl.highlightBlock !== 'function') return;
-      document.querySelectorAll('pre code').forEach(function(block) {
-        if (block.dataset.highlighted === 'yes') return;
-        hl.highlightBlock(block);
-      });
-    }
-    // reveal-markdown may materialize blocks in waves, so re-run the
-    // (idempotent) pass across the startup window rather than once.
-    Reveal.on('ready', function() {
-      var tries = 0;
-      var iv = setInterval(function() {
-        tries++;
-        highlightAllCodeBlocks();
-        if (tries > 25) clearInterval(iv);
-      }, 100);
-    });
-    Reveal.on('slidechanged', highlightAllCodeBlocks);
-    Reveal.on('fragmentshown', highlightAllCodeBlocks);
-
-    function initStepperClickHandlers() {
-      document.querySelectorAll('.manim-stepper').forEach(function(video) {
-        if (video.dataset.clickInit) return;
-        video.dataset.clickInit = '1';
-        video.style.cursor = 'pointer';
-        video.addEventListener('click', function(e) {
-          var scene = video.getAttribute('data-manim-scene');
-          advanceManimStepper(scene);
-          e.stopPropagation();
-          e.preventDefault();
-        });
-      });
-    }
-
-    function initAllSteppers() {
-      document.querySelectorAll('.manim-stepper').forEach(function(v) {
-        if (!manimSteppers[v.getAttribute('data-manim-scene')]) {
-          initManimStepper(v);
-        }
-      });
-      initStepperClickHandlers();
-    }
-
-    function renderMath() {
-      if (typeof renderMathInElement !== 'undefined') {
-        renderMathInElement(document.body, {
-          delimiters: [
-            {left: '$$', right: '$$', display: true},
-            {left: '$', right: '$', display: false},
-            {left: '\\(', right: '\\)', display: false}
-          ]
-        });
-      }
-    }
-
-    // reveal-markdown loads slides asynchronously, so the 'ready' event may
-    // fire before the markdown content is in the DOM. Poll briefly.
-    Reveal.on('ready', function() {
-      var tries = 0;
-      var iv = setInterval(function() {
-        tries++;
-        if (document.querySelectorAll('section').length > 5 || tries > 20) {
-          clearInterval(iv);
-          initAllSteppers();
-          renderMath();
-        }
-      }, 100);
-    });
-
-    // Reset steppers when leaving a slide
-    Reveal.on('slidechanged', function(event) {
-      initAllSteppers();
-      Object.keys(manimSteppers).forEach(function(scene) {
-        if (!event.currentSlide.querySelector('[data-manim-scene="' + scene + '"]')) {
-          resetManimStepper(scene);
-        }
-      });
-    });
-
-    // Intercept right arrow / space / enter on manim slides to step through sections
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
-        var currentSlide = Reveal.getCurrentSlide();
-        var stepper = currentSlide ? currentSlide.querySelector('.manim-stepper') : null;
-        if (stepper) {
-          var scene = stepper.getAttribute('data-manim-scene');
-          if (advanceManimStepper(scene)) {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-          }
-        }
-      }
-    }, true);
-
-    // =====================================================================
-    // Interactive widgets (:::interactive). Each widget is a factory keyed
-    // by its `data-widget` value; it owns its host element and (re)draws
-    // whenever its slide becomes visible or the window resizes.
-    // =====================================================================
-    var INTERACTIVE_WIDGETS = {};
-
-    function hydrateInteractiveWidgets() {
-      document.querySelectorAll('.interactive-host[data-widget]').forEach(function(host) {
-        if (host.dataset.hydrated) return;
-        var factory = INTERACTIVE_WIDGETS[host.getAttribute('data-widget')];
-        if (!factory) return;
-        host.dataset.hydrated = '1';
-        host._widget = factory(host) || null;
-      });
-    }
-
-    function refreshInteractiveWidgets() {
-      document.querySelectorAll('.interactive-host[data-widget]').forEach(function(host) {
-        if (host._widget && typeof host._widget.resize === 'function') host._widget.resize();
-      });
-    }
-
-    Reveal.on('ready', function() {
-      var tries = 0;
-      var iv = setInterval(function() {
-        tries++;
-        if (document.querySelector('.interactive-host[data-widget]') || tries > 25) {
-          clearInterval(iv);
-          hydrateInteractiveWidgets();
-          requestAnimationFrame(refreshInteractiveWidgets);
-        }
-      }, 100);
-    });
-    Reveal.on('slidechanged', function() {
-      hydrateInteractiveWidgets();
-      requestAnimationFrame(refreshInteractiveWidgets);
-    });
-    window.addEventListener('resize', refreshInteractiveWidgets);
-
-    // ---- Folding widget: input space <-> hidden space, live ----
-    // One neuron j computes h_j = ReLU(w1_j*x1 + w2_j*x2 + b_j). The left
-    // pane shows each neuron's decision line w.x+b=0 in the input space;
-    // the right pane shows every point after the fold (h_1..h_K). Moving a
-    // slider moves a line on the left AND refolds the points on the right,
-    // making "a neuron's boundary == an axis of the fold" visible.
-    INTERACTIVE_WIDGETS.folding = function(host) {
-      var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
-          LINEC = '#2a3450', TEXT = '#e8eaf0', SECON = '#f5a623';
-      var NEURON_COLORS = ['#4a9eff', '#f5a623', '#3fb950'];
-
-      // --- XOR-pattern data: opposite corners share a class ---
-      function mulberry32(a) {
-        return function() {
-          a |= 0; a = a + 0x6D2B79F5 | 0;
-          var t = Math.imul(a ^ a >>> 15, 1 | a);
-          t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-          return ((t ^ t >>> 14) >>> 0) / 4294967296;
-        };
-      }
-      var rnd = mulberry32(42);
-      var clusters = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]];
-      var data = [];
-      clusters.forEach(function(c) {
-        for (var i = 0; i < 14; i++) {
-          data.push({
-            x: c[0] + (rnd() - 0.5) * 0.22,
-            y: c[1] + (rnd() - 0.5) * 0.22,
-            cls: c[2]
-          });
-        }
-      });
-
-      // Preset weights that fold XOR into a linearly separable layout.
-      function preset(k) {
-        var p = [
-          { w1: 1, w2: -1, b: 0.5 },
-          { w1: -1, w2: 1, b: 0.5 },
-          { w1: 1, w2: 1, b: -1.0 }
-        ];
-        return p.slice(0, k).map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
-      }
-      var state = { k: 2, neurons: preset(2) };
-
-      // --- DOM ---
-      host.innerHTML =
-        '<div class="fold-widget">' +
-          '<div class="fold-views">' +
-            '<figure class="fold-view"><figcaption>Input space</figcaption>' +
-              '<canvas class="fold-canvas" data-pane="input"></canvas></figure>' +
-            '<figure class="fold-view"><figcaption>Hidden space &mdash; h = ReLU(Wx + b)</figcaption>' +
-              '<canvas class="fold-canvas" data-pane="hidden"></canvas></figure>' +
-          '</div>' +
-          '<div class="fold-controls">' +
-            '<div class="fold-modes">' +
-              '<button data-neurons="1">1 neuron</button>' +
-              '<button data-neurons="2">2 neurons</button>' +
-              '<button data-neurons="3">3 neurons</button>' +
-              '<button class="fold-reset">Reset to XOR solution</button>' +
-            '</div>' +
-            '<div class="fold-sliders"></div>' +
-            '<p class="fold-readout"></p>' +
-          '</div>' +
-        '</div>';
-
-      var inCanvas = host.querySelector('[data-pane="input"]');
-      var hidCanvas = host.querySelector('[data-pane="hidden"]');
-      var slidersEl = host.querySelector('.fold-sliders');
-      var readoutEl = host.querySelector('.fold-readout');
-      var modeBtns = host.querySelectorAll('.fold-modes button[data-neurons]');
-
-      // Keep slider interaction from bubbling into reveal navigation.
-      ['pointerdown', 'keydown'].forEach(function(ev) {
-        host.addEventListener(ev, function(e) { e.stopPropagation(); });
-      });
-
-      function relu(z) { return z > 0 ? z : 0; }
-
-      function buildSliders() {
-        slidersEl.innerHTML = '';
-        state.neurons.forEach(function(n, idx) {
-          var color = NEURON_COLORS[idx];
-          [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(f) {
-            var key = f[0];
-            var row = document.createElement('div');
-            row.className = 'fold-slider';
-            var lab = document.createElement('label');
-            lab.textContent = 'N' + (idx + 1) + ' ' + f[1];
-            lab.style.color = color;
-            var inp = document.createElement('input');
-            inp.type = 'range';
-            inp.min = '-3'; inp.max = '3'; inp.step = '0.1';
-            inp.value = String(n[key]);
-            var val = document.createElement('p');
-            val.className = 'fold-val';
-            val.textContent = (+n[key]).toFixed(1);
-            inp.addEventListener('input', function() {
-              n[key] = parseFloat(inp.value);
-              val.textContent = n[key].toFixed(1);
-              draw();
-            });
-            row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
-            slidersEl.appendChild(row);
-          });
-        });
-      }
-
-      function setK(k) {
-        state.k = k;
-        state.neurons = preset(k);
-        modeBtns.forEach(function(b) {
-          b.classList.toggle('active', +b.getAttribute('data-neurons') === k);
-        });
-        buildSliders();
-        draw();
-      }
-      modeBtns.forEach(function(b) {
-        b.addEventListener('click', function() { setK(+b.getAttribute('data-neurons')); });
-      });
-      host.querySelector('.fold-reset').addEventListener('click', function() {
-        state.neurons = preset(state.k);
-        buildSliders();
-        draw();
-      });
-
-      // --- canvas helpers ---
-      function fitCanvas(c) {
-        var dpr = window.devicePixelRatio || 1;
-        var w = c.clientWidth, h = c.clientHeight;
-        if (!w || !h) return null;
-        c.width = Math.round(w * dpr);
-        c.height = Math.round(h * dpr);
-        var ctx = c.getContext('2d');
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        return { ctx: ctx, w: w, h: h };
-      }
-
-      function makeMapper(w, h, xr, yr, pad) {
-        return function(x, y) {
-          return [
-            pad + (x - xr[0]) / (xr[1] - xr[0]) * (w - 2 * pad),
-            h - pad - (y - yr[0]) / (yr[1] - yr[0]) * (h - 2 * pad)
-          ];
-        };
-      }
-
-      function drawFrame(ctx, w, h, pad, xr, yr, xlab, ylab) {
-        ctx.clearRect(0, 0, w, h);
-        ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
-        ctx.strokeRect(pad, pad, w - 2 * pad, h - 2 * pad);
-        var m = makeMapper(w, h, xr, yr, pad);
-        // zero axes if visible
-        ctx.strokeStyle = 'rgba(136,146,164,0.35)';
-        if (xr[0] < 0 && xr[1] > 0) {
-          var zx = m(0, yr[0])[0];
-          ctx.beginPath(); ctx.moveTo(zx, pad); ctx.lineTo(zx, h - pad); ctx.stroke();
-        }
-        if (yr[0] < 0 && yr[1] > 0) {
-          var zy = m(xr[0], 0)[1];
-          ctx.beginPath(); ctx.moveTo(pad, zy); ctx.lineTo(w - pad, zy); ctx.stroke();
-        }
-        ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
-        ctx.textAlign = 'right'; ctx.fillText(xlab, w - pad - 4, h - pad - 6);
-        ctx.textAlign = 'left'; ctx.save();
-        ctx.translate(pad + 4, pad + 4); ctx.fillText(ylab, 0, 8); ctx.restore();
-        return m;
-      }
-
-      function dot(ctx, px, py, color, r) {
-        ctx.beginPath(); ctx.arc(px, py, r || 4.5, 0, 6.2832);
-        ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
-      }
-
-      // Hidden coords for a point: (h1, h2[, h3]) via ReLU(Wx+b).
-      function hidden(p) {
-        return state.neurons.map(function(n) {
-          return relu(n.w1 * p.x + n.w2 * p.y + n.b);
-        });
-      }
-
-      function draw() {
-        // ---- Input space (left): data + each neuron's decision line ----
-        var fi = fitCanvas(inCanvas);
-        if (fi) {
-          var pad = 26, xr = [-0.5, 1.5], yr = [-0.5, 1.5];
-          var m = drawFrame(fi.ctx, fi.w, fi.h, pad, xr, yr, 'x₁', 'x₂');
-          var ctx = fi.ctx;
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(pad, pad, fi.w - 2 * pad, fi.h - 2 * pad);
-          ctx.clip();
-          state.neurons.forEach(function(n, idx) {
-            var a = n.w1, b = n.w2, c = n.b, p0, p1;
-            if (Math.abs(b) > 1e-9) {
-              p0 = m(xr[0], -(a * xr[0] + c) / b);
-              p1 = m(xr[1], -(a * xr[1] + c) / b);
-            } else if (Math.abs(a) > 1e-9) {
-              p0 = m(-c / a, yr[0]); p1 = m(-c / a, yr[1]);
-            } else { return; }
-            ctx.strokeStyle = NEURON_COLORS[idx];
-            ctx.lineWidth = 2.5;
-            ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
-          });
-          data.forEach(function(p) {
-            var q = m(p.x, p.y);
-            dot(ctx, q[0], q[1], p.cls ? GREEN : RED);
-          });
-          ctx.restore();
-        }
-
-        // ---- Hidden space (right): folded points + centroid separator ----
-        var fh = fitCanvas(hidCanvas);
-        if (!fh) { return; }
-        var H = data.map(function(p) { return { h: hidden(p), cls: p.cls }; });
-        var k = state.k;
-        // project to 2D: K=1 uses (h1, jitter); K>=2 uses (h1, h2)
-        var pts = H.map(function(o, i) {
-          if (k === 1) return { x: o.h[0], y: ((i % 7) - 3) * 0.12, cls: o.cls };
-          return { x: o.h[0], y: o.h[1], cls: o.cls };
-        });
-        var xs = pts.map(function(p) { return p.x; });
-        var ys = pts.map(function(p) { return p.y; });
-        function span(arr) {
-          var lo = Math.min.apply(null, arr), hi = Math.max.apply(null, arr);
-          if (hi - lo < 1e-6) { lo -= 0.5; hi += 0.5; }
-          var pd = (hi - lo) * 0.12;
-          return [lo - pd, hi + pd];
-        }
-        var hxr = span(xs), hyr = k === 1 ? [-1, 1] : span(ys);
-        var pad2 = 26;
-        var mh = drawFrame(fh.ctx, fh.w, fh.h, pad2, hxr, hyr,
-                           'h₁', k === 1 ? '' : 'h₂');
-        var ctx2 = fh.ctx;
-
-        // Pocket perceptron (Rosenblatt): guaranteed to find a separating
-        // line when one exists, and keeps the best line seen otherwise --
-        // exactly what "linearly separable" means, and on-topic for this
-        // module. Updates are scaled by `sc` only for numeric stability.
-        var oneD = (k === 1);
-        var sc = 1;
-        pts.forEach(function(p) {
-          sc = Math.max(sc, Math.abs(p.x), oneD ? 0 : Math.abs(p.y));
-        });
-        function lineAcc(W) {
-          var c = 0;
-          pts.forEach(function(p) {
-            var s = (W.wx * p.x + (oneD ? 0 : W.wy * p.y) + W.b) >= 0 ? 1 : 0;
-            if (s === p.cls) c++;
-          });
-          return c;
-        }
-        var cur = { wx: 0, wy: 0, b: 0 };
-        var sw = { wx: 0, wy: 0, b: 0 };
-        var best = lineAcc(sw);
-        for (var ep = 0; ep < 400 && best < pts.length; ep++) {
-          pts.forEach(function(p) {
-            var s = (cur.wx * p.x + (oneD ? 0 : cur.wy * p.y) + cur.b) >= 0 ? 1 : 0;
-            var e = p.cls - s; // -1, 0, or +1
-            if (e !== 0) {
-              cur.wx += e * p.x / sc;
-              if (!oneD) cur.wy += e * p.y / sc;
-              cur.b += e / sc;
-            }
-          });
-          var s2 = lineAcc(cur);
-          if (s2 > best) { best = s2; sw.wx = cur.wx; sw.wy = cur.wy; sw.b = cur.b; }
-        }
-        var acc = best / pts.length;
-
-        ctx2.save();
-        ctx2.beginPath();
-        ctx2.rect(pad2, pad2, fh.w - 2 * pad2, fh.h - 2 * pad2);
-        ctx2.clip();
-        if (Math.abs(sw.wx) + Math.abs(sw.wy) > 1e-6) {
-          // decision line sw.wx*x + sw.wy*y + sw.b = 0, clipped to frame
-          var e0, e1;
-          if (!oneD && Math.abs(sw.wy) > 1e-6) {
-            e0 = mh(hxr[0], -(sw.wx * hxr[0] + sw.b) / sw.wy);
-            e1 = mh(hxr[1], -(sw.wx * hxr[1] + sw.b) / sw.wy);
-          } else {
-            var xv = -sw.b / sw.wx;
-            e0 = mh(xv, hyr[0]); e1 = mh(xv, hyr[1]);
-          }
-          ctx2.strokeStyle = SECON; ctx2.lineWidth = 2;
-          ctx2.setLineDash([7, 6]);
-          ctx2.beginPath(); ctx2.moveTo(e0[0], e0[1]); ctx2.lineTo(e1[0], e1[1]); ctx2.stroke();
-          ctx2.setLineDash([]);
-        }
-        pts.forEach(function(p) {
-          var q = mh(p.x, p.y);
-          dot(ctx2, q[0], q[1], p.cls ? GREEN : RED);
-        });
-        ctx2.restore();
-
-        var sep = acc > 0.999;
-        readoutEl.innerHTML =
-          'Straight-line separator in hidden space: <strong>' +
-          (acc * 100).toFixed(0) + '%</strong> &mdash; ' +
-          (sep ? 'the fold made the classes linearly separable'
-               : 'still entangled: one flat cut cannot split them yet');
-      }
-
-      buildSliders();
-      modeBtns.forEach(function(b) {
-        b.classList.toggle('active', +b.getAttribute('data-neurons') === state.k);
-      });
-
-      return { resize: draw };
-    };
-
-    // ---- AI Summers and Winters chart ----
-    Reveal.on('slidechanged', function(event) {
+// Module 1 - Introduction: per-module config consumed by the shared slides.js.
+window.MODULE_CONFIG = {
+  title: 'LLMs 0 to 100 - Module 1',
+  // This module has no manim step-through videos.
+  manimSections: {},
+  // AI Summers and Winters chart, drawn the first time its slide appears.
+  onSlideChanged: function(event) {
       if (event.currentSlide.id === 'summers-winters') {
         var canvas = document.getElementById('hypeChart');
         if (canvas && !canvas._chartCreated) {
@@ -2309,7 +2628,553 @@ Next: Module 2 &mdash; Perceptrons and Optimization
           });
         }
       }
+  }
+};
+
+  </script>
+
+  <!-- Shared deck logic for every module -->
+  <script>
+// =====================================================================
+// Shared deck logic for every module. Per-module data and hooks arrive
+// via window.MODULE_CONFIG, set by each module's config.js (which the
+// build inlines BEFORE this file):
+//
+//   window.MODULE_CONFIG = {
+//     title:          'LLMs 0 to 100 - Module N',  // sets document.title
+//     manimSections:  { scene: ['Clip_0000.mp4', ...], ... },
+//     widgets:        { name: function(host){...}, ... },  // optional
+//     onReady:        function(reveal){...},               // optional
+//     onSlideChanged: function(event){...}                 // optional
+//   };
+// =====================================================================
+var MODULE_CONFIG = window.MODULE_CONFIG || {};
+
+// ---- Manim section step-through player ----
+// Section video lists are inline to avoid fetch() issues with file:// protocol.
+var MANIM_SECTIONS = MODULE_CONFIG.manimSections || {};
+
+var manimSteppers = {};
+
+function initManimStepper(video) {
+  var scene = video.getAttribute('data-manim-scene');
+  var sections = MANIM_SECTIONS[scene] || [];
+  var state = { sections: sections, current: -1, playing: false, video: video, scene: scene };
+  manimSteppers[scene] = state;
+
+  // Set poster frame from first section
+  if (sections.length > 0) {
+    video.src = 'media/sections/' + sections[0];
+    video.load();
+  }
+
+  video.addEventListener('ended', function() {
+    state.playing = false;
+  });
+}
+
+function advanceManimStepper(scene) {
+  var state = manimSteppers[scene];
+  if (!state || state.playing) return false;
+  if (state.current >= state.sections.length - 1) return false;
+
+  state.current++;
+  state.playing = true;
+  var file = state.sections[state.current];
+  state.video.src = 'media/sections/' + file;
+  state.video.load();
+  state.video.play().then(function() {}).catch(function() { state.playing = false; });
+  return true;
+}
+
+function resetManimStepper(scene) {
+  var state = manimSteppers[scene];
+  if (!state) return;
+  state.current = -1;
+  state.playing = false;
+  state.video.pause();
+  if (state.sections.length > 0) {
+    state.video.src = 'media/sections/' + state.sections[0];
+    state.video.load();
+  }
+}
+
+// ---- Initialize Reveal.js ----
+Reveal.initialize({
+  width: 1280,
+  height: 720,
+  margin: 0,
+  controls: true,
+  progress: true,
+  slideNumber: false,
+  hash: true,
+  transition: 'slide',
+  center: false,
+  autoAnimateDuration: 0.8,
+  plugins: [ RevealHighlight, RevealMarkdown ]
+});
+
+// ---- Syntax highlighting ----
+// reveal-markdown converts the inline <textarea> into <pre><code> blocks
+// in a deferred microtask, AFTER the highlight plugin's init() has already
+// run, so code ships un-highlighted. Re-trigger the plugin once the blocks
+// exist (on ready) and for any added later (on slidechanged).
+function highlightAllCodeBlocks() {
+  if (!Reveal.getPlugin) return;
+  var hl = Reveal.getPlugin('highlight');
+  if (!hl || typeof hl.highlightBlock !== 'function') return;
+  document.querySelectorAll('pre code').forEach(function(block) {
+    if (block.dataset.highlighted === 'yes') return;
+    hl.highlightBlock(block);
+  });
+}
+// reveal-markdown may materialize blocks in waves, so re-run the
+// (idempotent) pass across the startup window rather than once.
+Reveal.on('ready', function() {
+  var tries = 0;
+  var iv = setInterval(function() {
+    tries++;
+    highlightAllCodeBlocks();
+    if (tries > 25) clearInterval(iv);
+  }, 100);
+});
+Reveal.on('slidechanged', highlightAllCodeBlocks);
+Reveal.on('fragmentshown', highlightAllCodeBlocks);
+
+function initStepperClickHandlers() {
+  document.querySelectorAll('.manim-stepper').forEach(function(video) {
+    if (video.dataset.clickInit) return;
+    video.dataset.clickInit = '1';
+    video.style.cursor = 'pointer';
+    video.addEventListener('click', function(e) {
+      var scene = video.getAttribute('data-manim-scene');
+      advanceManimStepper(scene);
+      e.stopPropagation();
+      e.preventDefault();
     });
+  });
+}
+
+function initAllSteppers() {
+  document.querySelectorAll('.manim-stepper').forEach(function(v) {
+    if (!manimSteppers[v.getAttribute('data-manim-scene')]) {
+      initManimStepper(v);
+    }
+  });
+  initStepperClickHandlers();
+}
+
+function renderMath() {
+  if (typeof renderMathInElement !== 'undefined') {
+    renderMathInElement(document.body, {
+      delimiters: [
+        {left: '$$', right: '$$', display: true},
+        {left: '$', right: '$', display: false},
+        {left: '\\(', right: '\\)', display: false}
+      ]
+    });
+  }
+}
+
+// reveal-markdown loads slides asynchronously, so the 'ready' event may
+// fire before the markdown content is in the DOM. Poll briefly.
+Reveal.on('ready', function() {
+  var tries = 0;
+  var iv = setInterval(function() {
+    tries++;
+    if (document.querySelectorAll('section').length > 5 || tries > 20) {
+      clearInterval(iv);
+      initAllSteppers();
+      renderMath();
+    }
+  }, 100);
+});
+
+// Reset steppers when leaving a slide
+Reveal.on('slidechanged', function(event) {
+  initAllSteppers();
+  Object.keys(manimSteppers).forEach(function(scene) {
+    if (!event.currentSlide.querySelector('[data-manim-scene="' + scene + '"]')) {
+      resetManimStepper(scene);
+    }
+  });
+});
+
+// Intercept right arrow / space / enter on manim slides to step through sections
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
+    var currentSlide = Reveal.getCurrentSlide();
+    var stepper = currentSlide ? currentSlide.querySelector('.manim-stepper') : null;
+    if (stepper) {
+      var scene = stepper.getAttribute('data-manim-scene');
+      if (advanceManimStepper(scene)) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+      }
+    }
+  }
+}, true);
+
+// =====================================================================
+// Interactive widgets (:::interactive). Each widget is a factory keyed
+// by its `data-widget` value; it owns its host element and (re)draws
+// whenever its slide becomes visible or the window resizes.
+// =====================================================================
+var INTERACTIVE_WIDGETS = {};
+
+function hydrateInteractiveWidgets() {
+  document.querySelectorAll('.interactive-host[data-widget]').forEach(function(host) {
+    if (host.dataset.hydrated) return;
+    var factory = INTERACTIVE_WIDGETS[host.getAttribute('data-widget')];
+    if (!factory) return;
+    host.dataset.hydrated = '1';
+    host._widget = factory(host) || null;
+  });
+}
+
+function refreshInteractiveWidgets() {
+  document.querySelectorAll('.interactive-host[data-widget]').forEach(function(host) {
+    if (host._widget && typeof host._widget.resize === 'function') host._widget.resize();
+  });
+}
+
+Reveal.on('ready', function() {
+  var tries = 0;
+  var iv = setInterval(function() {
+    tries++;
+    if (document.querySelector('.interactive-host[data-widget]') || tries > 25) {
+      clearInterval(iv);
+      hydrateInteractiveWidgets();
+      requestAnimationFrame(refreshInteractiveWidgets);
+    }
+  }, 100);
+});
+Reveal.on('slidechanged', function() {
+  hydrateInteractiveWidgets();
+  requestAnimationFrame(refreshInteractiveWidgets);
+});
+window.addEventListener('resize', refreshInteractiveWidgets);
+
+// ---- Folding widget: input space <-> hidden space, live ----
+// One neuron j computes h_j = ReLU(w1_j*x1 + w2_j*x2 + b_j). The left
+// pane shows each neuron's decision line w.x+b=0 in the input space;
+// the right pane shows every point after the fold (h_1..h_K). Moving a
+// slider moves a line on the left AND refolds the points on the right,
+// making "a neuron's boundary == an axis of the fold" visible.
+INTERACTIVE_WIDGETS.folding = function(host) {
+  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+      LINEC = '#2a3450', TEXT = '#e8eaf0', SECON = '#f5a623';
+  var NEURON_COLORS = ['#4a9eff', '#f5a623', '#3fb950'];
+
+  // --- XOR-pattern data: opposite corners share a class ---
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  var rnd = mulberry32(42);
+  var clusters = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]];
+  var data = [];
+  clusters.forEach(function(c) {
+    for (var i = 0; i < 14; i++) {
+      data.push({
+        x: c[0] + (rnd() - 0.5) * 0.22,
+        y: c[1] + (rnd() - 0.5) * 0.22,
+        cls: c[2]
+      });
+    }
+  });
+
+  // Preset weights that fold XOR into a linearly separable layout.
+  function preset(k) {
+    var p = [
+      { w1: 1, w2: -1, b: 0.5 },
+      { w1: -1, w2: 1, b: 0.5 },
+      { w1: 1, w2: 1, b: -1.0 }
+    ];
+    return p.slice(0, k).map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
+  }
+  var state = { k: 2, neurons: preset(2) };
+
+  // --- DOM ---
+  host.innerHTML =
+    '<div class="fold-widget">' +
+      '<div class="fold-views">' +
+        '<figure class="fold-view"><figcaption>Input space</figcaption>' +
+          '<canvas class="fold-canvas" data-pane="input"></canvas></figure>' +
+        '<figure class="fold-view"><figcaption>Hidden space &mdash; h = ReLU(Wx + b)</figcaption>' +
+          '<canvas class="fold-canvas" data-pane="hidden"></canvas></figure>' +
+      '</div>' +
+      '<div class="fold-controls">' +
+        '<div class="fold-modes">' +
+          '<button data-neurons="1">1 neuron</button>' +
+          '<button data-neurons="2">2 neurons</button>' +
+          '<button data-neurons="3">3 neurons</button>' +
+          '<button class="fold-reset">Reset to XOR solution</button>' +
+        '</div>' +
+        '<div class="fold-sliders"></div>' +
+        '<p class="fold-readout"></p>' +
+      '</div>' +
+    '</div>';
+
+  var inCanvas = host.querySelector('[data-pane="input"]');
+  var hidCanvas = host.querySelector('[data-pane="hidden"]');
+  var slidersEl = host.querySelector('.fold-sliders');
+  var readoutEl = host.querySelector('.fold-readout');
+  var modeBtns = host.querySelectorAll('.fold-modes button[data-neurons]');
+
+  // Keep slider interaction from bubbling into reveal navigation.
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  function relu(z) { return z > 0 ? z : 0; }
+
+  function buildSliders() {
+    slidersEl.innerHTML = '';
+    state.neurons.forEach(function(n, idx) {
+      var color = NEURON_COLORS[idx];
+      [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(f) {
+        var key = f[0];
+        var row = document.createElement('div');
+        row.className = 'fold-slider';
+        var lab = document.createElement('label');
+        lab.textContent = 'N' + (idx + 1) + ' ' + f[1];
+        lab.style.color = color;
+        var inp = document.createElement('input');
+        inp.type = 'range';
+        inp.min = '-3'; inp.max = '3'; inp.step = '0.1';
+        inp.value = String(n[key]);
+        var val = document.createElement('p');
+        val.className = 'fold-val';
+        val.textContent = (+n[key]).toFixed(1);
+        inp.addEventListener('input', function() {
+          n[key] = parseFloat(inp.value);
+          val.textContent = n[key].toFixed(1);
+          draw();
+        });
+        row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+        slidersEl.appendChild(row);
+      });
+    });
+  }
+
+  function setK(k) {
+    state.k = k;
+    state.neurons = preset(k);
+    modeBtns.forEach(function(b) {
+      b.classList.toggle('active', +b.getAttribute('data-neurons') === k);
+    });
+    buildSliders();
+    draw();
+  }
+  modeBtns.forEach(function(b) {
+    b.addEventListener('click', function() { setK(+b.getAttribute('data-neurons')); });
+  });
+  host.querySelector('.fold-reset').addEventListener('click', function() {
+    state.neurons = preset(state.k);
+    buildSliders();
+    draw();
+  });
+
+  // --- canvas helpers ---
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function makeMapper(w, h, xr, yr, pad) {
+    return function(x, y) {
+      return [
+        pad + (x - xr[0]) / (xr[1] - xr[0]) * (w - 2 * pad),
+        h - pad - (y - yr[0]) / (yr[1] - yr[0]) * (h - 2 * pad)
+      ];
+    };
+  }
+
+  function drawFrame(ctx, w, h, pad, xr, yr, xlab, ylab) {
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(pad, pad, w - 2 * pad, h - 2 * pad);
+    var m = makeMapper(w, h, xr, yr, pad);
+    // zero axes if visible
+    ctx.strokeStyle = 'rgba(136,146,164,0.35)';
+    if (xr[0] < 0 && xr[1] > 0) {
+      var zx = m(0, yr[0])[0];
+      ctx.beginPath(); ctx.moveTo(zx, pad); ctx.lineTo(zx, h - pad); ctx.stroke();
+    }
+    if (yr[0] < 0 && yr[1] > 0) {
+      var zy = m(xr[0], 0)[1];
+      ctx.beginPath(); ctx.moveTo(pad, zy); ctx.lineTo(w - pad, zy); ctx.stroke();
+    }
+    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'right'; ctx.fillText(xlab, w - pad - 4, h - pad - 6);
+    ctx.textAlign = 'left'; ctx.save();
+    ctx.translate(pad + 4, pad + 4); ctx.fillText(ylab, 0, 8); ctx.restore();
+    return m;
+  }
+
+  function dot(ctx, px, py, color, r) {
+    ctx.beginPath(); ctx.arc(px, py, r || 4.5, 0, 6.2832);
+    ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
+  }
+
+  // Hidden coords for a point: (h1, h2[, h3]) via ReLU(Wx+b).
+  function hidden(p) {
+    return state.neurons.map(function(n) {
+      return relu(n.w1 * p.x + n.w2 * p.y + n.b);
+    });
+  }
+
+  function draw() {
+    // ---- Input space (left): data + each neuron's decision line ----
+    var fi = fitCanvas(inCanvas);
+    if (fi) {
+      var pad = 26, xr = [-0.5, 1.5], yr = [-0.5, 1.5];
+      var m = drawFrame(fi.ctx, fi.w, fi.h, pad, xr, yr, 'x₁', 'x₂');
+      var ctx = fi.ctx;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(pad, pad, fi.w - 2 * pad, fi.h - 2 * pad);
+      ctx.clip();
+      state.neurons.forEach(function(n, idx) {
+        var a = n.w1, b = n.w2, c = n.b, p0, p1;
+        if (Math.abs(b) > 1e-9) {
+          p0 = m(xr[0], -(a * xr[0] + c) / b);
+          p1 = m(xr[1], -(a * xr[1] + c) / b);
+        } else if (Math.abs(a) > 1e-9) {
+          p0 = m(-c / a, yr[0]); p1 = m(-c / a, yr[1]);
+        } else { return; }
+        ctx.strokeStyle = NEURON_COLORS[idx];
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+      });
+      data.forEach(function(p) {
+        var q = m(p.x, p.y);
+        dot(ctx, q[0], q[1], p.cls ? GREEN : RED);
+      });
+      ctx.restore();
+    }
+
+    // ---- Hidden space (right): folded points + centroid separator ----
+    var fh = fitCanvas(hidCanvas);
+    if (!fh) { return; }
+    var H = data.map(function(p) { return { h: hidden(p), cls: p.cls }; });
+    var k = state.k;
+    // project to 2D: K=1 uses (h1, jitter); K>=2 uses (h1, h2)
+    var pts = H.map(function(o, i) {
+      if (k === 1) return { x: o.h[0], y: ((i % 7) - 3) * 0.12, cls: o.cls };
+      return { x: o.h[0], y: o.h[1], cls: o.cls };
+    });
+    var xs = pts.map(function(p) { return p.x; });
+    var ys = pts.map(function(p) { return p.y; });
+    function span(arr) {
+      var lo = Math.min.apply(null, arr), hi = Math.max.apply(null, arr);
+      if (hi - lo < 1e-6) { lo -= 0.5; hi += 0.5; }
+      var pd = (hi - lo) * 0.12;
+      return [lo - pd, hi + pd];
+    }
+    var hxr = span(xs), hyr = k === 1 ? [-1, 1] : span(ys);
+    var pad2 = 26;
+    var mh = drawFrame(fh.ctx, fh.w, fh.h, pad2, hxr, hyr,
+                       'h₁', k === 1 ? '' : 'h₂');
+    var ctx2 = fh.ctx;
+
+    // Pocket perceptron (Rosenblatt): guaranteed to find a separating
+    // line when one exists, and keeps the best line seen otherwise --
+    // exactly what "linearly separable" means, and on-topic for this
+    // module. Updates are scaled by `sc` only for numeric stability.
+    var oneD = (k === 1);
+    var sc = 1;
+    pts.forEach(function(p) {
+      sc = Math.max(sc, Math.abs(p.x), oneD ? 0 : Math.abs(p.y));
+    });
+    function lineAcc(W) {
+      var c = 0;
+      pts.forEach(function(p) {
+        var s = (W.wx * p.x + (oneD ? 0 : W.wy * p.y) + W.b) >= 0 ? 1 : 0;
+        if (s === p.cls) c++;
+      });
+      return c;
+    }
+    var cur = { wx: 0, wy: 0, b: 0 };
+    var sw = { wx: 0, wy: 0, b: 0 };
+    var best = lineAcc(sw);
+    for (var ep = 0; ep < 400 && best < pts.length; ep++) {
+      pts.forEach(function(p) {
+        var s = (cur.wx * p.x + (oneD ? 0 : cur.wy * p.y) + cur.b) >= 0 ? 1 : 0;
+        var e = p.cls - s; // -1, 0, or +1
+        if (e !== 0) {
+          cur.wx += e * p.x / sc;
+          if (!oneD) cur.wy += e * p.y / sc;
+          cur.b += e / sc;
+        }
+      });
+      var s2 = lineAcc(cur);
+      if (s2 > best) { best = s2; sw.wx = cur.wx; sw.wy = cur.wy; sw.b = cur.b; }
+    }
+    var acc = best / pts.length;
+
+    ctx2.save();
+    ctx2.beginPath();
+    ctx2.rect(pad2, pad2, fh.w - 2 * pad2, fh.h - 2 * pad2);
+    ctx2.clip();
+    if (Math.abs(sw.wx) + Math.abs(sw.wy) > 1e-6) {
+      // decision line sw.wx*x + sw.wy*y + sw.b = 0, clipped to frame
+      var e0, e1;
+      if (!oneD && Math.abs(sw.wy) > 1e-6) {
+        e0 = mh(hxr[0], -(sw.wx * hxr[0] + sw.b) / sw.wy);
+        e1 = mh(hxr[1], -(sw.wx * hxr[1] + sw.b) / sw.wy);
+      } else {
+        var xv = -sw.b / sw.wx;
+        e0 = mh(xv, hyr[0]); e1 = mh(xv, hyr[1]);
+      }
+      ctx2.strokeStyle = SECON; ctx2.lineWidth = 2;
+      ctx2.setLineDash([7, 6]);
+      ctx2.beginPath(); ctx2.moveTo(e0[0], e0[1]); ctx2.lineTo(e1[0], e1[1]); ctx2.stroke();
+      ctx2.setLineDash([]);
+    }
+    pts.forEach(function(p) {
+      var q = mh(p.x, p.y);
+      dot(ctx2, q[0], q[1], p.cls ? GREEN : RED);
+    });
+    ctx2.restore();
+
+    var sep = acc > 0.999;
+    readoutEl.innerHTML =
+      'Straight-line separator in hidden space: <strong>' +
+      (acc * 100).toFixed(0) + '%</strong> &mdash; ' +
+      (sep ? 'the fold made the classes linearly separable'
+           : 'still entangled: one flat cut cannot split them yet');
+  }
+
+  buildSliders();
+  modeBtns.forEach(function(b) {
+    b.classList.toggle('active', +b.getAttribute('data-neurons') === state.k);
+  });
+
+  return { resize: draw };
+};
+
+// ---- Per-module hooks (from MODULE_CONFIG) ----
+if (MODULE_CONFIG.title) document.title = MODULE_CONFIG.title;
+if (MODULE_CONFIG.widgets) Object.assign(INTERACTIVE_WIDGETS, MODULE_CONFIG.widgets);
+if (typeof MODULE_CONFIG.onReady === 'function') {
+  Reveal.on('ready', function() { MODULE_CONFIG.onReady(Reveal); });
+}
+if (typeof MODULE_CONFIG.onSlideChanged === 'function') {
+  Reveal.on('slidechanged', function(event) { MODULE_CONFIG.onSlideChanged(event); });
+}
+
   </script>
 </body>
 </html>

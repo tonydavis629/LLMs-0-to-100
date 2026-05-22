@@ -56,8 +56,8 @@ def char_uniform(length: int = 500) -> str:
     # The 27 characters we can pick from (26 letters + space)
     alphabet = list("abcdefghijklmnopqrstuvwxyz ")
 
-    # TODO: Sample `length` random characters from alphabet and join into a string
-    # Use random.choices(population, k=...) to pick, then "".join() to combine
+    # TODO: Sample `length` random characters from alphabet and join them into a string
+    # HINT: random.choices(alphabet, k=length) returns a list; "".join(...) combines it
     raise NotImplementedError("TODO: return a random string of the given length")
 
 
@@ -78,8 +78,8 @@ def char_unigram(text: str, length: int = 500) -> str:
     chars = list(counts.keys())       # e.g. ["a", "b", " ", "e", ...]
     weights = list(counts.values())   # e.g. [2, 1, 5, 3, ...]
 
-    # TODO: Sample `length` characters using the weights, join into a string
-    # Same as char_uniform but pass weights=weights to random.choices()
+    # TODO: Sample `length` characters using the weights, then join them into a string
+    # HINT: same as char_uniform, but pass weights=weights to random.choices()
     raise NotImplementedError("TODO: return a frequency-weighted random string")
 
 
@@ -104,6 +104,7 @@ def build_char_ngram_model(text: str, n: int) -> dict[str, Counter]:
     # Slide a window of size n across the text
     for i in range(len(text) - n + 1):
         # TODO: Extract the context (first n-1 chars) and next_char (the nth char)
+        # HINT: the window starts at i -- context is its first n-1 characters, next_char is the one right after
         context = None
         next_char = None
         if context is None or next_char is None:
@@ -137,7 +138,7 @@ def generate_from_char_model(
 
     while len(result) < length:
         # TODO: Get the current context -- the last (n-1) characters joined together
-        # e.g. if n=3 and result ends with ['a','t'], the context should be "at"
+        # HINT: "".join(result[-(n - 1):]) gives the last n-1 characters as a string
         context = None
         if context is None:
             raise NotImplementedError("TODO: set context from the last n-1 chars of result")
@@ -185,8 +186,8 @@ def word_unigram(text: str, length: int = 100) -> str:
     word_list = list(counts.keys())
     weights = list(counts.values())
 
-    # TODO: Sample `length` words using the weights, join with spaces
-    # Same pattern as char_unigram but use " ".join() instead of "".join()
+    # TODO: Sample `length` words using the weights, then join them with spaces
+    # HINT: same pattern as char_unigram, but use " ".join() instead of "".join()
     raise NotImplementedError("TODO: return frequency-weighted random words")
 
 
@@ -200,7 +201,8 @@ def build_word_ngram_model(text: str, n: int) -> dict[tuple[str, ...], Counter]:
     model: dict[tuple[str, ...], Counter] = {}
 
     for i in range(len(words) - n + 1):
-        # TODO: Extract context tuple and next_word
+        # TODO: Extract the context tuple (first n-1 words) and next_word (the nth word)
+        # HINT: like the char model -- context is the first n-1 words as a tuple, next_word is the one after
         context = None
         next_word = None
         if context is None or next_word is None:
@@ -230,7 +232,7 @@ def generate_from_word_model(
 
     while len(result) < length:
         # TODO: Get the current context as a tuple of the last (n-1) words
-        # Same as the char version but use tuple() instead of "".join()
+        # HINT: tuple(result[-(n - 1):]) gives the last n-1 words as a tuple
         context = None
         if context is None:
             raise NotImplementedError("TODO: set context from the last n-1 words of result")

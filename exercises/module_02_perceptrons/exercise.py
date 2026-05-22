@@ -43,7 +43,7 @@ def relu(z: np.ndarray) -> np.ndarray:
         The elementwise maximum of 0 and z (same shape as z)
     """
     # TODO: Return the elementwise max of 0 and z in one line
-    # Hint: numpy has a function that takes the elementwise maximum.
+    # HINT: np.maximum takes the elementwise maximum of two arrays (or an array and a scalar)
     raise NotImplementedError("TODO: implement the ReLU activation")
 
 
@@ -66,6 +66,7 @@ def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
         The neuron's output (a probability between 0 and 1)
     """
     # TODO: Compute the neuron's output in one line
+    # HINT: compute z = np.dot(x, weights) + bias, then return sigmoid(z)
     raise NotImplementedError("TODO: implement the forward pass")
 
 
@@ -94,6 +95,7 @@ def binary_cross_entropy(y_true: float, y_pred: float) -> float:
     y_pred = np.clip(y_pred, eps, 1 - eps)
 
     # TODO: Compute and return the BCE loss using the formula in the docstring
+    # HINT: the same cross-entropy formula from the docstring -- use np.log on y_pred and on 1 - y_pred
     raise NotImplementedError("TODO: implement binary cross-entropy")
 
 
@@ -122,6 +124,7 @@ def compute_gradients(
         (dw, db): gradient w.r.t. weights (shape (2,)) and bias (scalar)
     """
     # TODO: Compute the gradients using the formulas in the docstring
+    # HINT: the error is y_pred - y_true; the weight gradient is error * x and the bias gradient is error
     raise NotImplementedError("TODO: implement gradient computation")
 
 
@@ -153,6 +156,7 @@ def update_parameters(
         (new_weights, new_bias)
     """
     # TODO: Apply the gradient descent update rule
+    # HINT: subtract learning_rate * dw from weights and learning_rate * db from bias
     raise NotImplementedError("TODO: implement parameter update")
 
 
@@ -188,9 +192,8 @@ def mlp_forward(
     Returns:
         Output probability (scalar between 0 and 1)
     """
-    # TODO: Compute the two-layer forward pass.
-    # Use relu(...) for the hidden layer and sigmoid(...) for the output,
-    # then return the single output value (output[0]).
+    # TODO: Compute the two-layer forward pass, then return the output value (output[0])
+    # HINT: ReLU on the hidden layer, sigmoid on the output; return output[0]
     raise NotImplementedError("TODO: implement MLP forward pass")
 
 
