@@ -1,11 +1,13 @@
 """
-Module 2 Exercise: Text Classifier with Decision Boundary Visualization
+Module 2 Exercise runner: Perceptrons and Neural Networks (PyTorch)
 
 Run with:
     uv run python module_02_perceptrons/src/main.py
 
-Trains a single-neuron classifier and an MLP on 2D data, visualizing
-how they learn to separate classes.
+Trains a single-neuron classifier (with hand-written gradients) and an MLP
+(with autograd) on 2D data, visualizing how they learn to separate classes.
+Any step that still raises NotImplementedError is skipped, so you can run
+after each fill-in.
 """
 
 from __future__ import annotations
@@ -13,7 +15,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import numpy as np
+import torch
 
 # Make the module root (parent of src/) importable so we can `import exercise`
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -25,13 +27,13 @@ from exercise import (
     binary_cross_entropy,
     compute_gradients,
     update_parameters,
-    mlp_forward,
-    mlp_gradients,
     sigmoid,
+    relu,
+    MLP,
+    SGD,
 )
 from visualization import (
     load_csv,
-    plot_data,
     plot_decision_boundary,
     plot_loss_curve,
     save_comparison,
@@ -42,9 +44,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 
-# Paths to the bundled datasets
-# Walk up from this file until we find the data/ directory
-# (works from both src/main.py and solution/src/main.py)
+# Paths to the bundled datasets. Walk up from this file until we find data/
+# (works from both src/main.py and solution/src/main.py).
 _THIS_DIR = Path(__file__).resolve().parent
 _MODULE_DIR = _THIS_DIR.parent
 if not (_MODULE_DIR / "data").exists():
@@ -55,234 +56,291 @@ NONLINEAR_DATA = DATA_DIR / "non_linear_separable.csv"
 OUTPUT_DIR = _MODULE_DIR / "output"
 
 
-def train_perceptron(
-    X: np.ndarray,
-    y: np.ndarray,
-    learning_rate: float = 0.5,
-    epochs: int = 100,
-) -> tuple[np.ndarray, float, list[float]]:
-    """Train a single neuron on the dataset.
+def load_tensors(path: Path) -> tuple[torch.Tensor, torch.Tensor]:
+    """Load a CSV and return (X, y) as float32 tensors.
+
+    Args:
+        path: Path to a bundled CSV dataset.
 
     Returns:
-        (weights, bias, losses): trained parameters and loss history
+        (X, y): feature tensor of shape (n_samples, 2) and label tensor of shape (n_samples,).
     """
-    # Initialize weights to small random values, bias to zero
-    rng = np.random.default_rng(42)
-    weights = rng.normal(0, 0.1, size=2)
-    bias = 0.0
-    losses = []
+    X_np, y_np = load_csv(str(path))
+    X = torch.tensor(X_np, dtype=torch.float32)
+    y = torch.tensor(y_np, dtype=torch.float32)
+    return X, y
+
+
+# ---------------------------------------------------------------------------
+# Single neuron: hand-written forward / loss / gradients / update
+# ---------------------------------------------------------------------------
+
+
+def train_perceptron(
+    X: torch.Tensor,
+    y: torch.Tensor,
+    learning_rate: float = 0.5,
+    epochs: int = 100,
+) -> tuple[torch.Tensor, torch.Tensor, list[float]]:
+    """Train a single neuron with full-batch gradient descent (no autograd).
+
+    Args:
+        X: Feature tensor, shape (n_samples, 2).
+        y: Label tensor, shape (n_samples,).
+        learning_rate: Step size for each gradient-descent update.
+        epochs: Number of full passes through the dataset.
+
+    Returns:
+        (weights, bias, losses): trained parameters and the loss history.
+    """
+    torch.manual_seed(42)
+    weights = torch.randn(2) * 0.1
+    bias = torch.zeros(())  # 0-dim tensor
+    losses: list[float] = []
+    n = X.shape[0]
 
     for epoch in range(epochs):
         epoch_loss = 0.0
+        total_dw = torch.zeros(2)
+        total_db = torch.zeros(())
 
-        # One pass through all samples (full-batch gradient descent)
-        total_dw = np.zeros(2)
-        total_db = 0.0
-
-        for i in range(len(X)):
-            # Forward pass
+        for i in range(n):
             y_pred = forward(X[i], weights, bias)
-
-            # Loss
-            loss = binary_cross_entropy(y[i], y_pred)
-            epoch_loss += loss
-
-            # Gradients
+            epoch_loss += float(binary_cross_entropy(y[i], y_pred))
             dw, db = compute_gradients(X[i], y[i], y_pred)
             total_dw += dw
             total_db += db
 
-        # Average gradients over all samples
-        total_dw /= len(X)
-        total_db /= len(X)
-
-        # Update parameters
+        total_dw /= n
+        total_db /= n
         weights, bias = update_parameters(weights, bias, total_dw, total_db, learning_rate)
 
-        avg_loss = epoch_loss / len(X)
+        avg_loss = epoch_loss / n
         losses.append(avg_loss)
-
         if (epoch + 1) % 20 == 0:
             print(f"  Epoch {epoch + 1:3d}/{epochs}  loss={avg_loss:.4f}")
 
     return weights, bias, losses
 
 
+def neuron_accuracy(X: torch.Tensor, y: torch.Tensor, weights, bias) -> tuple[int, int]:
+    """Count correctly classified samples for the single neuron.
+
+    Args:
+        X: Feature tensor, shape (n_samples, 2).
+        y: Label tensor, shape (n_samples,).
+        weights: Learned weight vector, shape (2,).
+        bias: Learned scalar bias.
+
+    Returns:
+        (correct, total): number correct and total number of samples.
+    """
+    with torch.no_grad():
+        preds = (sigmoid(X @ weights + bias) >= 0.5).float()
+    correct = int((preds == y).sum())
+    return correct, X.shape[0]
+
+
+def neuron_predict(weights, bias):
+    """Return a vectorized predict_fn(grid) -> probabilities for plotting.
+
+    Args:
+        weights: Learned weight vector, shape (2,).
+        bias: Learned scalar bias.
+
+    Returns:
+        A function that maps a NumPy grid of points to predicted probabilities.
+    """
+    def predict(grid):
+        g = torch.tensor(grid, dtype=torch.float32)
+        with torch.no_grad():
+            return sigmoid(g @ weights + bias).numpy()
+    return predict
+
+
+# ---------------------------------------------------------------------------
+# MLP: autograd + an optimizer (torch's, or the student's for extra credit)
+# ---------------------------------------------------------------------------
+
+
 def train_mlp(
-    X: np.ndarray,
-    y: np.ndarray,
+    X: torch.Tensor,
+    y: torch.Tensor,
     hidden_size: int = 8,
     learning_rate: float = 1.0,
     epochs: int = 500,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, list[float]]:
-    """Train a two-layer MLP on the dataset.
+    use_custom_optimizer: bool = False,
+    verbose: bool = True,
+) -> tuple[MLP, list[float]]:
+    """Train the MLP with autograd.
+
+    Args:
+        X: Feature tensor, shape (n_samples, 2).
+        y: Label tensor, shape (n_samples,).
+        hidden_size: Number of neurons in the hidden layer.
+        learning_rate: Step size for the optimizer.
+        epochs: Number of training passes.
+        use_custom_optimizer: Whether to use the exercise's SGD class.
+        verbose: Whether to print progress every 100 epochs.
 
     Returns:
-        (W1, b1, W2, b2, losses): trained parameters and loss history
+        (model, losses): trained model and per-epoch loss history.
     """
-    rng = np.random.default_rng(42)
-    W1 = rng.normal(0, 0.5, size=(hidden_size, 2))
-    b1 = np.zeros(hidden_size)
-    W2 = rng.normal(0, 0.5, size=(1, hidden_size))
-    b2 = np.zeros(1)
-    losses = []
+    torch.manual_seed(42)
+    model = MLP(input_size=2, hidden_size=hidden_size)
+    if use_custom_optimizer:
+        optimizer = SGD(model.parameters(), lr=learning_rate)
+    else:
+        optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+    y_col = y.unsqueeze(1)  # shape (N, 1) to match the model output
+    losses: list[float] = []
 
     for epoch in range(epochs):
-        epoch_loss = 0.0
+        optimizer.zero_grad()
+        output = model(X)                                  # forward (student code)
+        loss = binary_cross_entropy(y_col, output).mean()  # average over the batch
+        loss.backward()                                    # autograd: every gradient
+        optimizer.step()                                   # nudge parameters downhill
 
-        # Accumulate gradients
-        dW1_total = np.zeros_like(W1)
-        db1_total = np.zeros_like(b1)
-        dW2_total = np.zeros_like(W2)
-        db2_total = np.zeros_like(b2)
+        losses.append(loss.item())
+        if verbose and (epoch + 1) % 100 == 0:
+            print(f"  Epoch {epoch + 1:3d}/{epochs}  loss={loss.item():.4f}")
 
-        for i in range(len(X)):
-            y_pred = mlp_forward(X[i], W1, b1, W2, b2)
+    return model, losses
 
-            eps = 1e-15
-            y_pred_clipped = np.clip(y_pred, eps, 1 - eps)
-            loss = -(y[i] * np.log(y_pred_clipped) + (1 - y[i]) * np.log(1 - y_pred_clipped))
-            epoch_loss += loss
 
-            dW1, db1_g, dW2, db2_g = mlp_gradients(X[i], y[i], W1, b1, W2, b2)
-            dW1_total += dW1
-            db1_total += db1_g
-            dW2_total += dW2
-            db2_total += db2_g
+def mlp_accuracy(X: torch.Tensor, y: torch.Tensor, model: MLP) -> tuple[int, int]:
+    """Count correctly classified samples for the MLP.
 
-        # Average and update
-        n = len(X)
-        W1 -= learning_rate * dW1_total / n
-        b1 -= learning_rate * db1_total / n
-        W2 -= learning_rate * dW2_total / n
-        b2 -= learning_rate * db2_total / n
+    Args:
+        X: Feature tensor, shape (n_samples, 2).
+        y: Label tensor, shape (n_samples,).
+        model: Trained MLP model.
 
-        avg_loss = epoch_loss / n
-        losses.append(avg_loss)
+    Returns:
+        (correct, total): number correct and total number of samples.
+    """
+    with torch.no_grad():
+        preds = (model(X).squeeze(1) >= 0.5).float()
+    correct = int((preds == y).sum())
+    return correct, X.shape[0]
 
-        if (epoch + 1) % 100 == 0:
-            print(f"  Epoch {epoch + 1:3d}/{epochs}  loss={avg_loss:.4f}")
 
-    return W1, b1, W2, b2, losses
+def mlp_predict(model: MLP):
+    """Return a vectorized predict_fn(grid) -> probabilities for plotting.
+
+    Args:
+        model: Trained MLP model.
+
+    Returns:
+        A function that maps a NumPy grid of points to predicted probabilities.
+    """
+    def predict(grid):
+        g = torch.tensor(grid, dtype=torch.float32)
+        with torch.no_grad():
+            return model(g).squeeze(1).numpy()
+    return predict
 
 
 def main():
     OUTPUT_DIR.mkdir(exist_ok=True)
+    X_lin, y_lin = load_tensors(LINEAR_DATA)
+    X_nl, y_nl = load_tensors(NONLINEAR_DATA)
+
+    neuron_nl_params = None  # (weights, bias) from Part 2, reused in Part 3
+    mlp_model = None         # trained MLP from Part 3
 
     # ------------------------------------------------------------------
-    # Part 1: Train single neuron on linearly separable data
+    # Part 1: single neuron on linearly separable data
     # ------------------------------------------------------------------
     print("=" * 60)
     print("PART 1: Single Neuron on Linearly Separable Data")
     print("=" * 60)
-
-    try:
-        X_lin, y_lin = load_csv(str(LINEAR_DATA))
-        print(f"Loaded {len(y_lin)} samples from linear_separable.csv\n")
-    except FileNotFoundError:
-        print(f"Data file not found: {LINEAR_DATA}")
-        sys.exit(1)
-
+    print(f"Loaded {len(y_lin)} samples from linear_separable.csv\n")
     try:
         weights, bias, losses = train_perceptron(X_lin, y_lin, learning_rate=0.5, epochs=100)
-        print(f"\nFinal weights: [{weights[0]:.4f}, {weights[1]:.4f}], bias: {bias:.4f}")
+        print(f"\nFinal weights: [{weights[0]:.4f}, {weights[1]:.4f}], bias: {float(bias):.4f}")
+        correct, total = neuron_accuracy(X_lin, y_lin, weights, bias)
+        print(f"Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
 
-        # Compute accuracy
-        correct = sum(
-            1 for i in range(len(X_lin))
-            if (forward(X_lin[i], weights, bias) >= 0.5) == y_lin[i]
-        )
-        print(f"Accuracy: {correct}/{len(y_lin)} ({100 * correct / len(y_lin):.1f}%)")
-
-        # Save plots
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-        plot_decision_boundary(
-            lambda x: forward(x, weights, bias),
-            X_lin, y_lin, title="Perceptron: Linear Data", ax=ax1,
-        )
+        plot_decision_boundary(neuron_predict(weights, bias), X_lin.numpy(), y_lin.numpy(),
+                               title="Perceptron: Linear Data", ax=ax1)
         plot_loss_curve(losses, title="Training Loss", ax=ax2)
         fig.tight_layout()
         fig.savefig(str(OUTPUT_DIR / "step5_linear_perceptron.png"), dpi=150, bbox_inches="tight")
         plt.close(fig)
-        print(f"Saved plot to output/step5_linear_perceptron.png\n")
-
+        print("Saved plot to output/step5_linear_perceptron.png\n")
     except NotImplementedError as e:
         print(f"  [skipped: {e}]\n")
 
     # ------------------------------------------------------------------
-    # Part 2: Same single neuron on non-linearly-separable data
+    # Part 2: same single neuron on non-linearly-separable data
     # ------------------------------------------------------------------
     print("=" * 60)
     print("PART 2: Single Neuron on Non-Linearly Separable Data (XOR)")
     print("=" * 60)
-
+    print(f"Loaded {len(y_nl)} samples from non_linear_separable.csv\n")
     try:
-        X_nl, y_nl = load_csv(str(NONLINEAR_DATA))
-        print(f"Loaded {len(y_nl)} samples from non_linear_separable.csv\n")
-    except FileNotFoundError:
-        print(f"Data file not found: {NONLINEAR_DATA}")
-        sys.exit(1)
-
-    try:
-        weights_nl, bias_nl, losses_nl = train_perceptron(
-            X_nl, y_nl, learning_rate=0.5, epochs=100,
-        )
-        print(f"\nFinal weights: [{weights_nl[0]:.4f}, {weights_nl[1]:.4f}], bias: {bias_nl:.4f}")
-
-        correct = sum(
-            1 for i in range(len(X_nl))
-            if (forward(X_nl[i], weights_nl, bias_nl) >= 0.5) == y_nl[i]
-        )
-        print(f"Accuracy: {correct}/{len(y_nl)} ({100 * correct / len(y_nl):.1f}%)")
+        weights_nl, bias_nl, losses_nl = train_perceptron(X_nl, y_nl, learning_rate=0.5, epochs=100)
+        neuron_nl_params = (weights_nl, bias_nl)
+        print(f"\nFinal weights: [{weights_nl[0]:.4f}, {weights_nl[1]:.4f}], bias: {float(bias_nl):.4f}")
+        correct, total = neuron_accuracy(X_nl, y_nl, weights_nl, bias_nl)
+        print(f"Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
         print("(A single neuron cannot solve this non-linearly-separable problem.)\n")
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
-        plot_decision_boundary(
-            lambda x: forward(x, weights_nl, bias_nl),
-            X_nl, y_nl, title="Perceptron: XOR Data (Fails)", ax=ax1,
-        )
+        plot_decision_boundary(neuron_predict(weights_nl, bias_nl), X_nl.numpy(), y_nl.numpy(),
+                               title="Perceptron: XOR Data (Fails)", ax=ax1)
         plot_loss_curve(losses_nl, title="Training Loss (Plateaus)", ax=ax2)
         fig.tight_layout()
         fig.savefig(str(OUTPUT_DIR / "step6_nonlinear_perceptron.png"), dpi=150, bbox_inches="tight")
         plt.close(fig)
-        print(f"Saved plot to output/step6_nonlinear_perceptron.png\n")
-
+        print("Saved plot to output/step6_nonlinear_perceptron.png\n")
     except NotImplementedError as e:
         print(f"  [skipped: {e}]\n")
 
     # ------------------------------------------------------------------
-    # Part 3: MLP on non-linearly-separable data
+    # Part 3: MLP on non-linearly-separable data (autograd + torch.optim.SGD)
     # ------------------------------------------------------------------
     print("=" * 60)
     print("PART 3: MLP on Non-Linearly Separable Data")
     print("=" * 60)
-
     try:
-        W1, b1, W2, b2, losses_mlp = train_mlp(
-            X_nl, y_nl, hidden_size=8, learning_rate=1.0, epochs=500,
-        )
+        mlp_model, losses_mlp = train_mlp(X_nl, y_nl, hidden_size=8, learning_rate=1.0, epochs=500)
+        correct, total = mlp_accuracy(X_nl, y_nl, mlp_model)
+        print(f"\nAccuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
 
-        correct = sum(
-            1 for i in range(len(X_nl))
-            if (mlp_forward(X_nl[i], W1, b1, W2, b2) >= 0.5) == y_nl[i]
-        )
-        print(f"\nAccuracy: {correct}/{len(y_nl)} ({100 * correct / len(y_nl):.1f}%)")
-
-        # Save comparison plot
-        save_comparison(
-            lambda x: forward(x, weights_nl, bias_nl),
-            lambda x: mlp_forward(x, W1, b1, W2, b2),
-            X_nl, y_nl,
-            filepath=str(OUTPUT_DIR / "step7_comparison.png"),
-        )
-
-        # Save MLP loss curve
+        if neuron_nl_params is not None:
+            save_comparison(
+                neuron_predict(*neuron_nl_params),
+                mlp_predict(mlp_model),
+                X_nl.numpy(), y_nl.numpy(),
+                filepath=str(OUTPUT_DIR / "step7_comparison.png"),
+            )
         fig, ax = plt.subplots(figsize=(6, 4))
         plot_loss_curve(losses_mlp, title="MLP Training Loss", ax=ax)
         fig.savefig(str(OUTPUT_DIR / "step7_mlp_loss.png"), dpi=150, bbox_inches="tight")
         plt.close(fig)
-        print(f"Saved MLP loss plot to output/step7_mlp_loss.png\n")
+        print("Saved MLP loss plot to output/step7_mlp_loss.png\n")
+    except NotImplementedError as e:
+        print(f"  [skipped: {e}]\n")
 
+    # ------------------------------------------------------------------
+    # Extra credit: train the MLP with your own SGD optimizer
+    # ------------------------------------------------------------------
+    print("=" * 60)
+    print("EXTRA CREDIT: MLP trained with your own SGD optimizer")
+    print("=" * 60)
+    try:
+        ec_model, _ = train_mlp(
+            X_nl, y_nl, hidden_size=8, learning_rate=1.0, epochs=500,
+            use_custom_optimizer=True, verbose=False,
+        )
+        correct, total = mlp_accuracy(X_nl, y_nl, ec_model)
+        print(f"Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
+        print("(Your optimizer matches torch.optim.SGD.)\n")
     except NotImplementedError as e:
         print(f"  [skipped: {e}]\n")
 

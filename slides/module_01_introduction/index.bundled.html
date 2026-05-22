@@ -713,7 +713,8 @@
 }
 
 .reveal .hint-box + .note {
-  margin-top: 12px;
+  margin-top: 8px;
+  padding: 12px 18px;
 }
 
 /* :::interactive - widget fills the slide body like a video */
@@ -743,8 +744,8 @@
 
 .fold-views {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
+  grid-template-columns: 1fr 0.85fr 1fr;
+  gap: 18px;
   flex: 1;
   min-height: 0;
 }
@@ -852,6 +853,118 @@
 
 .reveal .fold-readout strong {
   color: var(--secondary-color);
+}
+
+/* ===========================================
+   MLP BOUNDARY WIDGET  (:::interactive widget="mlpBoundary")
+   =========================================== */
+
+.mlp-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+.mlp-canvas-wrap {
+  flex: 1;
+  min-height: 0;
+}
+
+.mlp-canvas,
+.land-canvas,
+.land-net {
+  width: 100%;
+  height: 100%;
+  background: #0d1225;
+  border: 1px solid var(--line-color);
+  border-radius: var(--box-radius);
+}
+
+.mlp-controls,
+.land-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 10px 24px;
+  align-items: center;
+}
+
+.mlp-slider {
+  display: grid;
+  grid-template-columns: 70px 1fr 58px;
+  align-items: center;
+  gap: 10px;
+}
+
+.reveal .mlp-slider label,
+.reveal .mlp-slider p {
+  font-size: 12pt;
+  margin: 0;
+}
+
+.reveal .mlp-slider label {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.mlp-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary-color);
+}
+
+.reveal .mlp-slider p {
+  color: var(--text-color);
+  font-family: monospace;
+  text-align: right;
+}
+
+.reveal .mlp-readout,
+.reveal .land-readout {
+  font-size: 13pt;
+  color: var(--muted-color);
+  text-align: center;
+  margin: 0;
+}
+
+.reveal .mlp-readout {
+  grid-column: 1 / -1;
+}
+
+.reveal .mlp-readout strong,
+.reveal .land-readout strong {
+  color: var(--secondary-color);
+}
+
+/* ===========================================
+   LOSS LANDSCAPE WIDGET  (:::interactive widget="lossLandscape")
+   =========================================== */
+
+.land-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+}
+
+.land-main {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 18px;
+  flex: 1;
+  min-height: 0;
+}
+
+.land-step {
+  font-family: var(--body-font);
+  font-size: 13pt;
+  color: #0a0e1a;
+  background: var(--secondary-color);
+  border: 1px solid var(--secondary-color);
+  border-radius: 6px;
+  padding: 7px 16px;
+  cursor: pointer;
 }
 
 
@@ -2699,6 +2812,34 @@ function resetManimStepper(scene) {
   }
 }
 
+// Instantly finish the section that is currently playing by jumping to its
+// final frame. This lets an impatient "next" complete the animation in
+// place rather than leaking through to reveal and skipping the slide.
+// Returns true if it consumed the action (a video was actually playing).
+function skipManimStepper(scene) {
+  var state = manimSteppers[scene];
+  if (!state || !state.playing) return false;
+  var v = state.video;
+  v.pause();
+  // Seek just shy of the end so the step's end state stays on screen.
+  if (v.duration && isFinite(v.duration)) {
+    try { v.currentTime = Math.max(0, v.duration - 0.04); } catch (e) {}
+  }
+  state.playing = false;
+  return true;
+}
+
+// One forward action on a manim slide. If a section is mid-play, the press
+// completes it (skip to the end frame); otherwise it advances to the next
+// section. Returns false only when there is nothing left to animate, which
+// is the signal that reveal.js may now move on to the next slide.
+function manimForward(scene) {
+  var state = manimSteppers[scene];
+  if (!state) return false;
+  if (state.playing) return skipManimStepper(scene);
+  return advanceManimStepper(scene);
+}
+
 // ---- Initialize Reveal.js ----
 Reveal.initialize({
   width: 1280,
@@ -2748,7 +2889,7 @@ function initStepperClickHandlers() {
     video.style.cursor = 'pointer';
     video.addEventListener('click', function(e) {
       var scene = video.getAttribute('data-manim-scene');
-      advanceManimStepper(scene);
+      manimForward(scene);
       e.stopPropagation();
       e.preventDefault();
     });
@@ -2800,18 +2941,35 @@ Reveal.on('slidechanged', function(event) {
   });
 });
 
-// Intercept right arrow / space / enter on manim slides to step through sections
+// Intercept right arrow / space / enter on manim slides to step through
+// sections. manimForward consumes the press while there is still animation
+// to play (completing the current section or starting the next), so reveal
+// only advances the slide once every section has been shown.
 document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
     var currentSlide = Reveal.getCurrentSlide();
     var stepper = currentSlide ? currentSlide.querySelector('.manim-stepper') : null;
     if (stepper) {
       var scene = stepper.getAttribute('data-manim-scene');
-      if (advanceManimStepper(scene)) {
+      if (manimForward(scene)) {
         e.stopImmediatePropagation();
         e.preventDefault();
       }
     }
+  }
+}, true);
+
+// The on-screen controls (controls: true) navigate directly and bypass the
+// keydown handler above, so guard the forward arrows the same way: a forward
+// control press on a manim slide steps the animation before leaving.
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest ? e.target.closest('.navigate-right, .navigate-down') : null;
+  if (!btn) return;
+  var currentSlide = Reveal.getCurrentSlide();
+  var stepper = currentSlide ? currentSlide.querySelector('.manim-stepper') : null;
+  if (stepper && manimForward(stepper.getAttribute('data-manim-scene'))) {
+    e.stopImmediatePropagation();
+    e.preventDefault();
   }
 }, true);
 
@@ -2863,8 +3021,8 @@ window.addEventListener('resize', refreshInteractiveWidgets);
 // making "a neuron's boundary == an axis of the fold" visible.
 INTERACTIVE_WIDGETS.folding = function(host) {
   var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
-      LINEC = '#2a3450', TEXT = '#e8eaf0', SECON = '#f5a623';
-  var NEURON_COLORS = ['#4a9eff', '#f5a623', '#3fb950'];
+      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECON = '#f5a623';
+  var NEURON_COLORS = ['#4a9eff', '#f5a623'];
 
   // --- XOR-pattern data: opposite corners share a class ---
   function mulberry32(a) {
@@ -2892,8 +3050,7 @@ INTERACTIVE_WIDGETS.folding = function(host) {
   function preset(k) {
     var p = [
       { w1: 1, w2: -1, b: 0.5 },
-      { w1: -1, w2: 1, b: 0.5 },
-      { w1: 1, w2: 1, b: -1.0 }
+      { w1: -1, w2: 1, b: 0.5 }
     ];
     return p.slice(0, k).map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
   }
@@ -2905,6 +3062,8 @@ INTERACTIVE_WIDGETS.folding = function(host) {
       '<div class="fold-views">' +
         '<figure class="fold-view"><figcaption>Input space</figcaption>' +
           '<canvas class="fold-canvas" data-pane="input"></canvas></figure>' +
+        '<figure class="fold-view fold-graph-view"><figcaption>Weights as edges</figcaption>' +
+          '<canvas class="fold-canvas" data-pane="graph"></canvas></figure>' +
         '<figure class="fold-view"><figcaption>Hidden space &mdash; h = ReLU(Wx + b)</figcaption>' +
           '<canvas class="fold-canvas" data-pane="hidden"></canvas></figure>' +
       '</div>' +
@@ -2912,7 +3071,6 @@ INTERACTIVE_WIDGETS.folding = function(host) {
         '<div class="fold-modes">' +
           '<button data-neurons="1">1 neuron</button>' +
           '<button data-neurons="2">2 neurons</button>' +
-          '<button data-neurons="3">3 neurons</button>' +
           '<button class="fold-reset">Reset to XOR solution</button>' +
         '</div>' +
         '<div class="fold-sliders"></div>' +
@@ -2921,6 +3079,7 @@ INTERACTIVE_WIDGETS.folding = function(host) {
     '</div>';
 
   var inCanvas = host.querySelector('[data-pane="input"]');
+  var graphCanvas = host.querySelector('[data-pane="graph"]');
   var hidCanvas = host.querySelector('[data-pane="hidden"]');
   var slidersEl = host.querySelector('.fold-sliders');
   var readoutEl = host.querySelector('.fold-readout');
@@ -3023,6 +3182,61 @@ INTERACTIVE_WIDGETS.folding = function(host) {
     return m;
   }
 
+  function edge(ctx, x1, y1, x2, y2, color, label) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    ctx.fillStyle = '#0d1225';
+    ctx.fillRect(mx - 22, my - 10, 44, 18);
+    ctx.fillStyle = color;
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, mx, my + 4);
+  }
+
+  function node(ctx, x, y, label, stroke) {
+    ctx.beginPath();
+    ctx.arc(x, y, 18, 0, 6.2832);
+    ctx.fillStyle = '#0d1225';
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 2.4;
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = TEXT;
+    ctx.font = '14px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, y + 5);
+  }
+
+  function drawGraph() {
+    var fg = fitCanvas(graphCanvas);
+    if (!fg) return;
+    var ctx = fg.ctx, w = fg.w, h = fg.h;
+    ctx.clearRect(0, 0, w, h);
+    var leftX = w * 0.24, rightX = w * 0.74;
+    var inY = [h * 0.34, h * 0.66];
+    var outY = state.k === 1 ? [h * 0.5] : [h * 0.34, h * 0.66];
+    state.neurons.forEach(function(n, idx) {
+      edge(ctx, leftX + 18, inY[0], rightX - 18, outY[idx], NEURON_COLORS[idx], 'w₁=' + n.w1.toFixed(1));
+      edge(ctx, leftX + 18, inY[1], rightX - 18, outY[idx], NEURON_COLORS[idx], 'w₂=' + n.w2.toFixed(1));
+      ctx.fillStyle = NEURON_COLORS[idx];
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('b=' + n.b.toFixed(1), rightX + 24, outY[idx] + 4);
+    });
+    node(ctx, leftX, inY[0], 'x₁', PRIMARY);
+    node(ctx, leftX, inY[1], 'x₂', PRIMARY);
+    state.neurons.forEach(function(n, idx) { node(ctx, rightX, outY[idx], 'h' + (idx + 1), NEURON_COLORS[idx]); });
+    ctx.fillStyle = MUTED;
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Each edge label is the same weight used by the line on the left.', w / 2, h - 12);
+  }
+
   function dot(ctx, px, py, color, r) {
     ctx.beginPath(); ctx.arc(px, py, r || 4.5, 0, 6.2832);
     ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
@@ -3057,6 +3271,18 @@ INTERACTIVE_WIDGETS.folding = function(host) {
         ctx.strokeStyle = NEURON_COLORS[idx];
         ctx.lineWidth = 2.5;
         ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+        var lx = (p0[0] + p1[0]) / 2;
+        var ly = (p0[1] + p1[1]) / 2;
+        ctx.fillStyle = '#0d1225';
+        ctx.fillRect(lx - 78, ly - 11, 156, 19);
+        ctx.fillStyle = NEURON_COLORS[idx];
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(
+          'h' + (idx + 1) + ': ' + n.w1.toFixed(1) + 'x₁ + ' +
+          n.w2.toFixed(1) + 'x₂ + ' + n.b.toFixed(1) + ' = 0',
+          lx, ly + 4
+        );
       });
       data.forEach(function(p) {
         var q = m(p.x, p.y);
@@ -3064,6 +3290,8 @@ INTERACTIVE_WIDGETS.folding = function(host) {
       });
       ctx.restore();
     }
+
+    drawGraph();
 
     // ---- Hidden space (right): folded points + centroid separator ----
     var fh = fitCanvas(hidCanvas);
@@ -3162,6 +3390,306 @@ INTERACTIVE_WIDGETS.folding = function(host) {
     b.classList.toggle('active', +b.getAttribute('data-neurons') === state.k);
   });
 
+  return { resize: draw };
+};
+
+// ---- MLP boundary widget: width/depth controls for piecewise-linear boxes ----
+INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
+  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
+  var state = { width: 4, depth: 2 };
+
+  host.innerHTML =
+    '<div class="mlp-widget">' +
+      '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
+      '<div class="mlp-controls">' +
+        '<div class="mlp-slider"><label>Width</label><input type="range" min="1" max="8" step="1" value="4"><p data-readout="width">4</p></div>' +
+        '<div class="mlp-slider"><label>Depth</label><input type="range" min="1" max="4" step="1" value="2"><p data-readout="depth">2</p></div>' +
+        '<p class="mlp-readout"></p>' +
+      '</div>' +
+    '</div>';
+
+  var canvas = host.querySelector('.mlp-canvas');
+  var widthInput = host.querySelector('input');
+  var depthInput = host.querySelectorAll('input')[1];
+  var widthText = host.querySelector('[data-readout="width"]');
+  var depthText = host.querySelector('[data-readout="depth"]');
+  var readout = host.querySelector('.mlp-readout');
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+  widthInput.addEventListener('input', function() {
+    state.width = +widthInput.value; widthText.textContent = widthInput.value; draw();
+  });
+  depthInput.addEventListener('input', function() {
+    state.depth = +depthInput.value; depthText.textContent = depthInput.value; draw();
+  });
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+  function map(w, h, pad, x, y) {
+    return [pad + x * (w - 2 * pad), h - pad - y * (h - 2 * pad)];
+  }
+  function dot(ctx, p, color, r) {
+    ctx.beginPath(); ctx.arc(p[0], p[1], r || 4.5, 0, 6.2832);
+    ctx.fillStyle = color; ctx.fill();
+  }
+  function lineLabel(ctx, x, y, text, color) {
+    ctx.fillStyle = '#0d1225';
+    ctx.fillRect(x - 32, y - 10, 64, 18);
+    ctx.fillStyle = color;
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, x, y + 4);
+  }
+
+  function drawNetwork(ctx, w, h, x0) {
+    var inputX = x0 + 20, hiddenX = x0 + 120, outX = x0 + 230;
+    var y1 = h * 0.34, y2 = h * 0.64;
+    var hiddenCount = Math.min(state.width, 6);
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1.5;
+    for (var i = 0; i < hiddenCount; i++) {
+      var hy = 68 + i * ((h - 136) / Math.max(1, hiddenCount - 1));
+      ctx.beginPath(); ctx.moveTo(inputX + 16, y1); ctx.lineTo(hiddenX - 16, hy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(inputX + 16, y2); ctx.lineTo(hiddenX - 16, hy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(hiddenX + 16, hy); ctx.lineTo(outX - 16, h * 0.5); ctx.stroke();
+      ctx.beginPath(); ctx.arc(hiddenX, hy, 16, 0, 6.2832); ctx.fillStyle = '#0d1225'; ctx.strokeStyle = PRIMARY; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = TEXT; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('h', hiddenX, hy + 4);
+    }
+    [[inputX, y1, 'x₁'], [inputX, y2, 'x₂'], [outX, h * 0.5, 'ŷ']].forEach(function(n) {
+      ctx.beginPath(); ctx.arc(n[0], n[1], 16, 0, 6.2832); ctx.fillStyle = '#0d1225'; ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = TEXT; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(n[2], n[0], n[1] + 4);
+    });
+    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(state.depth + ' hidden layer' + (state.depth === 1 ? '' : 's'), hiddenX, h - 20);
+    ctx.fillText(state.width + ' neurons per layer', hiddenX, h - 4);
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, w = f.w, h = f.h, pad = 36;
+    ctx.clearRect(0, 0, w, h);
+    var plotW = w * 0.62;
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(pad, pad, plotW - 2 * pad, h - 2 * pad);
+    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'right'; ctx.fillText('x₁', plotW - pad - 4, h - pad - 6);
+    ctx.textAlign = 'left'; ctx.fillText('x₂', pad + 4, pad + 12);
+
+    var box = { l: 0.34, r: 0.66, b: 0.30, t: 0.70 };
+    for (var i = 0; i < 120; i++) {
+      var x = ((i * 37) % 100) / 100;
+      var y = ((i * 61 + 17) % 100) / 100;
+      var inside = x > box.l && x < box.r && y > box.b && y < box.t;
+      dot(ctx, map(plotW, h, pad, x, y), inside ? GREEN : RED, inside ? 4.6 : 3.8);
+    }
+
+    var totalLines = state.width * state.depth;
+    var extra = Math.max(0, totalLines - 4);
+    var used = Math.min(totalLines, 4 * state.depth);
+    var regions = Math.floor((totalLines * totalLines + totalLines + 2) / 2);
+    var edges = [
+      [box.l, box.b, box.l, box.t, 'x₁ > left'],
+      [box.r, box.b, box.r, box.t, 'x₁ < right'],
+      [box.l, box.b, box.r, box.b, 'x₂ > bottom'],
+      [box.l, box.t, box.r, box.t, 'x₂ < top']
+    ];
+    edges.slice(0, Math.min(4, totalLines)).forEach(function(e, idx) {
+      var a = map(plotW, h, pad, e[0], e[1]), b = map(plotW, h, pad, e[2], e[3]);
+      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      lineLabel(ctx, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 'h' + (idx + 1), SECONDARY);
+    });
+    ctx.strokeStyle = 'rgba(74,158,255,0.45)'; ctx.lineWidth = 1.4; ctx.setLineDash([6, 6]);
+    for (var j = 0; j < extra; j++) {
+      var xx = 0.14 + ((j * 0.19) % 0.72);
+      var yy = 0.16 + ((j * 0.13) % 0.68);
+      var p1, p2;
+      if (j % 2 === 0) { p1 = map(plotW, h, pad, xx, 0.05); p2 = map(plotW, h, pad, xx, 0.95); }
+      else { p1 = map(plotW, h, pad, 0.05, yy); p2 = map(plotW, h, pad, 0.95, yy); }
+      ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    drawNetwork(ctx, w, h, plotW + 30);
+    readout.innerHTML =
+      '<strong>' + totalLines + '</strong> available hidden-line pieces, about <strong>' +
+      regions + '</strong> possible 2D regions, and <strong>' + used +
+      '</strong> line pieces can participate in the highlighted enclosed box.';
+  }
+  return { resize: draw };
+};
+
+// ---- Loss landscape widget: two weights, surface height, and update math ----
+INTERACTIVE_WIDGETS.lossLandscape = function(host) {
+  var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff',
+      SECONDARY = '#f5a623', RED = '#e74c3c', GREEN = '#3fb950', LINEC = '#2a3450';
+  var state = { w1: 0.2, w2: 0.2, eta: 0.8, lastStep: null };
+  var data = [
+    { x1: 0, x2: 0, y: 0 },
+    { x1: 0, x2: 1, y: 1 },
+    { x1: 1, x2: 0, y: 1 },
+    { x1: 1, x2: 1, y: 1 }
+  ];
+
+  host.innerHTML =
+    '<div class="land-widget">' +
+      '<div class="land-main">' +
+        '<canvas class="land-canvas"></canvas>' +
+        '<canvas class="land-net"></canvas>' +
+      '</div>' +
+      '<div class="land-controls">' +
+        '<div class="mlp-slider"><label>w₁</label><input data-k="w1" type="range" min="-4" max="4" step="0.1" value="0.2"><p data-r="w1">0.2</p></div>' +
+        '<div class="mlp-slider"><label>w₂</label><input data-k="w2" type="range" min="-4" max="4" step="0.1" value="0.2"><p data-r="w2">0.2</p></div>' +
+        '<div class="mlp-slider"><label>η</label><input data-k="eta" type="range" min="0.1" max="1.5" step="0.1" value="0.8"><p data-r="eta">0.8</p></div>' +
+        '<button class="land-step">Step</button>' +
+      '</div>' +
+      '<p class="land-readout"></p>' +
+    '</div>';
+  var canvas = host.querySelector('.land-canvas');
+  var net = host.querySelector('.land-net');
+  var readout = host.querySelector('.land-readout');
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+  host.querySelectorAll('input').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      state[inp.dataset.k] = parseFloat(inp.value);
+      state.lastStep = null;
+      host.querySelector('[data-r="' + inp.dataset.k + '"]').textContent = state[inp.dataset.k].toFixed(1);
+      draw();
+    });
+  });
+  host.querySelector('.land-step').addEventListener('click', function() {
+    var oldW1 = state.w1, oldW2 = state.w2;
+    var g = grad(state.w1, state.w2);
+    state.w1 += -state.eta * g.g1;
+    state.w2 += -state.eta * g.g2;
+    state.lastStep = { oldW1: oldW1, oldW2: oldW2, g1: g.g1, g2: g.g2, eta: state.eta, newW1: state.w1, newW2: state.w2 };
+    host.querySelector('[data-k="w1"]').value = state.w1;
+    host.querySelector('[data-k="w2"]').value = state.w2;
+    host.querySelector('[data-r="w1"]').textContent = state.w1.toFixed(2);
+    host.querySelector('[data-r="w2"]').textContent = state.w2.toFixed(2);
+    draw();
+  });
+
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+  function loss(w1, w2) {
+    var s = 0, eps = 1e-7, b = -0.5;
+    data.forEach(function(p) {
+      var pred = Math.max(eps, Math.min(1 - eps, sigmoid(w1 * p.x1 + w2 * p.x2 + b)));
+      s += -(p.y * Math.log(pred) + (1 - p.y) * Math.log(1 - pred));
+    });
+    return s / data.length;
+  }
+  function grad(w1, w2) {
+    var g1 = 0, g2 = 0, b = -0.5;
+    data.forEach(function(p) {
+      var e = sigmoid(w1 * p.x1 + w2 * p.x2 + b) - p.y;
+      g1 += e * p.x1; g2 += e * p.x2;
+    });
+    return { g1: g1 / data.length, g2: g2 / data.length };
+  }
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+  function project(w1, w2, z, W, H) {
+    var sx = (w1 + 4) / 8, sy = (w2 + 4) / 8;
+    var px = 64 + sx * (W - 150) + sy * 44;
+    var py = H - 56 - sy * (H - 140) - z * 58;
+    return [px, py];
+  }
+  function drawSurface(lastGrad) {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i <= 28; i++) {
+      var w1 = -4 + 8 * i / 28;
+      ctx.beginPath();
+      for (var j = 0; j <= 28; j++) {
+        var w2 = -4 + 8 * j / 28, z = Math.min(3, loss(w1, w2));
+        var p = project(w1, w2, z, W, H);
+        if (j === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+      }
+      ctx.strokeStyle = 'rgba(74,158,255,0.22)'; ctx.lineWidth = 1; ctx.stroke();
+    }
+    for (var j2 = 0; j2 <= 28; j2++) {
+      var ww2 = -4 + 8 * j2 / 28;
+      ctx.beginPath();
+      for (var i2 = 0; i2 <= 28; i2++) {
+        var ww1 = -4 + 8 * i2 / 28, zz = Math.min(3, loss(ww1, ww2));
+        var pp = project(ww1, ww2, zz, W, H);
+        if (i2 === 0) ctx.moveTo(pp[0], pp[1]); else ctx.lineTo(pp[0], pp[1]);
+      }
+      ctx.strokeStyle = 'rgba(245,166,35,0.18)'; ctx.lineWidth = 1; ctx.stroke();
+    }
+    var L = loss(state.w1, state.w2), pcur = project(state.w1, state.w2, Math.min(3, L), W, H);
+    ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2;
+    var base = project(state.w1, state.w2, 0, W, H);
+    ctx.beginPath(); ctx.moveTo(base[0], base[1]); ctx.lineTo(pcur[0], pcur[1]); ctx.stroke();
+    ctx.beginPath(); ctx.arc(pcur[0], pcur[1], 7, 0, 6.2832); ctx.fillStyle = RED; ctx.fill();
+    ctx.fillStyle = TEXT; ctx.font = '14px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('loss = ' + L.toFixed(3), pcur[0], pcur[1] - 12);
+    ctx.fillStyle = MUTED; ctx.textAlign = 'left';
+    ctx.fillText('w₁', W - 86, H - 42); ctx.fillText('w₂', 110, H - 20); ctx.fillText('L', 42, 54);
+  }
+  function drawNet() {
+    var f = fitCanvas(net);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+    function node(x, y, label, color) {
+      ctx.beginPath(); ctx.arc(x, y, 19, 0, 6.2832);
+      ctx.fillStyle = '#0d1225'; ctx.strokeStyle = color; ctx.lineWidth = 2.4; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = TEXT; ctx.font = '14px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(label, x, y + 5);
+    }
+    function edge(x1, y1, x2, y2, label, color) {
+      ctx.strokeStyle = color; ctx.lineWidth = 2.3; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+      ctx.fillStyle = color; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(label, (x1 + x2) / 2, (y1 + y2) / 2 - 5);
+    }
+    node(42, H * 0.34, 'x₁', PRIMARY); node(42, H * 0.66, 'x₂', PRIMARY);
+    node(W * 0.52, H * 0.50, 'σ', SECONDARY); node(W - 44, H * 0.50, 'ŷ', GREEN);
+    edge(62, H * 0.34, W * 0.52 - 20, H * 0.50, 'w₁=' + state.w1.toFixed(2), PRIMARY);
+    edge(62, H * 0.66, W * 0.52 - 20, H * 0.50, 'w₂=' + state.w2.toFixed(2), SECONDARY);
+    edge(W * 0.52 + 20, H * 0.50, W - 64, H * 0.50, 'loss z', RED);
+    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Coordinate: (' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) + ')', W / 2, H - 28);
+    ctx.fillText('Height: L = ' + loss(state.w1, state.w2).toFixed(3), W / 2, H - 10);
+  }
+  function draw(lastGrad) {
+    drawSurface(lastGrad);
+    drawNet();
+    var g = grad(state.w1, state.w2);
+    if (state.lastStep) {
+      readout.innerHTML =
+        'Last step: [' + state.lastStep.newW1.toFixed(2) + ', ' + state.lastStep.newW2.toFixed(2) +
+        '] = [' + state.lastStep.oldW1.toFixed(2) + ', ' + state.lastStep.oldW2.toFixed(2) +
+        '] + (-' + state.lastStep.eta.toFixed(1) + ' · [' +
+        state.lastStep.g1.toFixed(3) + ', ' + state.lastStep.g2.toFixed(3) +
+        ']). Current loss: <strong>' + loss(state.w1, state.w2).toFixed(3) + '</strong>.';
+    } else {
+      readout.innerHTML =
+        'Gradient at current point: [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) +
+        ']. Next update: w_new = [' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) +
+        '] + (-' + state.eta.toFixed(1) + ' · [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) + ']).';
+    }
+  }
   return { resize: draw };
 };
 

@@ -35,18 +35,11 @@ where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the b
 - **Binary Cross-Entropy (BCE):** $L = -\frac{1}{N}\sum_{i=1}^{N}[y_i \log(\hat{y}_i) + (1 - y_i)\log(1 - \hat{y}_i)]$. Standard for binary classification. This is Shannon's entropy applied as a loss function: it measures the expected number of bits needed to encode the true labels under the model's predicted distribution.
 - **Connection to Module 1:** Cross-entropy appeared in Module 1 as a way to evaluate n-gram models. Here the same formula becomes the training objective.
 
-## Universal Approximation Theorem
-
-- **Theorem (informal):** A feedforward network with a single hidden layer containing a finite number of neurons can approximate any continuous function on a compact subset of $\mathbb{R}^n$, given sufficient neurons.
-- **Paper:** Cybenko, G. (1989). "Approximation by Superpositions of a Sigmoidal Function." *Mathematics of Control, Signals, and Systems*, 2, 303-314.
-- **Also:** Hornik, K. (1991). "Approximation Capabilities of Multilayer Feedforward Networks." *Neural Networks*, 4(2), 251-257. Generalized the result beyond sigmoidal activations.
-- **Important caveat:** The theorem is existential. It says such a network exists but does not guarantee that gradient descent will find it, that the required number of neurons is tractable, or that the network will generalize.
-- **Analogy to Fourier series:** Any periodic function can be approximated by a Fourier series, but computing the coefficients for an arbitrary function is nontrivial. The universal approximation theorem plays a similar role for neural networks.
-
 ## Matrix-Graph Equivalence
 
 - A neural network is a directed acyclic graph (DAG). Each layer's connections can be written as a weight matrix.
 - Forward pass through one layer: $\mathbf{h} = \sigma(W\mathbf{x} + \mathbf{b})$, where $W$ is the weight matrix, $\mathbf{x}$ is the input vector, $\mathbf{b}$ is the bias vector, and $\sigma$ is an elementwise nonlinearity.
+- Natural graphs are often sparse. The same matrix representation applies: a zero entry means no edge, and a nonzero entry stores the edge weight. Dense neural layers are the special case where every possible connection is present.
 - Matrix multiplication is $O(n^3)$ for dense $n \times n$ matrices but is embarrassingly parallel: each output element is an independent dot product. GPUs exploit this with thousands of cores executing in parallel.
 - **Connection to Module 1:** Jensen Huang and NVIDIA bet that GPU computing would become essential. Neural network training is dominated by matrix multiplications, making GPUs the ideal hardware.
 
@@ -77,13 +70,14 @@ where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the b
 - Each hidden layer applies a nonlinear transformation that "folds" the space. Points that were entangled can be separated; points that were distant can be brought together.
 - With enough layers (depth), a network can separate arbitrarily complex class boundaries.
 - **Visual intuition:** Imagine a sheet of paper with two colors of dots mixed together. A single fold (one hidden layer) can bring same-colored dots together. Multiple folds (deep network) can handle more complex arrangements.
-- **Interactive widget (replaces the former Manim folding clip):** the slide now hosts a live `:::interactive widget="folding"` element. The left pane is the input space showing each hidden neuron's decision line $\mathbf{w}_j \cdot \mathbf{x} + b_j = 0$; the right pane is the hidden space after $h_j = \mathrm{ReLU}(\mathbf{w}_j \cdot \mathbf{x} + b_j)$. Sliders for each neuron's $w_1, w_2, b$ move the lines and refold the points simultaneously, making the equivalence "a neuron's boundary $\equiv$ an axis of the fold" explicit. The neuron-count toggle (1/2/3) shows that one ReLU line cannot fold XOR apart while two parallel folds can; a nearest-centroid separator reports whether the folded layout is linearly separable.
+- **Interactive widget (replaces the former Manim folding clip):** the slide now hosts a live `:::interactive widget="folding"` element. The left pane is the input space showing each hidden neuron's decision line $\mathbf{w}_j \cdot \mathbf{x} + b_j = 0$; the center pane shows the two-input hidden-layer graph with edge labels $w_1, w_2$ and bias labels; the right pane is the hidden space after $h_j = \mathrm{ReLU}(\mathbf{w}_j \cdot \mathbf{x} + b_j)$. Sliders for each neuron's $w_1, w_2, b$ update both the line labels and the graph edge labels. The neuron-count toggle (1/2) shows that one ReLU line cannot fold XOR apart while two folds can.
 
 ## Multi-Layer Decision Boundaries
 
 - A ReLU network is a composition of linear pieces. Each hidden neuron defines one hyperplane ($\mathbf{w} \cdot \mathbf{x} + b = 0$); ReLU makes that neuron active on one side of the line and zero on the other.
 - Combining several half-plane indicators partitions the input space into polygonal regions, so the overall decision boundary is **piecewise-linear**. It looks curved only because it is built from many short straight segments.
-- More hidden units means more lines, so the boundary can wrap arbitrarily tightly around a class. This is the constructive counterpart to the universal approximation theorem.
+- More hidden units means more lines, so the boundary can wrap more tightly around a class.
+- **Interactive widget:** `:::interactive widget="mlpBoundary"` lets students vary width and depth. Width and depth determine the number of available hidden-line pieces; those pieces partition the plane into regions and can form an enclosed box around the target class.
 
 ## Backpropagation
 
@@ -91,7 +85,7 @@ where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the b
 - Backpropagation computes the gradient of the loss with respect to every weight in the network by applying the chain rule of calculus through the computation graph.
 - **Forward pass:** Compute the output of each layer sequentially. Store intermediate values.
 - **Backward pass:** Starting from the loss, compute $\frac{\partial L}{\partial w}$ for each weight $w$ by propagating gradients backward.
-- **The path (shown as the diagram on the slide):** loss $\rightarrow$ output $\hat{y}$ $\rightarrow$ pre-activation $z$ $\rightarrow$ weight $w$. The chain rule multiplies one local derivative per stage: $\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}}\cdot\frac{\partial \hat{y}}{\partial z}\cdot\frac{\partial z}{\partial w}$. The update rule then takes a step: $w \leftarrow w - \eta\,\frac{\partial L}{\partial w}$.
+- **The path (shown as the diagram on the slide):** loss $\rightarrow$ output $\hat{y}$ $\rightarrow$ pre-activation $z$ $\rightarrow$ weight $w$. The chain rule multiplies one local derivative per stage: $\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}}\cdot\frac{\partial \hat{y}}{\partial z}\cdot\frac{\partial z}{\partial w}$. The update rule then adds the negative-gradient step: $w_{\text{new}} = w_{\text{old}} + \left(-\eta\,\frac{\partial L}{\partial w}\right)$.
 - For a single neuron with sigmoid activation and BCE loss (the exercise's steps 1&ndash;4):
 
 $$\frac{\partial L}{\partial w_j} = (\hat{y} - y) \cdot x_j$$
@@ -112,7 +106,7 @@ This elegant simplification occurs because the derivative of sigmoid times BCE l
 ## Gradient Descent
 
 ### The Update Rule
-$$w \leftarrow w - \eta \frac{\partial L}{\partial w}$$
+$$w_{\text{new}} = w_{\text{old}} + \left(-\eta \frac{\partial L}{\partial w}\right)$$
 
 where $\eta$ is the learning rate.
 
@@ -133,7 +127,7 @@ where $\eta$ is the learning rate.
 - Visualizations project this surface down to 2D or 3D using random directions or principal components.
 - **Sharp vs flat minima:** Flat minima tend to generalize better because small perturbations to the weights do not significantly change the loss. Sharp minima are more sensitive to perturbation.
 - **Saddle points:** In high-dimensional spaces, saddle points are far more common than local minima. At a saddle point, the gradient is zero but the Hessian has both positive and negative eigenvalues.
-- **Course visualization:** a 2-weight perceptron has a loss surface over $(w_1, w_2)$. We plot the loss as 3D height and color, then trace batch gradient descent, mini-batch SGD (a visibly noisier path), and Adam (faster, well-damped path) on the same surface. The two surface axes are color-matched to the two weights in the perceptron diagram, so moving the weights visibly moves the point on the landscape.
+- **Course visualization:** a 2-weight perceptron has a loss surface over $(w_1, w_2)$. The interactive widget plots loss as 3D height and shows a two-parameter network next to it. Moving the sliders changes $(w_1,w_2)$, moves the point on the surface, and updates the displayed loss $L(w_1,w_2)$. The step button applies $\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} + (-\eta \nabla L)$ and displays the numeric gradient calculation.
 - **Paper:** Li, H., Xu, Z., Taylor, G., Studer, C., & Goldstein, T. (2018). "Visualizing the Loss Landscape of Neural Nets." *NeurIPS*.
 - **Also:** Dauphin, Y. et al. (2014). "Identifying and attacking the saddle point problem in high-dimensional non-convex optimization." *NeurIPS*.
 
@@ -161,10 +155,6 @@ where $\eta$ is the learning rate.
 - Popularized backpropagation for training multi-layer networks, reviving neural network research after over a decade of winter.
 - Hinton went on to pioneer deep learning and received the 2024 Nobel Prize in Physics (shared with John Hopfield) for foundational discoveries enabling machine learning with artificial neural networks.
 
-### George Cybenko (b. 1952)
-- **Paper:** Cybenko, G. (1989). "Approximation by Superpositions of a Sigmoidal Function." *Mathematics of Control, Signals, and Systems*, 2, 303-314.
-- Professor at Dartmouth. Proved the universal approximation theorem for single hidden layer networks with sigmoidal activation functions.
-
 ## Exercise Notes
 
 ### Datasets
@@ -189,10 +179,10 @@ $$\frac{\partial L}{\partial b} = \hat{y} - y$$
 This simplification is why sigmoid + BCE is a natural pairing for binary classification. It covers steps 1&ndash;4 (the single neuron).
 
 ### Exercise Structure
-- The single student-facing file is `exercises/module_02_perceptrons/exercise.py`. Steps: (1) `forward` single neuron, (2) `binary_cross_entropy`, (3) `compute_gradients`, (4) `update_parameters`, (5) observe the single neuron fail on XOR (no code), (6) `relu`, (7) `mlp_forward`, extra credit `mlp_gradients`.
-- The runner prints three parts: PART 1 (single neuron, linear data, ~99.3%), PART 2 (single neuron, XOR data, ~50%, loss plateau at $\ln 2 \approx 0.693$), PART 3 (MLP, XOR data).
+- The single student-facing file is `exercises/module_02_perceptrons/exercise.py`. Steps: (1) `forward` single neuron, (2) `binary_cross_entropy`, (3) `compute_gradients`, (4) `update_parameters`, (5) observe the single neuron fail on XOR (no code), (6) `relu`, (7) `MLP.forward`, extra credit `SGD.step`.
+- The runner prints three parts: PART 1 (single neuron, linear data, ~99.3%), PART 2 (single neuron, XOR data, ~50%, loss plateau at $\ln 2 \approx 0.693$), PART 3 (MLP, XOR data), and an extra-credit run using the student's optimizer class.
 
 ### MLP with ReLU Hidden Layer
-- `mlp_forward`: `hidden = relu(W1 @ x + b1)`, `output = sigmoid(W2 @ hidden + b2)`. ReLU on the hidden layer, sigmoid on the output so the result is a probability for BCE.
-- Backprop through ReLU (extra credit): identical to the sigmoid-hidden derivation except the hidden-layer activation derivative. With $z_1 = W_1 x + b_1$, ReLU's derivative is the indicator $\mathbb{1}[z_1 > 0]$, so $\text{error\_hidden} = (W_2^\top\,\text{error\_out}) \odot \mathbb{1}[z_1 > 0]$.
-- With `hidden_size = 8`, learning rate $1.0$, 500 epochs (numpy seed 42), the ReLU MLP reaches 160/160 (100%) on the XOR-like dataset, with training loss dropping to ≈0.0024 (much faster than a sigmoid hidden layer).
+- `MLP.forward`: `h = relu(self.hidden(x))`, then `sigmoid(self.output(h))`. ReLU on the hidden layer, sigmoid on the output so the result is a probability for BCE.
+- PyTorch autograd computes the MLP gradients. The extra credit asks students to implement the optimizer step that uses those gradients: inside `torch.no_grad()`, update each parameter with `p -= self.lr * p.grad`.
+- With `hidden_size = 8`, learning rate $1.0$, 500 epochs (torch seed 42), the ReLU MLP reaches 160/160 (100%) on the XOR-like dataset, with training loss dropping to roughly 0.0024.

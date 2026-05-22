@@ -222,28 +222,6 @@ Any number of linear layers collapses to a single linear function, so depth alon
 
 ---
 
-:::figure img="images/cybenko.jpg" name="George Cybenko" kicker="Proved the Universal Approximation Theorem"
-- Professor at Dartmouth College
-- Proved (1989) that a feedforward network with one hidden layer and sufficient neurons can approximate any continuous function on a compact set
-- The theorem says such a network **exists** &mdash; not that gradient descent will find it
-:::
-
----
-
-<!-- .slide: id="universal-approximation" -->
-
-## Universal Approximation Theorem
-
-:::note
-One hidden layer with enough neurons can approximate any continuous function on a compact subset of $\mathbb{R}^n$.
-:::
-
-**The catch:** the theorem only says such a network *exists*. It does not say gradient descent will find it, that the neuron count is practical, or that it will generalize.
-
-**Analogy:** a Fourier series can represent any periodic function — but finding the coefficients is the hard part. The same is true here.
-
----
-
 :::divider id="divider-matrix-graph" title="Networks as Matrices" sub="Why GPUs matter"
 :::
 
@@ -297,6 +275,61 @@ One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(
 +++
 **Why GPUs?** Each output is an independent dot product, so the work is massively parallel — exactly what a GPU's thousands of cores do best. <!-- .element: class="text-lg" style="margin:0;" -->
 :::
+
+---
+
+<!-- .slide: id="matrix-natural-graph" -->
+
+## Natural Graphs Become Sparse Matrices
+
+Real graphs are rarely fully connected. A citation graph, social graph, or road network usually has many possible edges but only a few real ones.
+
+:::columns grid="1.05fr 0.95fr" gap="28px" valign="center"
+<svg viewBox="0 0 520 270" width="100%" style="max-height:310px;">
+  <defs>
+    <marker id="sgar" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/>
+    </marker>
+  </defs>
+  <g stroke="#8892a4" stroke-width="2.2" fill="none" marker-end="url(#sgar)">
+    <path d="M90,64 C145,34 185,42 230,74"/>
+    <path d="M90,64 C126,120 126,166 90,216"/>
+    <path d="M230,74 C302,70 336,104 376,142"/>
+    <path d="M90,216 C150,226 204,206 256,170"/>
+    <path d="M256,170 C306,186 338,174 376,142"/>
+    <path d="M376,142 C420,112 442,84 464,48"/>
+  </g>
+  <g fill="#0d1225" stroke="#4a9eff" stroke-width="2.5">
+    <circle cx="90" cy="64" r="22"/><circle cx="230" cy="74" r="22"/>
+    <circle cx="376" cy="142" r="22"/><circle cx="90" cy="216" r="22"/>
+    <circle cx="256" cy="170" r="22"/><circle cx="464" cy="48" r="22"/>
+  </g>
+  <g fill="#e8eaf0" font-size="16" text-anchor="middle">
+    <text x="90" y="70">A</text><text x="230" y="80">B</text><text x="376" y="148">C</text>
+    <text x="90" y="222">D</text><text x="256" y="176">E</text><text x="464" y="54">F</text>
+  </g>
+  <g fill="#f5a623" font-size="13" text-anchor="middle">
+    <text x="158" y="48">0.7</text><text x="116" y="142">1.2</text><text x="307" y="84">0.5</text>
+    <text x="170" y="223">0.9</text><text x="318" y="184">0.4</text><text x="430" y="88">1.1</text>
+  </g>
+</svg>
++++
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--primary-color); font-weight:600; margin: 0 0 8px 0;">Adjacency / weight matrix</p>
+<table style="margin: 0 auto; border-collapse: collapse; color: var(--text-color); font-size: 15pt;">
+  <tr><td></td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td></tr>
+  <tr><td>A</td><td>0</td><td style="color:#f5a623;">0.7</td><td>0</td><td style="color:#f5a623;">1.2</td><td>0</td><td>0</td></tr>
+  <tr><td>B</td><td>0</td><td>0</td><td style="color:#f5a623;">0.5</td><td>0</td><td>0</td><td>0</td></tr>
+  <tr><td>C</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style="color:#f5a623;">1.1</td></tr>
+  <tr><td>D</td><td>0</td><td>0</td><td>0</td><td>0</td><td style="color:#f5a623;">0.9</td><td>0</td></tr>
+  <tr><td>E</td><td>0</td><td>0</td><td style="color:#f5a623;">0.4</td><td>0</td><td>0</td><td>0</td></tr>
+  <tr><td>F</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</table>
+<p style="color: var(--muted-color); font-size: 14pt; margin-top: 10px;">Zeros mean "no edge"; nonzeros carry edge weights.</p>
+</div>
+:::
+
+The dense layer case is the same idea with every possible edge present. Sparse graphs just keep the entries that matter.
 
 ---
 
@@ -465,7 +498,7 @@ More hidden neurons means more cuts, so the boundary can wrap tightly around any
 
 ---
 
-:::manim id="anim-mlp-boundary" scene="mlp-boundary-viz"
+:::interactive id="anim-mlp-boundary" widget="mlpBoundary" title="Many Lines Make a Curve"
 :::
 
 ---
@@ -541,7 +574,7 @@ Run the network forward, then walk **backward** applying the **chain rule** to t
     <rect x="186" y="86" width="110" height="52" rx="8" fill="#0d1225" stroke="#4a9eff" stroke-width="2.2"/><text x="241" y="112" fill="#e8eaf0">weight W</text><text x="241" y="130" fill="#8892a4" font-size="13">z = Wx + b</text>
     <rect x="368" y="86" width="100" height="52" rx="8" fill="#0d1225" stroke="#4a9eff" stroke-width="2.2"/><text x="418" y="112" fill="#e8eaf0">output ŷ</text><text x="418" y="130" fill="#8892a4" font-size="13">ŷ = σ(z)</text>
     <rect x="540" y="86" width="92" height="52" rx="8" fill="#0d1225" stroke="#e74c3c" stroke-width="2.2"/><text x="586" y="118" fill="#e8eaf0">loss L</text>
-    <rect x="664" y="86" width="84" height="52" rx="8" fill="#0d1225" stroke="#3fb950" stroke-width="2.2"/><text x="706" y="112" fill="#e8eaf0">Δw</text><text x="706" y="130" fill="#8892a4" font-size="12">w − η ∂L/∂w</text>
+    <rect x="664" y="86" width="84" height="52" rx="8" fill="#0d1225" stroke="#3fb950" stroke-width="2.2"/><text x="706" y="112" fill="#e8eaf0">update</text><text x="706" y="130" fill="#8892a4" font-size="12">new W</text>
   </g>
   <g stroke="#4a9eff" stroke-width="2.4" fill="none">
     <line x1="116" y1="100" x2="184" y2="100" marker-end="url(#bpf)"/>
@@ -550,15 +583,16 @@ Run the network forward, then walk **backward** applying the **chain rule** to t
   </g>
   <text x="385" y="64" fill="#4a9eff" font-size="14" text-anchor="middle">forward pass</text>
   <g stroke="#f5a623" stroke-width="2.4" fill="none">
-    <path d="M540,158 C500,182 360,182 300,158" marker-end="url(#bpb)"/>
-    <path d="M366,168 C320,188 240,188 200,168" marker-end="url(#bpb)"/>
-    <path d="M632,150 L664,128" marker-end="url(#bpb)"/>
+    <line x1="540" y1="158" x2="470" y2="158" marker-end="url(#bpb)"/>
+    <line x1="368" y1="158" x2="298" y2="158" marker-end="url(#bpb)"/>
+    <path d="M586,140 C594,190 696,190 706,140" marker-end="url(#bpb)"/>
   </g>
-  <text x="396" y="214" fill="#f5a623" font-size="14" text-anchor="middle">backward pass: chain rule  ∂L/∂w = (∂L/∂ŷ)(∂ŷ/∂z)(∂z/∂w)</text>
+  <text x="396" y="208" fill="#f5a623" font-size="14" text-anchor="middle">orange arrows: gradient flow from loss back through local derivatives</text>
+  <text x="396" y="226" fill="#f5a623" font-size="13" text-anchor="middle">∂L/∂w = (∂L/∂ŷ)(∂ŷ/∂z)(∂z/∂w)</text>
 </svg>
 </div>
 
-The chain rule multiplies one local derivative per stage along the path **loss &rarr; output &rarr; weight**, giving $\partial L/\partial w$. The update rule then takes a step: $w \leftarrow w - \eta\,\partial L/\partial w$. <!-- .element: class="text-lg" style="text-align:center; color: var(--muted-color); margin-top:10px;" -->
+The chain rule multiplies one local derivative per stage along the path **loss &rarr; output &rarr; weight**, giving $\partial L/\partial w$. The update rule then adds the negative-gradient step. <!-- .element: class="text-lg" style="text-align:center; color: var(--muted-color); margin-top:10px;" -->
 
 ---
 
@@ -572,7 +606,9 @@ The chain rule multiplies one local derivative per stage along the path **loss &
 
 Compute the gradient of the loss with respect to all weights, then take a step in the negative gradient direction:
 
-$$w \leftarrow w - \eta \frac{\partial L}{\partial w}$$
+$$
+w_{\text{new}} = w_{\text{old}} + \left(-\eta \frac{\partial L}{\partial w}\right)
+$$
 
 :::columns cols="3" gap="25px"
 <div style="text-align: center;">
@@ -625,19 +661,6 @@ Instead of computing the gradient over the entire dataset (batch gradient descen
 
 ---
 
-<!-- .slide: id="adam" -->
-## Adam Optimizer
-
-**Adam** (Adaptive Moment Estimation) maintains per-parameter learning rates based on the history of gradients.
-
-- Tracks the first moment (mean) and second moment (variance) of each parameter's gradient
-- Parameters with consistently large gradients get smaller learning rates
-- Parameters with small or noisy gradients get larger learning rates
-
-Adam is the **default optimizer** in practice for most deep learning tasks. When in doubt, start with Adam.
-
----
-
 <!-- .slide: id="loss-landscape" -->
 ## Loss Landscape
 
@@ -663,8 +686,58 @@ The learning rate affects which kind of minimum the optimizer finds. SGD noise h
 
 ---
 
-:::manim id="anim-optimizer" scene="optimizer-viz"
+:::interactive id="anim-optimizer" widget="lossLandscape" title="Loss Landscape: Two Weights"
 :::
+
+---
+
+<!-- .slide: id="gradient-step-calculation" -->
+
+## Gradient Descent as a Calculation
+
+At a point on the loss surface, the gradient points uphill. The update adds a step in the opposite direction.
+
+:::columns cols="2" gap="36px"
+**Current point**
+
+$$
+\mathbf{w}_{\text{old}} =
+\begin{bmatrix}
+w_1 \\
+w_2
+\end{bmatrix}
+$$
+
+$$
+\nabla L(\mathbf{w}_{\text{old}}) =
+\begin{bmatrix}
+\frac{\partial L}{\partial w_1} \\
+\frac{\partial L}{\partial w_2}
+\end{bmatrix}
+$$
++++
+**Update**
+
+$$
+\mathbf{w}_{\text{new}} =
+\mathbf{w}_{\text{old}} + \left(-\eta \nabla L(\mathbf{w}_{\text{old}})\right)
+$$
+
+The coordinates change because the weights change; the height changes because the loss at the new coordinates is different.
+:::
+
+---
+
+<!-- .slide: id="adam" -->
+## Adam Optimizer
+
+**Adam** (Adaptive Moment Estimation) maintains per-parameter learning rates based on the history of gradients.
+
+- Tracks the first moment (mean) and second moment (variance) of each parameter's gradient
+- Parameters with consistently large gradients get smaller learning rates
+- Parameters with small or noisy gradients get larger learning rates
+
+Adam is the **default optimizer** in practice for most deep learning tasks. When in doubt, start with Adam.
 
 ---
 
@@ -738,34 +811,46 @@ The exercise trains a single-neuron classifier and an MLP on 2D data, visualizin
 
 ## Exercise: Perceptrons and Neural Networks
 
-Build it from scratch with only numpy: train a single neuron on linearly separable data, watch it fail on XOR-like data, then fix it with a ReLU hidden layer. <!-- .element: class="text-lg" -->
+Build it with PyTorch tensors: train a single neuron on linearly separable data, watch it fail on XOR-like data, then fix it with a ReLU hidden layer. <!-- .element: class="text-lg" -->
 
 Each function is mostly written for you &mdash; you fill in **one key line**. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
-:::manim id="exercise-data-viz" scene="data-viz" title="The Datasets"
-:::
+<!-- .slide: id="exercise-data-viz" -->
+
+## The Datasets
+
+<div style="display:flex; align-items:center; justify-content:center; flex:1;">
+  <img src="images/datasets.png" alt="Linearly separable and XOR-like exercise datasets" style="max-width: 94%; max-height: 500px; border: 1px solid var(--line-color); border-radius: 8px;">
+</div>
 
 ---
 
 :::step id="exercise-step1-code" title="Step 1: forward()"
 ```python
-def forward(x: np.ndarray, weights: np.ndarray, bias: float) -> float:
+def forward(x: torch.Tensor, weights: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:
     """Compute the output of a single neuron.
 
-    A neuron computes: sigmoid(dot(x, weights) + bias)
+    Args:
+        x: Shape (2,) input tensor.
+        weights: Shape (2,) weight tensor.
+        bias: Scalar bias tensor.
+
+    Returns:
+        A probability tensor in (0, 1).
     """
     # TODO: Compute the neuron's output in one line
+    # HINT: use the dot product x @ weights, add bias, then call sigmoid
     raise NotImplementedError("TODO: implement the forward pass")
 ```
 +++
-**Hint:** Compute `z = np.dot(x, weights) + bias`, then return `sigmoid(z)`.
+**Hint:** Use the tensor dot product `x @ weights`, add `bias`, then pass the result to the previously defined `sigmoid()` function.
 +++
 **Answer:**
 
 ```python
-return sigmoid(np.dot(x, weights) + bias)
+return sigmoid(x @ weights + bias)
 ```
 :::
 
@@ -773,25 +858,31 @@ return sigmoid(np.dot(x, weights) + bias)
 
 :::step id="exercise-step2-code" title="Step 2: binary_cross_entropy()"
 ```python
-def binary_cross_entropy(y_true: float, y_pred: float) -> float:
-    """Compute binary cross-entropy loss for one sample.
+def binary_cross_entropy(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+    """Compute the binary cross-entropy loss: -[y log(p) + (1 - y) log(1 - p)].
 
-    BCE = -[y * log(p) + (1 - y) * log(1 - p)]
+    Args:
+        y_true: True label(s), 0 or 1 (scalar or tensor).
+        y_pred: Predicted probability/probabilities in (0, 1).
+
+    Returns:
+        The per-sample loss (same shape as the inputs); lower is better.
     """
-    # Clip prediction to avoid log(0) which gives -infinity
-    eps = 1e-15
-    y_pred = np.clip(y_pred, eps, 1 - eps)
+    # Clip predictions away from 0 and 1 to avoid log(0) = -infinity
+    eps = 1e-7
+    y_pred = torch.clamp(y_pred, eps, 1 - eps)
 
     # TODO: Compute and return the BCE loss using the formula in the docstring
+    # HINT: use torch.log on y_pred and on (1 - y_pred), mirroring the formula above
     raise NotImplementedError("TODO: implement binary cross-entropy")
 ```
 +++
-**Hint:** The same cross-entropy formula from Module 1 &mdash; in code, use `np.log` on `y_pred` and on `1 - y_pred`.
+**Hint:** Use `torch.log(y_pred)` and `torch.log(1 - y_pred)`, matching the formula in the docstring.
 +++
 **Answer:**
 
 ```python
-return -(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+return -(y_true * torch.log(y_pred) + (1 - y_true) * torch.log(1 - y_pred))
 ```
 :::
 
@@ -800,15 +891,24 @@ return -(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
 :::step id="exercise-step3-code" title="Step 3: compute_gradients()"
 ```python
 def compute_gradients(
-    x: np.ndarray, y_true: float, y_pred: float
-) -> tuple[np.ndarray, float]:
+    x: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
+) -> tuple[torch.Tensor, torch.Tensor]:
     """Compute gradients of BCE loss w.r.t. weights and bias.
 
-    For sigmoid + BCE, the math simplifies to:
+    For sigmoid + BCE the chain rule simplifies beautifully to:
         dL/dw = (y_pred - y_true) * x
         dL/db = (y_pred - y_true)
+
+    Args:
+        x: Input vector, shape (2,).
+        y_true: True label (0 or 1).
+        y_pred: Predicted probability.
+
+    Returns:
+        (dw, db): gradient w.r.t. weights (shape (2,)) and bias (0-dim tensor).
     """
     # TODO: Compute the gradients using the formulas in the docstring
+    # HINT: the error is (y_pred - y_true); the weight gradient is error * x and the bias gradient is the error
     raise NotImplementedError("TODO: implement gradient computation")
 ```
 +++
@@ -827,15 +927,26 @@ return (error * x, error)
 :::step id="exercise-step4-code" title="Step 4: update_parameters()"
 ```python
 def update_parameters(
-    weights: np.ndarray, bias: float,
-    dw: np.ndarray, db: float, learning_rate: float,
-) -> tuple[np.ndarray, float]:
-    """Update weights and bias using gradient descent.
+    weights: torch.Tensor,
+    bias: torch.Tensor,
+    dw: torch.Tensor,
+    db: torch.Tensor,
+    learning_rate: float,
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Update the weights and bias with one gradient-descent step.
 
-    Gradient descent subtracts a fraction (learning_rate) of the gradient
-    from each parameter, moving downhill on the loss surface.
+    Args:
+        weights: Current weight vector, shape (2,).
+        bias: Current bias (0-dim tensor).
+        dw: Gradient w.r.t. weights, shape (2,).
+        db: Gradient w.r.t. bias (0-dim tensor).
+        learning_rate: Step size, e.g. 0.5.
+
+    Returns:
+        (new_weights, new_bias): the updated parameters.
     """
-    # TODO: Apply the gradient descent update rule
+    # TODO: Apply the gradient-descent update rule
+    # HINT: subtract learning_rate * dw from weights, and learning_rate * db from bias
     raise NotImplementedError("TODO: implement parameter update")
 ```
 +++
@@ -855,20 +966,28 @@ return (weights - learning_rate * dw, bias - learning_rate * db)
 PART 1: Single Neuron on Linearly Separable Data
 ============================================================</span>
 <span class="success">Loaded 150 samples from linear_separable.csv</span>
-  Epoch  20/100  loss=0.0757
+  Epoch  20/100  loss=0.0753
+  Epoch  40/100  loss=0.0536
   Epoch  60/100  loss=0.0457
+  Epoch  80/100  loss=0.0416
   Epoch 100/100  loss=0.0391
-Final weights: [2.4542, 1.7006], bias: 0.1064
+Final weights: [2.4276, 1.7352], bias: 0.1047
 <span class="success">Accuracy: 149/150 (99.3%)</span>
+Saved plot to output/step5_linear_perceptron.png
 
 <span class="header">============================================================
 PART 2: Single Neuron on Non-Linearly Separable Data (XOR)
 ============================================================</span>
 <span class="success">Loaded 160 samples from non_linear_separable.csv</span>
   Epoch  20/100  loss=0.6926
+  Epoch  40/100  loss=0.6926
+  Epoch  60/100  loss=0.6926
+  Epoch  80/100  loss=0.6926
   Epoch 100/100  loss=0.6926
+Final weights: [0.0070, -0.0399], bias: -0.0016
 <span class="t-fail">Accuracy: 80/160 (50.0%)</span>
 (A single neuron cannot solve this non-linearly-separable problem.)
+Saved plot to output/step6_nonlinear_perceptron.png
 
 <span class="header">============================================================
 PART 3: MLP on Non-Linearly Separable Data
@@ -894,47 +1013,54 @@ No straight line separates XOR, so the best a single linear neuron can do is shr
 
 :::step id="exercise-step6-code" title="Step 6: relu()"
 ```python
-def relu(z: np.ndarray) -> np.ndarray:
+def relu(z: torch.Tensor) -> torch.Tensor:
     """The ReLU activation: max(0, z).
 
-    Keeps positives, clamps negatives to zero. The modern
-    default for HIDDEN layers.
+    Args:
+        z: A tensor of pre-activation values (any shape).
+
+    Returns:
+        A tensor the same shape as z, with negatives replaced by 0.
     """
     # TODO: Return the elementwise max of 0 and z in one line
+    # HINT: torch.clamp(z, min=0.0) clamps every negative value to zero
     raise NotImplementedError("TODO: implement the ReLU activation")
 ```
 +++
-**Hint:** `np.maximum` takes the elementwise maximum of two arrays (or an array and a scalar).
+**Hint:** `torch.clamp(z, min=0.0)` keeps positive entries and clamps negative entries to zero.
 +++
 **Answer:**
 
 ```python
-return np.maximum(0.0, z)
+return torch.clamp(z, min=0.0)
 ```
 :::
 
 ---
 
-:::step id="exercise-step7-code" title="Step 7: mlp_forward()"
+:::step id="exercise-step7-code" title="Step 7: MLP.forward()"
 ```python
-def mlp_forward(x, W1, b1, W2, b2) -> float:
-    """Forward pass through a two-layer MLP.
+def forward(self, x: torch.Tensor) -> torch.Tensor:
+    """Run the forward pass through both layers.
 
-    Layer 1 (hidden):  hidden = relu(W1 @ x + b1)
-    Layer 2 (output):  output = sigmoid(W2 @ hidden + b2)
+    Args:
+        x: Input batch, shape (n_samples, 2).
+
+    Returns:
+        Output probabilities, shape (n_samples, 1), each in (0, 1).
     """
-    # TODO: Compute the two-layer forward pass, then return the output value (output[0])
+    # TODO: Compute the two-layer forward pass and return the output probabilities
+    # HINT: apply relu to self.hidden(x), then sigmoid to self.output(...) of that result
     raise NotImplementedError("TODO: implement MLP forward pass")
 ```
 +++
-**Hint:** ReLU on the hidden layer, sigmoid on the output (so it stays a probability).
+**Hint:** Apply `relu()` to `self.hidden(x)`, then feed that hidden representation into `self.output(...)`, then apply `sigmoid()`.
 +++
 **Answer:**
 
 ```python
-hidden = relu(W1 @ x + b1)
-output = sigmoid(W2 @ hidden + b2)
-return output[0]
+h = relu(self.hidden(x))
+return sigmoid(self.output(h))
 ```
 :::
 
@@ -954,15 +1080,20 @@ PART 2: Single Neuron on Non-Linearly Separable Data (XOR)
 <span class="header">============================================================
 PART 3: MLP on Non-Linearly Separable Data
 ============================================================</span>
-  Epoch 100/500  loss=0.0114
-  Epoch 200/500  loss=0.0059
-  Epoch 300/500  loss=0.0040
-  Epoch 400/500  loss=0.0030
-  Epoch 500/500  loss=0.0024
+  Epoch 100/500  loss=0.0217
+  Epoch 200/500  loss=0.0107
+  Epoch 300/500  loss=0.0071
+  Epoch 400/500  loss=0.0053
+  Epoch 500/500  loss=0.0042
 
 <span class="success">Accuracy: 160/160 (100.0%)</span>
 Saved comparison plot to output/step7_comparison.png
 Saved MLP loss plot to output/step7_mlp_loss.png
+
+<span class="header">============================================================
+EXTRA CREDIT: MLP trained with your own SGD optimizer
+============================================================</span>
+<span class="skipped">  [skipped: Extra credit: implement the optimizer step]</span>
 
 <span class="header">============================================================
 Done! Check the output/ directory for plots.
@@ -973,30 +1104,26 @@ Done! Check the output/ directory for plots.
 
 <!-- .slide: id="exercise-extra-credit" -->
 
-## Extra Credit: MLP Backpropagation
+## Extra Credit: Your Own Optimizer
 
-Implement `mlp_gradients()` &mdash; backpropagation through both layers of the MLP. <!-- .element: class="text-lg" -->
+Implement `SGD.step()` &mdash; the optimizer step that applies gradients PyTorch already computed with autograd. <!-- .element: class="text-lg" -->
 
 ```python
-# Forward pass (save intermediates)
-z1 = W1 @ x + b1
-hidden = relu(z1)
-z2 = W2 @ hidden + b2
-output = sigmoid(z2)
+def step(self) -> None:
+    """Apply one gradient-descent update to every parameter, in place.
 
-# Output layer gradients
-error_out = output - y_true
-dW2 = error_out[:, None] * hidden[None, :]
-db2 = error_out
+    Args:
+        None.
 
-# Hidden layer gradients (backpropagate through ReLU)
-relu_grad = (z1 > 0).astype(float)
-error_hidden = (W2.T @ error_out) * relu_grad
-dW1 = error_hidden[:, None] * x[None, :]
-db1 = error_hidden
+    Returns:
+        None. Each parameter tensor is modified in place.
+    """
+    # TODO: update each parameter in place using its gradient
+    # HINT: inside `with torch.no_grad():`, loop over self.params and do `p -= self.lr * p.grad`
+    raise NotImplementedError("Extra credit: implement the optimizer step")
 ```
 
-The chain rule applied twice: through the sigmoid output, then through the ReLU hidden layer. ReLU's derivative is simply **1 where `z1 > 0`, else 0**. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+The runner trains the same MLP once with `torch.optim.SGD` and once with this small optimizer class. Both use the same gradients; only the parameter update object changes. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
@@ -1062,7 +1189,6 @@ Which network would you expect to generalize better to new data, and why?
 - Rosenblatt, F. (1958). "The Perceptron: A Probabilistic Model for Information Storage and Organization in the Brain." *Psychological Review*, 65(6).
 - Minsky, M. & Papert, S. (1969). *Perceptrons: An Introduction to Computational Geometry*. MIT Press.
 - Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). "Learning Representations by Back-Propagating Errors." *Nature*, 323, 533–536.
-- Cybenko, G. (1989). "Approximation by Superpositions of a Sigmoidal Function." *Mathematics of Control, Signals, and Systems*, 2, 303–314.
 - Kingma, D. P. & Ba, J. (2015). "Adam: A Method for Stochastic Optimization." *ICLR*.
 - Li, H. et al. (2018). "Visualizing the Loss Landscape of Neural Nets." *NeurIPS*.
 - [MIT Intro to Deep Learning Labs](https://github.com/MITDeepLearning/introtodeeplearning) — neural nets and optimization
