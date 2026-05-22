@@ -1614,6 +1614,33 @@ Next: Module 3 — Attention and Embeddings
       plugins: [ RevealHighlight, RevealMarkdown ]
     });
 
+    // ---- Syntax highlighting ----
+    // reveal-markdown converts the inline <textarea> into <pre><code> blocks
+    // in a deferred microtask, AFTER the highlight plugin's init() has already
+    // run, so code ships un-highlighted. Re-trigger the plugin once the blocks
+    // exist (on ready) and for any added later (on slidechanged).
+    function highlightAllCodeBlocks() {
+      if (!Reveal.getPlugin) return;
+      var hl = Reveal.getPlugin('highlight');
+      if (!hl || typeof hl.highlightBlock !== 'function') return;
+      document.querySelectorAll('pre code').forEach(function(block) {
+        if (block.dataset.highlighted === 'yes') return;
+        hl.highlightBlock(block);
+      });
+    }
+    // reveal-markdown may materialize blocks in waves, so re-run the
+    // (idempotent) pass across the startup window rather than once.
+    Reveal.on('ready', function() {
+      var tries = 0;
+      var iv = setInterval(function() {
+        tries++;
+        highlightAllCodeBlocks();
+        if (tries > 25) clearInterval(iv);
+      }, 100);
+    });
+    Reveal.on('slidechanged', highlightAllCodeBlocks);
+    Reveal.on('fragmentshown', highlightAllCodeBlocks);
+
     function initStepperClickHandlers() {
       document.querySelectorAll('.manim-stepper').forEach(function(video) {
         if (video.dataset.clickInit) return;

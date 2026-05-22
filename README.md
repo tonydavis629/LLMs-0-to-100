@@ -34,7 +34,7 @@ uv --version
 Clone the repository and set up the Python environment:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/tonydavis629/LLMs-0-to-100
 cd LLMs-0-to-100
 uv sync
 ```

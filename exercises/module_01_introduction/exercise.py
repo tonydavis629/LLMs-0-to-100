@@ -38,7 +38,8 @@ def load_text(filepath: str) -> str:
             end_idx = i             # book ends BEFORE this line
             break
 
-    # TODO: Join lines[start_idx:end_idx] with newlines and return the result
+    # TODO: return the cleaned book text
+    # HINT: Join lines[start_idx:end_idx] with newlines and return the result
     raise NotImplementedError("TODO: return the joined lines")
 
 

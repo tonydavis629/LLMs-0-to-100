@@ -631,18 +631,27 @@ A perplexity of 10 means the model is as uncertain as choosing uniformly from 10
 
 ---
 
-:::video id="compression-demo-1" src="media/compression_uniform.mp4"
-:::
+<!-- .slide: id="compression-demo-1" -->
+
+<div class="video-container">
+  <img src="media/compression_uniform.png" alt='Uniform encoding of "the cat sat on the mat": 22 chars x 5 bits = 110 bits total'>
+</div>
 
 ---
 
-:::video id="compression-demo-2" src="media/compression_code_table.mp4"
-:::
+<!-- .slide: id="compression-demo-2" -->
+
+<div class="video-container">
+  <img src="media/compression_code_table.png" alt="Prefix code table: common characters (space, t) get 2 bits, rare characters (c, m) get 7 bits">
+</div>
 
 ---
 
-:::video id="compression-demo-3" src="media/compression_variable.mp4"
-:::
+<!-- .slide: id="compression-demo-3" -->
+
+<div class="video-container">
+  <img src="media/compression_variable.png" alt="Variable-length encoding: 70 bits, 36% smaller than uniform 110 bits">
+</div>
 
 ---
 
@@ -672,7 +681,7 @@ uv is a fast Python package manager. It replaces pip, venv, and pyenv. <!-- .ele
 
 ```bash
 # Clone and sync
-git clone <repository-url>
+git clone https://github.com/tonydavis629/LLMs-0-to-100
 cd LLMs-0-to-100
 uv sync
 

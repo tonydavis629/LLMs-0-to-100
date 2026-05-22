@@ -765,7 +765,7 @@ A perplexity of 10 means the model is as uncertain as choosing uniformly from 10
 <!-- .slide: id="compression-demo-1" -->
 
 <div class="video-container">
-  <video data-autoplay src="media/compression_uniform.mp4"></video>
+  <img src="media/compression_uniform.png" alt='Uniform encoding of "the cat sat on the mat": 22 chars x 5 bits = 110 bits total'>
 </div>
 
 ---
@@ -773,7 +773,7 @@ A perplexity of 10 means the model is as uncertain as choosing uniformly from 10
 <!-- .slide: id="compression-demo-2" -->
 
 <div class="video-container">
-  <video data-autoplay src="media/compression_code_table.mp4"></video>
+  <img src="media/compression_code_table.png" alt="Prefix code table: common characters (space, t) get 2 bits, rare characters (c, m) get 7 bits">
 </div>
 
 ---
@@ -781,7 +781,7 @@ A perplexity of 10 means the model is as uncertain as choosing uniformly from 10
 <!-- .slide: id="compression-demo-3" -->
 
 <div class="video-container">
-  <video data-autoplay src="media/compression_variable.mp4"></video>
+  <img src="media/compression_variable.png" alt="Variable-length encoding: 70 bits, 36% smaller than uniform 110 bits">
 </div>
 
 ---
@@ -823,7 +823,7 @@ uv is a fast Python package manager. It replaces pip, venv, and pyenv. <!-- .ele
 
 ```bash
 # Clone and sync
-git clone <repository-url>
+git clone https://github.com/tonydavis629/LLMs-0-to-100
 cd LLMs-0-to-100
 uv sync
 
@@ -1751,6 +1751,33 @@ Next: Module 2 &mdash; Perceptrons and Optimization
       autoAnimateDuration: 0.8,
       plugins: [ RevealHighlight, RevealMarkdown ]
     });
+
+    // ---- Syntax highlighting ----
+    // reveal-markdown converts the inline <textarea> into <pre><code> blocks
+    // in a deferred microtask, AFTER the highlight plugin's init() has already
+    // run, so code ships un-highlighted. Re-trigger the plugin once the blocks
+    // exist (on ready) and for any added later (on slidechanged).
+    function highlightAllCodeBlocks() {
+      if (!Reveal.getPlugin) return;
+      var hl = Reveal.getPlugin('highlight');
+      if (!hl || typeof hl.highlightBlock !== 'function') return;
+      document.querySelectorAll('pre code').forEach(function(block) {
+        if (block.dataset.highlighted === 'yes') return;
+        hl.highlightBlock(block);
+      });
+    }
+    // reveal-markdown may materialize blocks in waves, so re-run the
+    // (idempotent) pass across the startup window rather than once.
+    Reveal.on('ready', function() {
+      var tries = 0;
+      var iv = setInterval(function() {
+        tries++;
+        highlightAllCodeBlocks();
+        if (tries > 25) clearInterval(iv);
+      }, 100);
+    });
+    Reveal.on('slidechanged', highlightAllCodeBlocks);
+    Reveal.on('fragmentshown', highlightAllCodeBlocks);
 
     function initStepperClickHandlers() {
       document.querySelectorAll('.manim-stepper').forEach(function(video) {

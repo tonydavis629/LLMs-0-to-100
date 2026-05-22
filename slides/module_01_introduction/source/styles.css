@@ -559,7 +559,8 @@
   justify-content: center;
 }
 
-.video-container video {
+.video-container video,
+.video-container img {
   max-width: 100%;
   max-height: 100%;
   border-radius: var(--box-radius);
