@@ -9,3 +9,4 @@ exercises/.venv/
 .DS_Store
 .playwright**
 node_modules
+**/output/**

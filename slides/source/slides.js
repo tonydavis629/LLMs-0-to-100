@@ -567,40 +567,52 @@ INTERACTIVE_WIDGETS.folding = function(host) {
                        'h₁', k === 1 ? '' : 'h₂');
     var ctx2 = fh.ctx;
 
-    // Pocket perceptron (Rosenblatt): guaranteed to find a separating
-    // line when one exists, and keeps the best line seen otherwise --
-    // exactly what "linearly separable" means, and on-topic for this
-    // module. Updates are scaled by `sc` only for numeric stability.
+    // Logistic-regression separator: a single, smooth, deterministic
+    // linear boundary in hidden space. A perceptron stops at the FIRST of
+    // the infinitely many lines that separate the points, so a tiny shift
+    // in the fold makes it jump to a different valid line and the boundary
+    // flips discontinuously. Gradient descent on the convex log-loss
+    // instead has one optimum that moves continuously with the sliders, so
+    // nudging a weight nudges the line. Features are standardized so a
+    // fixed learning rate converges at any hidden-space scale; the fitted
+    // line is then mapped back to raw coordinates for drawing.
     var oneD = (k === 1);
-    var sc = 1;
+    function stats(sel) {
+      var n = pts.length, m = 0;
+      pts.forEach(function(p) { m += sel(p); });
+      m /= n;
+      var v = 0;
+      pts.forEach(function(p) { var dz = sel(p) - m; v += dz * dz; });
+      return { m: m, sd: Math.sqrt(v / n) || 1 };
+    }
+    var stx = stats(function(p) { return p.x; });
+    var sty = oneD ? { m: 0, sd: 1 } : stats(function(p) { return p.y; });
+    var a = 0, cY = 0, d = 0, lr = 0.6;
+    for (var ep = 0; ep < 500; ep++) {
+      var ga = 0, gc = 0, gd = 0;
+      pts.forEach(function(p) {
+        var zx = (p.x - stx.m) / stx.sd;
+        var zy = oneD ? 0 : (p.y - sty.m) / sty.sd;
+        var pr = 1 / (1 + Math.exp(-(a * zx + cY * zy + d)));
+        var e = pr - p.cls;
+        ga += e * zx; if (!oneD) gc += e * zy; gd += e;
+      });
+      var inv = lr / pts.length;
+      a -= ga * inv; if (!oneD) cY -= gc * inv; d -= gd * inv;
+    }
+    // Map standardized weights back to raw hidden coords so the same
+    // wx*x + wy*y + b = 0 line code below can draw it.
+    var sw = {
+      wx: a / stx.sd,
+      wy: oneD ? 0 : cY / sty.sd,
+      b: d - a * stx.m / stx.sd - (oneD ? 0 : cY * sty.m / sty.sd)
+    };
+    var correct = 0;
     pts.forEach(function(p) {
-      sc = Math.max(sc, Math.abs(p.x), oneD ? 0 : Math.abs(p.y));
+      var s = (sw.wx * p.x + (oneD ? 0 : sw.wy * p.y) + sw.b) >= 0 ? 1 : 0;
+      if (s === p.cls) correct++;
     });
-    function lineAcc(W) {
-      var c = 0;
-      pts.forEach(function(p) {
-        var s = (W.wx * p.x + (oneD ? 0 : W.wy * p.y) + W.b) >= 0 ? 1 : 0;
-        if (s === p.cls) c++;
-      });
-      return c;
-    }
-    var cur = { wx: 0, wy: 0, b: 0 };
-    var sw = { wx: 0, wy: 0, b: 0 };
-    var best = lineAcc(sw);
-    for (var ep = 0; ep < 400 && best < pts.length; ep++) {
-      pts.forEach(function(p) {
-        var s = (cur.wx * p.x + (oneD ? 0 : cur.wy * p.y) + cur.b) >= 0 ? 1 : 0;
-        var e = p.cls - s; // -1, 0, or +1
-        if (e !== 0) {
-          cur.wx += e * p.x / sc;
-          if (!oneD) cur.wy += e * p.y / sc;
-          cur.b += e / sc;
-        }
-      });
-      var s2 = lineAcc(cur);
-      if (s2 > best) { best = s2; sw.wx = cur.wx; sw.wy = cur.wy; sw.b = cur.b; }
-    }
-    var acc = best / pts.length;
+    var acc = correct / pts.length;
 
     ctx2.save();
     ctx2.beginPath();
@@ -643,11 +655,46 @@ INTERACTIVE_WIDGETS.folding = function(host) {
   return { resize: draw };
 };
 
-// ---- MLP boundary widget: width/depth controls for piecewise-linear boxes ----
+// ---- MLP boundary widget: width x depth half-plane cuts wrap a class ----
+// A one-hidden-layer ReLU network carves a CONVEX region as the
+// intersection of its neurons' half-planes: each neuron is one straight
+// cut, the output neuron ANDs them. That region is a polygon, and adding
+// neurons adds sides, so the boundary rounds toward the circle it is
+// approximating -- "many lines make a curve". Depth lets a deep net compose
+// cuts into more pieces, so width x depth is the piece budget. This is a
+// faithful geometric construction of a representable boundary, not a fit.
 INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
   var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
       LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
   var state = { width: 4, depth: 2 };
+
+  // --- Disk-in-ring data: green class fills a central disk, red class fills
+  // the surrounding ring. The circle between them is the "curve" the cuts
+  // approximate. Seeded so the layout is stable across redraws. ---
+  var CX = 0.5, CY = 0.5, GREEN_R = 0.17;
+  var data = (function() {
+    var a = 7;
+    function rnd() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+    var pts = [], i;
+    for (i = 0; i < 70; i++) {                 // green: uniform inside the disk
+      var rg = Math.sqrt(rnd()) * GREEN_R, ag = rnd() * 6.2832;
+      pts.push({ x: CX + rg * Math.cos(ag), y: CY + rg * Math.sin(ag), cls: 1 });
+    }
+    for (i = 0; i < 90; i++) {                 // red: uniform in the outer ring
+      var rr = 0.27 + rnd() * 0.20, ar = rnd() * 6.2832;
+      pts.push({
+        x: Math.max(0.03, Math.min(0.97, CX + rr * Math.cos(ar))),
+        y: Math.max(0.03, Math.min(0.97, CY + rr * Math.sin(ar))),
+        cls: 0
+      });
+    }
+    return pts;
+  })();
 
   host.innerHTML =
     '<div class="mlp-widget">' +
@@ -685,95 +732,140 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return { ctx: ctx, w: w, h: h };
   }
-  function map(w, h, pad, x, y) {
-    return [pad + x * (w - 2 * pad), h - pad - y * (h - 2 * pad)];
-  }
   function dot(ctx, p, color, r) {
     ctx.beginPath(); ctx.arc(p[0], p[1], r || 4.5, 0, 6.2832);
     ctx.fillStyle = color; ctx.fill();
   }
-  function lineLabel(ctx, x, y, text, color) {
-    ctx.fillStyle = '#0d1225';
-    ctx.fillRect(x - 32, y - 10, 64, 18);
-    ctx.fillStyle = color;
-    ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(text, x, y + 4);
+  // Edge-normals of a regular S-gon centered on the disk. Each normal is one
+  // hidden neuron's cut; a point is "inside" (predicted green) when it lies
+  // on the interior side of ALL of them. RHO is the inradius (>= GREEN_R, so
+  // the whole green disk is enclosed); the circumradius RHO/cos(pi/S) shrinks
+  // toward RHO as S grows, which is exactly why more cuts hug the circle.
+  var RHO = 0.205, THETA0 = -Math.PI / 2;
+  function normals(S) {
+    var ns = [];
+    for (var k = 0; k < S; k++) {
+      var phi = THETA0 + 2 * Math.PI * (k + 0.5) / S;
+      ns.push([Math.cos(phi), Math.sin(phi)]);
+    }
+    return ns;
+  }
+  function insideRegion(p, ns) {
+    for (var k = 0; k < ns.length; k++) {
+      if ((p.x - CX) * ns[k][0] + (p.y - CY) * ns[k][1] > RHO) return false;
+    }
+    return true;
   }
 
-  function drawNetwork(ctx, w, h, x0) {
-    var inputX = x0 + 20, hiddenX = x0 + 120, outX = x0 + 230;
-    var y1 = h * 0.34, y2 = h * 0.64;
-    var hiddenCount = Math.min(state.width, 6);
-    ctx.strokeStyle = LINEC; ctx.lineWidth = 1.5;
-    for (var i = 0; i < hiddenCount; i++) {
-      var hy = 68 + i * ((h - 136) / Math.max(1, hiddenCount - 1));
-      ctx.beginPath(); ctx.moveTo(inputX + 16, y1); ctx.lineTo(hiddenX - 16, hy); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(inputX + 16, y2); ctx.lineTo(hiddenX - 16, hy); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(hiddenX + 16, hy); ctx.lineTo(outX - 16, h * 0.5); ctx.stroke();
-      ctx.beginPath(); ctx.arc(hiddenX, hy, 16, 0, 6.2832); ctx.fillStyle = '#0d1225'; ctx.strokeStyle = PRIMARY; ctx.fill(); ctx.stroke();
-      ctx.fillStyle = TEXT; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('h', hiddenX, hy + 4);
+  // Network diagram with one column per layer: input (x1, x2), `depth`
+  // hidden columns of `width` neurons (capped at 6 drawn nodes), output.
+  function drawNetwork(ctx, x0, x1, h) {
+    var cols = state.depth + 2;
+    var perLayer = Math.min(state.width, 6);
+    var top = 56, bot = h - 64;
+    function colX(i) { return x0 + (x1 - x0) * i / (cols - 1); }
+    function ys(n) {
+      if (n === 1) return [(top + bot) / 2];
+      var a = []; for (var i = 0; i < n; i++) a.push(top + (bot - top) * i / (n - 1)); return a;
     }
-    [[inputX, y1, 'x₁'], [inputX, y2, 'x₂'], [outX, h * 0.5, 'ŷ']].forEach(function(n) {
-      ctx.beginPath(); ctx.arc(n[0], n[1], 16, 0, 6.2832); ctx.fillStyle = '#0d1225'; ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
-      ctx.fillStyle = TEXT; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(n[2], n[0], n[1] + 4);
+    var layers = [{ x: colX(0), ys: ys(2), label: ['x₁', 'x₂'], color: SECONDARY }];
+    for (var d = 0; d < state.depth; d++) layers.push({ x: colX(d + 1), ys: ys(perLayer), color: PRIMARY });
+    layers.push({ x: colX(cols - 1), ys: ys(1), label: ['ŷ'], color: SECONDARY });
+
+    ctx.strokeStyle = 'rgba(74,158,255,0.28)'; ctx.lineWidth = 1;
+    for (var L = 0; L < layers.length - 1; L++) {
+      var A = layers[L], B = layers[L + 1];
+      A.ys.forEach(function(ay) {
+        B.ys.forEach(function(by) {
+          ctx.beginPath(); ctx.moveTo(A.x + 12, ay); ctx.lineTo(B.x - 12, by); ctx.stroke();
+        });
+      });
+    }
+    layers.forEach(function(Lr) {
+      Lr.ys.forEach(function(yy, idx) {
+        ctx.beginPath(); ctx.arc(Lr.x, yy, 12, 0, 6.2832);
+        ctx.fillStyle = '#0d1225'; ctx.strokeStyle = Lr.color; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
+        if (Lr.label) { ctx.fillStyle = TEXT; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Lr.label[idx], Lr.x, yy + 4); }
+      });
     });
+    if (state.width > perLayer) {
+      ctx.fillStyle = MUTED; ctx.font = '15px Inter, sans-serif'; ctx.textAlign = 'center';
+      for (var d2 = 0; d2 < state.depth; d2++) ctx.fillText('⋮', colX(d2 + 1), bot + 18);
+    }
     ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(state.depth + ' hidden layer' + (state.depth === 1 ? '' : 's'), hiddenX, h - 20);
-    ctx.fillText(state.width + ' neurons per layer', hiddenX, h - 4);
+    ctx.fillText(state.depth + ' hidden layer' + (state.depth === 1 ? '' : 's') +
+                 ' × ' + state.width + ' neuron' + (state.width === 1 ? '' : 's'),
+                 (x0 + x1) / 2, h - 8);
   }
 
   function draw() {
     var f = fitCanvas(canvas);
     if (!f) return;
-    var ctx = f.ctx, w = f.w, h = f.h, pad = 36;
+    var ctx = f.ctx, w = f.w, h = f.h, pad = 30;
     ctx.clearRect(0, 0, w, h);
-    var plotW = w * 0.62;
-    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
-    ctx.strokeRect(pad, pad, plotW - 2 * pad, h - 2 * pad);
-    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'right'; ctx.fillText('x₁', plotW - pad - 4, h - pad - 6);
-    ctx.textAlign = 'left'; ctx.fillText('x₂', pad + 4, pad + 12);
+    var leftW = w * 0.60;                        // left region holds the plot
+    // Square plot so the disk reads as a true circle, centered in the region.
+    var side = Math.min(leftW - 2 * pad, h - 2 * pad);
+    var ox = (leftW - side) / 2, oy = pad + (h - 2 * pad - side) / 2;
+    function pmap(x, y) { return [ox + x * side, oy + (1 - y) * side]; }
+    var S = state.width * state.depth;
+    var ns = normals(Math.max(1, S));
 
-    var box = { l: 0.34, r: 0.66, b: 0.30, t: 0.70 };
-    for (var i = 0; i < 120; i++) {
-      var x = ((i * 37) % 100) / 100;
-      var y = ((i * 61 + 17) % 100) / 100;
-      var inside = x > box.l && x < box.r && y > box.b && y < box.t;
-      dot(ctx, map(plotW, h, pad, x, y), inside ? GREEN : RED, inside ? 4.6 : 3.8);
+    ctx.save();
+    ctx.beginPath(); ctx.rect(ox, oy, side, side); ctx.clip();
+    if (S >= 3) {
+      var R = RHO / Math.cos(Math.PI / S);
+      ctx.beginPath();
+      for (var k = 0; k <= S; k++) {
+        var th = THETA0 + 2 * Math.PI * k / S;
+        var vp = pmap(CX + R * Math.cos(th), CY + R * Math.sin(th));
+        if (k === 0) ctx.moveTo(vp[0], vp[1]); else ctx.lineTo(vp[0], vp[1]);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(63,185,80,0.10)'; ctx.fill();
+      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5; ctx.stroke();
+    } else {
+      // 1-2 cuts: an open half-plane or slab that cannot enclose a region.
+      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5;
+      ns.forEach(function(n) {
+        var bx = CX + n[0] * RHO, by = CY + n[1] * RHO, tx = -n[1], ty = n[0];
+        var a = pmap(bx + tx * 1.5, by + ty * 1.5);
+        var b = pmap(bx - tx * 1.5, by - ty * 1.5);
+        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      });
     }
-
-    var totalLines = state.width * state.depth;
-    var extra = Math.max(0, totalLines - 4);
-    var used = Math.min(totalLines, 4 * state.depth);
-    var regions = Math.floor((totalLines * totalLines + totalLines + 2) / 2);
-    var edges = [
-      [box.l, box.b, box.l, box.t, 'x₁ > left'],
-      [box.r, box.b, box.r, box.t, 'x₁ < right'],
-      [box.l, box.b, box.r, box.b, 'x₂ > bottom'],
-      [box.l, box.t, box.r, box.t, 'x₂ < top']
-    ];
-    edges.slice(0, Math.min(4, totalLines)).forEach(function(e, idx) {
-      var a = map(plotW, h, pad, e[0], e[1]), b = map(plotW, h, pad, e[2], e[3]);
-      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-      lineLabel(ctx, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 'h' + (idx + 1), SECONDARY);
+    var correct = 0;
+    data.forEach(function(p) {
+      var pred = insideRegion(p, ns) ? 1 : 0;
+      if (pred === p.cls) correct++;
+      var q = pmap(p.x, p.y);
+      dot(ctx, q, p.cls ? GREEN : RED, 4.2);
+      if (pred !== p.cls) {                    // ring the points the cuts get wrong
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(q[0], q[1], 6.6, 0, 6.2832); ctx.stroke();
+      }
     });
-    ctx.strokeStyle = 'rgba(74,158,255,0.45)'; ctx.lineWidth = 1.4; ctx.setLineDash([6, 6]);
-    for (var j = 0; j < extra; j++) {
-      var xx = 0.14 + ((j * 0.19) % 0.72);
-      var yy = 0.16 + ((j * 0.13) % 0.68);
-      var p1, p2;
-      if (j % 2 === 0) { p1 = map(plotW, h, pad, xx, 0.05); p2 = map(plotW, h, pad, xx, 0.95); }
-      else { p1 = map(plotW, h, pad, 0.05, yy); p2 = map(plotW, h, pad, 0.95, yy); }
-      ctx.beginPath(); ctx.moveTo(p1[0], p1[1]); ctx.lineTo(p2[0], p2[1]); ctx.stroke();
+    ctx.restore();
+
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy, side, side);
+    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'right'; ctx.fillText('x₁', ox + side - 4, oy + side - 6);
+    ctx.textAlign = 'left'; ctx.fillText('x₂', ox + 4, oy + 12);
+
+    drawNetwork(ctx, leftW + 20, w - 20, h);
+
+    var acc = Math.round(100 * correct / data.length);
+    if (S < 3) {
+      readout.innerHTML = '<strong>' + S + '</strong> straight cut' + (S === 1 ? '' : 's') +
+        ' (one per hidden unit) cannot enclose a region &mdash; accuracy <strong>' + acc +
+        '%</strong>. Add neurons to wrap the class.';
+    } else {
+      var article = (S === 8 || S === 11 || S === 18) ? 'an' : 'a';
+      readout.innerHTML = 'width × depth = <strong>' + S + '</strong> straight cuts form ' + article +
+        ' <strong>' + S + '</strong>-sided region around the class &mdash; accuracy <strong>' + acc +
+        '%</strong>. More cuts hug the circle tighter.';
     }
-    ctx.setLineDash([]);
-    drawNetwork(ctx, w, h, plotW + 30);
-    readout.innerHTML =
-      '<strong>' + totalLines + '</strong> available hidden-line pieces, about <strong>' +
-      regions + '</strong> possible 2D regions, and <strong>' + used +
-      '</strong> line pieces can participate in the highlighted enclosed box.';
   }
   return { resize: draw };
 };

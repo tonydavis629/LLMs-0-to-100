@@ -77,7 +77,7 @@ where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the b
 - A ReLU network is a composition of linear pieces. Each hidden neuron defines one hyperplane ($\mathbf{w} \cdot \mathbf{x} + b = 0$); ReLU makes that neuron active on one side of the line and zero on the other.
 - Combining several half-plane indicators partitions the input space into polygonal regions, so the overall decision boundary is **piecewise-linear**. It looks curved only because it is built from many short straight segments.
 - More hidden units means more lines, so the boundary can wrap more tightly around a class.
-- **Interactive widget:** `:::interactive widget="mlpBoundary"` lets students vary width and depth. Width and depth determine the number of available hidden-line pieces; those pieces partition the plane into regions and can form an enclosed box around the target class.
+- **Interactive widget:** `:::interactive widget="mlpBoundary"` shows a green class in a central disk surrounded by a red ring. Each hidden unit contributes one straight cut (a half-plane $\mathbf{w}\cdot\mathbf{x}+b=0$); ANDing them encloses a convex region. With $S = \text{width}\times\text{depth}$ available pieces the boundary is a regular $S$-gon: one or two cuts cannot enclose anything, three cuts give a triangle, and as $S$ grows the polygon's circumradius $\rho/\cos(\pi/S)$ shrinks toward its inradius $\rho$, so the straight pieces hug the circle ever more tightly &mdash; "many lines make a curve". The classification accuracy and the count of mis-classified points (ringed in white) update live, and the network diagram draws one column per layer so increasing depth adds visible layers.
 
 ## Backpropagation
 

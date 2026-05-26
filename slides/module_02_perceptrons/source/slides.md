@@ -498,7 +498,7 @@ More hidden neurons means more cuts, so the boundary can wrap tightly around any
 
 ---
 
-:::interactive id="anim-mlp-boundary" widget="mlpBoundary" title="Many Lines Make a Curve"
+:::interactive id="mlp-boundary-explorer" widget="mlpBoundary" title="Many Lines Make a Curve"
 :::
 
 ---
@@ -701,7 +701,7 @@ At a point on the loss surface, the gradient points uphill. The update adds a st
 **Current point**
 
 $$
-\mathbf{w}_{\text{old}} =
+\mathbf w_{\text{old}} =
 \begin{bmatrix}
 w_1 \\
 w_2
@@ -709,7 +709,7 @@ w_2
 $$
 
 $$
-\nabla L(\mathbf{w}_{\text{old}}) =
+\nabla L(\mathbf w_{\text{old}}) =
 \begin{bmatrix}
 \frac{\partial L}{\partial w_1} \\
 \frac{\partial L}{\partial w_2}
@@ -719,8 +719,8 @@ $$
 **Update**
 
 $$
-\mathbf{w}_{\text{new}} =
-\mathbf{w}_{\text{old}} + \left(-\eta \nabla L(\mathbf{w}_{\text{old}})\right)
+\mathbf w_{\text{new}} =
+\mathbf w_{\text{old}} + \left(-\eta \nabla L(\mathbf w_{\text{old}})\right)
 $$
 
 The coordinates change because the weights change; the height changes because the loss at the new coordinates is different.

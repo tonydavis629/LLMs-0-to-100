@@ -849,6 +849,8 @@
 .land-net {
   width: 100%;
   height: 100%;
+  min-height: 0;
+  min-width: 0;
   background: #0d1225;
   border: 1px solid var(--line-color);
   border-radius: var(--box-radius);
@@ -923,6 +925,12 @@
 .land-main {
   display: grid;
   grid-template-columns: 1.25fr 0.75fr;
+  /* Pin the single row to the flex-allotted height. Without an explicit
+     track the row is auto-sized to content, and because the canvases use
+     height:100% their own drawing-buffer height feeds back into the row,
+     growing the canvas a few px on every redraw (the "slides drift down"
+     bug). minmax(0, 1fr) fixes the row to the container's free space. */
+  grid-template-rows: minmax(0, 1fr);
   gap: 18px;
   flex: 1;
   min-height: 0;
