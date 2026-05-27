@@ -77,7 +77,9 @@ where $\mathbf{w}$ is the weight vector, $\mathbf{x}$ is the input, $b$ is the b
 - A ReLU network is a composition of linear pieces. Each hidden neuron defines one hyperplane ($\mathbf{w} \cdot \mathbf{x} + b = 0$); ReLU makes that neuron active on one side of the line and zero on the other.
 - Combining several half-plane indicators partitions the input space into polygonal regions, so the overall decision boundary is **piecewise-linear**. It looks curved only because it is built from many short straight segments.
 - More hidden units means more lines, so the boundary can wrap more tightly around a class.
-- **Interactive widget:** `:::interactive widget="mlpBoundary"` shows a green class in a central disk surrounded by a red ring. Each hidden unit contributes one straight cut (a half-plane $\mathbf{w}\cdot\mathbf{x}+b=0$); ANDing them encloses a convex region. With $S = \text{width}\times\text{depth}$ available pieces the boundary is a regular $S$-gon: one or two cuts cannot enclose anything, three cuts give a triangle, and as $S$ grows the polygon's circumradius $\rho/\cos(\pi/S)$ shrinks toward its inradius $\rho$, so the straight pieces hug the circle ever more tightly &mdash; "many lines make a curve". The classification accuracy and the count of mis-classified points (ringed in white) update live, and the network diagram draws one column per layer so increasing depth adds visible layers.
+- **Interactive widgets:** `:::interactive widget="singlePerceptron"` is a toy perceptron with adjustable weights $w_1, w_2$ and bias $b$. It shows the decision line $\mathbf{w} \cdot \mathbf{x} + b = 0$ on three 2D datasets (linear, XOR, moons). Sliding the controls updates the line and a real-time accuracy readout; on XOR, the line cannot reach 100%. This is used on the "A Single Neuron Is One Line" slide to crystallize the linear-classifier idea before introducing hidden layers.
+- `:::interactive widget="boundaryExplorer"` trains a real MLP in JavaScript on four 2D datasets (linear, XOR, moons, spiral) with full-batch gradient descent (1200 steps, LR=0.5 with decay). Multiple random initializations are tried (3 restarts) and the best result is kept. It draws the learned decision boundary as a filled grid plus a 0.5 contour via marching squares, data scatter, and a network diagram. Used on the "Adding a Second Layer" slide (mode=depth): starts at 2 neurons in 1 hidden layer (single-layer model) so XOR initially fails (~50-75%); the user adds layers to see depth help. Controls: dataset buttons, Add neuron, Add layer, Reset, and an accuracy readout.
+- **mlpBoundary widget (retained):** still shows the geometric polygon construction on a disk-in-ring dataset: each hidden unit contributes one straight cut (a half-plane $\mathbf{w}\cdot\mathbf{x}+b=0$); ANDing them encloses a convex region. With $S = \text{width}\times\text{depth}$ available pieces the boundary is a regular $S$-gon. Used on the "Many Lines Make a Curve" text slide.
 
 ## Backpropagation
 
@@ -95,6 +97,13 @@ This elegant simplification occurs because the derivative of sigmoid times BCE l
 
 - **Paper:** Rumelhart, D. E., Hinton, G. E., & Williams, R. J. (1986). "Learning Representations by Back-Propagating Errors." *Nature*, 323, 533-536.
 - **Historical note:** The chain rule application was discovered independently multiple times. Werbos (1974) described it in his PhD thesis; Rumelhart, Hinton, and Williams popularized it in 1986.
+
+### The Chain Rule in the Backward Pass
+- The chain rule is the mathematical engine of backpropagation. For a single weight $w$ deep in the network, the gradient of the loss is:
+$$\frac{\partial L}{\partial w} = \frac{\partial L}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial z} \cdot \frac{\partial z}{\partial w}$$
+- Each factor is a **local derivative** computed at a single node in the computation graph. The chain rule stitches them together by multiplication.
+- This is why autograd works: each node only needs to know its own derivative, not the entire network structure. The backward pass propagates the product through the graph.
+- For an MLP with multiple hidden layers, the chain extends through all of them: $\frac{\partial L}{\partial w^{(1)}} = \frac{\partial L}{\partial \hat{y}} \cdot \prod_{\ell} \frac{\partial h^{(\ell)}}{\partial h^{(\ell-1)}} \cdot \frac{\partial z^{(1)}}{\partial w^{(1)}}$.
 
 ### Without Backprop
 - The naive alternative: perturb each weight by a small $\epsilon$, recompute the loss, and estimate the gradient numerically as $\frac{L(w + \epsilon) - L(w)}{\epsilon}$. This requires $O(n)$ forward passes for $n$ weights. For modern networks with billions of parameters, this is completely infeasible.
@@ -127,7 +136,8 @@ where $\eta$ is the learning rate.
 - Visualizations project this surface down to 2D or 3D using random directions or principal components.
 - **Sharp vs flat minima:** Flat minima tend to generalize better because small perturbations to the weights do not significantly change the loss. Sharp minima are more sensitive to perturbation.
 - **Saddle points:** In high-dimensional spaces, saddle points are far more common than local minima. At a saddle point, the gradient is zero but the Hessian has both positive and negative eigenvalues.
-- **Course visualization:** a 2-weight perceptron has a loss surface over $(w_1, w_2)$. The interactive widget plots loss as 3D height and shows a two-parameter network next to it. Moving the sliders changes $(w_1,w_2)$, moves the point on the surface, and updates the displayed loss $L(w_1,w_2)$. The step button applies $\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} + (-\eta \nabla L)$ and displays the numeric gradient calculation.
+- **Course visualization:** the `lossLandscape` widget plots a convex paraboloid $L(w_1,w_2)$ as a 3D surface with height coloring (cool blue to warm orange). The surface is mouse-draggable to change azimuth and elevation. Shift+drag pans, scroll wheel zooms. A reset button restores the initial view and weights. Students move the $w_1$, $w_2$, and learning-rate sliders to set the current point, then press Step to apply $\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} + (-\eta \nabla L)$. A red marble marks the current position and a dashed line traces the descent. The readout shows the numeric gradient and update formulas used in the exercise.
+- **Adam visualization:** the `adamLandscape` widget uses the same loss surface but applies Adam's update rule instead of vanilla SGD. The sliders control $\eta$ (learning rate), $\beta_1$ (first moment decay), and $\beta_2$ (second moment decay). Each step updates the running first moment $\mathbf{m}$ and second moment $\mathbf{v}$, applies bias correction to get $\hat{\mathbf{m}}$ and $\hat{\mathbf{v}}$, then computes the adaptive step: $\mathbf{w} \leftarrow \mathbf{w} - \eta \hat{\mathbf{m}} / (\sqrt{\hat{\mathbf{v}}} + \epsilon)$. The readout shows the current values of $\hat{\mathbf{m}}$, $\hat{\mathbf{v}}$, and the actual step taken, color-coded to match the terms in the Adam equations.
 - **Paper:** Li, H., Xu, Z., Taylor, G., Studer, C., & Goldstein, T. (2018). "Visualizing the Loss Landscape of Neural Nets." *NeurIPS*.
 - **Also:** Dauphin, Y. et al. (2014). "Identifying and attacking the saddle point problem in high-dimensional non-convex optimization." *NeurIPS*.
 
@@ -172,15 +182,23 @@ Using the chain rule and the fact that $\sigma'(z) = \sigma(z)(1 - \sigma(z))$:
 
 $$\frac{\partial L}{\partial z} = \hat{y} - y$$
 
-$$\frac{\partial L}{\partial w_j} = (\hat{y} - y) x_j$$
+For a **single sample**, the simplification is:
+
+$$\frac{\partial L}{\partial w_j} = (\hat{y} - y) \, x_j$$
 
 $$\frac{\partial L}{\partial b} = \hat{y} - y$$
 
-This simplification is why sigmoid + BCE is a natural pairing for binary classification. It covers steps 1&ndash;4 (the single neuron).
+For a **batch** of $n$ samples, the loss and gradients are averaged:
+
+$$\mathbf{dw} = \frac{1}{n} X^{\top}(\hat{\mathbf{y}} - \mathbf{y})$$
+
+$$db = \frac{1}{n}\sum_{i=1}^{n}(\hat{y}_i - y_i)$$
+
+This simplification is why sigmoid + BCE is a natural pairing for binary classification. It covers steps 1&ndash;4 (the single neuron with full-batch gradient descent).
 
 ### Exercise Structure
-- The single student-facing file is `exercises/module_02_perceptrons/exercise.py`. Steps: (1) `forward` single neuron, (2) `binary_cross_entropy`, (3) `compute_gradients`, (4) `update_parameters`, (5) observe the single neuron fail on XOR (no code), (6) `relu`, (7) `MLP.forward`, extra credit `SGD.step`.
-- The runner prints three parts: PART 1 (single neuron, linear data, ~99.3%), PART 2 (single neuron, XOR data, ~50%, loss plateau at $\ln 2 \approx 0.693$), PART 3 (MLP, XOR data), and an extra-credit run using the student's optimizer class.
+- The single student-facing file is `exercises/module_02_perceptrons/exercise.py`. Steps: (1) `forward` single neuron (vectorized over a batch), (2) `binary_cross_entropy`, (3) `compute_gradients` (averaged over the batch), (4) `update_parameters`, (5) observe the single neuron fail on XOR (no code), (6) `relu`, (7) `MLP.forward`, extra credit `SGD.step`.
+- The runner prints three parts: PART 1 (single neuron with full-batch gradient descent, linear data, ~99.3%), PART 2 (same neuron, XOR data, ~50%, loss plateau at $\ln 2 \approx 0.693$), PART 3 (MLP, XOR data), and an extra-credit run using the student's optimizer class.
 
 ### MLP with ReLU Hidden Layer
 - `MLP.forward`: `h = relu(self.hidden(x))`, then `sigmoid(self.output(h))`. ReLU on the hidden layer, sigmoid on the output so the result is a probability for BCE.

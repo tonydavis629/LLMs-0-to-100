@@ -870,8 +870,7 @@
 }
 
 .mlp-canvas,
-.land-canvas,
-.land-net {
+.land-canvas {
   width: 100%;
   height: 100%;
   min-height: 0;
@@ -949,14 +948,8 @@
 
 .land-main {
   display: grid;
-  grid-template-columns: 1.25fr 0.75fr;
-  /* Pin the single row to the flex-allotted height. Without an explicit
-     track the row is auto-sized to content, and because the canvases use
-     height:100% their own drawing-buffer height feeds back into the row,
-     growing the canvas a few px on every redraw (the "slides drift down"
-     bug). minmax(0, 1fr) fixes the row to the container's free space. */
+  grid-template-columns: 1fr;
   grid-template-rows: minmax(0, 1fr);
-  gap: 18px;
   flex: 1;
   min-height: 0;
 }
@@ -970,6 +963,178 @@
   border-radius: 6px;
   padding: 7px 16px;
   cursor: pointer;
+}
+
+.land-reset-btn {
+  font-family: var(--body-font);
+  font-size: 13pt;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+  padding: 7px 16px;
+  cursor: pointer;
+}
+
+/* ===========================================
+   BOUNDARY EXPLORER WIDGET
+   Reuses .mlp-widget chrome; styles the
+   dataset and architecture button rows.
+   =========================================== */
+
+.expl-datasets {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.expl-ds-btn {
+  font-family: var(--body-font);
+  font-size: 12pt;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.expl-ds-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #0a0e1a;
+  font-weight: 600;
+}
+
+.expl-arch {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.expl-arch-btn {
+  font-family: var(--body-font);
+  font-size: 12pt;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.expl-arch-btn:hover {
+  background: rgba(74, 158, 255, 0.22);
+}
+
+.expl-arch-btn.expl-reset {
+  background: rgba(245, 166, 35, 0.12);
+  border-color: rgba(245, 166, 35, 0.40);
+  color: var(--secondary-color);
+}
+
+/* ===========================================
+   SINGLE PERCEPTRON WIDGET
+   Adjustable w1/w2/b, one decision line on data.
+   =========================================== */
+
+.perc-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+.perc-canvas-wrap {
+  flex: 1;
+  min-height: 0;
+}
+
+.perc-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: #0d1225;
+  border: 1px solid var(--line-color);
+  border-radius: var(--box-radius);
+}
+
+.perc-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.perc-datasets {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.perc-ds-btn {
+  font-family: var(--body-font);
+  font-size: 12pt;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.perc-ds-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #0a0e1a;
+  font-weight: 600;
+}
+
+.perc-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.perc-slider {
+  display: grid;
+  grid-template-columns: 50px 1fr 58px;
+  align-items: center;
+  gap: 10px;
+}
+
+.reveal .perc-slider label {
+  font-size: 12pt;
+  color: var(--primary-color);
+  font-weight: 600;
+  margin: 0;
+}
+
+.perc-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary-color);
+}
+
+.reveal .perc-slider .perc-val {
+  font-size: 12pt;
+  color: var(--text-color);
+  font-family: monospace;
+  text-align: right;
+  margin: 0;
+}
+
+.reveal .perc-readout {
+  font-size: 13pt;
+  color: var(--muted-color);
+  text-align: center;
+  margin: 0;
+}
+
+.reveal .perc-readout strong {
+  color: var(--secondary-color);
 }
 
 /* Module 2 overrides on top of the shared slides/source/styles.css.
@@ -995,7 +1160,7 @@
 
 Module 2: Perceptrons and Optimization
 
-From Neurons to Networks
+Neurons to Networks
 
 ---
 
@@ -1302,6 +1467,71 @@ Why GPUs matter
 
 ---
 
+<!-- .slide: id="matrix-natural-graph" -->
+
+## Natural Graphs Become Sparse Matrices
+
+Every graph is a matrix: entry $(i,j)$ is the weight of the edge from node $j$ to node $i$; zero means no edge.
+
+<div class="slide-columns" style="grid-template-columns: 1.05fr 0.95fr; gap: 28px; align-items: center;">
+
+<div>
+
+<svg viewBox="0 0 520 270" width="100%" style="max-height:310px;">
+  <defs>
+    <marker id="sgar" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/>
+    </marker>
+  </defs>
+  <g stroke="#8892a4" stroke-width="2.2" fill="none" marker-end="url(#sgar)">
+    <path d="M90,64 C145,34 185,42 230,74"/>
+    <path d="M90,64 C126,120 126,166 90,216"/>
+    <path d="M230,74 C302,70 336,104 376,142"/>
+    <path d="M90,216 C150,226 204,206 256,170"/>
+    <path d="M256,170 C306,186 338,174 376,142"/>
+    <path d="M376,142 C420,112 442,84 464,48"/>
+  </g>
+  <g fill="#0d1225" stroke="#4a9eff" stroke-width="2.5">
+    <circle cx="90" cy="64" r="22"/><circle cx="230" cy="74" r="22"/>
+    <circle cx="376" cy="142" r="22"/><circle cx="90" cy="216" r="22"/>
+    <circle cx="256" cy="170" r="22"/><circle cx="464" cy="48" r="22"/>
+  </g>
+  <g fill="#e8eaf0" font-size="16" text-anchor="middle">
+    <text x="90" y="70">A</text><text x="230" y="80">B</text><text x="376" y="148">C</text>
+    <text x="90" y="222">D</text><text x="256" y="176">E</text><text x="464" y="54">F</text>
+  </g>
+  <g fill="#f5a623" font-size="13" text-anchor="middle">
+    <text x="158" y="48">0.7</text><text x="116" y="142">1.2</text><text x="307" y="84">0.5</text>
+    <text x="170" y="223">0.9</text><text x="318" y="184">0.4</text><text x="430" y="88">1.1</text>
+  </g>
+</svg>
+
+</div>
+
+<div>
+
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--primary-color); font-weight:600; margin: 0 0 8px 0;">Adjacency / weight matrix</p>
+<table style="margin: 0 auto; border-collapse: collapse; color: var(--text-color); font-size: 15pt;">
+  <tr><td></td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td></tr>
+  <tr><td>A</td><td>0</td><td style="color:#f5a623;">0.7</td><td>0</td><td style="color:#f5a623;">1.2</td><td>0</td><td>0</td></tr>
+  <tr><td>B</td><td>0</td><td>0</td><td style="color:#f5a623;">0.5</td><td>0</td><td>0</td><td>0</td></tr>
+  <tr><td>C</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style="color:#f5a623;">1.1</td></tr>
+  <tr><td>D</td><td>0</td><td>0</td><td>0</td><td>0</td><td style="color:#f5a623;">0.9</td><td>0</td></tr>
+  <tr><td>E</td><td>0</td><td>0</td><td style="color:#f5a623;">0.4</td><td>0</td><td>0</td><td>0</td></tr>
+  <tr><td>F</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</table>
+<p style="color: var(--muted-color); font-size: 14pt; margin-top: 10px;">Zeros mean "no edge"; nonzeros carry edge weights.</p>
+</div>
+
+</div>
+
+</div>
+
+The dense layer case is the same idea with every possible edge present. Sparse graphs just keep the entries that matter.
+
+---
+
 <!-- .slide: id="matrix-graph" -->
 
 ## Matrix-Graph Equivalence
@@ -1360,71 +1590,6 @@ One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(
 </div>
 
 </div>
-
----
-
-<!-- .slide: id="matrix-natural-graph" -->
-
-## Natural Graphs Become Sparse Matrices
-
-Real graphs are rarely fully connected. A citation graph, social graph, or road network usually has many possible edges but only a few real ones.
-
-<div class="slide-columns" style="grid-template-columns: 1.05fr 0.95fr; gap: 28px; align-items: center;">
-
-<div>
-
-<svg viewBox="0 0 520 270" width="100%" style="max-height:310px;">
-  <defs>
-    <marker id="sgar" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/>
-    </marker>
-  </defs>
-  <g stroke="#8892a4" stroke-width="2.2" fill="none" marker-end="url(#sgar)">
-    <path d="M90,64 C145,34 185,42 230,74"/>
-    <path d="M90,64 C126,120 126,166 90,216"/>
-    <path d="M230,74 C302,70 336,104 376,142"/>
-    <path d="M90,216 C150,226 204,206 256,170"/>
-    <path d="M256,170 C306,186 338,174 376,142"/>
-    <path d="M376,142 C420,112 442,84 464,48"/>
-  </g>
-  <g fill="#0d1225" stroke="#4a9eff" stroke-width="2.5">
-    <circle cx="90" cy="64" r="22"/><circle cx="230" cy="74" r="22"/>
-    <circle cx="376" cy="142" r="22"/><circle cx="90" cy="216" r="22"/>
-    <circle cx="256" cy="170" r="22"/><circle cx="464" cy="48" r="22"/>
-  </g>
-  <g fill="#e8eaf0" font-size="16" text-anchor="middle">
-    <text x="90" y="70">A</text><text x="230" y="80">B</text><text x="376" y="148">C</text>
-    <text x="90" y="222">D</text><text x="256" y="176">E</text><text x="464" y="54">F</text>
-  </g>
-  <g fill="#f5a623" font-size="13" text-anchor="middle">
-    <text x="158" y="48">0.7</text><text x="116" y="142">1.2</text><text x="307" y="84">0.5</text>
-    <text x="170" y="223">0.9</text><text x="318" y="184">0.4</text><text x="430" y="88">1.1</text>
-  </g>
-</svg>
-
-</div>
-
-<div>
-
-<div style="text-align:center;">
-<p class="text-lg" style="color: var(--primary-color); font-weight:600; margin: 0 0 8px 0;">Adjacency / weight matrix</p>
-<table style="margin: 0 auto; border-collapse: collapse; color: var(--text-color); font-size: 15pt;">
-  <tr><td></td><td>A</td><td>B</td><td>C</td><td>D</td><td>E</td><td>F</td></tr>
-  <tr><td>A</td><td>0</td><td style="color:#f5a623;">0.7</td><td>0</td><td style="color:#f5a623;">1.2</td><td>0</td><td>0</td></tr>
-  <tr><td>B</td><td>0</td><td>0</td><td style="color:#f5a623;">0.5</td><td>0</td><td>0</td><td>0</td></tr>
-  <tr><td>C</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td style="color:#f5a623;">1.1</td></tr>
-  <tr><td>D</td><td>0</td><td>0</td><td>0</td><td>0</td><td style="color:#f5a623;">0.9</td><td>0</td></tr>
-  <tr><td>E</td><td>0</td><td>0</td><td style="color:#f5a623;">0.4</td><td>0</td><td>0</td><td>0</td></tr>
-  <tr><td>F</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-</table>
-<p style="color: var(--muted-color); font-size: 14pt; margin-top: 10px;">Zeros mean "no edge"; nonzeros carry edge weights.</p>
-</div>
-
-</div>
-
-</div>
-
-The dense layer case is the same idea with every possible edge present. Sparse graphs just keep the entries that matter.
 
 ---
 
@@ -1527,10 +1692,10 @@ XOR is **not linearly separable** — you cannot draw one line to separate the c
 
 ---
 
-<section id="anim-linsep">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="linsep-viz" preload="auto"></video>
-  </div>
+
+<section id="single-perceptron">
+  <h2>A Single Neuron Is One Line</h2>
+  <div class="interactive-host" data-widget="singlePerceptron"></div>
 </section>
 
 ---
@@ -1603,6 +1768,13 @@ The simplest proof that **depth matters**: one layer cannot do what two can. <!-
 
 ---
 
+<section id="boundary-explorer-depth">
+  <h2>Adding a Second Layer</h2>
+  <div class="interactive-host" data-widget="boundaryExplorer" data-mode="depth"></div>
+</section>
+
+---
+
 <!-- .slide: id="folding" -->
 
 ## Folding in High-Dimensional Space
@@ -1642,7 +1814,7 @@ More hidden neurons means more cuts, so the boundary can wrap tightly around any
 
 ---
 
-<section id="mlp-boundary-explorer">
+<section id="mlp-curve">
   <h2>Many Lines Make a Curve</h2>
   <div class="interactive-host" data-widget="mlpBoundary"></div>
 </section>
@@ -1765,12 +1937,101 @@ Run the network forward, then walk **backward** applying the **chain rule** to t
     <line x1="368" y1="158" x2="298" y2="158" marker-end="url(#bpb)"/>
     <path d="M586,140 C594,190 696,190 706,140" marker-end="url(#bpb)"/>
   </g>
-  <text x="396" y="208" fill="#f5a623" font-size="14" text-anchor="middle">orange arrows: gradient flow from loss back through local derivatives</text>
-  <text x="396" y="226" fill="#f5a623" font-size="13" text-anchor="middle">∂L/∂w = (∂L/∂ŷ)(∂ŷ/∂z)(∂z/∂w)</text>
+  <text x="385" y="208" fill="#f5a623" font-size="14" text-anchor="middle">backward pass</text>
 </svg>
 </div>
 
 The chain rule multiplies one local derivative per stage along the path **loss &rarr; output &rarr; weight**, giving $\partial L/\partial w$. The update rule then adds the negative-gradient step. <!-- .element: class="text-lg" style="text-align:center; color: var(--muted-color); margin-top:10px;" -->
+
+---
+
+<!-- .slide: id="chain-rule" -->
+
+## The Chain Rule in the Backward Pass
+
+To find how a weight deep in the network affects the loss, the chain rule multiplies local derivatives along the path from output back to that weight.
+
+<div style="text-align:center; margin-top:6px;">
+<svg viewBox="0 0 700 240" width="94%" style="max-height:300px;">
+  <defs>
+    <marker id="crf" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a9eff"/></marker>
+    <marker id="crb" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5a623"/></marker>
+  </defs>
+  <g font-size="15" text-anchor="middle">
+    <rect x="16" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/><text x="60" y="119" fill="#e8eaf0">w</text>
+    <rect x="160" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/><text x="204" y="119" fill="#e8eaf0">z</text>
+    <rect x="310" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/><text x="354" y="119" fill="#e8eaf0">ŷ</text>
+    <rect x="460" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#e74c3c" stroke-width="2"/><text x="504" y="119" fill="#e8eaf0">L</text>
+    <rect x="590" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#3fb950" stroke-width="2"/><text x="634" y="112" fill="#e8eaf0">update</text><text x="634" y="130" fill="#8892a4" font-size="12">w new</text>
+  </g>
+  <g stroke="#4a9eff" stroke-width="2" fill="none">
+    <line x1="106" y1="100" x2="158" y2="100" marker-end="url(#crf)"/>
+    <line x1="250" y1="100" x2="308" y2="100" marker-end="url(#crf)"/>
+    <line x1="400" y1="100" x2="458" y2="100" marker-end="url(#crf)"/>
+  </g>
+  <g stroke="#f5a623" stroke-width="2.4" fill="none">
+    <line x1="460" y1="152" x2="400" y2="152" marker-end="url(#crb)"/>
+    <line x1="310" y1="152" x2="250" y2="152" marker-end="url(#crb)"/>
+    <line x1="160" y1="152" x2="106" y2="152" marker-end="url(#crb)"/>
+    <path d="M504,140 C512,192 626,192 634,140" marker-end="url(#crb)"/>
+  </g>
+  <text x="135" y="184" fill="#f5a623" font-size="14" text-anchor="middle">∂z/∂w</text>
+  <text x="285" y="184" fill="#f5a623" font-size="14" text-anchor="middle">∂ŷ/∂z</text>
+  <text x="435" y="184" fill="#f5a623" font-size="14" text-anchor="middle">∂L/∂ŷ</text>
+  <text x="350" y="215" fill="#e8eaf0" font-size="15" text-anchor="middle" font-weight="600">
+    ∂L/∂w = (∂L/∂ŷ) &times; (∂ŷ/∂z) &times; (∂z/∂w)
+  </text>
+</svg>
+</div>
+
+Each layer only needs its own **local** derivative; the chain rule stitches them together. This is why autograd works: no matter how deep the network, each node just multiplies its gradient by the derivative of the operation it performed.
+
+---
+
+<!-- .slide: id="gradient-step-calculation" -->
+
+## Gradient Descent as a Calculation
+
+At a point on the loss surface, the gradient points uphill. The update adds a step in the opposite direction.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 36px;">
+
+<div>
+
+**Current point**
+
+$$
+\mathbf w_{\text{old}} =
+\begin{bmatrix}
+w_1 \\
+w_2
+\end{bmatrix}
+$$
+
+$$
+\nabla L(\mathbf w_{\text{old}}) =
+\begin{bmatrix}
+\frac{\partial L}{\partial w_1} \\
+\frac{\partial L}{\partial w_2}
+\end{bmatrix}
+$$
+
+</div>
+
+<div>
+
+**Update**
+
+$$
+\mathbf w_{\text{new}} =
+\mathbf w_{\text{old}} + \left(-\eta \nabla L(\mathbf w_{\text{old}})\right)
+$$
+
+The coordinates change because the weights change; the height changes because the loss at the new coordinates is different.
+
+</div>
+
+</div>
 
 ---
 
@@ -1913,85 +2174,6 @@ The learning rate affects which kind of minimum the optimizer finds. SGD noise h
 
 ---
 
-<!-- .slide: id="gradient-step-calculation" -->
-
-## Gradient Descent as a Calculation
-
-At a point on the loss surface, the gradient points uphill. The update adds a step in the opposite direction.
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 36px;">
-
-<div>
-
-**Current point**
-
-$$
-\mathbf w_{\text{old}} =
-\begin{bmatrix}
-w_1 \\
-w_2
-\end{bmatrix}
-$$
-
-$$
-\nabla L(\mathbf w_{\text{old}}) =
-\begin{bmatrix}
-\frac{\partial L}{\partial w_1} \\
-\frac{\partial L}{\partial w_2}
-\end{bmatrix}
-$$
-
-</div>
-
-<div>
-
-**Update**
-
-$$
-\mathbf w_{\text{new}} =
-\mathbf w_{\text{old}} + \left(-\eta \nabla L(\mathbf w_{\text{old}})\right)
-$$
-
-The coordinates change because the weights change; the height changes because the loss at the new coordinates is different.
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="adam" -->
-## Adam Optimizer
-
-**Adam** (Adaptive Moment Estimation) maintains per-parameter learning rates based on the history of gradients.
-
-- Tracks the first moment (mean) and second moment (variance) of each parameter's gradient
-- Parameters with consistently large gradients get smaller learning rates
-- Parameters with small or noisy gradients get larger learning rates
-
-Adam is the **default optimizer** in practice for most deep learning tasks. When in doubt, start with Adam.
-
----
-
-<!-- .slide: id="computation-graphs" -->
-
-## Computation Graphs
-
-Frameworks like PyTorch build a **dynamic computation graph** as the forward pass runs. <!-- .element: class="text-lg" -->
-
-- Each operation records its inputs and which function produced the output
-- The backward pass walks the graph in reverse, applying the chain rule at every node
-- You write only the forward pass; the gradients come for free
-<!-- .element: class="text-lg" style="margin-top: 15px;" -->
-
-<div class="note">
-
-This is **automatic differentiation** (autograd) &mdash; why you can prototype a new architecture in a few lines without deriving a single gradient by hand. <!-- .element: class="text-lg" style="margin: 0;" -->
-
-</div>
-
----
-
 <!-- .slide: id="overfitting" -->
 ## Overfitting and Generalization
 
@@ -2030,6 +2212,45 @@ A network with enough parameters can **memorize** any training set &mdash; achie
     <video class="manim-stepper" data-manim-scene="overfit-viz" preload="auto"></video>
   </div>
 </section>
+
+---
+
+<!-- .slide: id="adam" -->
+## Adam Optimizer
+
+**Adam** (Adaptive Moment Estimation) maintains per-parameter learning rates based on the history of gradients.
+
+- Tracks the first moment (mean) and second moment (variance) of each parameter's gradient
+- Parameters with consistently large gradients get smaller learning rates
+- Parameters with small or noisy gradients get larger learning rates
+
+Adam is the **default optimizer** in practice for most deep learning tasks. When in doubt, start with Adam.
+
+---
+
+<section id="adam-landscape">
+  <h2>Adam on the Loss Landscape</h2>
+  <div class="interactive-host" data-widget="adamLandscape"></div>
+</section>
+
+---
+
+<!-- .slide: id="computation-graphs" -->
+
+## Computation Graphs
+
+Frameworks like PyTorch build a **dynamic computation graph** as the forward pass runs. <!-- .element: class="text-lg" -->
+
+- Each operation records its inputs and which function produced the output
+- The backward pass walks the graph in reverse, applying the chain rule at every node
+- You write only the forward pass; the gradients come for free
+<!-- .element: class="text-lg" style="margin-top: 15px;" -->
+
+<div class="note">
+
+This is **automatic differentiation** (autograd) &mdash; why you can prototype a new architecture in a few lines without deriving a single gradient by hand. <!-- .element: class="text-lg" style="margin: 0;" -->
+
+</div>
 
 ---
 
@@ -2083,25 +2304,24 @@ Each function is mostly written for you &mdash; you fill in **one key line**. <!
 ## Step 1: forward()
 
 ```python
-def forward(x: torch.Tensor, weights: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:
-    """Compute the output of a single neuron.
+def forward(X: torch.Tensor, weights: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:
+    """Compute the output of a single neuron for a whole batch.
 
     Args:
-        x: Shape (2,) input tensor.
-        weights: Shape (2,) weight tensor.
+        X: Input tensor, shape (n_samples, 2).
+        weights: Weight vector, shape (2,).
         bias: Scalar bias tensor.
 
     Returns:
-        A probability tensor in (0, 1).
+        A probability tensor of shape (n_samples,) with values in (0, 1).
     """
     # TODO: Compute the neuron's output in one line
-    # HINT: use the dot product x @ weights, add bias, then call sigmoid
     raise NotImplementedError("TODO: implement the forward pass")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** Use the tensor dot product `x @ weights`, add `bias`, then pass the result to the previously defined `sigmoid()` function.
+**Hint:** Use the batch matrix-vector product `X @ weights`, add `bias`, then pass the result to `sigmoid()`.
 
 </div>
 
@@ -2110,7 +2330,7 @@ def forward(x: torch.Tensor, weights: torch.Tensor, bias: torch.Tensor) -> torch
 **Answer:**
 
 ```python
-return sigmoid(x @ weights + bias)
+return sigmoid(X @ weights + bias)
 ```
 
 </div>
@@ -2137,7 +2357,6 @@ def binary_cross_entropy(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Te
     y_pred = torch.clamp(y_pred, eps, 1 - eps)
 
     # TODO: Compute and return the BCE loss using the formula in the docstring
-    # HINT: use torch.log on y_pred and on (1 - y_pred), mirroring the formula above
     raise NotImplementedError("TODO: implement binary cross-entropy")
 ```
 
@@ -2165,30 +2384,20 @@ return -(y_true * torch.log(y_pred) + (1 - y_true) * torch.log(1 - y_pred))
 
 ```python
 def compute_gradients(
-    x: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
+    X: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """Compute gradients of BCE loss w.r.t. weights and bias.
-
-    For sigmoid + BCE the chain rule simplifies beautifully to:
-        dL/dw = (y_pred - y_true) * x
-        dL/db = (y_pred - y_true)
-
-    Args:
-        x: Input vector, shape (2,).
-        y_true: True label (0 or 1).
-        y_pred: Predicted probability.
-
-    Returns:
-        (dw, db): gradient w.r.t. weights (shape (2,)) and bias (0-dim tensor).
+    """For sigmoid + BCE the chain rule simplifies to:
+        error = y_pred - y_true
+        dw    = X.T @ error / n
+        db    = error.mean()
     """
-    # TODO: Compute the gradients using the formulas in the docstring
-    # HINT: the error is (y_pred - y_true); the weight gradient is error * x and the bias gradient is the error
+    # TODO: Compute the averaged gradients using the formulas in the docstring
     raise NotImplementedError("TODO: implement gradient computation")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** The error is just `y_pred - y_true`. The weight gradient is `error * x`, the bias gradient is `error`.
+**Hint:** The error is `y_pred - y_true`. The weight gradient is `X.T @ error` averaged over the batch; the bias gradient is the mean error.
 
 </div>
 
@@ -2198,7 +2407,10 @@ def compute_gradients(
 
 ```python
 error = y_pred - y_true
-return (error * x, error)
+n = X.shape[0]
+dw = X.T @ error / n
+db = error.mean()
+return (dw, db)
 ```
 
 </div>
@@ -2230,7 +2442,6 @@ def update_parameters(
         (new_weights, new_bias): the updated parameters.
     """
     # TODO: Apply the gradient-descent update rule
-    # HINT: subtract learning_rate * dw from weights, and learning_rate * db from bias
     raise NotImplementedError("TODO: implement parameter update")
 ```
 
@@ -2263,37 +2474,7 @@ return (weights - learning_rate * dw, bias - learning_rate * db)
         <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================
-PART 1: Single Neuron on Linearly Separable Data
-============================================================</span>
-<span class="success">Loaded 150 samples from linear_separable.csv</span>
-  Epoch  20/100  loss=0.0753
-  Epoch  40/100  loss=0.0536
-  Epoch  60/100  loss=0.0457
-  Epoch  80/100  loss=0.0416
-  Epoch 100/100  loss=0.0391
-Final weights: [2.4276, 1.7352], bias: 0.1047
-<span class="success">Accuracy: 149/150 (99.3%)</span>
-Saved plot to output/step5_linear_perceptron.png
-
-<span class="header">============================================================
-PART 2: Single Neuron on Non-Linearly Separable Data (XOR)
-============================================================</span>
-<span class="success">Loaded 160 samples from non_linear_separable.csv</span>
-  Epoch  20/100  loss=0.6926
-  Epoch  40/100  loss=0.6926
-  Epoch  60/100  loss=0.6926
-  Epoch  80/100  loss=0.6926
-  Epoch 100/100  loss=0.6926
-Final weights: [0.0070, -0.0399], bias: -0.0016
-<span class="t-fail">Accuracy: 80/160 (50.0%)</span>
-(A single neuron cannot solve this non-linearly-separable problem.)
-Saved plot to output/step6_nonlinear_perceptron.png
-
-<span class="header">============================================================
-PART 3: MLP on Non-Linearly Separable Data
-============================================================</span>
-<span class="skipped">  [skipped: TODO: implement MLP forward pass]</span></pre>
+        <pre class="terminal-pre"><span class="header">============================================================&#10;PART 1: Single Neuron on Linearly Separable Data&#10;============================================================</span>&#10;<span class="success">Loaded 150 samples from linear_separable.csv</span>&#10;  Epoch  20/100  loss=0.0753&#10;  Epoch  40/100  loss=0.0536&#10;  Epoch  60/100  loss=0.0457&#10;  Epoch  80/100  loss=0.0416&#10;  Epoch 100/100  loss=0.0391&#10;&#10;Final weights: [2.4276, 1.7352], bias: 0.1047&#10;<span class="success">Accuracy: 149/150 (99.3%)</span>&#10;Saved plot to output/step5_linear_perceptron.png&#10;&#10;<span class="header">============================================================&#10;PART 2: Single Neuron on Non-Linearly Separable Data (XOR)&#10;============================================================</span>&#10;<span class="success">Loaded 160 samples from non_linear_separable.csv</span>&#10;  Epoch  20/100  loss=0.6926&#10;  Epoch  40/100  loss=0.6926&#10;  Epoch  60/100  loss=0.6926&#10;  Epoch  80/100  loss=0.6926&#10;  Epoch 100/100  loss=0.6926&#10;&#10;Final weights: [0.0070, -0.0399], bias: -0.0016&#10;<span class="t-fail">Accuracy: 80/160 (50.0%)</span>&#10;(A single neuron cannot solve this non-linearly-separable problem.)&#10;Saved plot to output/step6_nonlinear_perceptron.png&#10;&#10;<span class="header">============================================================&#10;PART 3: MLP on Non-Linearly Separable Data&#10;============================================================</span>&#10;<span class="skipped">  [skipped: TODO: implement the MLP forward pass]</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">99.3% on linear data, but only 50% on XOR &mdash; a single neuron is a linear classifier.</p>
@@ -2333,7 +2514,6 @@ def relu(z: torch.Tensor) -> torch.Tensor:
         A tensor the same shape as z, with negatives replaced by 0.
     """
     # TODO: Return the elementwise max of 0 and z in one line
-    # HINT: torch.clamp(z, min=0.0) clamps every negative value to zero
     raise NotImplementedError("TODO: implement the ReLU activation")
 ```
 
@@ -2370,7 +2550,6 @@ def forward(self, x: torch.Tensor) -> torch.Tensor:
         Output probabilities, shape (n_samples, 1), each in (0, 1).
     """
     # TODO: Compute the two-layer forward pass and return the output probabilities
-    # HINT: apply relu to self.hidden(x), then sigmoid to self.output(...) of that result
     raise NotImplementedError("TODO: implement MLP forward pass")
 ```
 
@@ -2404,37 +2583,7 @@ return sigmoid(self.output(h))
         <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================
-PART 1: Single Neuron on Linearly Separable Data
-============================================================</span>
-<span class="success">Accuracy: 149/150 (99.3%)</span>
-
-<span class="header">============================================================
-PART 2: Single Neuron on Non-Linearly Separable Data (XOR)
-============================================================</span>
-<span class="t-fail">Accuracy: 80/160 (50.0%)</span>
-
-<span class="header">============================================================
-PART 3: MLP on Non-Linearly Separable Data
-============================================================</span>
-  Epoch 100/500  loss=0.0217
-  Epoch 200/500  loss=0.0107
-  Epoch 300/500  loss=0.0071
-  Epoch 400/500  loss=0.0053
-  Epoch 500/500  loss=0.0042
-
-<span class="success">Accuracy: 160/160 (100.0%)</span>
-Saved comparison plot to output/step7_comparison.png
-Saved MLP loss plot to output/step7_mlp_loss.png
-
-<span class="header">============================================================
-EXTRA CREDIT: MLP trained with your own SGD optimizer
-============================================================</span>
-<span class="skipped">  [skipped: Extra credit: implement the optimizer step]</span>
-
-<span class="header">============================================================
-Done! Check the output/ directory for plots.
-============================================================</span></pre>
+        <pre class="terminal-pre"><span class="header">============================================================&#10;PART 1: Single Neuron on Linearly Separable Data&#10;============================================================</span>&#10;<span class="success">Accuracy: 149/150 (99.3%)</span>&#10;&#10;<span class="header">============================================================&#10;PART 2: Single Neuron on Non-Linearly Separable Data (XOR)&#10;============================================================</span>&#10;<span class="t-fail">Accuracy: 80/160 (50.0%)</span>&#10;&#10;<span class="header">============================================================&#10;PART 3: MLP on Non-Linearly Separable Data&#10;============================================================</span>&#10;  Epoch 100/500  loss=0.0217&#10;  Epoch 200/500  loss=0.0107&#10;  Epoch 300/500  loss=0.0071&#10;  Epoch 400/500  loss=0.0053&#10;  Epoch 500/500  loss=0.0042&#10;&#10;<span class="success">Accuracy: 160/160 (100.0%)</span>&#10;Saved comparison plot to output/step7_comparison.png&#10;Saved MLP loss plot to output/step7_mlp_loss.png&#10;&#10;<span class="header">============================================================&#10;EXTRA CREDIT: MLP trained with your own SGD optimizer&#10;============================================================</span>&#10;<span class="success">Accuracy: 160/160 (100.0%)</span>&#10;(Your optimizer matches torch.optim.SGD.)&#10;&#10;<span class="header">============================================================&#10;Done! Check the output/ directory for plots.&#10;============================================================</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">100% &mdash; the ReLU hidden layer lets the MLP learn a non-linear boundary the single neuron could not.</p>
@@ -2460,9 +2609,14 @@ def step(self) -> None:
         None. Each parameter tensor is modified in place.
     """
     # TODO: update each parameter in place using its gradient
-    # HINT: inside `with torch.no_grad():`, loop over self.params and do `p -= self.lr * p.grad`
     raise NotImplementedError("Extra credit: implement the optimizer step")
 ```
+
+<div class="fragment hint-box">
+
+**Hint:** Inside `with torch.no_grad():`, loop over `self.params` and update each one in place with `p -= self.lr * p.grad`.
+
+</div>
 
 The runner trains the same MLP once with `torch.optim.SGD` and once with this small optimizer class. Both use the same gradients; only the parameter update object changes. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
@@ -2615,12 +2769,6 @@ window.MODULE_CONFIG = {
   // Folding, the MLP decision boundary, and the loss landscape are now
   // interactive widgets; the exercise datasets are a static image.
   manimSections: {
-    "linsep-viz": [
-      "LinearSeparabilityScene_0000_perceptron_as_line.mp4",
-      "LinearSeparabilityScene_0001_and_separable.mp4",
-      "LinearSeparabilityScene_0002_or_separable.mp4",
-      "LinearSeparabilityScene_0003_xor_fails.mp4"
-    ],
     "overfit-viz": [
       "OverfittingCurveScene_0000_overfit_axes.mp4",
       "OverfittingCurveScene_0001_overfit_train.mp4",
@@ -3118,10 +3266,6 @@ INTERACTIVE_WIDGETS.folding = function(host) {
     node(ctx, leftX, inY[0], 'x₁', PRIMARY);
     node(ctx, leftX, inY[1], 'x₂', PRIMARY);
     state.neurons.forEach(function(n, idx) { node(ctx, rightX, outY[idx], 'h' + (idx + 1), NEURON_COLORS[idx]); });
-    ctx.fillStyle = MUTED;
-    ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Each edge label is the same weight used by the line on the left.', w / 2, h - 12);
   }
 
   function dot(ctx, px, py, color, r) {
@@ -3136,6 +3280,13 @@ INTERACTIVE_WIDGETS.folding = function(host) {
     });
   }
 
+  // Pre-activation (before ReLU) for each neuron: z_j = w1_j*x1 + w2_j*x2 + b_j
+  function preact(p) {
+    return state.neurons.map(function(n) {
+      return n.w1 * p.x + n.w2 * p.y + n.b;
+    });
+  }
+
   function draw() {
     // ---- Input space (left): data + each neuron's decision line ----
     var fi = fitCanvas(inCanvas);
@@ -3147,6 +3298,45 @@ INTERACTIVE_WIDGETS.folding = function(host) {
       ctx.beginPath();
       ctx.rect(pad, pad, fi.w - 2 * pad, fi.h - 2 * pad);
       ctx.clip();
+      // Shade each neuron's "active" half-plane (where z > 0, i.e. h > 0)
+      state.neurons.forEach(function(n, idx) {
+        var a = n.w1, b = n.w2, c = n.b;
+        ctx.fillStyle = NEURON_COLORS[idx].replace(')', ',0.06)').replace('rgb', 'rgba').replace('#4a9eff', 'rgba(74,158,255,0.06)').replace('#f5a623', 'rgba(245,166,35,0.06)');
+        // Simple approximation: fill the canvas then clip to the active side
+        ctx.save();
+        ctx.beginPath();
+        if (Math.abs(b) > 1e-9) {
+          var y0 = -(a * xr[0] + c) / b;
+          var y1 = -(a * xr[1] + c) / b;
+          if (b > 0) {
+            ctx.moveTo(m(xr[0], yr[0])[0], m(xr[0], yr[0])[1]);
+            ctx.lineTo(m(xr[1], yr[0])[0], m(xr[1], yr[0])[1]);
+            ctx.lineTo(m(xr[1], y1)[0], m(xr[1], y1)[1]);
+            ctx.lineTo(m(xr[0], y0)[0], m(xr[0], y0)[1]);
+          } else {
+            ctx.moveTo(m(xr[0], yr[1])[0], m(xr[0], yr[1])[1]);
+            ctx.lineTo(m(xr[1], yr[1])[0], m(xr[1], yr[1])[1]);
+            ctx.lineTo(m(xr[1], y1)[0], m(xr[1], y1)[1]);
+            ctx.lineTo(m(xr[0], y0)[0], m(xr[0], y0)[1]);
+          }
+        } else if (Math.abs(a) > 1e-9) {
+          var xv = -c / a;
+          if (a > 0) {
+            ctx.moveTo(m(xv, yr[0])[0], m(xv, yr[0])[1]);
+            ctx.lineTo(m(xr[1], yr[0])[0], m(xr[1], yr[0])[1]);
+            ctx.lineTo(m(xr[1], yr[1])[0], m(xr[1], yr[1])[1]);
+            ctx.lineTo(m(xv, yr[1])[0], m(xv, yr[1])[1]);
+          } else {
+            ctx.moveTo(m(xv, yr[0])[0], m(xv, yr[0])[1]);
+            ctx.lineTo(m(xr[0], yr[0])[0], m(xr[0], yr[0])[1]);
+            ctx.lineTo(m(xr[0], yr[1])[0], m(xr[0], yr[1])[1]);
+            ctx.lineTo(m(xv, yr[1])[0], m(xv, yr[1])[1]);
+          }
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      });
       state.neurons.forEach(function(n, idx) {
         var a = n.w1, b = n.w2, c = n.b, p0, p1;
         if (Math.abs(b) > 1e-9) {
@@ -3180,16 +3370,18 @@ INTERACTIVE_WIDGETS.folding = function(host) {
 
     drawGraph();
 
-    // ---- Hidden space (right): folded points + centroid separator ----
+    // ---- Hidden space (right): folded points with fold lines ----
     var fh = fitCanvas(hidCanvas);
     if (!fh) { return; }
-    var H = data.map(function(p) { return { h: hidden(p), cls: p.cls }; });
+    var H = data.map(function(p) { return { h: hidden(p), z: preact(p), cls: p.cls }; });
     var k = state.k;
-    // project to 2D: K=1 uses (h1, jitter); K>=2 uses (h1, h2)
-    var pts = H.map(function(o, i) {
-      if (k === 1) return { x: o.h[0], y: ((i % 7) - 3) * 0.12, cls: o.cls };
-      return { x: o.h[0], y: o.h[1], cls: o.cls };
-    });
+    var pts;
+    if (k === 1) {
+      // For 1 neuron: x = h1, y = z1 (pre-activation) so the fold at z=0 is visible
+      pts = H.map(function(o) { return { x: o.h[0], y: o.z[0], cls: o.cls }; });
+    } else {
+      pts = H.map(function(o) { return { x: o.h[0], y: o.h[1], cls: o.cls }; });
+    }
     var xs = pts.map(function(p) { return p.x; });
     var ys = pts.map(function(p) { return p.y; });
     function span(arr) {
@@ -3198,21 +3390,13 @@ INTERACTIVE_WIDGETS.folding = function(host) {
       var pd = (hi - lo) * 0.12;
       return [lo - pd, hi + pd];
     }
-    var hxr = span(xs), hyr = k === 1 ? [-1, 1] : span(ys);
+    var hxr = span(xs), hyr = span(ys);
     var pad2 = 26;
-    var mh = drawFrame(fh.ctx, fh.w, fh.h, pad2, hxr, hyr,
-                       'h₁', k === 1 ? '' : 'h₂');
+    var xlab = 'h₁', ylab = k === 1 ? 'z₁ (pre-ReLU)' : 'h₂';
+    var mh = drawFrame(fh.ctx, fh.w, fh.h, pad2, hxr, hyr, xlab, ylab);
     var ctx2 = fh.ctx;
 
-    // Logistic-regression separator: a single, smooth, deterministic
-    // linear boundary in hidden space. A perceptron stops at the FIRST of
-    // the infinitely many lines that separate the points, so a tiny shift
-    // in the fold makes it jump to a different valid line and the boundary
-    // flips discontinuously. Gradient descent on the convex log-loss
-    // instead has one optimum that moves continuously with the sliders, so
-    // nudging a weight nudges the line. Features are standardized so a
-    // fixed learning rate converges at any hidden-space scale; the fitted
-    // line is then mapped back to raw coordinates for drawing.
+    // Logistic-regression separator in hidden space
     var oneD = (k === 1);
     function stats(sel) {
       var n = pts.length, m = 0;
@@ -3237,8 +3421,6 @@ INTERACTIVE_WIDGETS.folding = function(host) {
       var inv = lr / pts.length;
       a -= ga * inv; if (!oneD) cY -= gc * inv; d -= gd * inv;
     }
-    // Map standardized weights back to raw hidden coords so the same
-    // wx*x + wy*y + b = 0 line code below can draw it.
     var sw = {
       wx: a / stx.sd,
       wy: oneD ? 0 : cY / sty.sd,
@@ -3255,8 +3437,40 @@ INTERACTIVE_WIDGETS.folding = function(host) {
     ctx2.beginPath();
     ctx2.rect(pad2, pad2, fh.w - 2 * pad2, fh.h - 2 * pad2);
     ctx2.clip();
+
+    // Draw fold lines at h_j = 0 in hidden space, colored per neuron.
+    // These show where the ReLU "folded" the space: points with h_j = 0
+    // are on the inactive side of neuron j's line.
+    state.neurons.forEach(function(n, idx) {
+      ctx2.strokeStyle = NEURON_COLORS[idx];
+      ctx2.lineWidth = 2;
+      ctx2.setLineDash([6, 5]);
+      // Fold for neuron idx: h_idx = 0 line
+      if (idx === 0) {
+        // h1 = 0 is the y-axis of the hidden space
+        if (hxr[0] <= 0 && hxr[1] >= 0) {
+          var f0 = mh(0, hyr[0]), f1 = mh(0, hyr[1]);
+          ctx2.beginPath(); ctx2.moveTo(f0[0], f0[1]); ctx2.lineTo(f1[0], f1[1]); ctx2.stroke();
+        }
+      } else if (idx === 1 && !oneD) {
+        // h2 = 0 is the x-axis of the hidden space
+        if (hyr[0] <= 0 && hyr[1] >= 0) {
+          var f0 = mh(hxr[0], 0), f1 = mh(hxr[1], 0);
+          ctx2.beginPath(); ctx2.moveTo(f0[0], f0[1]); ctx2.lineTo(f1[0], f1[1]); ctx2.stroke();
+        }
+      }
+      ctx2.setLineDash([]);
+    });
+
+    // Shade the "active" quadrant where all neurons are firing (h_j > 0)
+    if (!oneD && hxr[0] < 0 && hxr[1] > 0 && hyr[0] < 0 && hyr[1] > 0) {
+      var q0 = mh(0, 0), q1 = mh(hxr[1], 0), q2 = mh(hxr[1], hyr[1]), q3 = mh(0, hyr[1]);
+      ctx2.fillStyle = 'rgba(74,158,255,0.06)';
+      ctx2.beginPath(); ctx2.moveTo(q0[0], q0[1]); ctx2.lineTo(q1[0], q1[1]);
+      ctx2.lineTo(q2[0], q2[1]); ctx2.lineTo(q3[0], q3[1]); ctx2.closePath(); ctx2.fill();
+    }
+
     if (Math.abs(sw.wx) + Math.abs(sw.wy) > 1e-6) {
-      // decision line sw.wx*x + sw.wy*y + sw.b = 0, clipped to frame
       var e0, e1;
       if (!oneD && Math.abs(sw.wy) > 1e-6) {
         e0 = mh(hxr[0], -(sw.wx * hxr[0] + sw.b) / sw.wy);
@@ -3292,253 +3506,974 @@ INTERACTIVE_WIDGETS.folding = function(host) {
   return { resize: draw };
 };
 
-// ---- MLP boundary widget: width x depth half-plane cuts wrap a class ----
-// A one-hidden-layer ReLU network carves a CONVEX region as the
-// intersection of its neurons' half-planes: each neuron is one straight
-// cut, the output neuron ANDs them. That region is a polygon, and adding
-// neurons adds sides, so the boundary rounds toward the circle it is
-// approximating -- "many lines make a curve". Depth lets a deep net compose
-// cuts into more pieces, so width x depth is the piece budget. This is a
-// faithful geometric construction of a representable boundary, not a fit.
+// ---- MLP boundary widget: trained MLP on moons/spiral datasets ----
+// "Many lines make a curve": each hidden neuron contributes one linear
+// piece to the decision boundary. Width x depth = total pieces.
+// A real MLP is trained (via backprop) on the chosen dataset, and the
+// learned boundary is rendered as a contour.
 INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
   var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
       LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
-  var state = { width: 4, depth: 2 };
+  var state = { dataset: 'moons', width: 4, depth: 1, net: null, acc: 0 };
+  var GRID = 40, TRAIN_STEPS = 800, LR = 0.4;
 
-  // --- Disk-in-ring data: green class fills a central disk, red class fills
-  // the surrounding ring. The circle between them is the "curve" the cuts
-  // approximate. Seeded so the layout is stable across redraws. ---
-  var CX = 0.5, CY = 0.5, GREEN_R = 0.17;
-  var data = (function() {
-    var a = 7;
-    function rnd() {
+  function mulberry32(a) {
+    return function() {
       a |= 0; a = a + 0x6D2B79F5 | 0;
       var t = Math.imul(a ^ a >>> 15, 1 | a);
       t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function generateData(name) {
+    var rnd = mulberry32(7);
+    var pts = [];
+    if (name === 'moons') {
+      for (var i = 0; i < 50; i++) {
+        var t = Math.PI * i / 50;
+        pts.push({ x: Math.cos(t) + (rnd() - 0.5) * 0.18, y: Math.sin(t) + (rnd() - 0.5) * 0.18, cls: 1 });
+        pts.push({ x: 1.1 - Math.cos(t) + (rnd() - 0.5) * 0.18, y: 0.4 - Math.sin(t) + (rnd() - 0.5) * 0.18, cls: 0 });
+      }
+    } else if (name === 'spiral') {
+      for (var i = 0; i < 70; i++) {
+        var t = 0.5 * Math.PI * i / 10;
+        var r = 0.15 + 0.2 * t;
+        pts.push({ x: r * Math.cos(t) + (rnd() - 0.5) * 0.12, y: r * Math.sin(t) + (rnd() - 0.5) * 0.12, cls: 1 });
+        pts.push({ x: -r * Math.cos(t) + (rnd() - 0.5) * 0.12, y: -r * Math.sin(t) + (rnd() - 0.5) * 0.12, cls: 0 });
+      }
     }
-    var pts = [], i;
-    for (i = 0; i < 70; i++) {                 // green: uniform inside the disk
-      var rg = Math.sqrt(rnd()) * GREEN_R, ag = rnd() * 6.2832;
-      pts.push({ x: CX + rg * Math.cos(ag), y: CY + rg * Math.sin(ag), cls: 1 });
-    }
-    for (i = 0; i < 90; i++) {                 // red: uniform in the outer ring
-      var rr = 0.27 + rnd() * 0.20, ar = rnd() * 6.2832;
-      pts.push({
-        x: Math.max(0.03, Math.min(0.97, CX + rr * Math.cos(ar))),
-        y: Math.max(0.03, Math.min(0.97, CY + rr * Math.sin(ar))),
-        cls: 0
-      });
-    }
+    var xs = pts.map(function(p) { return p.x; }), ys = pts.map(function(p) { return p.y; });
+    var xmn = Math.min.apply(null, xs), xmx = Math.max.apply(null, xs);
+    var ymn = Math.min.apply(null, ys), ymx = Math.max.apply(null, ys);
+    var xr = xmx - xmn || 1, yr = ymx - ymn || 1;
+    pts.forEach(function(p) {
+      p.x = 0.04 + 0.92 * (p.x - xmn) / xr;
+      p.y = 0.04 + 0.92 * (p.y - ymn) / yr;
+    });
     return pts;
-  })();
+  }
+
+  function zeros(n) { var a = []; for (var i = 0; i < n; i++) a.push(0); return a; }
+  function randn() { return Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random()); }
+  function xavier(outDim, inDim) {
+    var std = Math.sqrt(2 / (inDim + outDim));
+    var W = [], b = zeros(outDim);
+    for (var i = 0; i < outDim; i++) {
+      var row = [];
+      for (var j = 0; j < inDim; j++) row.push(randn() * std);
+      W.push(row);
+    }
+    return { W: W, b: b };
+  }
+  function matVec(W, x) { return W.map(function(row) { return row.reduce(function(s, wj, j) { return s + wj * x[j]; }, 0); }); }
+  function vecAdd(a, b) { return a.map(function(v, i) { return v + b[i]; }); }
+
+  function createNet(width, depth) {
+    var layers = [xavier(width, 2)];
+    for (var d = 1; d < depth; d++) layers.push(xavier(width, width));
+    layers.push(xavier(1, width));
+    return layers;
+  }
+
+  function predictOne(x, layers) {
+    var a = x;
+    for (var l = 0; l < layers.length - 1; l++) {
+      a = vecAdd(matVec(layers[l].W, a), layers[l].b).map(function(v) { return Math.max(0, v); });
+    }
+    var z = vecAdd(matVec(layers[layers.length - 1].W, a), layers[layers.length - 1].b)[0];
+    return 1 / (1 + Math.exp(-z));
+  }
+
+  function train(data, width, depth, steps, lr) {
+    var layers = createNet(width, depth);
+    var X = data.map(function(p) { return [p.x, p.y]; });
+    var y = data.map(function(p) { return p.cls; });
+    var N = data.length;
+    for (var step = 0; step < steps; step++) {
+      var dW = layers.map(function(L) { return L.W.map(function(row) { return row.map(function() { return 0; }); }); });
+      var db = layers.map(function(L) { return L.b.map(function() { return 0; }); });
+      for (var i = 0; i < N; i++) {
+        var as = [X[i]], zs = [];
+        for (var l = 0; l < layers.length; l++) {
+          var z = vecAdd(matVec(layers[l].W, as[l]), layers[l].b);
+          zs.push(z);
+          if (l < layers.length - 1) as.push(z.map(function(v) { return Math.max(0, v); }));
+          else as.push(z);
+        }
+        var pred = 1 / (1 + Math.exp(-as[as.length - 1][0]));
+        var delta = [pred - y[i]];
+        for (var l = layers.length - 1; l >= 0; l--) {
+          var aPrev = as[l];
+          for (var j = 0; j < layers[l].W.length; j++) {
+            for (var k = 0; k < layers[l].W[j].length; k++) {
+              dW[l][j][k] += delta[j] * aPrev[k];
+            }
+            db[l][j] += delta[j];
+          }
+          if (l > 0) {
+            var W = layers[l].W;
+            var newDelta = [];
+            for (var k = 0; k < layers[l - 1].b.length; k++) {
+              var s = 0;
+              for (var j = 0; j < W.length; j++) s += W[j][k] * delta[j];
+              newDelta.push(s * (zs[l - 1][k] > 0 ? 1 : 0));
+            }
+            delta = newDelta;
+          }
+        }
+      }
+      for (var l = 0; l < layers.length; l++) {
+        for (var j = 0; j < layers[l].W.length; j++) {
+          for (var k = 0; k < layers[l].W[j].length; k++) {
+            layers[l].W[j][k] -= lr * dW[l][j][k] / N;
+          }
+          layers[l].b[j] -= lr * db[l][j] / N;
+        }
+      }
+    }
+    return layers;
+  }
+
+  function computeAccuracy(data, layers) {
+    var correct = 0;
+    for (var i = 0; i < data.length; i++) {
+      var p = predictOne([data[i].x, data[i].y], layers);
+      if ((p >= 0.5 ? 1 : 0) === data[i].cls) correct++;
+    }
+    return correct / data.length;
+  }
 
   host.innerHTML =
     '<div class="mlp-widget">' +
       '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
       '<div class="mlp-controls">' +
+        '<div class="expl-datasets"></div>' +
         '<div class="mlp-slider"><label>Width</label><input type="range" min="1" max="8" step="1" value="4"><p data-readout="width">4</p></div>' +
-        '<div class="mlp-slider"><label>Depth</label><input type="range" min="1" max="4" step="1" value="2"><p data-readout="depth">2</p></div>' +
+        '<div class="mlp-slider"><label>Depth</label><input type="range" min="1" max="4" step="1" value="1"><p data-readout="depth">1</p></div>' +
         '<p class="mlp-readout"></p>' +
       '</div>' +
     '</div>';
 
   var canvas = host.querySelector('.mlp-canvas');
-  var widthInput = host.querySelector('input');
-  var depthInput = host.querySelectorAll('input')[1];
+  var widthInput = host.querySelector('input[data-readout="width"]') || host.querySelector('.mlp-controls input');
+  var depthInput = host.querySelectorAll('.mlp-controls input')[1];
   var widthText = host.querySelector('[data-readout="width"]');
   var depthText = host.querySelector('[data-readout="depth"]');
   var readout = host.querySelector('.mlp-readout');
+  var dsEl = host.querySelector('.expl-datasets');
+
   ['pointerdown', 'keydown'].forEach(function(ev) {
     host.addEventListener(ev, function(e) { e.stopPropagation(); });
   });
+
+  var datasets = ['moons', 'spiral'];
+  datasets.forEach(function(name) {
+    var btn = document.createElement('button');
+    btn.className = 'expl-ds-btn';
+    btn.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+    btn.dataset.ds = name;
+    btn.addEventListener('click', function() {
+      state.dataset = name; state.net = null;
+      updateUI(); draw();
+    });
+    dsEl.appendChild(btn);
+  });
+
+  // Find the actual slider inputs by their labels
+  var allInputs = host.querySelectorAll('.mlp-slider input');
+  widthInput = allInputs[0];
+  depthInput = allInputs[1];
+
   widthInput.addEventListener('input', function() {
-    state.width = +widthInput.value; widthText.textContent = widthInput.value; draw();
+    state.width = +widthInput.value; widthText.textContent = widthInput.value; state.net = null; draw();
   });
   depthInput.addEventListener('input', function() {
-    state.depth = +depthInput.value; depthText.textContent = depthInput.value; draw();
+    state.depth = +depthInput.value; depthText.textContent = depthInput.value; state.net = null; draw();
   });
+
+  function updateUI() {
+    host.querySelectorAll('.expl-ds-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.ds === state.dataset);
+    });
+    var totalUnits = state.width * state.depth;
+    readout.innerHTML = state.depth + ' hidden layer' + (state.depth === 1 ? '' : 's') +
+      ' &times; ' + state.width + ' neuron' + (state.width === 1 ? '' : 's') +
+      ' = <strong>' + totalUnits + '</strong> straight cut' + (totalUnits === 1 ? '' : 's') +
+      ' | Accuracy: <strong>' + (state.acc * 100).toFixed(0) + '%</strong>';
+  }
 
   function fitCanvas(c) {
     var dpr = window.devicePixelRatio || 1;
     var w = c.clientWidth, h = c.clientHeight;
     if (!w || !h) return null;
-    c.width = Math.round(w * dpr);
-    c.height = Math.round(h * dpr);
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
     var ctx = c.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return { ctx: ctx, w: w, h: h };
-  }
-  function dot(ctx, p, color, r) {
-    ctx.beginPath(); ctx.arc(p[0], p[1], r || 4.5, 0, 6.2832);
-    ctx.fillStyle = color; ctx.fill();
-  }
-  // Edge-normals of a regular S-gon centered on the disk. Each normal is one
-  // hidden neuron's cut; a point is "inside" (predicted green) when it lies
-  // on the interior side of ALL of them. RHO is the inradius (>= GREEN_R, so
-  // the whole green disk is enclosed); the circumradius RHO/cos(pi/S) shrinks
-  // toward RHO as S grows, which is exactly why more cuts hug the circle.
-  var RHO = 0.205, THETA0 = -Math.PI / 2;
-  function normals(S) {
-    var ns = [];
-    for (var k = 0; k < S; k++) {
-      var phi = THETA0 + 2 * Math.PI * (k + 0.5) / S;
-      ns.push([Math.cos(phi), Math.sin(phi)]);
-    }
-    return ns;
-  }
-  function insideRegion(p, ns) {
-    for (var k = 0; k < ns.length; k++) {
-      if ((p.x - CX) * ns[k][0] + (p.y - CY) * ns[k][1] > RHO) return false;
-    }
-    return true;
-  }
-
-  // Network diagram with one column per layer: input (x1, x2), `depth`
-  // hidden columns of `width` neurons (capped at 6 drawn nodes), output.
-  function drawNetwork(ctx, x0, x1, h) {
-    var cols = state.depth + 2;
-    var perLayer = Math.min(state.width, 6);
-    var top = 56, bot = h - 64;
-    function colX(i) { return x0 + (x1 - x0) * i / (cols - 1); }
-    function ys(n) {
-      if (n === 1) return [(top + bot) / 2];
-      var a = []; for (var i = 0; i < n; i++) a.push(top + (bot - top) * i / (n - 1)); return a;
-    }
-    var layers = [{ x: colX(0), ys: ys(2), label: ['x₁', 'x₂'], color: SECONDARY }];
-    for (var d = 0; d < state.depth; d++) layers.push({ x: colX(d + 1), ys: ys(perLayer), color: PRIMARY });
-    layers.push({ x: colX(cols - 1), ys: ys(1), label: ['ŷ'], color: SECONDARY });
-
-    ctx.strokeStyle = 'rgba(74,158,255,0.28)'; ctx.lineWidth = 1;
-    for (var L = 0; L < layers.length - 1; L++) {
-      var A = layers[L], B = layers[L + 1];
-      A.ys.forEach(function(ay) {
-        B.ys.forEach(function(by) {
-          ctx.beginPath(); ctx.moveTo(A.x + 12, ay); ctx.lineTo(B.x - 12, by); ctx.stroke();
-        });
-      });
-    }
-    layers.forEach(function(Lr) {
-      Lr.ys.forEach(function(yy, idx) {
-        ctx.beginPath(); ctx.arc(Lr.x, yy, 12, 0, 6.2832);
-        ctx.fillStyle = '#0d1225'; ctx.strokeStyle = Lr.color; ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
-        if (Lr.label) { ctx.fillStyle = TEXT; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Lr.label[idx], Lr.x, yy + 4); }
-      });
-    });
-    if (state.width > perLayer) {
-      ctx.fillStyle = MUTED; ctx.font = '15px Inter, sans-serif'; ctx.textAlign = 'center';
-      for (var d2 = 0; d2 < state.depth; d2++) ctx.fillText('⋮', colX(d2 + 1), bot + 18);
-    }
-    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(state.depth + ' hidden layer' + (state.depth === 1 ? '' : 's') +
-                 ' × ' + state.width + ' neuron' + (state.width === 1 ? '' : 's'),
-                 (x0 + x1) / 2, h - 8);
   }
 
   function draw() {
     var f = fitCanvas(canvas);
     if (!f) return;
-    var ctx = f.ctx, w = f.w, h = f.h, pad = 30;
-    ctx.clearRect(0, 0, w, h);
-    var leftW = w * 0.60;                        // left region holds the plot
-    // Square plot so the disk reads as a true circle, centered in the region.
-    var side = Math.min(leftW - 2 * pad, h - 2 * pad);
-    var ox = (leftW - side) / 2, oy = pad + (h - 2 * pad - side) / 2;
-    function pmap(x, y) { return [ox + x * side, oy + (1 - y) * side]; }
-    var S = state.width * state.depth;
-    var ns = normals(Math.max(1, S));
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
 
-    ctx.save();
-    ctx.beginPath(); ctx.rect(ox, oy, side, side); ctx.clip();
-    if (S >= 3) {
-      var R = RHO / Math.cos(Math.PI / S);
-      ctx.beginPath();
-      for (var k = 0; k <= S; k++) {
-        var th = THETA0 + 2 * Math.PI * k / S;
-        var vp = pmap(CX + R * Math.cos(th), CY + R * Math.sin(th));
-        if (k === 0) ctx.moveTo(vp[0], vp[1]); else ctx.lineTo(vp[0], vp[1]);
-      }
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(63,185,80,0.10)'; ctx.fill();
-      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5; ctx.stroke();
-    } else {
-      // 1-2 cuts: an open half-plane or slab that cannot enclose a region.
-      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5;
-      ns.forEach(function(n) {
-        var bx = CX + n[0] * RHO, by = CY + n[1] * RHO, tx = -n[1], ty = n[0];
-        var a = pmap(bx + tx * 1.5, by + ty * 1.5);
-        var b = pmap(bx - tx * 1.5, by - ty * 1.5);
-        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
-      });
+    var data = generateData(state.dataset);
+    if (!state.net) {
+      state.net = train(data, state.width, state.depth, TRAIN_STEPS, LR);
+      state.acc = computeAccuracy(data, state.net);
+      updateUI();
     }
-    var correct = 0;
-    data.forEach(function(p) {
-      var pred = insideRegion(p, ns) ? 1 : 0;
-      if (pred === p.cls) correct++;
-      var q = pmap(p.x, p.y);
-      dot(ctx, q, p.cls ? GREEN : RED, 4.2);
-      if (pred !== p.cls) {                    // ring the points the cuts get wrong
-        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4;
-        ctx.beginPath(); ctx.arc(q[0], q[1], 6.6, 0, 6.2832); ctx.stroke();
-      }
-    });
-    ctx.restore();
 
+    var pad = 18;
+    var rightPanel = 140;
+    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
+    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
+    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
+    var oy = pad + (H - 2 * pad - side) / 2;
+
+    // Decision grid background
+    for (var i = 0; i < GRID; i++) {
+      for (var j = 0; j < GRID; j++) {
+        var gx = i / (GRID - 1), gy = j / (GRID - 1);
+        var p = predictOne([gx, gy], state.net);
+        ctx.fillStyle = p >= 0.5 ? 'rgba(63,185,80,0.16)' : 'rgba(231,76,60,0.10)';
+        ctx.fillRect(ox + gx * side, oy + (1 - gy) * side, side / GRID + 1, side / GRID + 1);
+      }
+    }
+
+    // 0.5 contour
+    var CRES = 28;
+    var cvals = [];
+    for (var ci = 0; ci <= CRES; ci++) {
+      cvals[ci] = [];
+      for (var cj = 0; cj <= CRES; cj++) {
+        cvals[ci][cj] = predictOne([ci / CRES, cj / CRES], state.net);
+      }
+    }
+    ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.2; ctx.beginPath();
+    for (var i = 0; i < CRES; i++) {
+      for (var j = 0; j < CRES; j++) {
+        var cell = [
+          [i, j, cvals[i][j]],
+          [i + 1, j, cvals[i + 1][j]],
+          [i, j + 1, cvals[i][j + 1]],
+          [i + 1, j + 1, cvals[i + 1][j + 1]]
+        ];
+        for (var e = 0; e < 4; e++) {
+          var a = cell[e], b = cell[(e + 1) % 4];
+          if ((a[2] - 0.5) * (b[2] - 0.5) < 0) {
+            var t = (0.5 - a[2]) / (b[2] - a[2]);
+            var gx = a[0] + t * (b[0] - a[0]);
+            var gy = a[1] + t * (b[1] - a[1]);
+            var sx = ox + (gx / CRES) * side;
+            var sy = oy + (1 - gy / CRES) * side;
+            ctx.moveTo(sx, sy);
+            for (var e2 = e + 1; e2 < 4; e2++) {
+              var a2 = cell[e2], b2 = cell[(e2 + 1) % 4];
+              if ((a2[2] - 0.5) * (b2[2] - 0.5) < 0) {
+                var t2 = (0.5 - a2[2]) / (b2[2] - a2[2]);
+                var gx2 = a2[0] + t2 * (b2[0] - a2[0]);
+                var gy2 = a2[1] + t2 * (b2[1] - a2[1]);
+                var sx2 = ox + (gx2 / CRES) * side;
+                var sy2 = oy + (1 - gy2 / CRES) * side;
+                ctx.lineTo(sx2, sy2);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    ctx.stroke();
+
+    // Data scatter
+    data.forEach(function(p) {
+      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
+      ctx.beginPath(); ctx.arc(px, py, 4.2, 0, 6.2832);
+      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
+    });
+
+    // Frame
     ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
     ctx.strokeRect(ox, oy, side, side);
-    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'right'; ctx.fillText('x₁', ox + side - 4, oy + side - 6);
-    ctx.textAlign = 'left'; ctx.fillText('x₂', ox + 4, oy + 12);
 
-    drawNetwork(ctx, leftW + 20, w - 20, h);
+    // Network diagram
+    if (rightPanel > 80) {
+      var nx0 = ox + side + 20, nx1 = W - pad;
+      var cols = state.depth + 2;
+      var perLayer = Math.min(state.width, 6);
+      var top = oy + 6, bot = oy + side - 6;
+      function colX(i) { return nx0 + (nx1 - nx0) * i / (cols - 1); }
+      function ys(n) {
+        if (n === 1) return [(top + bot) / 2];
+        var a = []; for (var i = 0; i < n; i++) a.push(top + (bot - top) * i / (n - 1)); return a;
+      }
+      var layersDiag = [{ x: colX(0), ys: ys(2), label: ['x₁', 'x₂'], color: SECONDARY }];
+      for (var d = 0; d < state.depth; d++) layersDiag.push({ x: colX(d + 1), ys: ys(perLayer), color: PRIMARY });
+      layersDiag.push({ x: colX(cols - 1), ys: ys(1), label: ['ŷ'], color: SECONDARY });
 
-    var acc = Math.round(100 * correct / data.length);
-    if (S < 3) {
-      readout.innerHTML = '<strong>' + S + '</strong> straight cut' + (S === 1 ? '' : 's') +
-        ' (one per hidden unit) cannot enclose a region &mdash; accuracy <strong>' + acc +
-        '%</strong>. Add neurons to wrap the class.';
-    } else {
-      var article = (S === 8 || S === 11 || S === 18) ? 'an' : 'a';
-      readout.innerHTML = 'width × depth = <strong>' + S + '</strong> straight cuts form ' + article +
-        ' <strong>' + S + '</strong>-sided region around the class &mdash; accuracy <strong>' + acc +
-        '%</strong>. More cuts hug the circle tighter.';
+      ctx.strokeStyle = 'rgba(74,158,255,0.28)'; ctx.lineWidth = 1;
+      for (var L = 0; L < layersDiag.length - 1; L++) {
+        var A = layersDiag[L], B = layersDiag[L + 1];
+        A.ys.forEach(function(ay) {
+          B.ys.forEach(function(by) {
+            ctx.beginPath(); ctx.moveTo(A.x + 10, ay); ctx.lineTo(B.x - 10, by); ctx.stroke();
+          });
+        });
+      }
+      layersDiag.forEach(function(Lr) {
+        Lr.ys.forEach(function(yy, idx) {
+          ctx.beginPath(); ctx.arc(Lr.x, yy, 10, 0, 6.2832);
+          ctx.fillStyle = '#0d1225'; ctx.strokeStyle = Lr.color; ctx.lineWidth = 1.8; ctx.fill(); ctx.stroke();
+          if (Lr.label) { ctx.fillStyle = TEXT; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Lr.label[idx], Lr.x, yy + 3); }
+        });
+      });
     }
   }
+
+  updateUI();
   return { resize: draw };
 };
 
-// ---- Loss landscape widget: two weights, surface height, and update math ----
+// ---- Boundary Explorer: real trained MLP, learned decision boundary ----
+INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
+  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
+  var mode = host.dataset.mode || 'width';
+  var state = { dataset: 'linear', width: 1, depth: 1, net: null, acc: 0 };
+  var GRID = 45, TRAIN_STEPS = 1200, LR0 = 0.5, LR_DECAY = 0.98, RESTARTS = 3;
+
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function generateData(name) {
+    var rnd = mulberry32(7);
+    var pts = [];
+    if (name === 'linear') {
+      for (var i = 0; i < 60; i++) {
+        var x = rnd() * 2 - 1, y = rnd() * 2 - 1;
+        pts.push({ x: x + 1.5, y: y + 1.5, cls: 1 });
+        pts.push({ x: x - 1.5, y: y - 1.5, cls: 0 });
+      }
+    } else if (name === 'xor') {
+      var clusters = [[1.5, 1.5, 1], [1.5, -1.5, 0], [-1.5, 1.5, 0], [-1.5, -1.5, 1]];
+      clusters.forEach(function(c) {
+        for (var i = 0; i < 20; i++) {
+          pts.push({ x: c[0] + (rnd() - 0.5) * 0.6, y: c[1] + (rnd() - 0.5) * 0.6, cls: c[2] });
+        }
+      });
+    } else if (name === 'moons') {
+      for (var i = 0; i < 50; i++) {
+        var t = Math.PI * i / 50;
+        pts.push({ x: Math.cos(t) + (rnd() - 0.5) * 0.18, y: Math.sin(t) + (rnd() - 0.5) * 0.18, cls: 1 });
+        pts.push({ x: 1.1 - Math.cos(t) + (rnd() - 0.5) * 0.18, y: 0.4 - Math.sin(t) + (rnd() - 0.5) * 0.18, cls: 0 });
+      }
+    } else if (name === 'spiral') {
+      for (var i = 0; i < 70; i++) {
+        var t = 0.5 * Math.PI * i / 10;
+        var r = 0.15 + 0.2 * t;
+        pts.push({ x: r * Math.cos(t) + (rnd() - 0.5) * 0.12, y: r * Math.sin(t) + (rnd() - 0.5) * 0.12, cls: 1 });
+        pts.push({ x: -r * Math.cos(t) + (rnd() - 0.5) * 0.12, y: -r * Math.sin(t) + (rnd() - 0.5) * 0.12, cls: 0 });
+      }
+    }
+    var xs = pts.map(function(p) { return p.x; }), ys = pts.map(function(p) { return p.y; });
+    var xmn = Math.min.apply(null, xs), xmx = Math.max.apply(null, xs);
+    var ymn = Math.min.apply(null, ys), ymx = Math.max.apply(null, ys);
+    var xr = xmx - xmn || 1, yr = ymx - ymn || 1;
+    pts.forEach(function(p) {
+      p.x = 0.04 + 0.92 * (p.x - xmn) / xr;
+      p.y = 0.04 + 0.92 * (p.y - ymn) / yr;
+    });
+    return pts;
+  }
+
+  function zeros(n) { var a = []; for (var i = 0; i < n; i++) a.push(0); return a; }
+  function randn() { return Math.sqrt(-2 * Math.log(Math.random())) * Math.cos(2 * Math.PI * Math.random()); }
+  function xavier(outDim, inDim) {
+    var std = Math.sqrt(2 / (inDim + outDim));
+    var W = [], b = zeros(outDim);
+    for (var i = 0; i < outDim; i++) {
+      var row = [];
+      for (var j = 0; j < inDim; j++) row.push(randn() * std);
+      W.push(row);
+    }
+    return { W: W, b: b };
+  }
+  function matVec(W, x) { return W.map(function(row) { return row.reduce(function(s, wj, j) { return s + wj * x[j]; }, 0); }); }
+  function vecAdd(a, b) { return a.map(function(v, i) { return v + b[i]; }); }
+
+  function createNet(width, depth) {
+    var layers = [xavier(width, 2)];
+    for (var d = 1; d < depth; d++) layers.push(xavier(width, width));
+    layers.push(xavier(1, width));
+    return layers;
+  }
+
+  function predictOne(x, layers) {
+    var a = x;
+    for (var l = 0; l < layers.length - 1; l++) {
+      a = vecAdd(matVec(layers[l].W, a), layers[l].b).map(function(v) { return Math.max(0, v); });
+    }
+    var z = vecAdd(matVec(layers[layers.length - 1].W, a), layers[layers.length - 1].b)[0];
+    return 1 / (1 + Math.exp(-z));
+  }
+
+  function train(data, width, depth, steps) {
+    var X = data.map(function(p) { return [p.x, p.y]; });
+    var y = data.map(function(p) { return p.cls; });
+    var N = data.length;
+
+    function run(initLayers) {
+      var layers = initLayers;
+      var lr = LR0;
+      for (var step = 0; step < steps; step++) {
+        var dW = layers.map(function(L) { return L.W.map(function(row) { return row.map(function() { return 0; }); }); });
+        var db = layers.map(function(L) { return L.b.map(function() { return 0; }); });
+
+        for (var i = 0; i < N; i++) {
+          var as2 = [X[i]], zs2 = [];
+          for (var l = 0; l < layers.length; l++) {
+            var z = vecAdd(matVec(layers[l].W, as2[l]), layers[l].b);
+            zs2.push(z);
+            if (l < layers.length - 1) as2.push(z.map(function(v) { return Math.max(0, v); }));
+            else as2.push(z);
+          }
+          var pred = 1 / (1 + Math.exp(-as2[as2.length - 1][0]));
+
+          var delta = [pred - y[i]];
+          for (var l = layers.length - 1; l >= 0; l--) {
+            var aPrev = as2[l];
+            for (var j = 0; j < layers[l].W.length; j++) {
+              for (var k = 0; k < layers[l].W[j].length; k++) {
+                dW[l][j][k] += delta[j] * aPrev[k];
+              }
+              db[l][j] += delta[j];
+            }
+            if (l > 0) {
+              var W = layers[l].W;
+              var newDelta = [];
+              for (var k = 0; k < layers[l - 1].b.length; k++) {
+                var s = 0;
+                for (var j = 0; j < W.length; j++) s += W[j][k] * delta[j];
+                newDelta.push(s * (zs2[l - 1][k] > 0 ? 1 : 0));
+              }
+              delta = newDelta;
+            }
+          }
+        }
+
+        for (var l = 0; l < layers.length; l++) {
+          for (var j = 0; j < layers[l].W.length; j++) {
+            for (var k = 0; k < layers[l].W[j].length; k++) {
+              layers[l].W[j][k] -= lr * dW[l][j][k] / N;
+            }
+            layers[l].b[j] -= lr * db[l][j] / N;
+          }
+        }
+        lr *= LR_DECAY;
+      }
+      return layers;
+    }
+
+    var best = null, bestAcc = -1;
+    for (var r = 0; r < RESTARTS; r++) {
+      var attempt = run(createNet(width, depth));
+      var acc = computeAccuracy(data, attempt);
+      if (acc > bestAcc) { bestAcc = acc; best = attempt; }
+    }
+    return best;
+  }
+
+  function computeAccuracy(data, layers) {
+    var correct = 0;
+    for (var i = 0; i < data.length; i++) {
+      var p = predictOne([data[i].x, data[i].y], layers);
+      if ((p >= 0.5 ? 1 : 0) === data[i].cls) correct++;
+    }
+    return correct / data.length;
+  }
+
+  host.innerHTML =
+    '<div class="mlp-widget">' +
+      '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
+      '<div class="mlp-controls">' +
+        '<div class="expl-datasets"></div>' +
+        '<div class="expl-arch"></div>' +
+        '<p class="mlp-readout"></p>' +
+      '</div>' +
+    '</div>';
+  var canvas = host.querySelector('.mlp-canvas');
+  var readout = host.querySelector('.mlp-readout');
+  var dsEl = host.querySelector('.expl-datasets');
+  var archEl = host.querySelector('.expl-arch');
+
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  var datasets = ['linear', 'xor', 'moons', 'spiral'];
+  datasets.forEach(function(name) {
+    var btn = document.createElement('button');
+    btn.className = 'expl-ds-btn';
+    btn.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+    btn.dataset.ds = name;
+    btn.addEventListener('click', function() {
+      state.dataset = name; state.net = null;
+      updateUI(); draw();
+    });
+    dsEl.appendChild(btn);
+  });
+
+  var addNeuronBtn = document.createElement('button');
+  addNeuronBtn.className = 'expl-arch-btn'; addNeuronBtn.textContent = 'Add neuron';
+  addNeuronBtn.addEventListener('click', function() { state.width++; state.net = null; updateUI(); draw(); });
+  var addLayerBtn = document.createElement('button');
+  addLayerBtn.className = 'expl-arch-btn'; addLayerBtn.textContent = 'Add layer';
+  addLayerBtn.addEventListener('click', function() { state.depth++; state.net = null; updateUI(); draw(); });
+  var resetBtn = document.createElement('button');
+  resetBtn.className = 'expl-arch-btn expl-reset'; resetBtn.textContent = 'Reset';
+  resetBtn.addEventListener('click', function() {
+    state.width = 1; state.depth = 1; state.dataset = 'linear'; state.net = null; updateUI(); draw();
+  });
+  archEl.appendChild(addNeuronBtn);
+  archEl.appendChild(addLayerBtn);
+  archEl.appendChild(resetBtn);
+
+  function updateUI() {
+    host.querySelectorAll('.expl-ds-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.ds === state.dataset);
+    });
+    var totalUnits = state.width * state.depth;
+    var boundaryType = totalUnits === 1 ? 'a straight line' : 'a non-linear region';
+    readout.innerHTML = 'Architecture: <strong>' + state.depth + '</strong> hidden layer' +
+      (state.depth === 1 ? '' : 's') + ' &times; <strong>' + state.width + '</strong> neuron' +
+      (state.width === 1 ? '' : 's') + ' — ' + boundaryType +
+      ' | Accuracy: <strong>' + (state.acc * 100).toFixed(0) + '%</strong>';
+  }
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+
+    var data = generateData(state.dataset);
+    if (!state.net) {
+      state.net = train(data, state.width, state.depth, TRAIN_STEPS);
+      state.acc = computeAccuracy(data, state.net);
+      updateUI();
+    }
+
+    var pad = 18;
+    var rightPanel = 170;
+    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
+    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
+    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
+    var oy = pad + (H - 2 * pad - side) / 2;
+
+    // Decision grid background
+    for (var i = 0; i < GRID; i++) {
+      for (var j = 0; j < GRID; j++) {
+        var gx = i / (GRID - 1), gy = j / (GRID - 1);
+        var p = predictOne([gx, gy], state.net);
+        ctx.fillStyle = p >= 0.5 ? 'rgba(63,185,80,0.16)' : 'rgba(231,76,60,0.10)';
+        ctx.fillRect(ox + gx * side, oy + (1 - gy) * side, side / GRID + 1, side / GRID + 1);
+      }
+    }
+
+    // 0.5 contour via marching squares (correct traversal order)
+    var CRES = 32;
+    var cvals = [];
+    for (var ci = 0; ci <= CRES; ci++) {
+      cvals[ci] = [];
+      for (var cj = 0; cj <= CRES; cj++) {
+        cvals[ci][cj] = predictOne([ci / CRES, cj / CRES], state.net);
+      }
+    }
+    ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.2; ctx.beginPath();
+    for (var i = 0; i < CRES; i++) {
+      for (var j = 0; j < CRES; j++) {
+        // Corners in CCW edge order: bl, br, tr, tl
+        // Edges: 0-1 bottom, 1-2 right, 2-3 top, 3-0 left
+        var bl = [i,   j,   cvals[i][j]],
+            br = [i+1, j,   cvals[i+1][j]],
+            tr = [i+1, j+1, cvals[i+1][j+1]],
+            tl = [i,   j+1, cvals[i][j+1]];
+        var cell = [bl, br, tr, tl];
+        for (var e = 0; e < 4; e++) {
+          var a = cell[e], b = cell[(e + 1) % 4];
+          if ((a[2] - 0.5) * (b[2] - 0.5) < 0) {
+            var t = (0.5 - a[2]) / (b[2] - a[2]);
+            var gx = a[0] + t * (b[0] - a[0]);
+            var gy = a[1] + t * (b[1] - a[1]);
+            var sx = ox + (gx / CRES) * side;
+            var sy = oy + (1 - gy / CRES) * side;
+            ctx.moveTo(sx, sy);
+            for (var e2 = e + 1; e2 < 4; e2++) {
+              var a2 = cell[e2], b2 = cell[(e2 + 1) % 4];
+              if ((a2[2] - 0.5) * (b2[2] - 0.5) < 0) {
+                var t2 = (0.5 - a2[2]) / (b2[2] - a2[2]);
+                var gx2 = a2[0] + t2 * (b2[0] - a2[0]);
+                var gy2 = a2[1] + t2 * (b2[1] - a2[1]);
+                var sx2 = ox + (gx2 / CRES) * side;
+                var sy2 = oy + (1 - gy2 / CRES) * side;
+                ctx.lineTo(sx2, sy2);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+    ctx.stroke();
+
+    // Data scatter
+    data.forEach(function(p) {
+      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
+      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 6.2832);
+      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
+    });
+
+    // Frame
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy, side, side);
+
+    // Network diagram
+    if (rightPanel > 80) {
+      var nx0 = ox + side + 20, nx1 = W - pad;
+      var cols = state.depth + 2;
+      var perLayer = Math.min(state.width, 6);
+      var top = oy + 6, bot = oy + side - 6;
+      function colX(i) { return nx0 + (nx1 - nx0) * i / (cols - 1); }
+      function ys(n) {
+        if (n === 1) return [(top + bot) / 2];
+        var a = []; for (var i = 0; i < n; i++) a.push(top + (bot - top) * i / (n - 1)); return a;
+      }
+      var layersDiag = [{ x: colX(0), ys: ys(2), label: ['x₁', 'x₂'], color: SECONDARY }];
+      for (var d = 0; d < state.depth; d++) layersDiag.push({ x: colX(d + 1), ys: ys(perLayer), color: PRIMARY });
+      layersDiag.push({ x: colX(cols - 1), ys: ys(1), label: ['ŷ'], color: SECONDARY });
+
+      ctx.strokeStyle = 'rgba(74,158,255,0.28)'; ctx.lineWidth = 1;
+      for (var L = 0; L < layersDiag.length - 1; L++) {
+        var A = layersDiag[L], B = layersDiag[L + 1];
+        A.ys.forEach(function(ay) {
+          B.ys.forEach(function(by) {
+            ctx.beginPath(); ctx.moveTo(A.x + 10, ay); ctx.lineTo(B.x - 10, by); ctx.stroke();
+          });
+        });
+      }
+      layersDiag.forEach(function(Lr) {
+        Lr.ys.forEach(function(yy, idx) {
+          ctx.beginPath(); ctx.arc(Lr.x, yy, 10, 0, 6.2832);
+          ctx.fillStyle = '#0d1225'; ctx.strokeStyle = Lr.color; ctx.lineWidth = 1.8; ctx.fill(); ctx.stroke();
+          if (Lr.label) { ctx.fillStyle = TEXT; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Lr.label[idx], Lr.x, yy + 3); }
+        });
+      });
+      if (state.width > perLayer) {
+        ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
+        for (var d2 = 0; d2 < state.depth; d2++) ctx.fillText('⋮', colX(d2 + 1), bot + 12);
+      }
+    }
+  }
+
+  // Apply mode presets
+  if (mode === 'depth') {
+    state.width = 2; state.depth = 1; state.dataset = 'xor';
+  }
+  updateUI();
+  return { resize: draw };
+};
+// ---- Single Perceptron widget: adjustable line on data, no training ----
+INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
+  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
+  var state = { dataset: 'linear', w1: 0.5, w2: 0.5, b: -0.5 };
+
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // 2D datasets under the unit square.
+  function generateData(name) {
+    var rnd = mulberry32(7);
+    var pts = [];
+    if (name === 'linear') {
+      for (var i = 0; i < 40; i++) {
+        var x = rnd() * 2 - 1, y = rnd() * 2 - 1;
+        pts.push({ x: x + 1.5, y: y + 1.5, cls: 1 });
+        pts.push({ x: x - 1.5, y: y - 1.5, cls: 0 });
+      }
+    } else if (name === 'xor') {
+      var clusters = [[1.5, 1.5, 1], [1.5, -1.5, 0], [-1.5, 1.5, 0], [-1.5, -1.5, 1]];
+      clusters.forEach(function(c) {
+        for (var i = 0; i < 14; i++) {
+          pts.push({ x: c[0] + (rnd() - 0.5) * 0.6, y: c[1] + (rnd() - 0.5) * 0.6, cls: c[2] });
+        }
+      });
+    } else if (name === 'moons') {
+      for (var i = 0; i < 35; i++) {
+        var t = Math.PI * i / 35;
+        pts.push({ x: Math.cos(t) + (rnd() - 0.5) * 0.18, y: Math.sin(t) + (rnd() - 0.5) * 0.18, cls: 1 });
+        pts.push({ x: 1.1 - Math.cos(t) + (rnd() - 0.5) * 0.18, y: 0.4 - Math.sin(t) + (rnd() - 0.5) * 0.18, cls: 0 });
+      }
+    }
+    // Normalize to [0.04, 0.96]
+    var xs = pts.map(function(p) { return p.x; });
+    var ys = pts.map(function(p) { return p.y; });
+    var xmn = Math.min.apply(null, xs), xmx = Math.max.apply(null, xs);
+    var ymn = Math.min.apply(null, ys), ymx = Math.max.apply(null, ys);
+    var xr = xmx - xmn || 1, yr = ymx - ymn || 1;
+    pts.forEach(function(p) {
+      p.x = 0.04 + 0.92 * (p.x - xmn) / xr;
+      p.y = 0.04 + 0.92 * (p.y - ymn) / yr;
+    });
+    return pts;
+  }
+
+  host.innerHTML =
+    '<div class="perc-widget">' +
+      '<div class="perc-canvas-wrap"><canvas class="perc-canvas"></canvas></div>' +
+      '<div class="perc-controls">' +
+        '<div class="perc-datasets"></div>' +
+        '<div class="perc-sliders"></div>' +
+        '<p class="perc-readout"></p>' +
+      '</div>' +
+    '</div>';
+  var canvas = host.querySelector('.perc-canvas');
+  var readout = host.querySelector('.perc-readout');
+  var dsEl = host.querySelector('.perc-datasets');
+  var slidersEl = host.querySelector('.perc-sliders');
+
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  var datasets = ['linear', 'xor', 'moons'];
+  datasets.forEach(function(name) {
+    var btn = document.createElement('button');
+    btn.className = 'perc-ds-btn';
+    btn.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+    btn.dataset.ds = name;
+    btn.addEventListener('click', function() {
+      state.dataset = name; updateUI(); draw();
+    });
+    dsEl.appendChild(btn);
+  });
+
+  function buildSliders() {
+    slidersEl.innerHTML = '';
+    [['w1', 'w₁', -3, 3, 0.1], ['w2', 'w₂', -3, 3, 0.1], ['b', 'b', -3, 3, 0.1]].forEach(function(spec) {
+      var key = spec[0], label = spec[1], mn = spec[2], mx = spec[3], st = spec[4];
+      var row = document.createElement('div');
+      row.className = 'perc-slider';
+      var lab = document.createElement('label');
+      lab.textContent = label;
+      var inp = document.createElement('input');
+      inp.type = 'range'; inp.min = mn; inp.max = mx; inp.step = st;
+      inp.value = state[key].toFixed(1);
+      var val = document.createElement('p');
+      val.className = 'perc-val';
+      val.textContent = state[key].toFixed(1);
+      inp.addEventListener('input', function() {
+        state[key] = parseFloat(inp.value);
+        val.textContent = state[key].toFixed(1);
+        draw();
+      });
+      row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+      slidersEl.appendChild(row);
+    });
+  }
+
+  function updateUI() {
+    host.querySelectorAll('.perc-ds-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.ds === state.dataset);
+    });
+  }
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function predict(x, y) {
+    var z = state.w1 * x + state.w2 * y + state.b;
+    return z >= 0 ? 1 : 0;
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+
+    var pad = 18;
+    var side = Math.min(W - 2 * pad, H - 2 * pad);
+    var ox = pad + (W - 2 * pad - side) / 2;
+    var oy = pad + (H - 2 * pad - side) / 2;
+
+    // Background shading: which side of the line each point falls on
+    var GRID = 36;
+    for (var i = 0; i < GRID; i++) {
+      for (var j = 0; j < GRID; j++) {
+        var gx = i / (GRID - 1), gy = j / (GRID - 1);
+        var pred = predict(gx, gy);
+        ctx.fillStyle = pred ? 'rgba(63,185,80,0.14)' : 'rgba(231,76,60,0.08)';
+        ctx.fillRect(ox + gx * side, oy + (1 - gy) * side, side / GRID + 1, side / GRID + 1);
+      }
+    }
+
+    // Decision line w1*x + w2*y + b = 0, clipped to frame
+    var a = state.w1, b = state.w2, c = state.b;
+    var xr = [0, 1], yr = [0, 1];
+    var p0, p1;
+    if (Math.abs(b) > 1e-9) {
+      p0 = [ox + xr[0] * side, oy + (1 - (-(a * xr[0] + c) / b)) * side];
+      p1 = [ox + xr[1] * side, oy + (1 - (-(a * xr[1] + c) / b)) * side];
+    } else if (Math.abs(a) > 1e-9) {
+      var xv = -c / a;
+      p0 = [ox + xv * side, oy + yr[0] * side];
+      p1 = [ox + xv * side, oy + yr[1] * side];
+    } else {
+      p0 = null; p1 = null;
+    }
+
+    if (p0 && p1) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(ox, oy, side, side);
+      ctx.clip();
+      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+      ctx.restore();
+    }
+
+    // Data points
+    var data = generateData(state.dataset);
+    data.forEach(function(p) {
+      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
+      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 6.2832);
+      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
+      // Misclassification ring
+      if (predict(p.x, p.y) !== p.cls) {
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(px, py, 6.6, 0, 6.2832); ctx.stroke();
+      }
+    });
+
+    // Frame
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy, side, side);
+
+    var correct = 0;
+    data.forEach(function(p) { if (predict(p.x, p.y) === p.cls) correct++; });
+    var acc = data.length ? correct / data.length : 0;
+    readout.innerHTML =
+      'Classifier: ' + state.w1.toFixed(1) + 'x₁ + ' + state.w2.toFixed(1) + 'x₂ + ' + state.b.toFixed(1) + ' = 0' +
+      ' &mdash; Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
+  }
+
+  buildSliders();
+  updateUI();
+  return { resize: draw };
+};
+
+// ---- Loss landscape widget: 3D draggable surface with height coloring ----
 INTERACTIVE_WIDGETS.lossLandscape = function(host) {
   var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff',
-      SECONDARY = '#f5a623', RED = '#e74c3c', GREEN = '#3fb950', LINEC = '#2a3450';
-  var state = { w1: 0.2, w2: 0.2, eta: 0.8, lastStep: null };
-  var data = [
-    { x1: 0, x2: 0, y: 0 },
-    { x1: 0, x2: 1, y: 1 },
-    { x1: 1, x2: 0, y: 1 },
-    { x1: 1, x2: 1, y: 1 }
-  ];
+      SECONDARY = '#f5a623', RED = '#e74c3c', LINEC = '#2a3450';
+  var state = { w1: -1.0, w2: 2.0, eta: 0.5, lastStep: null,
+                az: -0.8, el: 0.65, zoom: 1.0, panX: 0, panY: 0,
+                dragging: false, dragType: null, lastMX: 0, lastMY: 0 };
+  var WMIN = -3, WMAX = 5;
+  var INIT_W1 = -1.0, INIT_W2 = 2.0, INIT_ETA = 0.5;
+  var INIT_AZ = -0.8, INIT_EL = 0.65, INIT_ZOOM = 1.0;
+
+  function loss(w1, w2) {
+    return 0.5 * ((w1 - 1.5) * (w1 - 1.5) + (w2 + 1.0) * (w2 + 1.0));
+  }
+  function grad(w1, w2) {
+    return { g1: w1 - 1.5, g2: w2 + 1.0 };
+  }
 
   host.innerHTML =
     '<div class="land-widget">' +
       '<div class="land-main">' +
         '<canvas class="land-canvas"></canvas>' +
-        '<canvas class="land-net"></canvas>' +
       '</div>' +
       '<div class="land-controls">' +
-        '<div class="mlp-slider"><label>w₁</label><input data-k="w1" type="range" min="-4" max="4" step="0.1" value="0.2"><p data-r="w1">0.2</p></div>' +
-        '<div class="mlp-slider"><label>w₂</label><input data-k="w2" type="range" min="-4" max="4" step="0.1" value="0.2"><p data-r="w2">0.2</p></div>' +
-        '<div class="mlp-slider"><label>η</label><input data-k="eta" type="range" min="0.1" max="1.5" step="0.1" value="0.8"><p data-r="eta">0.8</p></div>' +
+        '<div class="mlp-slider"><label>w₁</label><input data-k="w1" type="range" min="-3" max="5" step="0.1" value="-1.0"><p data-r="w1">-1.0</p></div>' +
+        '<div class="mlp-slider"><label>w₂</label><input data-k="w2" type="range" min="-3" max="5" step="0.1" value="2.0"><p data-r="w2">2.0</p></div>' +
+        '<div class="mlp-slider"><label>η</label><input data-k="eta" type="range" min="0.1" max="1.5" step="0.1" value="0.5"><p data-r="eta">0.5</p></div>' +
         '<button class="land-step">Step</button>' +
+        '<button class="land-reset-btn">Reset</button>' +
       '</div>' +
       '<p class="land-readout"></p>' +
     '</div>';
   var canvas = host.querySelector('.land-canvas');
-  var net = host.querySelector('.land-net');
   var readout = host.querySelector('.land-readout');
+  var resetBtn = host.querySelector('.land-reset-btn');
   ['pointerdown', 'keydown'].forEach(function(ev) {
     host.addEventListener(ev, function(e) { e.stopPropagation(); });
   });
+
+  canvas.addEventListener('pointerdown', function(e) {
+    state.dragging = true;
+    state.lastMX = e.clientX; state.lastMY = e.clientY;
+    if (e.shiftKey) {
+      state.dragType = 'pan';
+    } else {
+      state.dragType = 'rotate';
+    }
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e) {
+    if (!state.dragging) return;
+    var dx = e.clientX - state.lastMX, dy = e.clientY - state.lastMY;
+    if (state.dragType === 'pan') {
+      state.panX += dx;
+      state.panY += dy;
+    } else {
+      state.az -= dx * 0.008;
+      state.el = Math.max(0.1, Math.min(1.2, state.el - dy * 0.008));
+    }
+    state.lastMX = e.clientX; state.lastMY = e.clientY;
+    draw();
+  });
+  canvas.addEventListener('pointerup', function() { state.dragging = false; state.dragType = null; });
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    state.zoom = Math.max(0.4, Math.min(2.5, state.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
+    draw();
+  }, { passive: false });
+
   host.querySelectorAll('input').forEach(function(inp) {
     inp.addEventListener('input', function() {
       state[inp.dataset.k] = parseFloat(inp.value);
@@ -3548,8 +4483,8 @@ INTERACTIVE_WIDGETS.lossLandscape = function(host) {
     });
   });
   host.querySelector('.land-step').addEventListener('click', function() {
-    var oldW1 = state.w1, oldW2 = state.w2;
     var g = grad(state.w1, state.w2);
+    var oldW1 = state.w1, oldW2 = state.w2;
     state.w1 += -state.eta * g.g1;
     state.w2 += -state.eta * g.g2;
     state.lastStep = { oldW1: oldW1, oldW2: oldW2, g1: g.g1, g2: g.g2, eta: state.eta, newW1: state.w1, newW2: state.w2 };
@@ -3559,24 +4494,20 @@ INTERACTIVE_WIDGETS.lossLandscape = function(host) {
     host.querySelector('[data-r="w2"]').textContent = state.w2.toFixed(2);
     draw();
   });
+  resetBtn.addEventListener('click', function() {
+    state.w1 = INIT_W1; state.w2 = INIT_W2; state.eta = INIT_ETA;
+    state.lastStep = null;
+    state.az = INIT_AZ; state.el = INIT_EL; state.zoom = INIT_ZOOM;
+    state.panX = 0; state.panY = 0;
+    host.querySelector('[data-k="w1"]').value = state.w1;
+    host.querySelector('[data-k="w2"]').value = state.w2;
+    host.querySelector('[data-k="eta"]').value = state.eta;
+    host.querySelector('[data-r="w1"]').textContent = state.w1.toFixed(1);
+    host.querySelector('[data-r="w2"]').textContent = state.w2.toFixed(1);
+    host.querySelector('[data-r="eta"]').textContent = state.eta.toFixed(1);
+    draw();
+  });
 
-  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
-  function loss(w1, w2) {
-    var s = 0, eps = 1e-7, b = -0.5;
-    data.forEach(function(p) {
-      var pred = Math.max(eps, Math.min(1 - eps, sigmoid(w1 * p.x1 + w2 * p.x2 + b)));
-      s += -(p.y * Math.log(pred) + (1 - p.y) * Math.log(1 - pred));
-    });
-    return s / data.length;
-  }
-  function grad(w1, w2) {
-    var g1 = 0, g2 = 0, b = -0.5;
-    data.forEach(function(p) {
-      var e = sigmoid(w1 * p.x1 + w2 * p.x2 + b) - p.y;
-      g1 += e * p.x1; g2 += e * p.x2;
-    });
-    return { g1: g1 / data.length, g2: g2 / data.length };
-  }
   function fitCanvas(c) {
     var dpr = window.devicePixelRatio || 1;
     var w = c.clientWidth, h = c.clientHeight;
@@ -3587,86 +4518,351 @@ INTERACTIVE_WIDGETS.lossLandscape = function(host) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return { ctx: ctx, w: w, h: h };
   }
-  function project(w1, w2, z, W, H) {
-    var sx = (w1 + 4) / 8, sy = (w2 + 4) / 8;
-    var px = 64 + sx * (W - 150) + sy * 44;
-    var py = H - 56 - sy * (H - 140) - z * 58;
-    return [px, py];
+
+  function heightColor(z, zmin, zmax) {
+    var t = Math.max(0, Math.min(1, (z - zmin) / (zmax - zmin || 1)));
+    var r, g, b;
+    if (t < 0.25) { r = 0; g = t * 4; b = 1; }
+    else if (t < 0.5) { r = 0; g = 1; b = 1 - (t - 0.25) * 4; }
+    else if (t < 0.75) { r = (t - 0.5) * 4; g = 1; b = 0; }
+    else { r = 1; g = 1 - (t - 0.75) * 4; b = 0; }
+    return 'rgba(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ',0.82)';
   }
-  function drawSurface(lastGrad) {
+  function lineColor(z, zmin, zmax) {
+    var c = heightColor(z, zmin, zmax);
+    return c.replace('0.82)', '0.30)');
+  }
+
+  function project3D(x, y, z, W, H) {
+    var cx = (WMIN + WMAX) / 2, cy = (WMIN + WMAX) / 2;
+    var dx = x - cx, dy = y - cy;
+    var ca = Math.cos(state.az), sa = Math.sin(state.az);
+    var ce = Math.cos(state.el), se = Math.sin(state.el);
+    var xr = dx * ca - dy * sa;
+    var yr = dx * sa + dy * ca;
+    var zr = z;
+    var yr2 = yr * ce - zr * se;
+    var zr2 = yr * se + zr * ce;
+    var scale = Math.min(W, H) * 0.16 * state.zoom;
+    var px = W * 0.5 + state.panX + xr * scale;
+    var py = H * 0.55 + state.panY - yr2 * scale * 0.72;
+    return { x: px, y: py, depth: zr2 };
+  }
+
+  function draw() {
     var f = fitCanvas(canvas);
     if (!f) return;
     var ctx = f.ctx, W = f.w, H = f.h;
     ctx.clearRect(0, 0, W, H);
-    for (var i = 0; i <= 28; i++) {
-      var w1 = -4 + 8 * i / 28;
-      ctx.beginPath();
-      for (var j = 0; j <= 28; j++) {
-        var w2 = -4 + 8 * j / 28, z = Math.min(3, loss(w1, w2));
-        var p = project(w1, w2, z, W, H);
-        if (j === 0) ctx.moveTo(p[0], p[1]); else ctx.lineTo(p[0], p[1]);
+
+    var grid = 32;
+    var zmin = 0, zmax = loss(WMIN, WMAX);
+    var pts = [];
+    for (var i = 0; i <= grid; i++) {
+      pts[i] = [];
+      for (var j = 0; j <= grid; j++) {
+        var w1 = WMIN + (WMAX - WMIN) * i / grid;
+        var w2 = WMIN + (WMAX - WMIN) * j / grid;
+        var z = loss(w1, w2);
+        pts[i][j] = project3D(w1, w2, z, W, H);
+        pts[i][j].z = z;
       }
-      ctx.strokeStyle = 'rgba(74,158,255,0.22)'; ctx.lineWidth = 1; ctx.stroke();
     }
-    for (var j2 = 0; j2 <= 28; j2++) {
-      var ww2 = -4 + 8 * j2 / 28;
-      ctx.beginPath();
-      for (var i2 = 0; i2 <= 28; i2++) {
-        var ww1 = -4 + 8 * i2 / 28, zz = Math.min(3, loss(ww1, ww2));
-        var pp = project(ww1, ww2, zz, W, H);
-        if (i2 === 0) ctx.moveTo(pp[0], pp[1]); else ctx.lineTo(pp[0], pp[1]);
+
+    var tris = [];
+    for (var i = 0; i < grid; i++) {
+      for (var j = 0; j < grid; j++) {
+        var a = pts[i][j], b = pts[i + 1][j], c = pts[i][j + 1], d = pts[i + 1][j + 1];
+        var zt1 = (a.z + b.z + c.z) / 3;
+        var zt2 = (b.z + c.z + d.z) / 3;
+        var dt1 = (a.depth + b.depth + c.depth) / 3;
+        var dt2 = (b.depth + c.depth + d.depth) / 3;
+        tris.push({ p: [a, b, c], z: zt1, d: dt1 });
+        tris.push({ p: [b, d, c], z: zt2, d: dt2 });
       }
-      ctx.strokeStyle = 'rgba(245,166,35,0.18)'; ctx.lineWidth = 1; ctx.stroke();
     }
-    var L = loss(state.w1, state.w2), pcur = project(state.w1, state.w2, Math.min(3, L), W, H);
-    ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2;
-    var base = project(state.w1, state.w2, 0, W, H);
-    ctx.beginPath(); ctx.moveTo(base[0], base[1]); ctx.lineTo(pcur[0], pcur[1]); ctx.stroke();
-    ctx.beginPath(); ctx.arc(pcur[0], pcur[1], 7, 0, 6.2832); ctx.fillStyle = RED; ctx.fill();
-    ctx.fillStyle = TEXT; ctx.font = '14px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('loss = ' + L.toFixed(3), pcur[0], pcur[1] - 12);
-    ctx.fillStyle = MUTED; ctx.textAlign = 'left';
-    ctx.fillText('w₁', W - 86, H - 42); ctx.fillText('w₂', 110, H - 20); ctx.fillText('L', 42, 54);
-  }
-  function drawNet() {
-    var f = fitCanvas(net);
-    if (!f) return;
-    var ctx = f.ctx, W = f.w, H = f.h;
-    ctx.clearRect(0, 0, W, H);
-    function node(x, y, label, color) {
-      ctx.beginPath(); ctx.arc(x, y, 19, 0, 6.2832);
-      ctx.fillStyle = '#0d1225'; ctx.strokeStyle = color; ctx.lineWidth = 2.4; ctx.fill(); ctx.stroke();
-      ctx.fillStyle = TEXT; ctx.font = '14px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(label, x, y + 5);
+    tris.sort(function(a, b) { return b.d - a.d; });
+
+    tris.forEach(function(t) {
+      ctx.beginPath();
+      ctx.moveTo(t.p[0].x, t.p[0].y);
+      ctx.lineTo(t.p[1].x, t.p[1].y);
+      ctx.lineTo(t.p[2].x, t.p[2].y);
+      ctx.closePath();
+      ctx.fillStyle = heightColor(t.z, zmin, zmax);
+      ctx.fill();
+    });
+
+    ctx.lineWidth = 0.6;
+    for (var i = 0; i <= grid; i++) {
+      for (var j = 0; j < grid; j++) {
+        var a = pts[i][j], b = pts[i][j + 1];
+        ctx.strokeStyle = lineColor((a.z + b.z) / 2, zmin, zmax);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
     }
-    function edge(x1, y1, x2, y2, label, color) {
-      ctx.strokeStyle = color; ctx.lineWidth = 2.3; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-      ctx.fillStyle = color; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(label, (x1 + x2) / 2, (y1 + y2) / 2 - 5);
+    for (var j2 = 0; j2 <= grid; j2++) {
+      for (var i2 = 0; i2 < grid; i2++) {
+        var a2 = pts[i2][j2], b2 = pts[i2 + 1][j2];
+        ctx.strokeStyle = lineColor((a2.z + b2.z) / 2, zmin, zmax);
+        ctx.beginPath(); ctx.moveTo(a2.x, a2.y); ctx.lineTo(b2.x, b2.y); ctx.stroke();
+      }
     }
-    node(42, H * 0.34, 'x₁', PRIMARY); node(42, H * 0.66, 'x₂', PRIMARY);
-    node(W * 0.52, H * 0.50, 'σ', SECONDARY); node(W - 44, H * 0.50, 'ŷ', GREEN);
-    edge(62, H * 0.34, W * 0.52 - 20, H * 0.50, 'w₁=' + state.w1.toFixed(2), PRIMARY);
-    edge(62, H * 0.66, W * 0.52 - 20, H * 0.50, 'w₂=' + state.w2.toFixed(2), SECONDARY);
-    edge(W * 0.52 + 20, H * 0.50, W - 64, H * 0.50, 'loss z', RED);
-    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('Coordinate: (' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) + ')', W / 2, H - 28);
-    ctx.fillText('Height: L = ' + loss(state.w1, state.w2).toFixed(3), W / 2, H - 10);
-  }
-  function draw(lastGrad) {
-    drawSurface(lastGrad);
-    drawNet();
+
+    var curL = loss(state.w1, state.w2);
+    var curP = project3D(state.w1, state.w2, curL, W, H);
+    ctx.shadowColor = RED; ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(curP.x, curP.y, 8, 0, 6.2832);
+    ctx.fillStyle = RED; ctx.fill();
+    ctx.shadowBlur = 0;
+
+    if (state.lastStep) {
+      var oldP = project3D(state.lastStep.oldW1, state.lastStep.oldW2,
+                           loss(state.lastStep.oldW1, state.lastStep.oldW2), W, H);
+      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(oldP.x, oldP.y); ctx.lineTo(curP.x, curP.y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Drag: rotate | Shift+drag: pan | Scroll: zoom', 10, H - 10);
+
     var g = grad(state.w1, state.w2);
     if (state.lastStep) {
       readout.innerHTML =
-        'Last step: [' + state.lastStep.newW1.toFixed(2) + ', ' + state.lastStep.newW2.toFixed(2) +
+        'Step: [' + state.lastStep.newW1.toFixed(2) + ', ' + state.lastStep.newW2.toFixed(2) +
         '] = [' + state.lastStep.oldW1.toFixed(2) + ', ' + state.lastStep.oldW2.toFixed(2) +
-        '] + (-' + state.lastStep.eta.toFixed(1) + ' · [' +
+        '] + (-' + state.lastStep.eta.toFixed(1) + ' &middot; [' +
         state.lastStep.g1.toFixed(3) + ', ' + state.lastStep.g2.toFixed(3) +
-        ']). Current loss: <strong>' + loss(state.w1, state.w2).toFixed(3) + '</strong>.';
+        ']). Current loss: <strong>' + curL.toFixed(3) + '</strong>.';
     } else {
       readout.innerHTML =
-        'Gradient at current point: [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) +
-        ']. Next update: w_new = [' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) +
-        '] + (-' + state.eta.toFixed(1) + ' · [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) + ']).';
+        'Gradient: [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) +
+        ']. Next: w_new = [' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) +
+        '] + (-' + state.eta.toFixed(1) + ' &middot; [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) + ']).';
+    }
+  }
+  return { resize: draw };
+};
+
+// ---- Adam Landscape widget: loss surface + Adam terms (m, v, m_hat, v_hat) ----
+INTERACTIVE_WIDGETS.adamLandscape = function(host) {
+  var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff',
+      SECONDARY = '#f5a623', RED = '#e74c3c', LINEC = '#2a3450', GREEN = '#3fb950';
+  var state = { w1: -1.0, w2: 2.0, eta: 0.3, beta1: 0.9, beta2: 0.999,
+                m1: 0, m2: 0, v1: 0, v2: 0, t: 0,
+                az: -0.8, el: 0.65, zoom: 1.0, panX: 0, panY: 0,
+                dragging: false, dragType: null, lastMX: 0, lastMY: 0 };
+  var WMIN = -3, WMAX = 5;
+
+  function loss(w1, w2) {
+    return 0.5 * ((w1 - 1.5) * (w1 - 1.5) + (w2 + 1.0) * (w2 + 1.0));
+  }
+  function grad(w1, w2) {
+    return { g1: w1 - 1.5, g2: w2 + 1.0 };
+  }
+
+  host.innerHTML =
+    '<div class="land-widget">' +
+      '<div class="land-main">' +
+        '<canvas class="land-canvas"></canvas>' +
+      '</div>' +
+      '<div class="land-controls">' +
+        '<div class="mlp-slider"><label>η</label><input data-k="eta" type="range" min="0.05" max="1.5" step="0.05" value="0.3"><p data-r="eta">0.3</p></div>' +
+        '<div class="mlp-slider"><label>β₁</label><input data-k="beta1" type="range" min="0.5" max="0.99" step="0.01" value="0.9"><p data-r="beta1">0.90</p></div>' +
+        '<div class="mlp-slider"><label>β₂</label><input data-k="beta2" type="range" min="0.9" max="0.999" step="0.001" value="0.999"><p data-r="beta2">0.999</p></div>' +
+        '<button class="land-step">Step</button>' +
+        '<button class="land-reset-btn">Reset</button>' +
+      '</div>' +
+      '<p class="land-readout"></p>' +
+    '</div>';
+  var canvas = host.querySelector('.land-canvas');
+  var readout = host.querySelector('.land-readout');
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  canvas.addEventListener('pointerdown', function(e) {
+    state.dragging = true;
+    state.lastMX = e.clientX; state.lastMY = e.clientY;
+    state.dragType = e.shiftKey ? 'pan' : 'rotate';
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e) {
+    if (!state.dragging) return;
+    var dx = e.clientX - state.lastMX, dy = e.clientY - state.lastMY;
+    if (state.dragType === 'pan') {
+      state.panX += dx; state.panY += dy;
+    } else {
+      state.az -= dx * 0.008;
+      state.el = Math.max(0.1, Math.min(1.2, state.el - dy * 0.008));
+    }
+    state.lastMX = e.clientX; state.lastMY = e.clientY;
+    draw();
+  });
+  canvas.addEventListener('pointerup', function() { state.dragging = false; state.dragType = null; });
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    state.zoom = Math.max(0.4, Math.min(2.5, state.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
+    draw();
+  }, { passive: false });
+
+  host.querySelectorAll('input').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      state[inp.dataset.k] = parseFloat(inp.value);
+      host.querySelector('[data-r="' + inp.dataset.k + '"]').textContent = state[inp.dataset.k].toFixed(inp.dataset.k === 'beta2' ? 3 : 2);
+      draw();
+    });
+  });
+
+  host.querySelector('.land-step').addEventListener('click', function() {
+    var g = grad(state.w1, state.w2);
+    state.t++;
+    state.m1 = state.beta1 * state.m1 + (1 - state.beta1) * g.g1;
+    state.m2 = state.beta1 * state.m2 + (1 - state.beta1) * g.g2;
+    state.v1 = state.beta2 * state.v1 + (1 - state.beta2) * g.g1 * g.g1;
+    state.v2 = state.beta2 * state.v2 + (1 - state.beta2) * g.g2 * g.g2;
+    var m1h = state.m1 / (1 - Math.pow(state.beta1, state.t));
+    var m2h = state.m2 / (1 - Math.pow(state.beta1, state.t));
+    var v1h = state.v1 / (1 - Math.pow(state.beta2, state.t));
+    var v2h = state.v2 / (1 - Math.pow(state.beta2, state.t));
+    var eps = 1e-8;
+    state.w1 -= state.eta * m1h / (Math.sqrt(v1h) + eps);
+    state.w2 -= state.eta * m2h / (Math.sqrt(v2h) + eps);
+    draw();
+  });
+
+  host.querySelector('.land-reset-btn').addEventListener('click', function() {
+    state.w1 = -1.0; state.w2 = 2.0; state.eta = 0.3;
+    state.beta1 = 0.9; state.beta2 = 0.999;
+    state.m1 = 0; state.m2 = 0; state.v1 = 0; state.v2 = 0; state.t = 0;
+    state.az = -0.8; state.el = 0.65; state.zoom = 1.0; state.panX = 0; state.panY = 0;
+    host.querySelector('[data-k="eta"]').value = state.eta;
+    host.querySelector('[data-k="beta1"]').value = state.beta1;
+    host.querySelector('[data-k="beta2"]').value = state.beta2;
+    host.querySelector('[data-r="eta"]').textContent = state.eta.toFixed(2);
+    host.querySelector('[data-r="beta1"]').textContent = state.beta1.toFixed(2);
+    host.querySelector('[data-r="beta2"]').textContent = state.beta2.toFixed(3);
+    draw();
+  });
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function heightColor(z, zmin, zmax) {
+    var t = Math.max(0, Math.min(1, (z - zmin) / (zmax - zmin || 1)));
+    var r, g, b;
+    if (t < 0.25) { r = 0; g = t * 4; b = 1; }
+    else if (t < 0.5) { r = 0; g = 1; b = 1 - (t - 0.25) * 4; }
+    else if (t < 0.75) { r = (t - 0.5) * 4; g = 1; b = 0; }
+    else { r = 1; g = 1 - (t - 0.75) * 4; b = 0; }
+    return 'rgba(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ',0.82)';
+  }
+  function lineColor(z, zmin, zmax) {
+    return heightColor(z, zmin, zmax).replace('0.82)', '0.30)');
+  }
+
+  function project3D(x, y, z, W, H) {
+    var cx = (WMIN + WMAX) / 2, cy = (WMIN + WMAX) / 2;
+    var dx = x - cx, dy = y - cy;
+    var ca = Math.cos(state.az), sa = Math.sin(state.az);
+    var ce = Math.cos(state.el), se = Math.sin(state.el);
+    var xr = dx * ca - dy * sa;
+    var yr = dx * sa + dy * ca;
+    var yr2 = yr * ce - z * se;
+    var zr2 = yr * se + z * ce;
+    var scale = Math.min(W, H) * 0.16 * state.zoom;
+    return { x: W * 0.5 + state.panX + xr * scale, y: H * 0.55 + state.panY - yr2 * scale * 0.72, depth: zr2 };
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+
+    var grid = 32;
+    var zmin = 0, zmax = loss(WMIN, WMAX);
+    var pts = [];
+    for (var i = 0; i <= grid; i++) {
+      pts[i] = [];
+      for (var j = 0; j <= grid; j++) {
+        var w1 = WMIN + (WMAX - WMIN) * i / grid;
+        var w2 = WMIN + (WMAX - WMIN) * j / grid;
+        var z = loss(w1, w2);
+        pts[i][j] = project3D(w1, w2, z, W, H);
+        pts[i][j].z = z;
+      }
+    }
+
+    var tris = [];
+    for (var i = 0; i < grid; i++) {
+      for (var j = 0; j < grid; j++) {
+        var a = pts[i][j], b = pts[i + 1][j], c = pts[i][j + 1], d = pts[i + 1][j + 1];
+        tris.push({ p: [a, b, c], z: (a.z + b.z + c.z) / 3, d: (a.depth + b.depth + c.depth) / 3 });
+        tris.push({ p: [b, d, c], z: (b.z + c.z + d.z) / 3, d: (b.depth + c.depth + d.depth) / 3 });
+      }
+    }
+    tris.sort(function(a, b) { return b.d - a.d; });
+
+    tris.forEach(function(t) {
+      ctx.beginPath(); ctx.moveTo(t.p[0].x, t.p[0].y);
+      ctx.lineTo(t.p[1].x, t.p[1].y); ctx.lineTo(t.p[2].x, t.p[2].y);
+      ctx.closePath(); ctx.fillStyle = heightColor(t.z, zmin, zmax); ctx.fill();
+    });
+
+    ctx.lineWidth = 0.6;
+    for (var i = 0; i <= grid; i++) {
+      for (var j = 0; j < grid; j++) {
+        var a = pts[i][j], b = pts[i][j + 1];
+        ctx.strokeStyle = lineColor((a.z + b.z) / 2, zmin, zmax);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+    for (var j2 = 0; j2 <= grid; j2++) {
+      for (var i2 = 0; i2 < grid; i2++) {
+        var a2 = pts[i2][j2], b2 = pts[i2 + 1][j2];
+        ctx.strokeStyle = lineColor((a2.z + b2.z) / 2, zmin, zmax);
+        ctx.beginPath(); ctx.moveTo(a2.x, a2.y); ctx.lineTo(b2.x, b2.y); ctx.stroke();
+      }
+    }
+
+    var curL = loss(state.w1, state.w2);
+    var curP = project3D(state.w1, state.w2, curL, W, H);
+    ctx.shadowColor = RED; ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(curP.x, curP.y, 8, 0, 6.2832);
+    ctx.fillStyle = RED; ctx.fill(); ctx.shadowBlur = 0;
+
+    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Drag: rotate | Shift+drag: pan | Scroll: zoom', 10, H - 10);
+
+    var g = grad(state.w1, state.w2);
+    var eps = 1e-8;
+    if (state.t > 0) {
+      var m1h = state.m1 / (1 - Math.pow(state.beta1, state.t));
+      var m2h = state.m2 / (1 - Math.pow(state.beta1, state.t));
+      var v1h = state.v1 / (1 - Math.pow(state.beta2, state.t));
+      var v2h = state.v2 / (1 - Math.pow(state.beta2, state.t));
+      readout.innerHTML =
+        'Step ' + state.t + ': w=[' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) +
+        '] loss=<strong>' + curL.toFixed(3) + '</strong> | ' +
+        '<span style="color:' + PRIMARY + '">m̂</span>=[' + m1h.toFixed(3) + ', ' + m2h.toFixed(3) + '] ' +
+        '<span style="color:' + SECONDARY + '">v̂</span>=[' + v1h.toFixed(3) + ', ' + v2h.toFixed(3) + '] ' +
+        '| <span style="color:' + GREEN + '">step</span>=[' +
+        (state.eta * m1h / (Math.sqrt(v1h) + eps)).toFixed(4) + ', ' +
+        (state.eta * m2h / (Math.sqrt(v2h) + eps)).toFixed(4) + ']';
+    } else {
+      readout.innerHTML =
+        'w=[' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) +
+        '] loss=<strong>' + curL.toFixed(3) + '</strong> | Press Step to begin Adam descent.';
     }
   }
   return { resize: draw };

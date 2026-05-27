@@ -5,12 +5,6 @@ window.MODULE_CONFIG = {
   // Folding, the MLP decision boundary, and the loss landscape are now
   // interactive widgets; the exercise datasets are a static image.
   manimSections: {
-    "linsep-viz": [
-      "LinearSeparabilityScene_0000_perceptron_as_line.mp4",
-      "LinearSeparabilityScene_0001_and_separable.mp4",
-      "LinearSeparabilityScene_0002_or_separable.mp4",
-      "LinearSeparabilityScene_0003_xor_fails.mp4"
-    ],
     "overfit-viz": [
       "OverfittingCurveScene_0000_overfit_axes.mp4",
       "OverfittingCurveScene_0001_overfit_train.mp4",

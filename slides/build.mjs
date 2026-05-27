@@ -140,6 +140,13 @@ function expandComponent(name, attrs, body) {
     case 'terminal': {
       need(attrs, ['id', 'title', 'cmd'], name);
       const maxw = attrs.maxw ? ` style="max-width: ${attrs.maxw};"` : '';
+      // Collapse the <pre> body to a single physical line, encoding real
+      // newlines as &#10;. A blank line inside the body would otherwise end
+      // the surrounding HTML block in the Markdown parser, which then wraps
+      // the following text in <p> tags at the default (larger) paragraph
+      // size -- the "PART 2 is bigger than PART 1, overflows the slide" bug.
+      // <pre> preserves the &#10; line feeds, so the rendering is identical.
+      const preBody = trimBlankLines(body).replace(/\n/g, '&#10;');
       const lines = [
         `<section id="${attrs.id}">`,
         `  <h2>${attrs.title}</h2>`,
@@ -152,7 +159,7 @@ function expandComponent(name, attrs, body) {
         `        <span class="terminal-title">${attrs.cmd}</span>`,
         '      </div>',
         '      <div class="terminal-body">',
-        `        <pre class="terminal-pre">${trimBlankLines(body)}</pre>`,
+        `        <pre class="terminal-pre">${preBody}</pre>`,
         '      </div>',
         '    </div>',
       ];
@@ -266,10 +273,11 @@ function expandComponent(name, attrs, body) {
       // Host slide for a vanilla-JS widget hydrated from source/index.html
       // by its `widget` key. No video; the widget owns the slide.
       need(attrs, ['id', 'widget'], name);
+      const modeAttr = attrs.mode !== undefined ? ` data-mode="${attrs.mode}"` : '';
       const lines = [`<section id="${attrs.id}">`];
       if (attrs.title !== undefined) lines.push(`  <h2>${attrs.title}</h2>`);
       lines.push(
-        `  <div class="interactive-host" data-widget="${attrs.widget}"></div>`,
+        `  <div class="interactive-host" data-widget="${attrs.widget}"${modeAttr}></div>`,
         '</section>',
       );
       return lines.join('\n');

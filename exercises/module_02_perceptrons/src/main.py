@@ -97,28 +97,17 @@ def train_perceptron(
     weights = torch.randn(2) * 0.1
     bias = torch.zeros(())  # 0-dim tensor
     losses: list[float] = []
-    n = X.shape[0]
 
     for epoch in range(epochs):
-        epoch_loss = 0.0
-        total_dw = torch.zeros(2)
-        total_db = torch.zeros(())
+        y_pred = forward(X, weights, bias)
+        loss = binary_cross_entropy(y, y_pred).mean()
+        losses.append(float(loss))
 
-        for i in range(n):
-            y_pred = forward(X[i], weights, bias)
-            epoch_loss += float(binary_cross_entropy(y[i], y_pred))
-            dw, db = compute_gradients(X[i], y[i], y_pred)
-            total_dw += dw
-            total_db += db
+        dw, db = compute_gradients(X, y, y_pred)
+        weights, bias = update_parameters(weights, bias, dw, db, learning_rate)
 
-        total_dw /= n
-        total_db /= n
-        weights, bias = update_parameters(weights, bias, total_dw, total_db, learning_rate)
-
-        avg_loss = epoch_loss / n
-        losses.append(avg_loss)
         if (epoch + 1) % 20 == 0:
-            print(f"  Epoch {epoch + 1:3d}/{epochs}  loss={avg_loss:.4f}")
+            print(f"  Epoch {epoch + 1:3d}/{epochs}  loss={loss:.4f}")
 
     return weights, bias, losses
 

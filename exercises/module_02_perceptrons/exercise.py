@@ -44,19 +44,19 @@ def sigmoid(z: torch.Tensor) -> torch.Tensor:
 # ---------------------------------------------------------------------------
 
 
-def forward(x: torch.Tensor, weights: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:
-    """Compute the output of a single neuron.
+def forward(X: torch.Tensor, weights: torch.Tensor, bias: torch.Tensor) -> torch.Tensor:
+    """Compute the output of a single neuron for a whole batch.
 
     Args:
-        x: Shape (2,) input tensor.
-        weights: Shape (2,) weight tensor.
+        X: Input tensor, shape (n_samples, 2).
+        weights: Weight vector, shape (2,).
         bias: Scalar bias tensor.
 
     Returns:
-        A probability tensor in (0, 1).
+        A probability tensor of shape (n_samples,) with values in (0, 1).
     """
     # TODO: Compute the neuron's output in one line
-    # HINT: use the dot product x @ weights, add bias, then call sigmoid
+    # HINT: use the batch matrix-vector product X @ weights, add bias, then call sigmoid
     raise NotImplementedError("TODO: implement the forward pass")
 
 
@@ -94,24 +94,25 @@ def binary_cross_entropy(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Te
 
 
 def compute_gradients(
-    x: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
+    X: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Compute gradients of the BCE loss w.r.t. the neuron's weights and bias.
 
     For sigmoid + BCE the chain rule simplifies beautifully to:
-        dL/dw = (y_pred - y_true) * x
-        dL/db = (y_pred - y_true)
+        error = y_pred - y_true
+        dw    = X.T @ error / n
+        db    = error.mean()
 
     Args:
-        x: Input vector, shape (2,).
-        y_true: True label (0 or 1).
-        y_pred: Predicted probability.
+        X: Input batch, shape (n_samples, 2).
+        y_true: True labels, shape (n_samples,).
+        y_pred: Predicted probabilities, shape (n_samples,).
 
     Returns:
-        (dw, db): gradient w.r.t. weights (shape (2,)) and bias (0-dim tensor).
+        (dw, db): gradient w.r.t. weights (shape (2,)) and bias (scalar tensor).
     """
-    # TODO: Compute the gradients using the formulas in the docstring
-    # HINT: the error is (y_pred - y_true); the weight gradient is error * x and the bias gradient is the error
+    # TODO: Compute the averaged gradients using the formulas in the docstring
+    # HINT: error is (y_pred - y_true); dw is X.T @ error averaged over the batch; db is the mean error
     raise NotImplementedError("TODO: implement gradient computation")
 
 
