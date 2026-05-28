@@ -453,6 +453,21 @@
   font-family: monospace;
 }
 
+.reveal .terminal-output .terminal-body pre.terminal-pre span {
+  font-size: inherit !important;
+  line-height: inherit !important;
+  font-family: inherit !important;
+}
+
+.reveal .terminal-output .terminal-body pre.terminal-pre p {
+  display: inline;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  font-family: inherit !important;
+  margin: 0 !important;
+  color: inherit;
+}
+
 .reveal .terminal-output .terminal-body pre code {
   font-size: 11pt;
   line-height: 1.5;
@@ -716,7 +731,7 @@
 
 .fold-views {
   display: grid;
-  grid-template-columns: 1fr 0.85fr 1fr;
+  grid-template-columns: 1fr 1fr 0.85fr;
   gap: 18px;
   flex: 1;
   min-height: 0;
@@ -921,12 +936,93 @@
   height: 100%;
 }
 
+.land-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
+}
+
 .land-main {
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: minmax(0, 1fr);
   flex: 1;
   min-height: 0;
+}
+
+.loss-landscape-widget .land-controls {
+  grid-template-columns: repeat(2, minmax(210px, 1fr)) auto auto;
+}
+
+.adam-landscape-widget .land-controls {
+  grid-template-columns: repeat(4, minmax(140px, 1fr)) auto auto;
+  gap: 8px 12px;
+}
+
+.land-param-diagram {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  min-height: 0;
+  padding: 14px;
+  background: #0d1225;
+  border: 1px solid var(--line-color);
+  border-radius: var(--box-radius);
+}
+
+.reveal .land-diagram-title {
+  font-size: 12pt;
+  color: var(--muted-color);
+  text-align: center;
+  margin: 0 0 2px 0;
+}
+
+.land-weight-row {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(74, 158, 255, 0.28);
+  border-radius: 6px;
+}
+
+.reveal .land-weight-row span {
+  font-size: 16pt;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.reveal .land-weight-row strong {
+  font-family: monospace;
+  font-size: 14pt;
+  color: var(--text-color);
+  text-align: right;
+}
+
+.land-loss-box {
+  position: relative;
+  margin-top: 8px;
+  padding: 12px 10px;
+  border: 1px solid rgba(245, 166, 35, 0.45);
+  border-radius: 6px;
+  color: var(--secondary-color);
+  text-align: center;
+  font-size: 14pt;
+  font-weight: 700;
+}
+
+.land-loss-box::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -18px;
+  width: 1px;
+  height: 18px;
+  background: rgba(245, 166, 35, 0.45);
 }
 
 .land-step {
@@ -1008,6 +1104,16 @@
   background: rgba(245, 166, 35, 0.12);
   border-color: rgba(245, 166, 35, 0.40);
   color: var(--secondary-color);
+}
+
+.expl-sliders {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(190px, 1fr));
+  gap: 6px 18px;
+}
+
+.expl-depth-widget .perc-slider {
+  grid-template-columns: 62px 1fr 52px;
 }
 
 /* ===========================================

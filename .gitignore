@@ -10,3 +10,4 @@ exercises/.venv/
 .playwright**
 node_modules
 **/output/**
+tools/
