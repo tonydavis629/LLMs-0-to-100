@@ -58,6 +58,16 @@ This creates `exercises/.venv`. Use it for exercise code only.
 uv run python -c "print('Environment ready.')"
 ```
 
+### Build the Slide Decks
+
+Build every module's bundled lecture deck from source:
+
+```bash
+uv run python build_course.py
+```
+
+This writes `index.bundled.html` in each `slides/module_XX_*` folder that has slide source files.
+
 ## Course Structure
 
 The course has 12 modules, each with a lecture (slides) and a coding exercise.
@@ -88,8 +98,8 @@ Fill in the TODOs in the exercise files. Check the solution in `exercises/module
 Open the HTML file directly in your browser:
 
 ```bash
-open slides/module_01_introduction/index.html    # macOS
-xdg-open slides/module_01_introduction/index.html # Linux
+open slides/module_01_introduction/index.bundled.html     # macOS
+xdg-open slides/module_01_introduction/index.bundled.html  # Linux
 ```
 
 Use arrow keys to navigate. Press `S` for speaker notes.

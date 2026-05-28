@@ -119,7 +119,7 @@ The same formula is now a **training objective**: we adjust the model to make th
 :::
 
 :::note
-The analogy aids intuition but breaks down fast: real neurons use spike timing, dendritic computation, and many neurotransmitters — none captured here.
+The analogy is real but breaks down fast: real neurons use spike timing, dendritic computation, and many neurotransmitters
 :::
 
 ---
