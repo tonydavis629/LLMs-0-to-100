@@ -4,3 +4,114 @@
   --slide-padding-top: 40px;
   --content-gap: 30px;
 }
+
+.reveal #anim-optimizer .module2-loss-widget,
+.reveal #adam-landscape .module2-loss-widget {
+  gap: 10px;
+}
+
+.reveal #anim-optimizer .land-content,
+.reveal #adam-landscape .land-content {
+  grid-template-columns: minmax(0, 1fr) 210px;
+}
+
+.reveal #anim-optimizer .land-param-diagram,
+.reveal #adam-landscape .land-param-diagram {
+  gap: 12px;
+}
+
+.land-slope-card {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 45, 85, 0.58);
+  border-radius: 6px;
+  background: rgba(255, 45, 85, 0.09);
+}
+
+.reveal .land-slope-label {
+  margin: 0 0 4px 0;
+  color: #8892a4;
+  font-size: 11pt;
+  text-align: center;
+}
+
+.reveal .land-slope-value {
+  margin: 0;
+  color: #ff2d55;
+  font-family: monospace;
+  font-size: 13pt;
+  text-align: center;
+}
+
+.reveal #anim-optimizer .land-readout,
+.reveal #adam-landscape .land-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 76px;
+  padding: 8px 12px;
+  background: #0d1225;
+  border: 1px solid #2a3450;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.reveal #anim-optimizer .land-readout p,
+.reveal #adam-landscape .land-readout p {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.reveal .land-equation-line {
+  color: #e8eaf0;
+  font-family: monospace;
+  font-size: 11.8pt;
+}
+
+.reveal .land-equation-label {
+  display: inline-block;
+  min-width: 116px;
+  color: #8892a4;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 11.5pt;
+  font-weight: 600;
+}
+
+.reveal .land-metric-line {
+  color: #8892a4;
+  font-size: 11.5pt;
+}
+
+.reveal .eq-old {
+  color: #58a6ff;
+  font-weight: 700;
+}
+
+.reveal .eq-eta {
+  color: #ffb02e;
+  font-weight: 700;
+}
+
+.reveal .eq-grad {
+  color: #ff4d4d;
+  font-weight: 700;
+}
+
+.reveal .eq-step {
+  color: #39d353;
+  font-weight: 700;
+}
+
+.reveal .eq-new {
+  color: #39d353;
+  font-weight: 700;
+}
+
+.reveal .eq-vterm {
+  color: #f0d060;
+  font-weight: 700;
+}
+
+.reveal .eq-tangent {
+  color: #ff2d55;
+  font-weight: 700;
+}

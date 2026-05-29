@@ -1250,6 +1250,117 @@
   --content-gap: 30px;
 }
 
+.reveal #anim-optimizer .module2-loss-widget,
+.reveal #adam-landscape .module2-loss-widget {
+  gap: 10px;
+}
+
+.reveal #anim-optimizer .land-content,
+.reveal #adam-landscape .land-content {
+  grid-template-columns: minmax(0, 1fr) 210px;
+}
+
+.reveal #anim-optimizer .land-param-diagram,
+.reveal #adam-landscape .land-param-diagram {
+  gap: 12px;
+}
+
+.land-slope-card {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 45, 85, 0.58);
+  border-radius: 6px;
+  background: rgba(255, 45, 85, 0.09);
+}
+
+.reveal .land-slope-label {
+  margin: 0 0 4px 0;
+  color: #8892a4;
+  font-size: 11pt;
+  text-align: center;
+}
+
+.reveal .land-slope-value {
+  margin: 0;
+  color: #ff2d55;
+  font-family: monospace;
+  font-size: 13pt;
+  text-align: center;
+}
+
+.reveal #anim-optimizer .land-readout,
+.reveal #adam-landscape .land-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 76px;
+  padding: 8px 12px;
+  background: #0d1225;
+  border: 1px solid #2a3450;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.reveal #anim-optimizer .land-readout p,
+.reveal #adam-landscape .land-readout p {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.reveal .land-equation-line {
+  color: #e8eaf0;
+  font-family: monospace;
+  font-size: 11.8pt;
+}
+
+.reveal .land-equation-label {
+  display: inline-block;
+  min-width: 116px;
+  color: #8892a4;
+  font-family: "Inter", Helvetica, sans-serif;
+  font-size: 11.5pt;
+  font-weight: 600;
+}
+
+.reveal .land-metric-line {
+  color: #8892a4;
+  font-size: 11.5pt;
+}
+
+.reveal .eq-old {
+  color: #58a6ff;
+  font-weight: 700;
+}
+
+.reveal .eq-eta {
+  color: #ffb02e;
+  font-weight: 700;
+}
+
+.reveal .eq-grad {
+  color: #ff4d4d;
+  font-weight: 700;
+}
+
+.reveal .eq-step {
+  color: #39d353;
+  font-weight: 700;
+}
+
+.reveal .eq-new {
+  color: #39d353;
+  font-weight: 700;
+}
+
+.reveal .eq-vterm {
+  color: #f0d060;
+  font-weight: 700;
+}
+
+.reveal .eq-tangent {
+  color: #ff2d55;
+  font-weight: 700;
+}
+
   </style>
 </head>
 <body>
@@ -2856,7 +2967,6 @@ Which network would you expect to generalize better to new data, and why?
 
 Next: Module 3 — Attention and Embeddings
 
-
         </textarea>
       </section>
     </div>
@@ -2868,27 +2978,700 @@ Next: Module 3 — Attention and Embeddings
 
   <!-- Per-module config: sets window.MODULE_CONFIG before the shared logic runs -->
   <script>
-// Module 2 - Perceptrons & MLPs: per-module config consumed by the shared slides.js.
-window.MODULE_CONFIG = {
-  title: 'LLMs 0 to 100 - Module 2',
-  // Manim step-through clips for this module (files under media/sections/).
-  // Folding, the MLP decision boundary, and the loss landscape are now
-  // interactive widgets; the exercise datasets are a static image.
-  manimSections: {
-    "overfit-viz": [
-      "OverfittingCurveScene_0000_overfit_axes.mp4",
-      "OverfittingCurveScene_0001_overfit_train.mp4",
-      "OverfittingCurveScene_0002_overfit_val.mp4",
-      "OverfittingCurveScene_0003_overfit_region.mp4",
-      "OverfittingCurveScene_0004_fits.mp4"
-    ]
+(function() {
+  function createLossSurfaceWidget(host, mode) {
+    var isAdam = mode === "adam";
+    var TEXT = "#e8eaf0";
+    var PRIMARY = "#4a9eff";
+    var SECONDARY = "#f5a623";
+    var GRAD = "#e74c3c";
+    var STEP = "#3fb950";
+    var TANGENT = "#ff2d55";
+    var WMIN = -3;
+    var WMAX = 5;
+    var EPS = 1e-8;
+    var INIT_AZ = -0.92;
+    var INIT_EL = 0.36;
+    var INIT_ZOOM = 0.96;
+    var defaults = isAdam
+      ? { eta: 0.3, batch: 8, beta1: 0.9, beta2: 0.999 }
+      : { eta: 0.5, batch: 8 };
+    var state = {
+      w1: -1,
+      w2: 2,
+      eta: defaults.eta,
+      batch: defaults.batch,
+      beta1: isAdam ? defaults.beta1 : 0.9,
+      beta2: isAdam ? defaults.beta2 : 0.999,
+      m1: 0,
+      m2: 0,
+      v1: 0,
+      v2: 0,
+      t: 0,
+      lastStep: null,
+      az: INIT_AZ,
+      el: INIT_EL,
+      zoom: INIT_ZOOM,
+      panX: 0,
+      panY: 0,
+      dragging: false,
+      dragType: null,
+      lastMX: 0,
+      lastMY: 0
+    };
+
+    function gaussian(w1, w2, cx, cy, sx, sy) {
+      var dx = w1 - cx;
+      var dy = w2 - cy;
+      return Math.exp(-0.5 * (dx * dx / sx + dy * dy / sy));
+    }
+
+    function loss(w1, w2) {
+      var x = w1 - 0.8;
+      var y = w2 + 0.5;
+      var basin = 0.11 * x * x + 0.085 * y * y;
+      var ridge1 = 1.35 * gaussian(w1, w2, -1.45, 1.65, 0.38, 0.55);
+      var ridge2 = 0.95 * gaussian(w1, w2, 2.85, 1.15, 0.75, 0.42);
+      var valley1 = -1.05 * gaussian(w1, w2, 1.8, -1.55, 0.95, 0.32);
+      var valley2 = -0.75 * gaussian(w1, w2, -0.35, -1.85, 0.45, 0.75);
+      var saddle = 0.09 * (w1 + 0.35) * (w2 - 0.25);
+      var ripple =
+        0.38 * Math.sin(2.25 * w1 + 0.35) * Math.cos(1.9 * w2 - 0.4) +
+        0.22 * Math.sin(3.2 * w1 - 1.15 * w2 + 0.7) +
+        0.14 * Math.cos(4.1 * w2 + 0.55);
+      return 2.2 + basin + ridge1 + ridge2 + valley1 + valley2 + saddle + ripple;
+    }
+
+    function grad(w1, w2) {
+      var h = 0.01;
+      return {
+        g1: (loss(w1 + h, w2) - loss(w1 - h, w2)) / (2 * h),
+        g2: (loss(w1, w2 + h) - loss(w1, w2 - h)) / (2 * h)
+      };
+    }
+
+    function surfaceRoughness() {
+      return Math.pow((64 - state.batch) / 63, 0.8);
+    }
+
+    function surfaceNoise(w1, w2) {
+      return (
+        0.46 * Math.sin(5.2 * w1 + 1.1) * Math.sin(4.9 * w2 - 0.6) +
+        0.24 * Math.sin(8.5 * w1 - 3.6 * w2 + 0.4) +
+        0.18 * Math.cos(6.3 * w1 + 5.1 * w2 - 1.7)
+      );
+    }
+
+    function displayedLoss(w1, w2) {
+      return loss(w1, w2) + surfaceRoughness() * surfaceNoise(w1, w2);
+    }
+
+    function displayedGrad(w1, w2) {
+      var h = 0.01;
+      return {
+        g1: (displayedLoss(w1 + h, w2) - displayedLoss(w1 - h, w2)) / (2 * h),
+        g2: (displayedLoss(w1, w2 + h) - displayedLoss(w1, w2 - h)) / (2 * h)
+      };
+    }
+
+    function noise(seed) {
+      var x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+      return (x - Math.floor(x)) * 2 - 1;
+    }
+
+    function batchGrad(w1, w2, batch, step) {
+      var g = grad(w1, w2);
+      var n1 = 0;
+      var n2 = 0;
+      for (var i = 0; i < batch; i++) {
+        n1 += noise(step * 101 + i * 17 + 1);
+        n2 += noise(step * 137 + i * 19 + 2);
+      }
+      var scale = 2.4;
+      return {
+        g1: g.g1 + scale * n1 / batch,
+        g2: g.g2 + scale * n2 / batch,
+        trueG1: g.g1,
+        trueG2: g.g2
+      };
+    }
+
+    function clampWeight(value) {
+      return Math.max(WMIN + 0.05, Math.min(WMAX - 0.05, value));
+    }
+
+    function vectorText(a, b, digits) {
+      return "[" + a.toFixed(digits) + ", " + b.toFixed(digits) + "]";
+    }
+
+    function randomStart() {
+      for (var tries = 0; tries < 60; tries++) {
+        var w1 = WMIN + 0.45 + Math.random() * (WMAX - WMIN - 0.9);
+        var w2 = WMIN + 0.45 + Math.random() * (WMAX - WMIN - 0.9);
+        var g = grad(w1, w2);
+        var slope = Math.hypot(g.g1, g.g2);
+        if (slope > 0.35 && loss(w1, w2) < 6.2) {
+          return { w1: w1, w2: w2 };
+        }
+      }
+      return { w1: -1.0, w2: 2.0 };
+    }
+
+    function controlHtml() {
+      var html =
+        '<div class="mlp-slider"><label>&eta;</label><input data-k="eta" type="range" min="' +
+        (isAdam ? "0.05" : "0.1") + '" max="1.5" step="' + (isAdam ? "0.05" : "0.1") +
+        '" value="' + defaults.eta + '"><p data-r="eta">' + (isAdam ? defaults.eta.toFixed(2) : defaults.eta.toFixed(1)) + '</p></div>' +
+        '<div class="mlp-slider"><label>Batch</label><input data-k="batch" type="range" min="1" max="64" step="1" value="' +
+        defaults.batch + '"><p data-r="batch">' + defaults.batch + '</p></div>';
+      if (isAdam) {
+        html +=
+          '<div class="mlp-slider"><label>&beta;&#8321;</label><input data-k="beta1" type="range" min="0.5" max="0.99" step="0.01" value="' +
+          defaults.beta1 + '"><p data-r="beta1">' + defaults.beta1.toFixed(2) + '</p></div>' +
+          '<div class="mlp-slider"><label>&beta;&#8322;</label><input data-k="beta2" type="range" min="0.9" max="0.999" step="0.001" value="' +
+          defaults.beta2 + '"><p data-r="beta2">' + defaults.beta2.toFixed(3) + '</p></div>';
+      }
+      return html;
+    }
+
+    host.innerHTML =
+      '<div class="land-widget module2-loss-widget ' + (isAdam ? "adam-landscape-widget" : "loss-landscape-widget") + '">' +
+        '<div class="land-content">' +
+          '<div class="land-main">' +
+            '<canvas class="land-canvas"></canvas>' +
+          '</div>' +
+          '<div class="land-param-diagram">' +
+            '<p class="land-diagram-title">Two trainable weights</p>' +
+            '<div class="land-weight-row"><span>w&#8321;</span><strong data-r="w1">0.00</strong></div>' +
+            '<div class="land-weight-row"><span>w&#8322;</span><strong data-r="w2">0.00</strong></div>' +
+            '<div class="land-loss-box">L(w&#8321;, w&#8322;)</div>' +
+            '<div class="land-slope-card">' +
+              '<p class="land-slope-label">Local tangent line</p>' +
+              '<p class="land-slope-value" data-r="slope">|&nabla;L| = 0.000</p>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="land-controls">' +
+          controlHtml() +
+          '<button class="land-step">Step</button>' +
+          '<button class="land-reset-btn">Reset</button>' +
+        '</div>' +
+        '<div class="land-readout"></div>' +
+      '</div>';
+
+    var canvas = host.querySelector(".land-canvas");
+    var readout = host.querySelector(".land-readout");
+
+    ["pointerdown", "keydown"].forEach(function(ev) {
+      host.addEventListener(ev, function(e) { e.stopPropagation(); });
+    });
+
+    canvas.addEventListener("pointerdown", function(e) {
+      state.dragging = true;
+      state.lastMX = e.clientX;
+      state.lastMY = e.clientY;
+      state.dragType = e.shiftKey ? "pan" : "rotate";
+      canvas.setPointerCapture(e.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", function(e) {
+      if (!state.dragging) return;
+      var dx = e.clientX - state.lastMX;
+      var dy = e.clientY - state.lastMY;
+      if (state.dragType === "pan") {
+        state.panX += dx;
+        state.panY += dy;
+      } else {
+        state.az -= dx * 0.008;
+        state.el = Math.max(-0.8, Math.min(1.45, state.el - dy * 0.01));
+      }
+      state.lastMX = e.clientX;
+      state.lastMY = e.clientY;
+      draw();
+    });
+
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function(ev) {
+      canvas.addEventListener(ev, function() {
+        state.dragging = false;
+        state.dragType = null;
+      });
+    });
+
+    canvas.addEventListener("wheel", function(e) {
+      e.preventDefault();
+      state.zoom = Math.max(0.4, Math.min(2.5, state.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
+      draw();
+    }, { passive: false });
+
+    function formatControl(key) {
+      if (key === "batch") return String(state.batch);
+      if (key === "eta" && !isAdam) return state.eta.toFixed(1);
+      if (key === "beta2") return state.beta2.toFixed(3);
+      return state[key].toFixed(2);
+    }
+
+    function syncReadouts() {
+      host.querySelector('[data-r="w1"]').textContent = state.w1.toFixed(2);
+      host.querySelector('[data-r="w2"]').textContent = state.w2.toFixed(2);
+      ["eta", "batch", "beta1", "beta2"].forEach(function(key) {
+        var read = host.querySelector('[data-r="' + key + '"]');
+        var input = host.querySelector('[data-k="' + key + '"]');
+        if (!read || !input) return;
+        input.value = state[key];
+        read.textContent = formatControl(key);
+      });
+    }
+
+    host.querySelectorAll("input").forEach(function(inp) {
+      inp.addEventListener("input", function() {
+        state[inp.dataset.k] = inp.dataset.k === "batch" ? parseInt(inp.value, 10) : parseFloat(inp.value);
+        state.lastStep = null;
+        syncReadouts();
+        draw();
+      });
+    });
+
+    function resetState() {
+      var start = randomStart();
+      state.w1 = start.w1;
+      state.w2 = start.w2;
+      state.eta = defaults.eta;
+      state.batch = defaults.batch;
+      state.beta1 = isAdam ? defaults.beta1 : state.beta1;
+      state.beta2 = isAdam ? defaults.beta2 : state.beta2;
+      state.m1 = 0;
+      state.m2 = 0;
+      state.v1 = 0;
+      state.v2 = 0;
+      state.t = 0;
+      state.lastStep = null;
+      state.az = INIT_AZ;
+      state.el = INIT_EL;
+      state.zoom = INIT_ZOOM;
+      state.panX = 0;
+      state.panY = 0;
+      syncReadouts();
+      draw();
+    }
+
+    host.querySelector(".land-step").addEventListener("click", function() {
+      if (isAdam) {
+        var ag = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
+        var aOldW1 = state.w1;
+        var aOldW2 = state.w2;
+        var aOldL = loss(aOldW1, aOldW2);
+        state.t++;
+        state.m1 = state.beta1 * state.m1 + (1 - state.beta1) * ag.g1;
+        state.m2 = state.beta1 * state.m2 + (1 - state.beta1) * ag.g2;
+        state.v1 = state.beta2 * state.v1 + (1 - state.beta2) * ag.g1 * ag.g1;
+        state.v2 = state.beta2 * state.v2 + (1 - state.beta2) * ag.g2 * ag.g2;
+        var m1h = state.m1 / (1 - Math.pow(state.beta1, state.t));
+        var m2h = state.m2 / (1 - Math.pow(state.beta1, state.t));
+        var v1h = state.v1 / (1 - Math.pow(state.beta2, state.t));
+        var v2h = state.v2 / (1 - Math.pow(state.beta2, state.t));
+        var step1 = state.eta * m1h / (Math.sqrt(v1h) + EPS);
+        var step2 = state.eta * m2h / (Math.sqrt(v2h) + EPS);
+        state.w1 = clampWeight(state.w1 - step1);
+        state.w2 = clampWeight(state.w2 - step2);
+        state.lastStep = {
+          kind: "adam",
+          oldW1: aOldW1,
+          oldW2: aOldW2,
+          newW1: state.w1,
+          newW2: state.w2,
+          oldLoss: aOldL,
+          newLoss: loss(state.w1, state.w2),
+          eta: state.eta,
+          batch: state.batch,
+          m1h: m1h,
+          m2h: m2h,
+          v1h: v1h,
+          v2h: v2h,
+          step1: step1,
+          step2: step2
+        };
+      } else {
+        var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
+        var oldW1 = state.w1;
+        var oldW2 = state.w2;
+        var oldL = loss(oldW1, oldW2);
+        state.w1 = clampWeight(state.w1 - state.eta * g.g1);
+        state.w2 = clampWeight(state.w2 - state.eta * g.g2);
+        state.t++;
+        state.lastStep = {
+          kind: "sgd",
+          oldW1: oldW1,
+          oldW2: oldW2,
+          newW1: state.w1,
+          newW2: state.w2,
+          oldLoss: oldL,
+          newLoss: loss(state.w1, state.w2),
+          g1: g.g1,
+          g2: g.g2,
+          eta: state.eta,
+          batch: state.batch
+        };
+      }
+      syncReadouts();
+      draw();
+    });
+
+    host.querySelector(".land-reset-btn").addEventListener("click", resetState);
+
+    function fitCanvas(c) {
+      var dpr = window.devicePixelRatio || 1;
+      var w = c.clientWidth;
+      var h = c.clientHeight;
+      if (!w || !h) return null;
+      c.width = Math.round(w * dpr);
+      c.height = Math.round(h * dpr);
+      var ctx = c.getContext("2d");
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx: ctx, w: w, h: h };
+    }
+
+    function heightColor(z, zmin, zmax, alpha) {
+      var t = Math.max(0, Math.min(1, (z - zmin) / (zmax - zmin || 1)));
+      var bands = [
+        [38, 92, 255],
+        [0, 214, 255],
+        [38, 217, 87],
+        [248, 227, 64],
+        [255, 159, 28],
+        [255, 59, 48]
+      ];
+      var idx = Math.min(bands.length - 1, Math.floor(t * bands.length));
+      var c = bands[idx];
+      return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + alpha + ")";
+    }
+
+    function project3D(x, y, z, W, H) {
+      var cx = (WMIN + WMAX) / 2;
+      var cy = (WMIN + WMAX) / 2;
+      var dx = x - cx;
+      var dy = y - cy;
+      var ca = Math.cos(state.az);
+      var sa = Math.sin(state.az);
+      var ce = Math.cos(state.el);
+      var se = Math.sin(state.el);
+      var xr = dx * ca - dy * sa;
+      var yr = dx * sa + dy * ca;
+      var zr = -z * 0.34;
+      var yr2 = yr * ce - zr * se;
+      var zr2 = yr * se + zr * ce;
+      var scale = Math.min(W, H) * 0.16 * state.zoom;
+      return {
+        x: W * 0.5 + state.panX + xr * scale,
+        y: H * 0.58 + state.panY - yr2 * scale * 0.72,
+        depth: zr2
+      };
+    }
+
+    function drawAxis(ctx, from, to, label, color, W, H) {
+      var a = project3D(from[0], from[1], from[2], W, H);
+      var b = project3D(to[0], to[1], to[2], W, H);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.font = "12px Inter, sans-serif";
+      ctx.textAlign = "center";
+      var lx = Math.max(22, Math.min(W - 22, b.x));
+      var ly = Math.max(18, Math.min(H - 14, b.y - 6));
+      ctx.fillText(label, lx, ly);
+    }
+
+    function drawAxes(ctx, W, H, zmin, zmax) {
+      var base = [WMIN, WMIN, zmin];
+      drawAxis(ctx, base, [WMAX, WMIN, zmin], "w\u2081", PRIMARY, W, H);
+      drawAxis(ctx, base, [WMIN, WMAX, zmin], "w\u2082", SECONDARY, W, H);
+      drawAxis(ctx, base, [WMIN, WMIN, zmax], "loss", TEXT, W, H);
+    }
+
+    function drawTangentLine(ctx, W, H, curL, localG) {
+      var slope = Math.hypot(localG.g1, localG.g2);
+      var ux = slope > 0.0001 ? localG.g1 / slope : 1;
+      var uy = slope > 0.0001 ? localG.g2 / slope : 0;
+      var len = 1.05;
+      var low = project3D(state.w1 - ux * len, state.w2 - uy * len, curL - slope * len, W, H);
+      var high = project3D(state.w1 + ux * len, state.w2 + uy * len, curL + slope * len, W, H);
+
+      ctx.save();
+      ctx.shadowColor = TANGENT;
+      ctx.shadowBlur = 9;
+      ctx.strokeStyle = TANGENT;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(low.x, low.y);
+      ctx.lineTo(high.x, high.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawSurface(ctx, W, H) {
+      var grid = 36;
+      var pts = [];
+      var zmin = Infinity;
+      var zmax = -Infinity;
+      for (var i = 0; i <= grid; i++) {
+        pts[i] = [];
+        for (var j = 0; j <= grid; j++) {
+          var w1 = WMIN + (WMAX - WMIN) * i / grid;
+          var w2 = WMIN + (WMAX - WMIN) * j / grid;
+          var z = displayedLoss(w1, w2);
+          zmin = Math.min(zmin, z);
+          zmax = Math.max(zmax, z);
+          pts[i][j] = { w1: w1, w2: w2, z: z };
+        }
+      }
+
+      for (var pi = 0; pi <= grid; pi++) {
+        for (var pj = 0; pj <= grid; pj++) {
+          var p = pts[pi][pj];
+          var projected = project3D(p.w1, p.w2, p.z, W, H);
+          p.x = projected.x;
+          p.y = projected.y;
+          p.depth = projected.depth;
+        }
+      }
+
+      var tris = [];
+      for (var ti = 0; ti < grid; ti++) {
+        for (var tj = 0; tj < grid; tj++) {
+          var a = pts[ti][tj];
+          var b = pts[ti + 1][tj];
+          var c = pts[ti][tj + 1];
+          var d = pts[ti + 1][tj + 1];
+          tris.push({ p: [a, b, c], z: (a.z + b.z + c.z) / 3, d: (a.depth + b.depth + c.depth) / 3 });
+          tris.push({ p: [b, d, c], z: (b.z + c.z + d.z) / 3, d: (b.depth + c.depth + d.depth) / 3 });
+        }
+      }
+      tris.sort(function(a, b) { return b.d - a.d; });
+
+      tris.forEach(function(t) {
+        ctx.beginPath();
+        ctx.moveTo(t.p[0].x, t.p[0].y);
+        ctx.lineTo(t.p[1].x, t.p[1].y);
+        ctx.lineTo(t.p[2].x, t.p[2].y);
+        ctx.closePath();
+        ctx.fillStyle = heightColor(t.z, zmin, zmax, 0.94);
+        ctx.fill();
+      });
+
+      ctx.lineWidth = 0.55;
+      for (var li = 0; li <= grid; li++) {
+        for (var lj = 0; lj < grid; lj++) {
+          var p1 = pts[li][lj];
+          var p2 = pts[li][lj + 1];
+          ctx.strokeStyle = heightColor((p1.z + p2.z) / 2, zmin, zmax, 0.36);
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+      for (var lj2 = 0; lj2 <= grid; lj2++) {
+        for (var li2 = 0; li2 < grid; li2++) {
+          var p3 = pts[li2][lj2];
+          var p4 = pts[li2 + 1][lj2];
+          ctx.strokeStyle = heightColor((p3.z + p4.z) / 2, zmin, zmax, 0.36);
+          ctx.beginPath();
+          ctx.moveTo(p3.x, p3.y);
+          ctx.lineTo(p4.x, p4.y);
+          ctx.stroke();
+        }
+      }
+      return { zmin: zmin, zmax: zmax };
+    }
+
+    function updateEquation(curL, trueG) {
+      var slope = Math.hypot(trueG.g1, trueG.g2);
+      host.querySelector('[data-r="slope"]').innerHTML = "m = " + slope.toFixed(3);
+
+      if (isAdam) {
+        updateAdamEquation(curL, slope);
+      } else {
+        updateSgdEquation(curL, slope);
+      }
+    }
+
+    function updateSgdEquation(curL, slope) {
+      var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
+      var data = {
+        oldW1: state.w1,
+        oldW2: state.w2,
+        newW1: clampWeight(state.w1 - state.eta * g.g1),
+        newW2: clampWeight(state.w2 - state.eta * g.g2),
+        g1: g.g1,
+        g2: g.g2,
+        eta: state.eta,
+        batch: state.batch
+      };
+
+      readout.innerHTML =
+        '<p class="land-equation-line land-equation-symbols">' +
+        '<span class="land-equation-label">Update rule</span> ' +
+        '<span class="eq-new">w<sub>new</sub></span> = ' +
+        '<span class="eq-old">w<sub>old</sub></span> + ' +
+        '(<span class="eq-eta">&minus;&eta;</span> &middot; ' +
+        '<span class="eq-grad">&nabla;<sub>B</sub>L(w<sub>old</sub>)</span>)</p>' +
+        '<p class="land-equation-line land-equation-numbers">' +
+        '<span class="land-equation-label">Numbers</span> ' +
+        '<span class="eq-new">' + vectorText(data.newW1, data.newW2, 2) + '</span> = ' +
+        '<span class="eq-old">' + vectorText(data.oldW1, data.oldW2, 2) + '</span> + ' +
+        '(<span class="eq-eta">&minus;' + data.eta.toFixed(1) + '</span> &middot; ' +
+        '<span class="eq-grad">' + vectorText(data.g1, data.g2, 3) + '</span>)</p>' +
+        '<p class="land-metric-line">Local tangent line: ' +
+        '<span class="eq-tangent">slope m = ' + slope.toFixed(3) + '</span> | ' +
+        'batch surface roughness <strong>' + surfaceRoughness().toFixed(2) + '</strong> | ' +
+        'displayed loss <strong>' + curL.toFixed(3) + '</strong></p>';
+    }
+
+    function previewAdamStep() {
+      var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
+      var nextT = state.t + 1;
+      var nextM1 = state.beta1 * state.m1 + (1 - state.beta1) * g.g1;
+      var nextM2 = state.beta1 * state.m2 + (1 - state.beta1) * g.g2;
+      var nextV1 = state.beta2 * state.v1 + (1 - state.beta2) * g.g1 * g.g1;
+      var nextV2 = state.beta2 * state.v2 + (1 - state.beta2) * g.g2 * g.g2;
+      var m1h = nextM1 / (1 - Math.pow(state.beta1, nextT));
+      var m2h = nextM2 / (1 - Math.pow(state.beta1, nextT));
+      var v1h = nextV1 / (1 - Math.pow(state.beta2, nextT));
+      var v2h = nextV2 / (1 - Math.pow(state.beta2, nextT));
+      var step1 = state.eta * m1h / (Math.sqrt(v1h) + EPS);
+      var step2 = state.eta * m2h / (Math.sqrt(v2h) + EPS);
+      return {
+        oldW1: state.w1,
+        oldW2: state.w2,
+        newW1: clampWeight(state.w1 - step1),
+        newW2: clampWeight(state.w2 - step2),
+        eta: state.eta,
+        m1h: m1h,
+        m2h: m2h,
+        v1h: v1h,
+        v2h: v2h,
+        step1: step1,
+        step2: step2,
+        preview: true
+      };
+    }
+
+    function updateAdamEquation(curL, slope) {
+      var data = previewAdamStep();
+      readout.innerHTML =
+        '<p class="land-equation-line land-equation-symbols">' +
+        '<span class="land-equation-label">Adam rule</span> ' +
+        '<span class="eq-new">w<sub>new</sub></span> = ' +
+        '<span class="eq-old">w<sub>old</sub></span> &minus; ' +
+        '<span class="eq-eta">&eta;</span> &middot; ' +
+        '<span class="eq-grad">m&#770;</span> / ' +
+        '(<span class="eq-vterm">&radic;v&#770;</span> + &epsilon;)</p>' +
+        '<p class="land-equation-line land-equation-numbers">' +
+        '<span class="land-equation-label">Numbers</span> ' +
+        '<span class="eq-new">' + vectorText(data.newW1, data.newW2, 2) + '</span> = ' +
+        '<span class="eq-old">' + vectorText(data.oldW1, data.oldW2, 2) + '</span> &minus; ' +
+        '<span class="eq-eta">' + data.eta.toFixed(2) + '</span> &middot; ' +
+        '<span class="eq-grad">' + vectorText(data.m1h, data.m2h, 3) + '</span> / ' +
+        '(<span class="eq-vterm">&radic;' + vectorText(data.v1h, data.v2h, 3) + '</span> + &epsilon;)</p>' +
+        '<p class="land-metric-line">Local tangent line: ' +
+        '<span class="eq-tangent">slope m = ' + slope.toFixed(3) + '</span> | ' +
+        'batch surface roughness <strong>' + surfaceRoughness().toFixed(2) + '</strong> | ' +
+        'displayed loss <strong>' + curL.toFixed(3) + '</strong></p>';
+    }
+
+    function draw() {
+      var f = fitCanvas(canvas);
+      if (!f) return;
+      var ctx = f.ctx;
+      var W = f.w;
+      var H = f.h;
+      ctx.clearRect(0, 0, W, H);
+      ctx.fillStyle = "#080d1b";
+      ctx.fillRect(0, 0, W, H);
+
+      var range = drawSurface(ctx, W, H);
+      drawAxes(ctx, W, H, range.zmin, range.zmax);
+
+      var curL = displayedLoss(state.w1, state.w2);
+      var localG = displayedGrad(state.w1, state.w2);
+      drawTangentLine(ctx, W, H, curL, localG);
+
+      var curP = project3D(state.w1, state.w2, curL, W, H);
+      ctx.shadowColor = PRIMARY;
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.arc(curP.x, curP.y, 8, 0, 6.2832);
+      ctx.fillStyle = PRIMARY;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = TEXT;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      updateEquation(curL, localG);
+    }
+
+    resetState();
+    return { resize: draw };
   }
-};
+
+  function installModule2LossWidgets() {
+    INTERACTIVE_WIDGETS.lossLandscape = function(host) {
+      return createLossSurfaceWidget(host, "sgd");
+    };
+    INTERACTIVE_WIDGETS.adamLandscape = function(host) {
+      return createLossSurfaceWidget(host, "adam");
+    };
+
+    document.querySelectorAll('.interactive-host[data-widget="lossLandscape"], .interactive-host[data-widget="adamLandscape"]').forEach(function(host) {
+      if (!host.dataset.hydrated) return;
+      host.dataset.hydrated = "";
+      host._widget = null;
+      var factory = INTERACTIVE_WIDGETS[host.getAttribute("data-widget")];
+      host.dataset.hydrated = "1";
+      host._widget = factory(host) || null;
+      if (host._widget && typeof host._widget.resize === "function") host._widget.resize();
+    });
+  }
+
+  window.MODULE_CONFIG = {
+    title: "LLMs 0 to 100 - Module 2",
+    // Manim step-through clips for this module, with files under media/sections.
+    // Folding, the MLP decision boundary, and loss landscapes are interactive widgets.
+    manimSections: {
+      "overfit-viz": [
+        "OverfittingCurveScene_0000_overfit_axes.mp4",
+        "OverfittingCurveScene_0001_overfit_train.mp4",
+        "OverfittingCurveScene_0002_overfit_val.mp4",
+        "OverfittingCurveScene_0003_overfit_region.mp4",
+        "OverfittingCurveScene_0004_fits.mp4"
+      ]
+    },
+    widgets: {
+      lossLandscape: function(host) {
+        return createLossSurfaceWidget(host, "sgd");
+      },
+      adamLandscape: function(host) {
+        return createLossSurfaceWidget(host, "adam");
+      }
+    },
+    onReady: installModule2LossWidgets
+  };
+}());
 
   </script>
 
   <!-- Shared deck logic for every module -->
   <script>
+// =====================================================================
+// Core deck infrastructure: Manim steppers, Reveal.js init, syntax
+// highlighting, interactive widget plumbing, and per-module hooks.
+// Loaded before any widget definitions.
+// =====================================================================
+
 // =====================================================================
 // Shared deck logic for every module. Per-module data and hooks arrive
 // via window.MODULE_CONFIG, set by each module's config.js (which the
@@ -3154,411 +3937,21 @@ Reveal.on('slidechanged', function() {
 });
 window.addEventListener('resize', refreshInteractiveWidgets);
 
-// ---- Folding widget: input space <-> hidden-space line values, live ----
-// The left pane shows each hidden neuron's line w.x+b=0. The right pane
-// shows continuous signed line values: crossing a neuron line in input
-// space crosses the matching axis in hidden space.
-INTERACTIVE_WIDGETS.folding = function(host) {
-  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
-      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff';
-  var NEURON_COLORS = ['#4a9eff', '#f5a623'];
+// ---- Per-module hooks (from MODULE_CONFIG) ----
+if (MODULE_CONFIG.title) document.title = MODULE_CONFIG.title;
+if (MODULE_CONFIG.widgets) Object.assign(INTERACTIVE_WIDGETS, MODULE_CONFIG.widgets);
+if (typeof MODULE_CONFIG.onReady === 'function') {
+  Reveal.on('ready', function() { MODULE_CONFIG.onReady(Reveal); });
+}
+if (typeof MODULE_CONFIG.onSlideChanged === 'function') {
+  Reveal.on('slidechanged', function(event) { MODULE_CONFIG.onSlideChanged(event); });
+}
 
-  // --- XOR-pattern data: opposite corners share a class ---
-  function mulberry32(a) {
-    return function() {
-      a |= 0; a = a + 0x6D2B79F5 | 0;
-      var t = Math.imul(a ^ a >>> 15, 1 | a);
-      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-  var rnd = mulberry32(42);
-  var clusters = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]];
-  var data = [];
-  clusters.forEach(function(c) {
-    for (var i = 0; i < 14; i++) {
-      data.push({
-        x: c[0] + (rnd() - 0.5) * 0.22,
-        y: c[1] + (rnd() - 0.5) * 0.22,
-        cls: c[2]
-      });
-    }
-  });
-
-  // Preset line positions for XOR: the two units detect points far above
-  // or below the diagonal strip.
-  function preset(k) {
-    var p = k === 1 ? [
-      { w1: 1, w2: -1, b: -0.3 }
-    ] : [
-      { w1: 1, w2: -1, b: -0.3 },
-      { w1: -1, w2: 1, b: -0.3 }
-    ];
-    return p.map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
-  }
-  var state = { k: 2, neurons: preset(2) };
-
-  // --- DOM ---
-  host.innerHTML =
-    '<div class="fold-widget">' +
-      '<div class="fold-views">' +
-        '<figure class="fold-view"><figcaption>Input space</figcaption>' +
-          '<canvas class="fold-canvas" data-pane="input"></canvas></figure>' +
-        '<figure class="fold-view"><figcaption>Hidden space</figcaption>' +
-          '<canvas class="fold-canvas" data-pane="hidden"></canvas></figure>' +
-        '<figure class="fold-view fold-graph-view"><figcaption>Weights as edges</figcaption>' +
-          '<canvas class="fold-canvas" data-pane="graph"></canvas></figure>' +
-      '</div>' +
-      '<div class="fold-controls">' +
-        '<div class="fold-modes">' +
-          '<button data-neurons="1">1 neuron</button>' +
-          '<button data-neurons="2">2 neurons</button>' +
-          '<button class="fold-reset">Reset to XOR solution</button>' +
-        '</div>' +
-        '<div class="fold-sliders"></div>' +
-        '<p class="fold-readout"></p>' +
-      '</div>' +
-    '</div>';
-
-  var inCanvas = host.querySelector('[data-pane="input"]');
-  var graphCanvas = host.querySelector('[data-pane="graph"]');
-  var hidCanvas = host.querySelector('[data-pane="hidden"]');
-  var slidersEl = host.querySelector('.fold-sliders');
-  var readoutEl = host.querySelector('.fold-readout');
-  var modeBtns = host.querySelectorAll('.fold-modes button[data-neurons]');
-
-  // Keep slider interaction from bubbling into reveal navigation.
-  ['pointerdown', 'keydown'].forEach(function(ev) {
-    host.addEventListener(ev, function(e) { e.stopPropagation(); });
-  });
-
-  function buildSliders() {
-    slidersEl.innerHTML = '';
-    state.neurons.forEach(function(n, idx) {
-      var color = NEURON_COLORS[idx];
-      [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(f) {
-        var key = f[0];
-        var row = document.createElement('div');
-        row.className = 'fold-slider';
-        var lab = document.createElement('label');
-        lab.textContent = 'N' + (idx + 1) + ' ' + f[1];
-        lab.style.color = color;
-        var inp = document.createElement('input');
-        inp.type = 'range';
-        inp.min = '-3'; inp.max = '3'; inp.step = '0.1';
-        inp.value = String(n[key]);
-        var val = document.createElement('p');
-        val.className = 'fold-val';
-        val.textContent = (+n[key]).toFixed(1);
-        inp.addEventListener('input', function() {
-          n[key] = parseFloat(inp.value);
-          val.textContent = n[key].toFixed(1);
-          draw();
-        });
-        row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
-        slidersEl.appendChild(row);
-      });
-    });
-  }
-
-  function setK(k) {
-    state.k = k;
-    state.neurons = preset(k);
-    modeBtns.forEach(function(b) {
-      b.classList.toggle('active', +b.getAttribute('data-neurons') === k);
-    });
-    buildSliders();
-    draw();
-  }
-  modeBtns.forEach(function(b) {
-    b.addEventListener('click', function() { setK(+b.getAttribute('data-neurons')); });
-  });
-  host.querySelector('.fold-reset').addEventListener('click', function() {
-    state.neurons = preset(state.k);
-    buildSliders();
-    draw();
-  });
-
-  // --- canvas helpers ---
-  function fitCanvas(c) {
-    var dpr = window.devicePixelRatio || 1;
-    var w = c.clientWidth, h = c.clientHeight;
-    if (!w || !h) return null;
-    c.width = Math.round(w * dpr);
-    c.height = Math.round(h * dpr);
-    var ctx = c.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx: ctx, w: w, h: h };
-  }
-
-  function makeMapper(w, h, xr, yr, pad) {
-    return function(x, y) {
-      return [
-        pad + (x - xr[0]) / (xr[1] - xr[0]) * (w - 2 * pad),
-        h - pad - (y - yr[0]) / (yr[1] - yr[0]) * (h - 2 * pad)
-      ];
-    };
-  }
-
-  function drawFrame(ctx, w, h, pad, xr, yr, xlab, ylab) {
-    ctx.clearRect(0, 0, w, h);
-    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
-    ctx.strokeRect(pad, pad, w - 2 * pad, h - 2 * pad);
-    var m = makeMapper(w, h, xr, yr, pad);
-    // zero axes if visible
-    ctx.strokeStyle = 'rgba(136,146,164,0.35)';
-    if (xr[0] < 0 && xr[1] > 0) {
-      var zx = m(0, yr[0])[0];
-      ctx.beginPath(); ctx.moveTo(zx, pad); ctx.lineTo(zx, h - pad); ctx.stroke();
-    }
-    if (yr[0] < 0 && yr[1] > 0) {
-      var zy = m(xr[0], 0)[1];
-      ctx.beginPath(); ctx.moveTo(pad, zy); ctx.lineTo(w - pad, zy); ctx.stroke();
-    }
-    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'right'; ctx.fillText(xlab, w - pad - 4, h - pad - 6);
-    ctx.textAlign = 'left'; ctx.save();
-    ctx.translate(pad + 4, pad + 4); ctx.fillText(ylab, 0, 8); ctx.restore();
-    return m;
-  }
-
-  function lineSegment(n, xr, yr) {
-    var a = n.w1, b = n.w2, c = n.b;
-    var pts = [];
-    function add(x, y) {
-      if (x < xr[0] - 1e-6 || x > xr[1] + 1e-6 || y < yr[0] - 1e-6 || y > yr[1] + 1e-6) return;
-      for (var i = 0; i < pts.length; i++) {
-        if (Math.abs(pts[i][0] - x) < 1e-6 && Math.abs(pts[i][1] - y) < 1e-6) return;
-      }
-      pts.push([x, y]);
-    }
-    if (Math.abs(b) > 1e-9) {
-      add(xr[0], -(a * xr[0] + c) / b);
-      add(xr[1], -(a * xr[1] + c) / b);
-    }
-    if (Math.abs(a) > 1e-9) {
-      add(-(b * yr[0] + c) / a, yr[0]);
-      add(-(b * yr[1] + c) / a, yr[1]);
-    }
-    return pts.length >= 2 ? [pts[0], pts[1]] : null;
-  }
-
-  function edge(ctx, x1, y1, x2, y2, color, label) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2.2;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-    var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-    ctx.fillStyle = '#0d1225';
-    ctx.fillRect(mx - 22, my - 10, 44, 18);
-    ctx.fillStyle = color;
-    ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, mx, my + 4);
-  }
-
-  function node(ctx, x, y, label, stroke) {
-    ctx.beginPath();
-    ctx.arc(x, y, 18, 0, 6.2832);
-    ctx.fillStyle = '#0d1225';
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = 2.4;
-    ctx.fill();
-    ctx.stroke();
-    ctx.fillStyle = TEXT;
-    ctx.font = '14px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, x, y + 5);
-  }
-
-  function drawGraph() {
-    var fg = fitCanvas(graphCanvas);
-    if (!fg) return;
-    var ctx = fg.ctx, w = fg.w, h = fg.h;
-    ctx.clearRect(0, 0, w, h);
-    var leftX = w * 0.24, rightX = w * 0.74;
-    var inY = [h * 0.34, h * 0.66];
-    var outY = state.k === 1 ? [h * 0.5] : [h * 0.34, h * 0.66];
-    state.neurons.forEach(function(n, idx) {
-      edge(ctx, leftX + 18, inY[0], rightX - 18, outY[idx], NEURON_COLORS[idx], 'w₁=' + n.w1.toFixed(1));
-      edge(ctx, leftX + 18, inY[1], rightX - 18, outY[idx], NEURON_COLORS[idx], 'w₂=' + n.w2.toFixed(1));
-      ctx.fillStyle = NEURON_COLORS[idx];
-      ctx.font = '12px Inter, sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('b=' + n.b.toFixed(1), rightX + 24, outY[idx] + 4);
-    });
-    node(ctx, leftX, inY[0], 'x₁', PRIMARY);
-    node(ctx, leftX, inY[1], 'x₂', PRIMARY);
-    state.neurons.forEach(function(n, idx) { node(ctx, rightX, outY[idx], 'h' + (idx + 1), NEURON_COLORS[idx]); });
-  }
-
-  function dot(ctx, px, py, color, r) {
-    ctx.beginPath(); ctx.arc(px, py, r || 4.5, 0, 6.2832);
-    ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
-  }
-
-  function signedDistance(n, p) {
-    var len = Math.sqrt(n.w1 * n.w1 + n.w2 * n.w2) || 1;
-    return (n.w1 * p.x + n.w2 * p.y + n.b) / len;
-  }
-
-  function tangentCoordinate(n, p) {
-    var len = Math.sqrt(n.w1 * n.w1 + n.w2 * n.w2) || 1;
-    return (-n.w2 * p.x + n.w1 * p.y) / len;
-  }
-
-  function foldCoordinatePoint(p) {
-    var n1 = state.neurons[0];
-    return {
-      x: signedDistance(n1, p),
-      y: state.k > 1 ? signedDistance(state.neurons[1], p) : tangentCoordinate(n1, p),
-      cls: p.cls
-    };
-  }
-
-  function spanWithZero(vals) {
-    var lo = Math.min.apply(null, vals.concat([0]));
-    var hi = Math.max.apply(null, vals.concat([0]));
-    if (hi - lo < 1e-6) { lo -= 0.5; hi += 0.5; }
-    var pad = Math.max(0.08, (hi - lo) * 0.16);
-    return [lo - pad, hi + pad];
-  }
-
-  function draw() {
-    // ---- Input space (left): data + each neuron's decision line ----
-    var fi = fitCanvas(inCanvas);
-    if (fi) {
-      var pad = 26, xr = [-0.5, 1.5], yr = [-0.5, 1.5];
-      var m = drawFrame(fi.ctx, fi.w, fi.h, pad, xr, yr, 'x₁', 'x₂');
-      var ctx = fi.ctx;
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(pad, pad, fi.w - 2 * pad, fi.h - 2 * pad);
-      ctx.clip();
-      // Shade each neuron's active half-plane, where its line value is positive.
-      state.neurons.forEach(function(n, idx) {
-        var a = n.w1, b = n.w2, c = n.b;
-        ctx.fillStyle = idx === 0 ? 'rgba(74,158,255,0.06)' : 'rgba(245,166,35,0.06)';
-        // Simple approximation: fill the canvas then clip to the active side
-        ctx.save();
-        ctx.beginPath();
-        if (Math.abs(b) > 1e-9) {
-          var y0 = -(a * xr[0] + c) / b;
-          var y1 = -(a * xr[1] + c) / b;
-          if (b > 0) {
-            ctx.moveTo(m(xr[0], yr[0])[0], m(xr[0], yr[0])[1]);
-            ctx.lineTo(m(xr[1], yr[0])[0], m(xr[1], yr[0])[1]);
-            ctx.lineTo(m(xr[1], y1)[0], m(xr[1], y1)[1]);
-            ctx.lineTo(m(xr[0], y0)[0], m(xr[0], y0)[1]);
-          } else {
-            ctx.moveTo(m(xr[0], yr[1])[0], m(xr[0], yr[1])[1]);
-            ctx.lineTo(m(xr[1], yr[1])[0], m(xr[1], yr[1])[1]);
-            ctx.lineTo(m(xr[1], y1)[0], m(xr[1], y1)[1]);
-            ctx.lineTo(m(xr[0], y0)[0], m(xr[0], y0)[1]);
-          }
-        } else if (Math.abs(a) > 1e-9) {
-          var xv = -c / a;
-          if (a > 0) {
-            ctx.moveTo(m(xv, yr[0])[0], m(xv, yr[0])[1]);
-            ctx.lineTo(m(xr[1], yr[0])[0], m(xr[1], yr[0])[1]);
-            ctx.lineTo(m(xr[1], yr[1])[0], m(xr[1], yr[1])[1]);
-            ctx.lineTo(m(xv, yr[1])[0], m(xv, yr[1])[1]);
-          } else {
-            ctx.moveTo(m(xv, yr[0])[0], m(xv, yr[0])[1]);
-            ctx.lineTo(m(xr[0], yr[0])[0], m(xr[0], yr[0])[1]);
-            ctx.lineTo(m(xr[0], yr[1])[0], m(xr[0], yr[1])[1]);
-            ctx.lineTo(m(xv, yr[1])[0], m(xv, yr[1])[1]);
-          }
-        }
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      });
-      state.neurons.forEach(function(n, idx) {
-        var seg = lineSegment(n, xr, yr);
-        if (!seg) return;
-        var p0 = m(seg[0][0], seg[0][1]);
-        var p1 = m(seg[1][0], seg[1][1]);
-        ctx.strokeStyle = NEURON_COLORS[idx];
-        ctx.lineWidth = 2.5;
-        ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
-        var dx = p1[0] - p0[0], dy = p1[1] - p0[1];
-        var len = Math.sqrt(dx * dx + dy * dy) || 1;
-        var sign = idx === 0 ? -1 : 1;
-        var lx = (p0[0] + p1[0]) / 2 - dy / len * 18 * sign;
-        var ly = (p0[1] + p1[1]) / 2 + dx / len * 18 * sign;
-        ctx.fillStyle = '#0d1225';
-        ctx.fillRect(lx - 14, ly - 10, 28, 18);
-        ctx.fillStyle = NEURON_COLORS[idx];
-        ctx.font = '12px Inter, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('N' + (idx + 1), lx, ly + 4);
-      });
-      data.forEach(function(p) {
-        var q = m(p.x, p.y);
-        dot(ctx, q[0], q[1], p.cls ? GREEN : RED);
-      });
-      ctx.restore();
-    }
-
-    drawGraph();
-
-    // ---- Hidden space (middle): smooth line-value coordinates ----
-    var fh = fitCanvas(hidCanvas);
-    if (!fh) { return; }
-    var pts = data.map(foldCoordinatePoint);
-    var hxr = spanWithZero(pts.map(function(p) { return p.x; }));
-    var hyr = spanWithZero(pts.map(function(p) { return p.y; }));
-    var pad2 = 26;
-    var mh = drawFrame(fh.ctx, fh.w, fh.h, pad2, hxr, hyr,
-                       'N1 value', state.k > 1 ? 'N2 value' : 'along N1');
-    var ctx2 = fh.ctx;
-
-    ctx2.save();
-    ctx2.beginPath();
-    ctx2.rect(pad2, pad2, fh.w - 2 * pad2, fh.h - 2 * pad2);
-    ctx2.clip();
-
-    var n1x = mh(0, hyr[0])[0];
-    ctx2.strokeStyle = NEURON_COLORS[0];
-    ctx2.lineWidth = 2.4;
-    ctx2.beginPath(); ctx2.moveTo(n1x, pad2); ctx2.lineTo(n1x, fh.h - pad2); ctx2.stroke();
-    ctx2.fillStyle = NEURON_COLORS[0];
-    ctx2.font = '12px Inter, sans-serif';
-    ctx2.textAlign = 'left';
-    ctx2.fillText('N1 line', n1x + 5, pad2 + 14);
-
-    if (state.k > 1) {
-      var n2y = mh(hxr[0], 0)[1];
-      ctx2.strokeStyle = NEURON_COLORS[1];
-      ctx2.lineWidth = 2.4;
-      ctx2.beginPath(); ctx2.moveTo(pad2, n2y); ctx2.lineTo(fh.w - pad2, n2y); ctx2.stroke();
-      ctx2.fillStyle = NEURON_COLORS[1];
-      ctx2.textAlign = 'right';
-      ctx2.fillText('N2 line', fh.w - pad2 - 5, n2y - 6);
-    }
-
-    pts.forEach(function(p) {
-      var q = mh(p.x, p.y);
-      dot(ctx2, q[0], q[1], p.cls ? GREEN : RED);
-    });
-    ctx2.restore();
-
-    readoutEl.innerHTML =
-      state.k === 1
-        ? 'Hidden space: crossing the N1 line in input space crosses the vertical N1 axis here.'
-        : 'Hidden space: x is the N1 line value, y is the N2 line value; crossing a line on the left crosses its matching axis here.';
-  }
-
-  buildSliders();
-  modeBtns.forEach(function(b) {
-    b.classList.toggle('active', +b.getAttribute('data-neurons') === state.k);
-  });
-
-  return { resize: draw };
-};
+// =====================================================================
+// MLP Core — Shared neural-net library consumed by multiple widgets.
+// Deterministic data generation, preset lookup-model geometry, and the
+// Adam trainer (used by the debug harness; the deck uses lookupModel).
+// =====================================================================
 
 // =====================================================================
 // Shared MLP core for the boundaryExplorer and mlpBoundary widgets.
@@ -4024,10 +4417,10 @@ var MLP = (function () {
     return out.slice(0, count);
   }
 
-  function classifierBoundaryLines(data, count, dataset) {
+  function classifierBoundaryLines(data, count, dataset, green, red) {
     var centerCount = dataset === 'spiral' ? 24 : Math.max(8, count * 2);
-    var green = sampleClassPath(data, 1, centerCount);
-    var red = sampleClassPath(data, 0, centerCount);
+    green = green || sampleClassPath(data, 1, centerCount);
+    red = red || sampleClassPath(data, 0, centerCount);
     function pred(x, y) {
       return distToPolyline(x, y, green) <= distToPolyline(x, y, red) ? 1 : 0;
     }
@@ -4136,7 +4529,7 @@ var MLP = (function () {
     ].slice(0, count);
   }
 
-  function geometryForModel(dataset, data, count, depth, band, solved) {
+  function geometryForModel(dataset, data, count, depth, band, solved, centerline, redCenterline) {
     count = Math.max(1, count);
     if (dataset === 'xor' && count >= 2) {
       return { polygon: null, lines: [
@@ -4155,7 +4548,9 @@ var MLP = (function () {
         var polygon = hullPolygon(data, count, dataset === 'spiral' ? 0.02 : 0.035);
         return { polygon: polygon, lines: polygonEdges(polygon) };
       }
-      return { polygon: null, lines: classifierBoundaryLines(data, count, dataset) };
+      var tube = tubePolygon(dataset, data, count, band);
+      if (tube) return { polygon: tube, lines: polygonEdges(tube) };
+      return { polygon: null, lines: classifierBoundaryLines(data, count, dataset, centerline, redCenterline) };
     }
     return { polygon: null, lineMode: 'halfPlane', lines: [{ x1: 0.04, y1: 0.96, x2: 0.96, y2: 0.04 }] };
   }
@@ -4164,13 +4559,17 @@ var MLP = (function () {
     var pieces = effectivePieces(dataset, width, depth);
     var solved = pieces >= requiredPieces(dataset);
     var display = displayPieces(width, depth);
-    var band = dataset === 'spiral' ? 0.078 : 0.12;
-    var centerCount = solved ? (dataset === 'spiral' ? 20 : Math.max(4, Math.ceil(display / 2) + 1))
-                             : Math.max(3, Math.ceil(pieces / 2) + 1);
+    var band = dataset === 'spiral' ? 0.088 : 0.16;
+    var centerCount = Math.max(3, Math.ceil(pieces / 2) + 1);
+    if (solved) {
+      centerCount = dataset === 'spiral'
+        ? Math.max(12, display + 1)
+        : Math.max(8, display * 2);
+    }
     var centerline = (dataset === 'moons' || dataset === 'spiral') ? sampleClassPath(data, 1, centerCount) : null;
     var redCenterline = (dataset === 'moons' || dataset === 'spiral') ? sampleClassPath(data, 0, centerCount) : null;
     var lookupPoints = (dataset === 'moons' || dataset === 'spiral') && solved ? data : pickPrototypes(data, pieces);
-    var geom = geometryForModel(dataset, data, display, depth, band, solved);
+    var geom = geometryForModel(dataset, data, display, depth, band, solved, centerline, redCenterline);
     return {
       kind: 'lookup',
       dataset: dataset,
@@ -4287,1064 +4686,11 @@ var MLP = (function () {
   };
 })();
 
-// ---- MLP boundary widget: deterministic lookup of MLP boundary presets ----
-// "Many lines make a curve": each hidden neuron contributes one linear
-// piece to the decision boundary. Width x depth = total pieces.
-// The selected dataset/architecture loads a fixed preset so the visual is
-// repeatable: each displayed straight piece corresponds to one hidden unit.
-INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
-  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
-      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
-  var state = { dataset: 'spiral', width: 8, depth: 2, net: null, acc: 0 };
-  var GRID = 64;
-  // Network + training live in the shared MLP module (defined above).
-  var generateData = MLP.generateData, train = MLP.train,
-      predictOne = MLP.predictOne, computeAccuracy = MLP.computeAccuracy;
-
-  host.innerHTML =
-    '<div class="mlp-widget">' +
-      '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
-      '<div class="mlp-controls">' +
-        '<div class="expl-datasets"></div>' +
-        '<div class="mlp-slider"><label>Width</label><input type="range" min="1" max="8" step="1" value="8"><p data-readout="width">8</p></div>' +
-        '<div class="mlp-slider"><label>Depth</label><input type="range" min="1" max="4" step="1" value="2"><p data-readout="depth">2</p></div>' +
-        '<p class="mlp-readout"></p>' +
-      '</div>' +
-    '</div>';
-
-  var canvas = host.querySelector('.mlp-canvas');
-  var widthInput = host.querySelector('input[data-readout="width"]') || host.querySelector('.mlp-controls input');
-  var depthInput = host.querySelectorAll('.mlp-controls input')[1];
-  var widthText = host.querySelector('[data-readout="width"]');
-  var depthText = host.querySelector('[data-readout="depth"]');
-  var readout = host.querySelector('.mlp-readout');
-  var dsEl = host.querySelector('.expl-datasets');
-
-  ['pointerdown', 'keydown'].forEach(function(ev) {
-    host.addEventListener(ev, function(e) { e.stopPropagation(); });
-  });
-
-  var datasets = ['moons', 'spiral'];
-  function applyDatasetPreset(name) {
-    state.dataset = name;
-    if (name === 'moons') { state.width = 6; state.depth = 1; }
-    if (name === 'spiral') { state.width = 8; state.depth = 2; }
-    widthInput.value = state.width; depthInput.value = state.depth;
-    widthText.textContent = String(state.width); depthText.textContent = String(state.depth);
-    state.net = null;
-  }
-  datasets.forEach(function(name) {
-    var btn = document.createElement('button');
-    btn.className = 'expl-ds-btn';
-    btn.textContent = name === 'xor' ? 'XOR' : name.charAt(0).toUpperCase() + name.slice(1);
-    btn.dataset.ds = name;
-    btn.addEventListener('click', function() {
-      applyDatasetPreset(name);
-      updateUI(); draw();
-    });
-    dsEl.appendChild(btn);
-  });
-
-  // Find the actual slider inputs by their labels
-  var allInputs = host.querySelectorAll('.mlp-slider input');
-  widthInput = allInputs[0];
-  depthInput = allInputs[1];
-
-  widthInput.addEventListener('input', function() {
-    state.width = +widthInput.value; widthText.textContent = widthInput.value; state.net = null; draw();
-  });
-  depthInput.addEventListener('input', function() {
-    state.depth = +depthInput.value; depthText.textContent = depthInput.value; state.net = null; draw();
-  });
-
-  function updateUI() {
-    host.querySelectorAll('.expl-ds-btn').forEach(function(b) {
-      b.classList.toggle('active', b.dataset.ds === state.dataset);
-    });
-    var totalUnits = state.width * state.depth;
-    readout.innerHTML = state.depth + ' hidden layer' + (state.depth === 1 ? '' : 's') +
-      ' &times; ' + state.width + ' neuron' + (state.width === 1 ? '' : 's') +
-      ' = <strong>' + totalUnits + '</strong> hidden unit' + (totalUnits === 1 ? '' : 's') +
-      ' | Accuracy: <strong>' + (state.acc * 100).toFixed(0) + '%</strong>';
-  }
-
-  function fitCanvas(c) {
-    var dpr = window.devicePixelRatio || 1;
-    var w = c.clientWidth, h = c.clientHeight;
-    if (!w || !h) return null;
-    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
-    var ctx = c.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx: ctx, w: w, h: h };
-  }
-
-  function drawModelBoundaryLines(ctx, model, ox, oy, side) {
-    if (!model || !model.lines || !model.lines.length) return;
-    ctx.save();
-    ctx.beginPath(); ctx.rect(ox, oy, side, side); ctx.clip();
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    function strokeSegments(width, color) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = width;
-      ctx.beginPath();
-      model.lines.forEach(function(line) {
-        ctx.moveTo(ox + line.x1 * side, oy + (1 - line.y1) * side);
-        ctx.lineTo(ox + line.x2 * side, oy + (1 - line.y2) * side);
-      });
-      ctx.stroke();
-    }
-    strokeSegments(6.0, 'rgba(8,12,24,0.94)');
-    strokeSegments(3.2, SECONDARY);
-    ctx.restore();
-  }
-
-  function draw() {
-    var f = fitCanvas(canvas);
-    if (!f) return;
-    var ctx = f.ctx, W = f.w, H = f.h;
-    ctx.clearRect(0, 0, W, H);
-
-    var data = generateData(state.dataset);
-    if (!state.net) {
-      state.net = train(data, state.width, state.depth, state.dataset);
-      state.acc = computeAccuracy(data, state.net);
-      updateUI();
-    }
-
-    var pad = 18;
-    var rightPanel = 140;
-    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
-    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
-    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
-    var oy = pad + (H - 2 * pad - side) / 2;
-
-    // Decision grid background
-    for (var i = 0; i < GRID; i++) {
-      for (var j = 0; j < GRID; j++) {
-        var gx = i / (GRID - 1), gy = j / (GRID - 1);
-        var p = predictOne([gx, gy], state.net);
-        ctx.fillStyle = p >= 0.5 ? 'rgba(63,185,80,0.16)' : 'rgba(231,76,60,0.10)';
-        ctx.fillRect(ox + gx * side, oy + (1 - gy) * side, side / GRID + 1, side / GRID + 1);
-      }
-    }
-
-    drawModelBoundaryLines(ctx, state.net, ox, oy, side);
-
-    // Data scatter
-    data.forEach(function(p) {
-      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
-      ctx.beginPath(); ctx.arc(px, py, 4.2, 0, 6.2832);
-      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
-    });
-
-    // Frame
-    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
-    ctx.strokeRect(ox, oy, side, side);
-
-    // Network diagram
-    if (rightPanel > 80) {
-      var nx0 = ox + side + 20, nx1 = W - pad;
-      var cols = state.depth + 2;
-      var perLayer = Math.min(state.width, 6);
-      var top = oy + 6, bot = oy + side - 6;
-      function colX(i) { return nx0 + (nx1 - nx0) * i / (cols - 1); }
-      function ys(n) {
-        if (n === 1) return [(top + bot) / 2];
-        var a = []; for (var i = 0; i < n; i++) a.push(top + (bot - top) * i / (n - 1)); return a;
-      }
-      var layersDiag = [{ x: colX(0), ys: ys(2), label: ['x₁', 'x₂'], color: SECONDARY }];
-      for (var d = 0; d < state.depth; d++) layersDiag.push({ x: colX(d + 1), ys: ys(perLayer), color: PRIMARY });
-      layersDiag.push({ x: colX(cols - 1), ys: ys(1), label: ['ŷ'], color: SECONDARY });
-
-      ctx.strokeStyle = 'rgba(74,158,255,0.28)'; ctx.lineWidth = 1;
-      for (var L = 0; L < layersDiag.length - 1; L++) {
-        var A = layersDiag[L], B = layersDiag[L + 1];
-        A.ys.forEach(function(ay) {
-          B.ys.forEach(function(by) {
-            ctx.beginPath(); ctx.moveTo(A.x + 10, ay); ctx.lineTo(B.x - 10, by); ctx.stroke();
-          });
-        });
-      }
-      layersDiag.forEach(function(Lr) {
-        Lr.ys.forEach(function(yy, idx) {
-          ctx.beginPath(); ctx.arc(Lr.x, yy, 10, 0, 6.2832);
-          ctx.fillStyle = '#0d1225'; ctx.strokeStyle = Lr.color; ctx.lineWidth = 1.8; ctx.fill(); ctx.stroke();
-          if (Lr.label) { ctx.fillStyle = TEXT; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Lr.label[idx], Lr.x, yy + 3); }
-        });
-      });
-    }
-  }
-
-  updateUI();
-  return { resize: draw };
-};
-
-// ---- Boundary Explorer: explicit two-neuron hidden layer for XOR ----
-INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
-  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
-      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
-  var NEURON_COLORS = [PRIMARY, SECONDARY];
-  var GRID = 48;
-  var generateData = MLP.generateData;
-  var state = { dataset: 'xor', neurons: [], outW: [], outB: 0, sample: { x: 0.82, y: 0.82 } };
-
-  host.innerHTML =
-    '<div class="perc-widget expl-depth-widget">' +
-      '<div class="perc-canvas-wrap"><canvas class="perc-canvas"></canvas></div>' +
-      '<div class="perc-controls">' +
-        '<div class="expl-datasets"></div>' +
-        '<div class="expl-sliders"></div>' +
-        '<p class="perc-readout"></p>' +
-      '</div>' +
-    '</div>';
-  var canvas = host.querySelector('.mlp-canvas');
-  canvas = host.querySelector('.perc-canvas');
-  var readout = host.querySelector('.perc-readout');
-  var dsEl = host.querySelector('.expl-datasets');
-  var slidersEl = host.querySelector('.expl-sliders');
-
-  ['pointerdown', 'keydown'].forEach(function(ev) {
-    host.addEventListener(ev, function(e) { e.stopPropagation(); });
-  });
-
-  function preset(name) {
-    if (name === 'linear') {
-      state.neurons = [
-        { w1: 1.0, w2: 1.0, b: -1.0 },
-        { w1: 1.0, w2: 1.0, b: -1.6 }
-      ];
-      state.outW = [1.0, 0.0];
-      state.outB = -0.5;
-      state.sample = { x: 0.78, y: 0.78 };
-    } else {
-      state.neurons = [
-        { w1: 1.0, w2: 1.0, b: -0.7 },
-        { w1: 1.0, w2: 1.0, b: -1.3 }
-      ];
-      state.outW = [-1.0, 1.0];
-      state.outB = 0.5;
-      state.sample = { x: 0.82, y: 0.82 };
-    }
-  }
-
-  function applyDatasetPreset(name) {
-    state.dataset = name;
-    preset(name);
-    buildSliders();
-  }
-
-  var datasets = ['linear', 'xor'];
-  datasets.forEach(function(name) {
-    var btn = document.createElement('button');
-    btn.className = 'expl-ds-btn';
-    btn.textContent = name === 'xor' ? 'XOR' : name.charAt(0).toUpperCase() + name.slice(1);
-    btn.dataset.ds = name;
-    btn.addEventListener('click', function() {
-      applyDatasetPreset(name);
-      updateUI(); draw();
-    });
-    dsEl.appendChild(btn);
-  });
-  var resetBtn = document.createElement('button');
-  resetBtn.className = 'expl-arch-btn expl-reset';
-  resetBtn.textContent = 'Reset weights';
-  resetBtn.addEventListener('click', function() {
-    preset(state.dataset);
-    buildSliders();
-    updateUI();
-    draw();
-  });
-  dsEl.appendChild(resetBtn);
-
-  function buildSliders() {
-    slidersEl.innerHTML = '';
-    state.neurons.forEach(function(n, idx) {
-      [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(spec) {
-        var key = spec[0];
-        var row = document.createElement('div');
-        row.className = 'perc-slider';
-        var lab = document.createElement('label');
-        lab.textContent = 'N' + (idx + 1) + ' ' + spec[1];
-        lab.style.color = NEURON_COLORS[idx];
-        var inp = document.createElement('input');
-        inp.type = 'range';
-        inp.min = '-3'; inp.max = '3'; inp.step = '0.1';
-        inp.value = n[key].toFixed(1);
-        var val = document.createElement('p');
-        val.className = 'perc-val';
-        val.textContent = n[key].toFixed(1);
-        inp.addEventListener('input', function() {
-          n[key] = parseFloat(inp.value);
-          val.textContent = n[key].toFixed(1);
-          draw();
-        });
-        row.appendChild(lab);
-        row.appendChild(inp);
-        row.appendChild(val);
-        slidersEl.appendChild(row);
-      });
-    });
-  }
-
-  function updateUI() {
-    host.querySelectorAll('.expl-ds-btn').forEach(function(b) {
-      b.classList.toggle('active', b.dataset.ds === state.dataset);
-    });
-  }
-
-  function fitCanvas(c) {
-    var dpr = window.devicePixelRatio || 1;
-    var w = c.clientWidth, h = c.clientHeight;
-    if (!w || !h) return null;
-    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
-    var ctx = c.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx: ctx, w: w, h: h };
-  }
-
-  function hiddenVals(x, y) {
-    var zs = state.neurons.map(function(n) { return n.w1 * x + n.w2 * y + n.b; });
-    var hs = zs.map(function(z) { return z >= 0 ? 1 : 0; });
-    var score = state.outW[0] * hs[0] + state.outW[1] * hs[1] + state.outB;
-    var yhat = 1 / (1 + Math.exp(-score));
-    return { zs: zs, hs: hs, score: score, y: yhat, pred: yhat >= 0.5 ? 1 : 0 };
-  }
-
-  function predict(x, y) {
-    return hiddenVals(x, y).pred;
-  }
-
-  function signed(v) {
-    return (v < 0 ? ' - ' : ' + ') + Math.abs(v).toFixed(1);
-  }
-
-  function lineSegment(n) {
-    var pts = [];
-    function add(x, y) {
-      if (x < -1e-6 || x > 1 + 1e-6 || y < -1e-6 || y > 1 + 1e-6) return;
-      for (var i = 0; i < pts.length; i++) {
-        if (Math.abs(pts[i][0] - x) < 1e-6 && Math.abs(pts[i][1] - y) < 1e-6) return;
-      }
-      pts.push([x, y]);
-    }
-    if (Math.abs(n.w2) > 1e-9) {
-      add(0, -(n.w1 * 0 + n.b) / n.w2);
-      add(1, -(n.w1 * 1 + n.b) / n.w2);
-    }
-    if (Math.abs(n.w1) > 1e-9) {
-      add(-(n.w2 * 0 + n.b) / n.w1, 0);
-      add(-(n.w2 * 1 + n.b) / n.w1, 1);
-    }
-    return pts.length >= 2 ? [pts[0], pts[1]] : null;
-  }
-
-  function drawNetwork(ctx, x0, y0, w, h) {
-    function node(x, y, label, color) {
-      ctx.beginPath();
-      ctx.arc(x, y, 13, 0, 6.2832);
-      ctx.fillStyle = '#0d1225';
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = TEXT;
-      ctx.font = '12px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(label, x, y + 4);
-    }
-    function edge(x1, y1, x2, y2, color, label) {
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-      if (!label) return;
-      var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-      ctx.fillStyle = '#0d1225';
-      ctx.fillRect(mx - 18, my - 8, 36, 14);
-      ctx.fillStyle = color;
-      ctx.font = '11px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(label, mx, my + 3);
-    }
-    var xi = x0 + 28, xh = x0 + w * 0.50, xo = x0 + w - 28;
-    var y1 = y0 + h * 0.30, y2 = y0 + h * 0.70, yo = y0 + h * 0.50;
-    edge(xi + 13, y1, xh - 13, y1, NEURON_COLORS[0], 'w₁');
-    edge(xi + 13, y2, xh - 13, y1, NEURON_COLORS[0], 'w₂');
-    edge(xi + 13, y1, xh - 13, y2, NEURON_COLORS[1], 'w₁');
-    edge(xi + 13, y2, xh - 13, y2, NEURON_COLORS[1], 'w₂');
-    edge(xh + 13, y1, xo - 13, yo, PRIMARY, 'v₁=' + state.outW[0].toFixed(1));
-    edge(xh + 13, y2, xo - 13, yo, SECONDARY, 'v₂=' + state.outW[1].toFixed(1));
-    node(xi, y1, 'x₁', SECONDARY);
-    node(xi, y2, 'x₂', SECONDARY);
-    node(xh, y1, 'h₁', NEURON_COLORS[0]);
-    node(xh, y2, 'h₂', NEURON_COLORS[1]);
-    node(xo, yo, 'ŷ', SECONDARY);
-    ctx.fillStyle = MUTED;
-    ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('b=' + state.outB.toFixed(1), xo, yo + 36);
-  }
-
-  function draw() {
-    var f = fitCanvas(canvas);
-    if (!f) return;
-    var ctx = f.ctx, W = f.w, H = f.h;
-    ctx.clearRect(0, 0, W, H);
-
-    var data = generateData(state.dataset);
-
-    var pad = 18;
-    var rightPanel = 320;
-    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
-    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
-    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
-    var oy = pad + (H - 2 * pad - side) / 2;
-
-    // Decision grid background
-    for (var i = 0; i < GRID; i++) {
-      for (var j = 0; j < GRID; j++) {
-        var gx = i / (GRID - 1), gy = j / (GRID - 1);
-        var p = predict(gx, gy);
-        ctx.fillStyle = p ? 'rgba(63,185,80,0.16)' : 'rgba(231,76,60,0.10)';
-        ctx.fillRect(ox + gx * side, oy + (1 - gy) * side, side / GRID + 1, side / GRID + 1);
-      }
-    }
-
-    state.neurons.forEach(function(n, idx) {
-      var seg = lineSegment(n);
-      if (!seg) return;
-      ctx.strokeStyle = NEURON_COLORS[idx];
-      ctx.lineWidth = 2.8;
-      ctx.beginPath();
-      ctx.moveTo(ox + seg[0][0] * side, oy + (1 - seg[0][1]) * side);
-      ctx.lineTo(ox + seg[1][0] * side, oy + (1 - seg[1][1]) * side);
-      ctx.stroke();
-    });
-
-    // Data scatter
-    var correct = 0;
-    data.forEach(function(p) {
-      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
-      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 6.2832);
-      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
-      if (predict(p.x, p.y) === p.cls) correct++;
-    });
-
-    var sample = state.sample;
-    var sv = hiddenVals(sample.x, sample.y);
-    var spx = ox + sample.x * side, spy = oy + (1 - sample.y) * side;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(spx, spy, 8, 0, 6.2832); ctx.stroke();
-    ctx.fillStyle = sv.pred ? GREEN : RED;
-    ctx.beginPath(); ctx.arc(spx, spy, 4, 0, 6.2832); ctx.fill();
-
-    // Frame
-    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
-    ctx.strokeRect(ox, oy, side, side);
-
-    if (rightPanel > 80) {
-      drawNetwork(ctx, ox + side + 22, oy + 8, rightPanel - 34, side - 16);
-    }
-
-    var acc = correct / data.length;
-    var colorWord = sv.pred ? 'green' : 'red';
-    readout.innerHTML =
-      'x=(' + sample.x.toFixed(2) + ', ' + sample.y.toFixed(2) + ') → ' +
-      'h=(' + sv.hs[0] + ', ' + sv.hs[1] + ') because line values are (' +
-      sv.zs[0].toFixed(2) + ', ' + sv.zs[1].toFixed(2) + '), ' +
-      'y=sigmoid(' + state.outW[0].toFixed(1) + '·' + sv.hs[0] +
-      signed(state.outW[1]) + '·' + sv.hs[1] + signed(state.outB) +
-      ')=' + sv.y.toFixed(2) + (sv.y >= 0.5 ? ' ≥ 0.5' : ' < 0.5') +
-      ' ⇒ <strong>' + colorWord + '</strong>' +
-      ' | Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
-  }
-
-  preset(state.dataset);
-  buildSliders();
-  updateUI();
-  return { resize: draw };
-};
-// ---- Single Perceptron widget: adjustable line on data, no training ----
-INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
-  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
-      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
-  var state = { dataset: 'linear', w1: 0.5, w2: 0.5, b: -0.5, sample: { x: 0.78, y: 0.78 } };
-
-  function mulberry32(a) {
-    return function() {
-      a |= 0; a = a + 0x6D2B79F5 | 0;
-      var t = Math.imul(a ^ a >>> 15, 1 | a);
-      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-
-  // 2D datasets under the unit square.
-  function generateData(name) {
-    var rnd = mulberry32(7);
-    var pts = [];
-    if (name === 'linear') {
-      for (var i = 0; i < 40; i++) {
-        var x = rnd() * 2 - 1, y = rnd() * 2 - 1;
-        pts.push({ x: x + 1.5, y: y + 1.5, cls: 1 });
-        pts.push({ x: x - 1.5, y: y - 1.5, cls: 0 });
-      }
-    } else if (name === 'xor') {
-      var clusters = [[1.5, 1.5, 1], [1.5, -1.5, 0], [-1.5, 1.5, 0], [-1.5, -1.5, 1]];
-      clusters.forEach(function(c) {
-        for (var i = 0; i < 14; i++) {
-          pts.push({ x: c[0] + (rnd() - 0.5) * 0.6, y: c[1] + (rnd() - 0.5) * 0.6, cls: c[2] });
-        }
-      });
-    }
-    // Normalize to [0.04, 0.96]
-    var xs = pts.map(function(p) { return p.x; });
-    var ys = pts.map(function(p) { return p.y; });
-    var xmn = Math.min.apply(null, xs), xmx = Math.max.apply(null, xs);
-    var ymn = Math.min.apply(null, ys), ymx = Math.max.apply(null, ys);
-    var xr = xmx - xmn || 1, yr = ymx - ymn || 1;
-    pts.forEach(function(p) {
-      p.x = 0.04 + 0.92 * (p.x - xmn) / xr;
-      p.y = 0.04 + 0.92 * (p.y - ymn) / yr;
-    });
-    return pts;
-  }
-
-  host.innerHTML =
-    '<div class="perc-widget">' +
-      '<div class="perc-canvas-wrap"><canvas class="perc-canvas"></canvas></div>' +
-      '<div class="perc-controls">' +
-        '<div class="perc-datasets"></div>' +
-        '<div class="perc-sliders"></div>' +
-        '<p class="perc-readout"></p>' +
-      '</div>' +
-    '</div>';
-  var canvas = host.querySelector('.perc-canvas');
-  var readout = host.querySelector('.perc-readout');
-  var dsEl = host.querySelector('.perc-datasets');
-  var slidersEl = host.querySelector('.perc-sliders');
-
-  ['pointerdown', 'keydown'].forEach(function(ev) {
-    host.addEventListener(ev, function(e) { e.stopPropagation(); });
-  });
-
-  var datasets = ['linear', 'xor'];
-  datasets.forEach(function(name) {
-    var btn = document.createElement('button');
-    btn.className = 'perc-ds-btn';
-    btn.textContent = name === 'xor' ? 'XOR' : name.charAt(0).toUpperCase() + name.slice(1);
-    btn.dataset.ds = name;
-    btn.addEventListener('click', function() {
-      state.dataset = name;
-      state.sample = name === 'xor' ? { x: 0.82, y: 0.82 } : { x: 0.78, y: 0.78 };
-      updateUI(); draw();
-    });
-    dsEl.appendChild(btn);
-  });
-
-  function buildSliders() {
-    slidersEl.innerHTML = '';
-    [['w1', 'w₁', -3, 3, 0.1], ['w2', 'w₂', -3, 3, 0.1], ['b', 'b', -3, 3, 0.1]].forEach(function(spec) {
-      var key = spec[0], label = spec[1], mn = spec[2], mx = spec[3], st = spec[4];
-      var row = document.createElement('div');
-      row.className = 'perc-slider';
-      var lab = document.createElement('label');
-      lab.textContent = label;
-      var inp = document.createElement('input');
-      inp.type = 'range'; inp.min = mn; inp.max = mx; inp.step = st;
-      inp.value = state[key].toFixed(1);
-      var val = document.createElement('p');
-      val.className = 'perc-val';
-      val.textContent = state[key].toFixed(1);
-      inp.addEventListener('input', function() {
-        state[key] = parseFloat(inp.value);
-        val.textContent = state[key].toFixed(1);
-        draw();
-      });
-      row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
-      slidersEl.appendChild(row);
-    });
-  }
-
-  function updateUI() {
-    host.querySelectorAll('.perc-ds-btn').forEach(function(b) {
-      b.classList.toggle('active', b.dataset.ds === state.dataset);
-    });
-  }
-
-  function fitCanvas(c) {
-    var dpr = window.devicePixelRatio || 1;
-    var w = c.clientWidth, h = c.clientHeight;
-    if (!w || !h) return null;
-    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
-    var ctx = c.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx: ctx, w: w, h: h };
-  }
-
-  function predict(x, y) {
-    return probability(x, y) >= 0.5 ? 1 : 0;
-  }
-
-  function score(x, y) {
-    return state.w1 * x + state.w2 * y + state.b;
-  }
-
-  function probability(x, y) {
-    return 1 / (1 + Math.exp(-score(x, y)));
-  }
-
-  function signed(v) {
-    return (v < 0 ? ' - ' : ' + ') + Math.abs(v).toFixed(1);
-  }
-
-  function drawNetwork(ctx, x0, y0, w, h) {
-    function node(x, y, label, color) {
-      ctx.beginPath();
-      ctx.arc(x, y, 16, 0, 6.2832);
-      ctx.fillStyle = '#0d1225';
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2.2;
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = TEXT;
-      ctx.font = '14px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(label, x, y + 5);
-    }
-    function edge(x1, y1, x2, y2, label) {
-      ctx.strokeStyle = 'rgba(74,158,255,0.55)';
-      ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.moveTo(x1, y1);
-      ctx.lineTo(x2, y2);
-      ctx.stroke();
-      var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-      ctx.fillStyle = '#0d1225';
-      ctx.fillRect(mx - 25, my - 9, 50, 16);
-      ctx.fillStyle = PRIMARY;
-      ctx.font = '12px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(label, mx, my + 4);
-    }
-    var xi = x0 + 34, xo = x0 + w - 42;
-    var y1 = y0 + h * 0.32, y2 = y0 + h * 0.68, yo = y0 + h * 0.50;
-    edge(xi + 16, y1, xo - 16, yo, 'w₁=' + state.w1.toFixed(1));
-    edge(xi + 16, y2, xo - 16, yo, 'w₂=' + state.w2.toFixed(1));
-    node(xi, y1, 'x₁', SECONDARY);
-    node(xi, y2, 'x₂', SECONDARY);
-    node(xo, yo, 'ŷ', PRIMARY);
-    ctx.fillStyle = MUTED;
-    ctx.font = '13px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('h = w·x + b', xo, yo + 38);
-    ctx.fillText('y = sigmoid(h)', xo, yo + 56);
-  }
-
-  function draw() {
-    var f = fitCanvas(canvas);
-    if (!f) return;
-    var ctx = f.ctx, W = f.w, H = f.h;
-    ctx.clearRect(0, 0, W, H);
-
-    var pad = 18;
-    var rightPanel = 320;
-    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
-    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
-    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
-    var oy = pad + (H - 2 * pad - side) / 2;
-
-    // Background shading: which side of the line each point falls on
-    var GRID = 36;
-    for (var i = 0; i < GRID; i++) {
-      for (var j = 0; j < GRID; j++) {
-        var gx = i / (GRID - 1), gy = j / (GRID - 1);
-        var pred = predict(gx, gy);
-        ctx.fillStyle = pred ? 'rgba(63,185,80,0.14)' : 'rgba(231,76,60,0.08)';
-        ctx.fillRect(ox + gx * side, oy + (1 - gy) * side, side / GRID + 1, side / GRID + 1);
-      }
-    }
-
-    // Decision line w1*x + w2*y + b = 0, clipped to frame
-    var a = state.w1, b = state.w2, c = state.b;
-    var xr = [0, 1], yr = [0, 1];
-    var p0, p1;
-    if (Math.abs(b) > 1e-9) {
-      p0 = [ox + xr[0] * side, oy + (1 - (-(a * xr[0] + c) / b)) * side];
-      p1 = [ox + xr[1] * side, oy + (1 - (-(a * xr[1] + c) / b)) * side];
-    } else if (Math.abs(a) > 1e-9) {
-      var xv = -c / a;
-      p0 = [ox + xv * side, oy + yr[0] * side];
-      p1 = [ox + xv * side, oy + yr[1] * side];
-    } else {
-      p0 = null; p1 = null;
-    }
-
-    if (p0 && p1) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(ox, oy, side, side);
-      ctx.clip();
-      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
-      ctx.restore();
-    }
-
-    // Data points
-    var data = generateData(state.dataset);
-    data.forEach(function(p) {
-      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
-      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 6.2832);
-      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
-      // Misclassification ring
-      if (predict(p.x, p.y) !== p.cls) {
-        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4;
-        ctx.beginPath(); ctx.arc(px, py, 6.6, 0, 6.2832); ctx.stroke();
-      }
-    });
-
-    var sample = state.sample;
-    var h = score(sample.x, sample.y);
-    var yhat = probability(sample.x, sample.y);
-    var sx = ox + sample.x * side, sy = oy + (1 - sample.y) * side;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(sx, sy, 8, 0, 6.2832); ctx.stroke();
-    ctx.fillStyle = yhat >= 0.5 ? GREEN : RED;
-    ctx.beginPath(); ctx.arc(sx, sy, 4, 0, 6.2832); ctx.fill();
-
-    // Frame
-    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
-    ctx.strokeRect(ox, oy, side, side);
-
-    if (rightPanel > 80) {
-      drawNetwork(ctx, ox + side + 24, oy + 8, rightPanel - 38, side - 16);
-    }
-
-    var correct = 0;
-    data.forEach(function(p) { if (predict(p.x, p.y) === p.cls) correct++; });
-    var acc = data.length ? correct / data.length : 0;
-    var colorWord = yhat >= 0.5 ? 'green' : 'red';
-    readout.innerHTML =
-      'x=(' + sample.x.toFixed(2) + ', ' + sample.y.toFixed(2) + ') → h = ' +
-      state.w1.toFixed(1) + '·' + sample.x.toFixed(2) +
-      signed(state.w2) + '·' + sample.y.toFixed(2) +
-      signed(state.b) + ' = ' + h.toFixed(2) +
-      ', y=sigmoid(h)=' + yhat.toFixed(2) + (yhat >= 0.5 ? ' ≥ 0.5' : ' < 0.5') +
-      ' ⇒ <strong>' + colorWord + '</strong> | Accuracy: <strong>' +
-      (acc * 100).toFixed(0) + '%</strong>';
-  }
-
-  buildSliders();
-  updateUI();
-  return { resize: draw };
-};
-
-// ---- Loss landscape widget: 3D draggable surface with height coloring ----
-INTERACTIVE_WIDGETS.lossLandscape = function(host) {
-  var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff',
-      SECONDARY = '#f5a623', RED = '#e74c3c', LINEC = '#2a3450';
-  var state = { w1: -1.0, w2: 2.0, eta: 0.5, batch: 8, t: 0, lastStep: null,
-                az: -0.8, el: 0.65, zoom: 1.0, panX: 0, panY: 0,
-                dragging: false, dragType: null, lastMX: 0, lastMY: 0 };
-  var WMIN = -3, WMAX = 5;
-  var INIT_W1 = -1.0, INIT_W2 = 2.0, INIT_ETA = 0.5, INIT_BATCH = 8;
-  var INIT_AZ = -0.8, INIT_EL = 0.65, INIT_ZOOM = 1.0;
-
-  function loss(w1, w2) {
-    return 0.5 * ((w1 - 1.5) * (w1 - 1.5) + (w2 + 1.0) * (w2 + 1.0));
-  }
-  function grad(w1, w2) {
-    return { g1: w1 - 1.5, g2: w2 + 1.0 };
-  }
-  function noise(seed) {
-    var x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
-    return (x - Math.floor(x)) * 2 - 1;
-  }
-  function batchGrad(w1, w2, batch, step) {
-    var g = grad(w1, w2);
-    var n1 = 0, n2 = 0;
-    for (var i = 0; i < batch; i++) {
-      n1 += noise(step * 101 + i * 17 + 1);
-      n2 += noise(step * 137 + i * 19 + 2);
-    }
-    var scale = 2.0;
-    return {
-      g1: g.g1 + scale * n1 / batch,
-      g2: g.g2 + scale * n2 / batch,
-      trueG1: g.g1,
-      trueG2: g.g2
-    };
-  }
-
-  host.innerHTML =
-    '<div class="land-widget loss-landscape-widget">' +
-      '<div class="land-content">' +
-        '<div class="land-main">' +
-          '<canvas class="land-canvas"></canvas>' +
-        '</div>' +
-        '<div class="land-param-diagram">' +
-          '<p class="land-diagram-title">Two trainable weights</p>' +
-          '<div class="land-weight-row"><span>w₁</span><strong data-r="w1">-1.0</strong></div>' +
-          '<div class="land-weight-row"><span>w₂</span><strong data-r="w2">2.0</strong></div>' +
-          '<div class="land-loss-box">L(w₁, w₂)</div>' +
-        '</div>' +
-      '</div>' +
-      '<div class="land-controls">' +
-        '<div class="mlp-slider"><label>η</label><input data-k="eta" type="range" min="0.1" max="1.5" step="0.1" value="0.5"><p data-r="eta">0.5</p></div>' +
-        '<div class="mlp-slider"><label>Batch</label><input data-k="batch" type="range" min="1" max="64" step="1" value="8"><p data-r="batch">8</p></div>' +
-        '<button class="land-step">Step</button>' +
-        '<button class="land-reset-btn">Reset</button>' +
-      '</div>' +
-      '<p class="land-readout"></p>' +
-    '</div>';
-  var canvas = host.querySelector('.land-canvas');
-  var readout = host.querySelector('.land-readout');
-  var resetBtn = host.querySelector('.land-reset-btn');
-  ['pointerdown', 'keydown'].forEach(function(ev) {
-    host.addEventListener(ev, function(e) { e.stopPropagation(); });
-  });
-
-  canvas.addEventListener('pointerdown', function(e) {
-    state.dragging = true;
-    state.lastMX = e.clientX; state.lastMY = e.clientY;
-    if (e.shiftKey) {
-      state.dragType = 'pan';
-    } else {
-      state.dragType = 'rotate';
-    }
-    canvas.setPointerCapture(e.pointerId);
-  });
-  canvas.addEventListener('pointermove', function(e) {
-    if (!state.dragging) return;
-    var dx = e.clientX - state.lastMX, dy = e.clientY - state.lastMY;
-    if (state.dragType === 'pan') {
-      state.panX += dx;
-      state.panY += dy;
-    } else {
-      state.az -= dx * 0.008;
-      state.el = Math.max(0.1, Math.min(1.2, state.el - dy * 0.008));
-    }
-    state.lastMX = e.clientX; state.lastMY = e.clientY;
-    draw();
-  });
-  canvas.addEventListener('pointerup', function() { state.dragging = false; state.dragType = null; });
-  canvas.addEventListener('wheel', function(e) {
-    e.preventDefault();
-    state.zoom = Math.max(0.4, Math.min(2.5, state.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
-    draw();
-  }, { passive: false });
-
-  function syncWeightReadouts() {
-    host.querySelector('[data-r="w1"]').textContent = state.w1.toFixed(2);
-    host.querySelector('[data-r="w2"]').textContent = state.w2.toFixed(2);
-  }
-
-  host.querySelectorAll('input').forEach(function(inp) {
-    inp.addEventListener('input', function() {
-      state[inp.dataset.k] = inp.dataset.k === 'batch' ? parseInt(inp.value, 10) : parseFloat(inp.value);
-      state.lastStep = null;
-      host.querySelector('[data-r="' + inp.dataset.k + '"]').textContent =
-        inp.dataset.k === 'batch' ? String(state.batch) : state[inp.dataset.k].toFixed(1);
-      draw();
-    });
-  });
-  host.querySelector('.land-step').addEventListener('click', function() {
-    var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
-    var oldW1 = state.w1, oldW2 = state.w2;
-    state.w1 += -state.eta * g.g1;
-    state.w2 += -state.eta * g.g2;
-    state.t++;
-    state.lastStep = { oldW1: oldW1, oldW2: oldW2, g1: g.g1, g2: g.g2,
-                       trueG1: g.trueG1, trueG2: g.trueG2, eta: state.eta,
-                       batch: state.batch, newW1: state.w1, newW2: state.w2 };
-    syncWeightReadouts();
-    draw();
-  });
-  resetBtn.addEventListener('click', function() {
-    state.w1 = INIT_W1; state.w2 = INIT_W2; state.eta = INIT_ETA; state.batch = INIT_BATCH; state.t = 0;
-    state.lastStep = null;
-    state.az = INIT_AZ; state.el = INIT_EL; state.zoom = INIT_ZOOM;
-    state.panX = 0; state.panY = 0;
-    host.querySelector('[data-k="eta"]').value = state.eta;
-    host.querySelector('[data-k="batch"]').value = state.batch;
-    syncWeightReadouts();
-    host.querySelector('[data-r="eta"]').textContent = state.eta.toFixed(1);
-    host.querySelector('[data-r="batch"]').textContent = String(state.batch);
-    draw();
-  });
-
-  function fitCanvas(c) {
-    var dpr = window.devicePixelRatio || 1;
-    var w = c.clientWidth, h = c.clientHeight;
-    if (!w || !h) return null;
-    c.width = Math.round(w * dpr);
-    c.height = Math.round(h * dpr);
-    var ctx = c.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx: ctx, w: w, h: h };
-  }
-
-  function heightColor(z, zmin, zmax) {
-    var t = Math.max(0, Math.min(1, (z - zmin) / (zmax - zmin || 1)));
-    var r, g, b;
-    if (t < 0.25) { r = 0; g = t * 4; b = 1; }
-    else if (t < 0.5) { r = 0; g = 1; b = 1 - (t - 0.25) * 4; }
-    else if (t < 0.75) { r = (t - 0.5) * 4; g = 1; b = 0; }
-    else { r = 1; g = 1 - (t - 0.75) * 4; b = 0; }
-    return 'rgba(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ',0.82)';
-  }
-  function lineColor(z, zmin, zmax) {
-    var c = heightColor(z, zmin, zmax);
-    return c.replace('0.82)', '0.30)');
-  }
-
-  function project3D(x, y, z, W, H) {
-    var cx = (WMIN + WMAX) / 2, cy = (WMIN + WMAX) / 2;
-    var dx = x - cx, dy = y - cy;
-    var ca = Math.cos(state.az), sa = Math.sin(state.az);
-    var ce = Math.cos(state.el), se = Math.sin(state.el);
-    var xr = dx * ca - dy * sa;
-    var yr = dx * sa + dy * ca;
-    var zr = -z * 0.22;
-    var yr2 = yr * ce - zr * se;
-    var zr2 = yr * se + zr * ce;
-    var scale = Math.min(W, H) * 0.16 * state.zoom;
-    var px = W * 0.5 + state.panX + xr * scale;
-    var py = H * 0.55 + state.panY - yr2 * scale * 0.72;
-    return { x: px, y: py, depth: zr2 };
-  }
-
-  function drawAxis(ctx, from, to, label, color, W, H) {
-    var a = project3D(from[0], from[1], from[2], W, H);
-    var b = project3D(to[0], to[1], to[2], W, H);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
-    ctx.stroke();
-    ctx.fillStyle = color;
-    ctx.font = '12px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    var lx = Math.max(22, Math.min(W - 22, b.x));
-    var ly = Math.max(18, Math.min(H - 14, b.y - 6));
-    ctx.fillText(label, lx, ly);
-  }
-
-  function drawAxes(ctx, W, H, zmax) {
-    var base = [WMIN, WMIN, 0];
-    drawAxis(ctx, base, [WMAX, WMIN, 0], 'w₁', PRIMARY, W, H);
-    drawAxis(ctx, base, [WMIN, WMAX, 0], 'w₂', SECONDARY, W, H);
-    drawAxis(ctx, base, [WMIN, WMIN, zmax * 0.55], 'loss', TEXT, W, H);
-  }
-
-  function draw() {
-    var f = fitCanvas(canvas);
-    if (!f) return;
-    var ctx = f.ctx, W = f.w, H = f.h;
-    ctx.clearRect(0, 0, W, H);
-
-    var grid = 32;
-    var zmin = 0, zmax = loss(WMIN, WMAX);
-    var pts = [];
-    for (var i = 0; i <= grid; i++) {
-      pts[i] = [];
-      for (var j = 0; j <= grid; j++) {
-        var w1 = WMIN + (WMAX - WMIN) * i / grid;
-        var w2 = WMIN + (WMAX - WMIN) * j / grid;
-        var z = loss(w1, w2);
-        pts[i][j] = project3D(w1, w2, z, W, H);
-        pts[i][j].z = z;
-      }
-    }
-
-    var tris = [];
-    for (var i = 0; i < grid; i++) {
-      for (var j = 0; j < grid; j++) {
-        var a = pts[i][j], b = pts[i + 1][j], c = pts[i][j + 1], d = pts[i + 1][j + 1];
-        var zt1 = (a.z + b.z + c.z) / 3;
-        var zt2 = (b.z + c.z + d.z) / 3;
-        var dt1 = (a.depth + b.depth + c.depth) / 3;
-        var dt2 = (b.depth + c.depth + d.depth) / 3;
-        tris.push({ p: [a, b, c], z: zt1, d: dt1 });
-        tris.push({ p: [b, d, c], z: zt2, d: dt2 });
-      }
-    }
-    tris.sort(function(a, b) { return b.d - a.d; });
-
-    tris.forEach(function(t) {
-      ctx.beginPath();
-      ctx.moveTo(t.p[0].x, t.p[0].y);
-      ctx.lineTo(t.p[1].x, t.p[1].y);
-      ctx.lineTo(t.p[2].x, t.p[2].y);
-      ctx.closePath();
-      ctx.fillStyle = heightColor(t.z, zmin, zmax);
-      ctx.fill();
-    });
-
-    ctx.lineWidth = 0.6;
-    for (var i = 0; i <= grid; i++) {
-      for (var j = 0; j < grid; j++) {
-        var a = pts[i][j], b = pts[i][j + 1];
-        ctx.strokeStyle = lineColor((a.z + b.z) / 2, zmin, zmax);
-        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
-      }
-    }
-    for (var j2 = 0; j2 <= grid; j2++) {
-      for (var i2 = 0; i2 < grid; i2++) {
-        var a2 = pts[i2][j2], b2 = pts[i2 + 1][j2];
-        ctx.strokeStyle = lineColor((a2.z + b2.z) / 2, zmin, zmax);
-        ctx.beginPath(); ctx.moveTo(a2.x, a2.y); ctx.lineTo(b2.x, b2.y); ctx.stroke();
-      }
-    }
-
-    drawAxes(ctx, W, H, zmax);
-
-    var curL = loss(state.w1, state.w2);
-    var curP = project3D(state.w1, state.w2, curL, W, H);
-    ctx.shadowColor = RED; ctx.shadowBlur = 14;
-    ctx.beginPath(); ctx.arc(curP.x, curP.y, 8, 0, 6.2832);
-    ctx.fillStyle = RED; ctx.fill();
-    ctx.shadowBlur = 0;
-
-    if (state.lastStep) {
-      var oldP = project3D(state.lastStep.oldW1, state.lastStep.oldW2,
-                           loss(state.lastStep.oldW1, state.lastStep.oldW2), W, H);
-      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5;
-      ctx.setLineDash([5, 4]);
-      ctx.beginPath(); ctx.moveTo(oldP.x, oldP.y); ctx.lineTo(curP.x, curP.y); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-
-    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('Drag: rotate | Shift+drag: pan | Scroll: zoom', 10, H - 10);
-
-    var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
-    if (state.lastStep) {
-      readout.innerHTML =
-        'Step: [' + state.lastStep.newW1.toFixed(2) + ', ' + state.lastStep.newW2.toFixed(2) +
-        '] = [' + state.lastStep.oldW1.toFixed(2) + ', ' + state.lastStep.oldW2.toFixed(2) +
-        '] + (-' + state.lastStep.eta.toFixed(1) + ' &middot; batch-gradient B=' + state.lastStep.batch + ' [' +
-        state.lastStep.g1.toFixed(3) + ', ' + state.lastStep.g2.toFixed(3) +
-        ']). Current loss: <strong>' + curL.toFixed(3) + '</strong>.';
-    } else {
-      readout.innerHTML =
-        'Batch gradient B=' + state.batch + ': [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) +
-        '] (true: [' + g.trueG1.toFixed(3) + ', ' + g.trueG2.toFixed(3) + '])' +
-        '. Next: w_new = [' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) +
-        '] + (-' + state.eta.toFixed(1) + ' &middot; [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) + ']).';
-    }
-  }
-  syncWeightReadouts();
-  return { resize: draw };
-};
-
-// ---- Adam Landscape widget: loss surface + Adam terms (m, v, m_hat, v_hat) ----
+// =====================================================================
+// Adam Landscape widget — INTERACTIVE_WIDGETS.adamLandscape
+// Loss surface + Adam terms (m, v, m̂, v̂). Shows the actual Adam update
+// formula step-by-step on a noisy quadratic bowl.
+// =====================================================================
 INTERACTIVE_WIDGETS.adamLandscape = function(host) {
   var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff',
       SECONDARY = '#f5a623', RED = '#e74c3c', LINEC = '#2a3450', GREEN = '#3fb950';
@@ -5650,15 +4996,1484 @@ INTERACTIVE_WIDGETS.adamLandscape = function(host) {
   return { resize: draw };
 };
 
-// ---- Per-module hooks (from MODULE_CONFIG) ----
-if (MODULE_CONFIG.title) document.title = MODULE_CONFIG.title;
-if (MODULE_CONFIG.widgets) Object.assign(INTERACTIVE_WIDGETS, MODULE_CONFIG.widgets);
-if (typeof MODULE_CONFIG.onReady === 'function') {
-  Reveal.on('ready', function() { MODULE_CONFIG.onReady(Reveal); });
-}
-if (typeof MODULE_CONFIG.onSlideChanged === 'function') {
-  Reveal.on('slidechanged', function(event) { MODULE_CONFIG.onSlideChanged(event); });
-}
+// =====================================================================
+// Boundary Explorer widget — INTERACTIVE_WIDGETS.boundaryExplorer
+// Explicit two-neuron hidden layer for XOR.
+// =====================================================================
+INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
+  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
+  var NEURON_COLORS = [PRIMARY, SECONDARY];
+  var GRID = 48;
+  var generateData = MLP.generateData;
+  var state = { dataset: 'xor', neurons: [], outW: [], outB: 0, sample: { x: 0.82, y: 0.82 } };
+
+  host.innerHTML =
+    '<div class="perc-widget expl-depth-widget">' +
+      '<div class="perc-canvas-wrap"><canvas class="perc-canvas"></canvas></div>' +
+      '<div class="perc-controls">' +
+        '<div class="expl-datasets"></div>' +
+        '<div class="expl-sliders"></div>' +
+        '<p class="perc-readout"></p>' +
+      '</div>' +
+    '</div>';
+  var canvas = host.querySelector('.mlp-canvas');
+  canvas = host.querySelector('.perc-canvas');
+  var readout = host.querySelector('.perc-readout');
+  var dsEl = host.querySelector('.expl-datasets');
+  var slidersEl = host.querySelector('.expl-sliders');
+
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  function preset(name) {
+    if (name === 'linear') {
+      state.neurons = [
+        { w1: 1.0, w2: 1.0, b: -1.0 },
+        { w1: 1.0, w2: 1.0, b: -1.6 }
+      ];
+      state.outW = [1.0, 0.0];
+      state.outB = -0.5;
+      state.sample = { x: 0.78, y: 0.78 };
+    } else {
+      state.neurons = [
+        { w1: 1.0, w2: 1.0, b: -0.7 },
+        { w1: 1.0, w2: 1.0, b: -1.3 }
+      ];
+      state.outW = [-1.0, 1.0];
+      state.outB = 0.5;
+      state.sample = { x: 0.82, y: 0.82 };
+    }
+  }
+
+  function applyDatasetPreset(name) {
+    state.dataset = name;
+    preset(name);
+    buildSliders();
+  }
+
+  var datasets = ['linear', 'xor'];
+  datasets.forEach(function(name) {
+    var btn = document.createElement('button');
+    btn.className = 'expl-ds-btn';
+    btn.textContent = name === 'xor' ? 'XOR' : name.charAt(0).toUpperCase() + name.slice(1);
+    btn.dataset.ds = name;
+    btn.addEventListener('click', function() {
+      applyDatasetPreset(name);
+      updateUI(); draw();
+    });
+    dsEl.appendChild(btn);
+  });
+  var resetBtn = document.createElement('button');
+  resetBtn.className = 'expl-arch-btn expl-reset';
+  resetBtn.textContent = 'Reset weights';
+  resetBtn.addEventListener('click', function() {
+    preset(state.dataset);
+    buildSliders();
+    updateUI();
+    draw();
+  });
+  dsEl.appendChild(resetBtn);
+
+  function buildSliders() {
+    slidersEl.innerHTML = '';
+    state.neurons.forEach(function(n, idx) {
+      [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(spec) {
+        var key = spec[0];
+        var row = document.createElement('div');
+        row.className = 'perc-slider';
+        var lab = document.createElement('label');
+        lab.textContent = 'N' + (idx + 1) + ' ' + spec[1];
+        lab.style.color = NEURON_COLORS[idx];
+        var inp = document.createElement('input');
+        inp.type = 'range';
+        inp.min = '-3'; inp.max = '3'; inp.step = '0.1';
+        inp.value = n[key].toFixed(1);
+        var val = document.createElement('p');
+        val.className = 'perc-val';
+        val.textContent = n[key].toFixed(1);
+        inp.addEventListener('input', function() {
+          n[key] = parseFloat(inp.value);
+          val.textContent = n[key].toFixed(1);
+          draw();
+        });
+        row.appendChild(lab);
+        row.appendChild(inp);
+        row.appendChild(val);
+        slidersEl.appendChild(row);
+      });
+    });
+  }
+
+  function updateUI() {
+    host.querySelectorAll('.expl-ds-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.ds === state.dataset);
+    });
+  }
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function hiddenVals(x, y) {
+    var zs = state.neurons.map(function(n) { return n.w1 * x + n.w2 * y + n.b; });
+    var hs = zs.map(function(z) { return z >= 0 ? 1 : 0; });
+    var score = state.outW[0] * hs[0] + state.outW[1] * hs[1] + state.outB;
+    var yhat = 1 / (1 + Math.exp(-score));
+    return { zs: zs, hs: hs, score: score, y: yhat, pred: yhat >= 0.5 ? 1 : 0 };
+  }
+
+  function predict(x, y) {
+    return hiddenVals(x, y).pred;
+  }
+
+  function signed(v) {
+    return (v < 0 ? ' - ' : ' + ') + Math.abs(v).toFixed(1);
+  }
+
+  function lineSegment(n) {
+    var pts = [];
+    function add(x, y) {
+      if (x < -1e-6 || x > 1 + 1e-6 || y < -1e-6 || y > 1 + 1e-6) return;
+      for (var i = 0; i < pts.length; i++) {
+        if (Math.abs(pts[i][0] - x) < 1e-6 && Math.abs(pts[i][1] - y) < 1e-6) return;
+      }
+      pts.push([x, y]);
+    }
+    if (Math.abs(n.w2) > 1e-9) {
+      add(0, -(n.w1 * 0 + n.b) / n.w2);
+      add(1, -(n.w1 * 1 + n.b) / n.w2);
+    }
+    if (Math.abs(n.w1) > 1e-9) {
+      add(-(n.w2 * 0 + n.b) / n.w1, 0);
+      add(-(n.w2 * 1 + n.b) / n.w1, 1);
+    }
+    return pts.length >= 2 ? [pts[0], pts[1]] : null;
+  }
+
+  function drawNetwork(ctx, x0, y0, w, h) {
+    function node(x, y, label, color) {
+      ctx.beginPath();
+      ctx.arc(x, y, 13, 0, 6.2832);
+      ctx.fillStyle = '#0d1225';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = TEXT;
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, y + 4);
+    }
+    function edge(x1, y1, x2, y2, color, label) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      if (!label) return;
+      var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      ctx.fillStyle = '#0d1225';
+      ctx.fillRect(mx - 18, my - 8, 36, 14);
+      ctx.fillStyle = color;
+      ctx.font = '11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, mx, my + 3);
+    }
+    var xi = x0 + 28, xh = x0 + w * 0.50, xo = x0 + w - 28;
+    var y1 = y0 + h * 0.30, y2 = y0 + h * 0.70, yo = y0 + h * 0.50;
+    edge(xi + 13, y1, xh - 13, y1, NEURON_COLORS[0], 'w₁');
+    edge(xi + 13, y2, xh - 13, y1, NEURON_COLORS[0], 'w₂');
+    edge(xi + 13, y1, xh - 13, y2, NEURON_COLORS[1], 'w₁');
+    edge(xi + 13, y2, xh - 13, y2, NEURON_COLORS[1], 'w₂');
+    edge(xh + 13, y1, xo - 13, yo, PRIMARY, 'v₁=' + state.outW[0].toFixed(1));
+    edge(xh + 13, y2, xo - 13, yo, SECONDARY, 'v₂=' + state.outW[1].toFixed(1));
+    node(xi, y1, 'x₁', SECONDARY);
+    node(xi, y2, 'x₂', SECONDARY);
+    node(xh, y1, 'h₁', NEURON_COLORS[0]);
+    node(xh, y2, 'h₂', NEURON_COLORS[1]);
+    node(xo, yo, 'ŷ', SECONDARY);
+    ctx.fillStyle = MUTED;
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('b=' + state.outB.toFixed(1), xo, yo + 36);
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+
+    var data = generateData(state.dataset);
+
+    var pad = 18;
+    var rightPanel = 320;
+    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
+    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
+    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
+    var oy = pad + (H - 2 * pad - side) / 2;
+
+    // Decision grid background
+    for (var i = 0; i < GRID; i++) {
+      for (var j = 0; j < GRID; j++) {
+        var gx = i / (GRID - 1), gy = j / (GRID - 1);
+        var p = predict(gx, gy);
+        ctx.fillStyle = p ? 'rgba(63,185,80,0.16)' : 'rgba(231,76,60,0.10)';
+        ctx.fillRect(ox + gx * side, oy + (1 - gy) * side, side / GRID + 1, side / GRID + 1);
+      }
+    }
+
+    state.neurons.forEach(function(n, idx) {
+      var seg = lineSegment(n);
+      if (!seg) return;
+      ctx.strokeStyle = NEURON_COLORS[idx];
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      ctx.moveTo(ox + seg[0][0] * side, oy + (1 - seg[0][1]) * side);
+      ctx.lineTo(ox + seg[1][0] * side, oy + (1 - seg[1][1]) * side);
+      ctx.stroke();
+    });
+
+    // Data scatter
+    var correct = 0;
+    data.forEach(function(p) {
+      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
+      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 6.2832);
+      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
+      if (predict(p.x, p.y) === p.cls) correct++;
+    });
+
+    var sample = state.sample;
+    var sv = hiddenVals(sample.x, sample.y);
+    var spx = ox + sample.x * side, spy = oy + (1 - sample.y) * side;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(spx, spy, 8, 0, 6.2832); ctx.stroke();
+    ctx.fillStyle = sv.pred ? GREEN : RED;
+    ctx.beginPath(); ctx.arc(spx, spy, 4, 0, 6.2832); ctx.fill();
+
+    // Frame
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy, side, side);
+
+    if (rightPanel > 80) {
+      drawNetwork(ctx, ox + side + 22, oy + 8, rightPanel - 34, side - 16);
+    }
+
+    var acc = correct / data.length;
+    var colorWord = sv.pred ? 'green' : 'red';
+    readout.innerHTML =
+      'x=(' + sample.x.toFixed(2) + ', ' + sample.y.toFixed(2) + ') → ' +
+      'h=(' + sv.hs[0] + ', ' + sv.hs[1] + ') because line values are (' +
+      sv.zs[0].toFixed(2) + ', ' + sv.zs[1].toFixed(2) + '), ' +
+      'y=sigmoid(' + state.outW[0].toFixed(1) + '·' + sv.hs[0] +
+      signed(state.outW[1]) + '·' + sv.hs[1] + signed(state.outB) +
+      ')=' + sv.y.toFixed(2) + (sv.y >= 0.5 ? ' ≥ 0.5' : ' < 0.5') +
+      ' ⇒ <strong>' + colorWord + '</strong>' +
+      ' | Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
+  }
+
+  preset(state.dataset);
+  buildSliders();
+  updateUI();
+  return { resize: draw };
+};
+
+// =====================================================================
+// Folding widget — INTERACTIVE_WIDGETS.folding
+// Input space ↔ hidden-space line values, live.
+// The left pane shows each hidden neuron's line w·x+b=0. The right pane
+// shows continuous signed line values: crossing a neuron line in input
+// space crosses the matching axis in hidden space.
+// =====================================================================
+INTERACTIVE_WIDGETS.folding = function(host) {
+  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff';
+  var NEURON_COLORS = ['#4a9eff', '#f5a623'];
+
+  // --- XOR-pattern data: opposite corners share a class ---
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  var rnd = mulberry32(42);
+  var clusters = [[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 0]];
+  var data = [];
+  clusters.forEach(function(c) {
+    for (var i = 0; i < 14; i++) {
+      data.push({
+        x: c[0] + (rnd() - 0.5) * 0.22,
+        y: c[1] + (rnd() - 0.5) * 0.22,
+        cls: c[2]
+      });
+    }
+  });
+
+  // Preset line positions for XOR: the two units detect points far above
+  // or below the diagonal strip.
+  function preset(k) {
+    var p = k === 1 ? [
+      { w1: 1, w2: -1, b: -0.3 }
+    ] : [
+      { w1: 1, w2: -1, b: -0.3 },
+      { w1: -1, w2: 1, b: -0.3 }
+    ];
+    return p.map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
+  }
+  var state = { k: 2, neurons: preset(2) };
+
+  // --- DOM ---
+  host.innerHTML =
+    '<div class="fold-widget">' +
+      '<div class="fold-views">' +
+        '<figure class="fold-view"><figcaption>Input space</figcaption>' +
+          '<canvas class="fold-canvas" data-pane="input"></canvas></figure>' +
+        '<figure class="fold-view"><figcaption>Hidden space</figcaption>' +
+          '<canvas class="fold-canvas" data-pane="hidden"></canvas></figure>' +
+        '<figure class="fold-view fold-graph-view"><figcaption>Weights as edges</figcaption>' +
+          '<canvas class="fold-canvas" data-pane="graph"></canvas></figure>' +
+      '</div>' +
+      '<div class="fold-controls">' +
+        '<div class="fold-modes">' +
+          '<button data-neurons="1">1 neuron</button>' +
+          '<button data-neurons="2">2 neurons</button>' +
+          '<button class="fold-reset">Reset to XOR solution</button>' +
+        '</div>' +
+        '<div class="fold-sliders"></div>' +
+        '<p class="fold-readout"></p>' +
+      '</div>' +
+    '</div>';
+
+  var inCanvas = host.querySelector('[data-pane="input"]');
+  var graphCanvas = host.querySelector('[data-pane="graph"]');
+  var hidCanvas = host.querySelector('[data-pane="hidden"]');
+  var slidersEl = host.querySelector('.fold-sliders');
+  var readoutEl = host.querySelector('.fold-readout');
+  var modeBtns = host.querySelectorAll('.fold-modes button[data-neurons]');
+
+  // Keep slider interaction from bubbling into reveal navigation.
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  function buildSliders() {
+    slidersEl.innerHTML = '';
+    state.neurons.forEach(function(n, idx) {
+      var color = NEURON_COLORS[idx];
+      [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(f) {
+        var key = f[0];
+        var row = document.createElement('div');
+        row.className = 'fold-slider';
+        var lab = document.createElement('label');
+        lab.textContent = 'N' + (idx + 1) + ' ' + f[1];
+        lab.style.color = color;
+        var inp = document.createElement('input');
+        inp.type = 'range';
+        inp.min = '-3'; inp.max = '3'; inp.step = '0.1';
+        inp.value = String(n[key]);
+        var val = document.createElement('p');
+        val.className = 'fold-val';
+        val.textContent = (+n[key]).toFixed(1);
+        inp.addEventListener('input', function() {
+          n[key] = parseFloat(inp.value);
+          val.textContent = n[key].toFixed(1);
+          draw();
+        });
+        row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+        slidersEl.appendChild(row);
+      });
+    });
+  }
+
+  function setK(k) {
+    state.k = k;
+    state.neurons = preset(k);
+    modeBtns.forEach(function(b) {
+      b.classList.toggle('active', +b.getAttribute('data-neurons') === k);
+    });
+    buildSliders();
+    draw();
+  }
+  modeBtns.forEach(function(b) {
+    b.addEventListener('click', function() { setK(+b.getAttribute('data-neurons')); });
+  });
+  host.querySelector('.fold-reset').addEventListener('click', function() {
+    state.neurons = preset(state.k);
+    buildSliders();
+    draw();
+  });
+
+  // --- canvas helpers ---
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function makeMapper(w, h, xr, yr, pad) {
+    return function(x, y) {
+      return [
+        pad + (x - xr[0]) / (xr[1] - xr[0]) * (w - 2 * pad),
+        h - pad - (y - yr[0]) / (yr[1] - yr[0]) * (h - 2 * pad)
+      ];
+    };
+  }
+
+  function drawFrame(ctx, w, h, pad, xr, yr, xlab, ylab) {
+    ctx.clearRect(0, 0, w, h);
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(pad, pad, w - 2 * pad, h - 2 * pad);
+    var m = makeMapper(w, h, xr, yr, pad);
+    // zero axes if visible
+    ctx.strokeStyle = 'rgba(136,146,164,0.35)';
+    if (xr[0] < 0 && xr[1] > 0) {
+      var zx = m(0, yr[0])[0];
+      ctx.beginPath(); ctx.moveTo(zx, pad); ctx.lineTo(zx, h - pad); ctx.stroke();
+    }
+    if (yr[0] < 0 && yr[1] > 0) {
+      var zy = m(xr[0], 0)[1];
+      ctx.beginPath(); ctx.moveTo(pad, zy); ctx.lineTo(w - pad, zy); ctx.stroke();
+    }
+    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'right'; ctx.fillText(xlab, w - pad - 4, h - pad - 6);
+    ctx.textAlign = 'left'; ctx.save();
+    ctx.translate(pad + 4, pad + 4); ctx.fillText(ylab, 0, 8); ctx.restore();
+    return m;
+  }
+
+  function lineSegment(n, xr, yr) {
+    var a = n.w1, b = n.w2, c = n.b;
+    var pts = [];
+    function add(x, y) {
+      if (x < xr[0] - 1e-6 || x > xr[1] + 1e-6 || y < yr[0] - 1e-6 || y > yr[1] + 1e-6) return;
+      for (var i = 0; i < pts.length; i++) {
+        if (Math.abs(pts[i][0] - x) < 1e-6 && Math.abs(pts[i][1] - y) < 1e-6) return;
+      }
+      pts.push([x, y]);
+    }
+    if (Math.abs(b) > 1e-9) {
+      add(xr[0], -(a * xr[0] + c) / b);
+      add(xr[1], -(a * xr[1] + c) / b);
+    }
+    if (Math.abs(a) > 1e-9) {
+      add(-(b * yr[0] + c) / a, yr[0]);
+      add(-(b * yr[1] + c) / a, yr[1]);
+    }
+    return pts.length >= 2 ? [pts[0], pts[1]] : null;
+  }
+
+  function edge(ctx, x1, y1, x2, y2, color, label) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+    ctx.fillStyle = '#0d1225';
+    ctx.fillRect(mx - 22, my - 10, 44, 18);
+    ctx.fillStyle = color;
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, mx, my + 4);
+  }
+
+  function node(ctx, x, y, label, stroke) {
+    ctx.beginPath();
+    ctx.arc(x, y, 18, 0, 6.2832);
+    ctx.fillStyle = '#0d1225';
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = 2.4;
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = TEXT;
+    ctx.font = '14px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, y + 5);
+  }
+
+  function drawGraph() {
+    var fg = fitCanvas(graphCanvas);
+    if (!fg) return;
+    var ctx = fg.ctx, w = fg.w, h = fg.h;
+    ctx.clearRect(0, 0, w, h);
+    var leftX = w * 0.24, rightX = w * 0.74;
+    var inY = [h * 0.34, h * 0.66];
+    var outY = state.k === 1 ? [h * 0.5] : [h * 0.34, h * 0.66];
+    state.neurons.forEach(function(n, idx) {
+      edge(ctx, leftX + 18, inY[0], rightX - 18, outY[idx], NEURON_COLORS[idx], 'w₁=' + n.w1.toFixed(1));
+      edge(ctx, leftX + 18, inY[1], rightX - 18, outY[idx], NEURON_COLORS[idx], 'w₂=' + n.w2.toFixed(1));
+      ctx.fillStyle = NEURON_COLORS[idx];
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('b=' + n.b.toFixed(1), rightX + 24, outY[idx] + 4);
+    });
+    node(ctx, leftX, inY[0], 'x₁', PRIMARY);
+    node(ctx, leftX, inY[1], 'x₂', PRIMARY);
+    state.neurons.forEach(function(n, idx) { node(ctx, rightX, outY[idx], 'h' + (idx + 1), NEURON_COLORS[idx]); });
+  }
+
+  function dot(ctx, px, py, color, r) {
+    ctx.beginPath(); ctx.arc(px, py, r || 4.5, 0, 6.2832);
+    ctx.fillStyle = color; ctx.globalAlpha = 0.9; ctx.fill(); ctx.globalAlpha = 1;
+  }
+
+  function signedDistance(n, p) {
+    var len = Math.sqrt(n.w1 * n.w1 + n.w2 * n.w2) || 1;
+    return (n.w1 * p.x + n.w2 * p.y + n.b) / len;
+  }
+
+  function tangentCoordinate(n, p) {
+    var len = Math.sqrt(n.w1 * n.w1 + n.w2 * n.w2) || 1;
+    return (-n.w2 * p.x + n.w1 * p.y) / len;
+  }
+
+  function foldCoordinatePoint(p) {
+    var n1 = state.neurons[0];
+    return {
+      x: signedDistance(n1, p),
+      y: state.k > 1 ? signedDistance(state.neurons[1], p) : tangentCoordinate(n1, p),
+      cls: p.cls
+    };
+  }
+
+  function spanWithZero(vals) {
+    var lo = Math.min.apply(null, vals.concat([0]));
+    var hi = Math.max.apply(null, vals.concat([0]));
+    if (hi - lo < 1e-6) { lo -= 0.5; hi += 0.5; }
+    var pad = Math.max(0.08, (hi - lo) * 0.16);
+    return [lo - pad, hi + pad];
+  }
+
+  function draw() {
+    // ---- Input space (left): data + each neuron's decision line ----
+    var fi = fitCanvas(inCanvas);
+    if (fi) {
+      var pad = 26, xr = [-0.5, 1.5], yr = [-0.5, 1.5];
+      var m = drawFrame(fi.ctx, fi.w, fi.h, pad, xr, yr, 'x₁', 'x₂');
+      var ctx = fi.ctx;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(pad, pad, fi.w - 2 * pad, fi.h - 2 * pad);
+      ctx.clip();
+      // Shade each neuron's active half-plane, where its line value is positive.
+      state.neurons.forEach(function(n, idx) {
+        var a = n.w1, b = n.w2, c = n.b;
+        ctx.fillStyle = idx === 0 ? 'rgba(74,158,255,0.06)' : 'rgba(245,166,35,0.06)';
+        // Simple approximation: fill the canvas then clip to the active side
+        ctx.save();
+        ctx.beginPath();
+        if (Math.abs(b) > 1e-9) {
+          var y0 = -(a * xr[0] + c) / b;
+          var y1 = -(a * xr[1] + c) / b;
+          if (b > 0) {
+            ctx.moveTo(m(xr[0], yr[0])[0], m(xr[0], yr[0])[1]);
+            ctx.lineTo(m(xr[1], yr[0])[0], m(xr[1], yr[0])[1]);
+            ctx.lineTo(m(xr[1], y1)[0], m(xr[1], y1)[1]);
+            ctx.lineTo(m(xr[0], y0)[0], m(xr[0], y0)[1]);
+          } else {
+            ctx.moveTo(m(xr[0], yr[1])[0], m(xr[0], yr[1])[1]);
+            ctx.lineTo(m(xr[1], yr[1])[0], m(xr[1], yr[1])[1]);
+            ctx.lineTo(m(xr[1], y1)[0], m(xr[1], y1)[1]);
+            ctx.lineTo(m(xr[0], y0)[0], m(xr[0], y0)[1]);
+          }
+        } else if (Math.abs(a) > 1e-9) {
+          var xv = -c / a;
+          if (a > 0) {
+            ctx.moveTo(m(xv, yr[0])[0], m(xv, yr[0])[1]);
+            ctx.lineTo(m(xr[1], yr[0])[0], m(xr[1], yr[0])[1]);
+            ctx.lineTo(m(xr[1], yr[1])[0], m(xr[1], yr[1])[1]);
+            ctx.lineTo(m(xv, yr[1])[0], m(xv, yr[1])[1]);
+          } else {
+            ctx.moveTo(m(xv, yr[0])[0], m(xv, yr[0])[1]);
+            ctx.lineTo(m(xr[0], yr[0])[0], m(xr[0], yr[0])[1]);
+            ctx.lineTo(m(xr[0], yr[1])[0], m(xr[0], yr[1])[1]);
+            ctx.lineTo(m(xv, yr[1])[0], m(xv, yr[1])[1]);
+          }
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      });
+      state.neurons.forEach(function(n, idx) {
+        var seg = lineSegment(n, xr, yr);
+        if (!seg) return;
+        var p0 = m(seg[0][0], seg[0][1]);
+        var p1 = m(seg[1][0], seg[1][1]);
+        ctx.strokeStyle = NEURON_COLORS[idx];
+        ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+        var dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+        var len = Math.sqrt(dx * dx + dy * dy) || 1;
+        var sign = idx === 0 ? -1 : 1;
+        var lx = (p0[0] + p1[0]) / 2 - dy / len * 18 * sign;
+        var ly = (p0[1] + p1[1]) / 2 + dx / len * 18 * sign;
+        ctx.fillStyle = '#0d1225';
+        ctx.fillRect(lx - 14, ly - 10, 28, 18);
+        ctx.fillStyle = NEURON_COLORS[idx];
+        ctx.font = '12px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('N' + (idx + 1), lx, ly + 4);
+      });
+      data.forEach(function(p) {
+        var q = m(p.x, p.y);
+        dot(ctx, q[0], q[1], p.cls ? GREEN : RED);
+      });
+      ctx.restore();
+    }
+
+    drawGraph();
+
+    // ---- Hidden space (middle): smooth line-value coordinates ----
+    var fh = fitCanvas(hidCanvas);
+    if (!fh) { return; }
+    var pts = data.map(foldCoordinatePoint);
+    var hxr = spanWithZero(pts.map(function(p) { return p.x; }));
+    var hyr = spanWithZero(pts.map(function(p) { return p.y; }));
+    var pad2 = 26;
+    var mh = drawFrame(fh.ctx, fh.w, fh.h, pad2, hxr, hyr,
+                       'N1 value', state.k > 1 ? 'N2 value' : 'along N1');
+    var ctx2 = fh.ctx;
+
+    ctx2.save();
+    ctx2.beginPath();
+    ctx2.rect(pad2, pad2, fh.w - 2 * pad2, fh.h - 2 * pad2);
+    ctx2.clip();
+
+    var n1x = mh(0, hyr[0])[0];
+    ctx2.strokeStyle = NEURON_COLORS[0];
+    ctx2.lineWidth = 2.4;
+    ctx2.beginPath(); ctx2.moveTo(n1x, pad2); ctx2.lineTo(n1x, fh.h - pad2); ctx2.stroke();
+    ctx2.fillStyle = NEURON_COLORS[0];
+    ctx2.font = '12px Inter, sans-serif';
+    ctx2.textAlign = 'left';
+    ctx2.fillText('N1 line', n1x + 5, pad2 + 14);
+
+    if (state.k > 1) {
+      var n2y = mh(hxr[0], 0)[1];
+      ctx2.strokeStyle = NEURON_COLORS[1];
+      ctx2.lineWidth = 2.4;
+      ctx2.beginPath(); ctx2.moveTo(pad2, n2y); ctx2.lineTo(fh.w - pad2, n2y); ctx2.stroke();
+      ctx2.fillStyle = NEURON_COLORS[1];
+      ctx2.textAlign = 'right';
+      ctx2.fillText('N2 line', fh.w - pad2 - 5, n2y - 6);
+    }
+
+    pts.forEach(function(p) {
+      var q = mh(p.x, p.y);
+      dot(ctx2, q[0], q[1], p.cls ? GREEN : RED);
+    });
+    ctx2.restore();
+
+    readoutEl.innerHTML =
+      state.k === 1
+        ? 'Hidden space: crossing the N1 line in input space crosses the vertical N1 axis here.'
+        : 'Hidden space: x is the N1 line value, y is the N2 line value; crossing a line on the left crosses its matching axis here.';
+  }
+
+  buildSliders();
+  modeBtns.forEach(function(b) {
+    b.classList.toggle('active', +b.getAttribute('data-neurons') === state.k);
+  });
+
+  return { resize: draw };
+};
+
+// =====================================================================
+// Loss landscape widget — INTERACTIVE_WIDGETS.lossLandscape
+// 3D draggable surface with height coloring. Shows SGD step-by-step
+// with noisy batch gradients.
+// =====================================================================
+INTERACTIVE_WIDGETS.lossLandscape = function(host) {
+  var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff',
+      SECONDARY = '#f5a623', RED = '#e74c3c', LINEC = '#2a3450';
+  var state = { w1: -1.0, w2: 2.0, eta: 0.5, batch: 8, t: 0, lastStep: null,
+                az: -0.8, el: 0.65, zoom: 1.0, panX: 0, panY: 0,
+                dragging: false, dragType: null, lastMX: 0, lastMY: 0 };
+  var WMIN = -3, WMAX = 5;
+  var INIT_W1 = -1.0, INIT_W2 = 2.0, INIT_ETA = 0.5, INIT_BATCH = 8;
+  var INIT_AZ = -0.8, INIT_EL = 0.65, INIT_ZOOM = 1.0;
+
+  function loss(w1, w2) {
+    return 0.5 * ((w1 - 1.5) * (w1 - 1.5) + (w2 + 1.0) * (w2 + 1.0));
+  }
+  function grad(w1, w2) {
+    return { g1: w1 - 1.5, g2: w2 + 1.0 };
+  }
+  function noise(seed) {
+    var x = Math.sin(seed * 12.9898 + 78.233) * 43758.5453;
+    return (x - Math.floor(x)) * 2 - 1;
+  }
+  function batchGrad(w1, w2, batch, step) {
+    var g = grad(w1, w2);
+    var n1 = 0, n2 = 0;
+    for (var i = 0; i < batch; i++) {
+      n1 += noise(step * 101 + i * 17 + 1);
+      n2 += noise(step * 137 + i * 19 + 2);
+    }
+    var scale = 2.0;
+    return {
+      g1: g.g1 + scale * n1 / batch,
+      g2: g.g2 + scale * n2 / batch,
+      trueG1: g.g1,
+      trueG2: g.g2
+    };
+  }
+
+  host.innerHTML =
+    '<div class="land-widget loss-landscape-widget">' +
+      '<div class="land-content">' +
+        '<div class="land-main">' +
+          '<canvas class="land-canvas"></canvas>' +
+        '</div>' +
+        '<div class="land-param-diagram">' +
+          '<p class="land-diagram-title">Two trainable weights</p>' +
+          '<div class="land-weight-row"><span>w₁</span><strong data-r="w1">-1.0</strong></div>' +
+          '<div class="land-weight-row"><span>w₂</span><strong data-r="w2">2.0</strong></div>' +
+          '<div class="land-loss-box">L(w₁, w₂)</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="land-controls">' +
+        '<div class="mlp-slider"><label>η</label><input data-k="eta" type="range" min="0.1" max="1.5" step="0.1" value="0.5"><p data-r="eta">0.5</p></div>' +
+        '<div class="mlp-slider"><label>Batch</label><input data-k="batch" type="range" min="1" max="64" step="1" value="8"><p data-r="batch">8</p></div>' +
+        '<button class="land-step">Step</button>' +
+        '<button class="land-reset-btn">Reset</button>' +
+      '</div>' +
+      '<p class="land-readout"></p>' +
+    '</div>';
+  var canvas = host.querySelector('.land-canvas');
+  var readout = host.querySelector('.land-readout');
+  var resetBtn = host.querySelector('.land-reset-btn');
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  canvas.addEventListener('pointerdown', function(e) {
+    state.dragging = true;
+    state.lastMX = e.clientX; state.lastMY = e.clientY;
+    if (e.shiftKey) {
+      state.dragType = 'pan';
+    } else {
+      state.dragType = 'rotate';
+    }
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e) {
+    if (!state.dragging) return;
+    var dx = e.clientX - state.lastMX, dy = e.clientY - state.lastMY;
+    if (state.dragType === 'pan') {
+      state.panX += dx;
+      state.panY += dy;
+    } else {
+      state.az -= dx * 0.008;
+      state.el = Math.max(0.1, Math.min(1.2, state.el - dy * 0.008));
+    }
+    state.lastMX = e.clientX; state.lastMY = e.clientY;
+    draw();
+  });
+  canvas.addEventListener('pointerup', function() { state.dragging = false; state.dragType = null; });
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    state.zoom = Math.max(0.4, Math.min(2.5, state.zoom * (e.deltaY > 0 ? 0.92 : 1.08)));
+    draw();
+  }, { passive: false });
+
+  function syncWeightReadouts() {
+    host.querySelector('[data-r="w1"]').textContent = state.w1.toFixed(2);
+    host.querySelector('[data-r="w2"]').textContent = state.w2.toFixed(2);
+  }
+
+  host.querySelectorAll('input').forEach(function(inp) {
+    inp.addEventListener('input', function() {
+      state[inp.dataset.k] = inp.dataset.k === 'batch' ? parseInt(inp.value, 10) : parseFloat(inp.value);
+      state.lastStep = null;
+      host.querySelector('[data-r="' + inp.dataset.k + '"]').textContent =
+        inp.dataset.k === 'batch' ? String(state.batch) : state[inp.dataset.k].toFixed(1);
+      draw();
+    });
+  });
+  host.querySelector('.land-step').addEventListener('click', function() {
+    var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
+    var oldW1 = state.w1, oldW2 = state.w2;
+    state.w1 += -state.eta * g.g1;
+    state.w2 += -state.eta * g.g2;
+    state.t++;
+    state.lastStep = { oldW1: oldW1, oldW2: oldW2, g1: g.g1, g2: g.g2,
+                       trueG1: g.trueG1, trueG2: g.trueG2, eta: state.eta,
+                       batch: state.batch, newW1: state.w1, newW2: state.w2 };
+    syncWeightReadouts();
+    draw();
+  });
+  resetBtn.addEventListener('click', function() {
+    state.w1 = INIT_W1; state.w2 = INIT_W2; state.eta = INIT_ETA; state.batch = INIT_BATCH; state.t = 0;
+    state.lastStep = null;
+    state.az = INIT_AZ; state.el = INIT_EL; state.zoom = INIT_ZOOM;
+    state.panX = 0; state.panY = 0;
+    host.querySelector('[data-k="eta"]').value = state.eta;
+    host.querySelector('[data-k="batch"]').value = state.batch;
+    syncWeightReadouts();
+    host.querySelector('[data-r="eta"]').textContent = state.eta.toFixed(1);
+    host.querySelector('[data-r="batch"]').textContent = String(state.batch);
+    draw();
+  });
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr);
+    c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function heightColor(z, zmin, zmax) {
+    var t = Math.max(0, Math.min(1, (z - zmin) / (zmax - zmin || 1)));
+    var r, g, b;
+    if (t < 0.25) { r = 0; g = t * 4; b = 1; }
+    else if (t < 0.5) { r = 0; g = 1; b = 1 - (t - 0.25) * 4; }
+    else if (t < 0.75) { r = (t - 0.5) * 4; g = 1; b = 0; }
+    else { r = 1; g = 1 - (t - 0.75) * 4; b = 0; }
+    return 'rgba(' + Math.round(r * 255) + ',' + Math.round(g * 255) + ',' + Math.round(b * 255) + ',0.82)';
+  }
+  function lineColor(z, zmin, zmax) {
+    var c = heightColor(z, zmin, zmax);
+    return c.replace('0.82)', '0.30)');
+  }
+
+  function project3D(x, y, z, W, H) {
+    var cx = (WMIN + WMAX) / 2, cy = (WMIN + WMAX) / 2;
+    var dx = x - cx, dy = y - cy;
+    var ca = Math.cos(state.az), sa = Math.sin(state.az);
+    var ce = Math.cos(state.el), se = Math.sin(state.el);
+    var xr = dx * ca - dy * sa;
+    var yr = dx * sa + dy * ca;
+    var zr = -z * 0.22;
+    var yr2 = yr * ce - zr * se;
+    var zr2 = yr * se + zr * ce;
+    var scale = Math.min(W, H) * 0.16 * state.zoom;
+    var px = W * 0.5 + state.panX + xr * scale;
+    var py = H * 0.55 + state.panY - yr2 * scale * 0.72;
+    return { x: px, y: py, depth: zr2 };
+  }
+
+  function drawAxis(ctx, from, to, label, color, W, H) {
+    var a = project3D(from[0], from[1], from[2], W, H);
+    var b = project3D(to[0], to[1], to[2], W, H);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.font = '12px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    var lx = Math.max(22, Math.min(W - 22, b.x));
+    var ly = Math.max(18, Math.min(H - 14, b.y - 6));
+    ctx.fillText(label, lx, ly);
+  }
+
+  function drawAxes(ctx, W, H, zmax) {
+    var base = [WMIN, WMIN, 0];
+    drawAxis(ctx, base, [WMAX, WMIN, 0], 'w₁', PRIMARY, W, H);
+    drawAxis(ctx, base, [WMIN, WMAX, 0], 'w₂', SECONDARY, W, H);
+    drawAxis(ctx, base, [WMIN, WMIN, zmax * 0.55], 'loss', TEXT, W, H);
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+
+    var grid = 32;
+    var zmin = 0, zmax = loss(WMIN, WMAX);
+    var pts = [];
+    for (var i = 0; i <= grid; i++) {
+      pts[i] = [];
+      for (var j = 0; j <= grid; j++) {
+        var w1 = WMIN + (WMAX - WMIN) * i / grid;
+        var w2 = WMIN + (WMAX - WMIN) * j / grid;
+        var z = loss(w1, w2);
+        pts[i][j] = project3D(w1, w2, z, W, H);
+        pts[i][j].z = z;
+      }
+    }
+
+    var tris = [];
+    for (var i = 0; i < grid; i++) {
+      for (var j = 0; j < grid; j++) {
+        var a = pts[i][j], b = pts[i + 1][j], c = pts[i][j + 1], d = pts[i + 1][j + 1];
+        var zt1 = (a.z + b.z + c.z) / 3;
+        var zt2 = (b.z + c.z + d.z) / 3;
+        var dt1 = (a.depth + b.depth + c.depth) / 3;
+        var dt2 = (b.depth + c.depth + d.depth) / 3;
+        tris.push({ p: [a, b, c], z: zt1, d: dt1 });
+        tris.push({ p: [b, d, c], z: zt2, d: dt2 });
+      }
+    }
+    tris.sort(function(a, b) { return b.d - a.d; });
+
+    tris.forEach(function(t) {
+      ctx.beginPath();
+      ctx.moveTo(t.p[0].x, t.p[0].y);
+      ctx.lineTo(t.p[1].x, t.p[1].y);
+      ctx.lineTo(t.p[2].x, t.p[2].y);
+      ctx.closePath();
+      ctx.fillStyle = heightColor(t.z, zmin, zmax);
+      ctx.fill();
+    });
+
+    ctx.lineWidth = 0.6;
+    for (var i = 0; i <= grid; i++) {
+      for (var j = 0; j < grid; j++) {
+        var a = pts[i][j], b = pts[i][j + 1];
+        ctx.strokeStyle = lineColor((a.z + b.z) / 2, zmin, zmax);
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      }
+    }
+    for (var j2 = 0; j2 <= grid; j2++) {
+      for (var i2 = 0; i2 < grid; i2++) {
+        var a2 = pts[i2][j2], b2 = pts[i2 + 1][j2];
+        ctx.strokeStyle = lineColor((a2.z + b2.z) / 2, zmin, zmax);
+        ctx.beginPath(); ctx.moveTo(a2.x, a2.y); ctx.lineTo(b2.x, b2.y); ctx.stroke();
+      }
+    }
+
+    drawAxes(ctx, W, H, zmax);
+
+    var curL = loss(state.w1, state.w2);
+    var curP = project3D(state.w1, state.w2, curL, W, H);
+    ctx.shadowColor = RED; ctx.shadowBlur = 14;
+    ctx.beginPath(); ctx.arc(curP.x, curP.y, 8, 0, 6.2832);
+    ctx.fillStyle = RED; ctx.fill();
+    ctx.shadowBlur = 0;
+
+    if (state.lastStep) {
+      var oldP = project3D(state.lastStep.oldW1, state.lastStep.oldW2,
+                           loss(state.lastStep.oldW1, state.lastStep.oldW2), W, H);
+      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath(); ctx.moveTo(oldP.x, oldP.y); ctx.lineTo(curP.x, curP.y); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    ctx.fillStyle = MUTED; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('Drag: rotate | Shift+drag: pan | Scroll: zoom', 10, H - 10);
+
+    var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
+    if (state.lastStep) {
+      readout.innerHTML =
+        'Step: [' + state.lastStep.newW1.toFixed(2) + ', ' + state.lastStep.newW2.toFixed(2) +
+        '] = [' + state.lastStep.oldW1.toFixed(2) + ', ' + state.lastStep.oldW2.toFixed(2) +
+        '] + (-' + state.lastStep.eta.toFixed(1) + ' · batch-gradient B=' + state.lastStep.batch + ' [' +
+        state.lastStep.g1.toFixed(3) + ', ' + state.lastStep.g2.toFixed(3) +
+        ']). Current loss: <strong>' + curL.toFixed(3) + '</strong>.';
+    } else {
+      readout.innerHTML =
+        'Batch gradient B=' + state.batch + ': [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) +
+        '] (true: [' + g.trueG1.toFixed(3) + ', ' + g.trueG2.toFixed(3) + '])' +
+        '. Next: w_new = [' + state.w1.toFixed(2) + ', ' + state.w2.toFixed(2) +
+        '] + (-' + state.eta.toFixed(1) + ' · [' + g.g1.toFixed(3) + ', ' + g.g2.toFixed(3) + ']).';
+    }
+  }
+  syncWeightReadouts();
+  return { resize: draw };
+};
+
+// =====================================================================
+// MLP boundary widget — INTERACTIVE_WIDGETS.mlpBoundary
+// Deterministic lookup of MLP boundary presets.
+// "Many lines make a curve": each hidden neuron contributes one linear
+// piece to the decision boundary. Width × depth = total pieces.
+// =====================================================================
+INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
+  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
+  var state = { dataset: 'spiral', width: 8, depth: 2, net: null, acc: 0 };
+  var GRID = 64;
+  // Network + training live in the shared MLP module (defined above).
+  var generateData = MLP.generateData, train = MLP.train,
+      predictOne = MLP.predictOne, computeAccuracy = MLP.computeAccuracy;
+
+  host.innerHTML =
+    '<div class="mlp-widget">' +
+      '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
+      '<div class="mlp-controls">' +
+        '<div class="expl-datasets"></div>' +
+        '<div class="mlp-slider"><label>Width</label><input type="range" min="1" max="8" step="1" value="8"><p data-readout="width">8</p></div>' +
+        '<div class="mlp-slider"><label>Depth</label><input type="range" min="1" max="4" step="1" value="2"><p data-readout="depth">2</p></div>' +
+        '<p class="mlp-readout"></p>' +
+      '</div>' +
+    '</div>';
+
+  var canvas = host.querySelector('.mlp-canvas');
+  var widthInput = host.querySelector('input[data-readout="width"]') || host.querySelector('.mlp-controls input');
+  var depthInput = host.querySelectorAll('.mlp-controls input')[1];
+  var widthText = host.querySelector('[data-readout="width"]');
+  var depthText = host.querySelector('[data-readout="depth"]');
+  var readout = host.querySelector('.mlp-readout');
+  var dsEl = host.querySelector('.expl-datasets');
+
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  var datasets = ['moons', 'spiral'];
+  function applyDatasetPreset(name) {
+    state.dataset = name;
+    if (name === 'moons') { state.width = 6; state.depth = 1; }
+    if (name === 'spiral') { state.width = 8; state.depth = 2; }
+    widthInput.value = state.width; depthInput.value = state.depth;
+    widthText.textContent = String(state.width); depthText.textContent = String(state.depth);
+    state.net = null;
+  }
+  datasets.forEach(function(name) {
+    var btn = document.createElement('button');
+    btn.className = 'expl-ds-btn';
+    btn.textContent = name === 'xor' ? 'XOR' : name.charAt(0).toUpperCase() + name.slice(1);
+    btn.dataset.ds = name;
+    btn.addEventListener('click', function() {
+      applyDatasetPreset(name);
+      updateUI(); draw();
+    });
+    dsEl.appendChild(btn);
+  });
+
+  // Find the actual slider inputs by their labels
+  var allInputs = host.querySelectorAll('.mlp-slider input');
+  widthInput = allInputs[0];
+  depthInput = allInputs[1];
+
+  widthInput.addEventListener('input', function() {
+    state.width = +widthInput.value; widthText.textContent = widthInput.value; state.net = null; draw();
+  });
+  depthInput.addEventListener('input', function() {
+    state.depth = +depthInput.value; depthText.textContent = depthInput.value; state.net = null; draw();
+  });
+
+  function updateUI() {
+    host.querySelectorAll('.expl-ds-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.ds === state.dataset);
+    });
+    var totalUnits = state.width * state.depth;
+    readout.innerHTML = state.depth + ' hidden layer' + (state.depth === 1 ? '' : 's') +
+      ' &times; ' + state.width + ' neuron' + (state.width === 1 ? '' : 's') +
+      ' = <strong>' + totalUnits + '</strong> hidden unit' + (totalUnits === 1 ? '' : 's') +
+      ' | Accuracy: <strong>' + (state.acc * 100).toFixed(0) + '%</strong>';
+  }
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function drawModelBoundaryLines(ctx, model, ox, oy, side) {
+    if (!model || !model.lines || !model.lines.length) return;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(ox, oy, side, side); ctx.clip();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    function strokeSegments(width, color) {
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      model.lines.forEach(function(line) {
+        ctx.moveTo(ox + line.x1 * side, oy + (1 - line.y1) * side);
+        ctx.lineTo(ox + line.x2 * side, oy + (1 - line.y2) * side);
+      });
+      ctx.stroke();
+    }
+    strokeSegments(6.0, 'rgba(8,12,24,0.94)');
+    strokeSegments(3.2, SECONDARY);
+    ctx.restore();
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+
+    var data = generateData(state.dataset);
+    if (!state.net) {
+      state.net = train(data, state.width, state.depth, state.dataset);
+      state.acc = computeAccuracy(data, state.net);
+      updateUI();
+    }
+
+    var pad = 18;
+    var rightPanel = 140;
+    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
+    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
+    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
+    var oy = pad + (H - 2 * pad - side) / 2;
+
+    // Decision grid background
+    var cell = side / GRID;
+    for (var i = 0; i < GRID; i++) {
+      for (var j = 0; j < GRID; j++) {
+        var gx = (i + 0.5) / GRID, gy = (j + 0.5) / GRID;
+        var p = predictOne([gx, gy], state.net);
+        ctx.fillStyle = p >= 0.5 ? 'rgba(63,185,80,0.16)' : 'rgba(231,76,60,0.10)';
+        ctx.fillRect(ox + i * cell, oy + (GRID - 1 - j) * cell, cell + 0.5, cell + 0.5);
+      }
+    }
+
+    drawModelBoundaryLines(ctx, state.net, ox, oy, side);
+
+    // Data scatter
+    data.forEach(function(p) {
+      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
+      ctx.beginPath(); ctx.arc(px, py, 4.2, 0, 6.2832);
+      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
+    });
+
+    // Frame
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy, side, side);
+
+    // Network diagram
+    if (rightPanel > 80) {
+      var nx0 = ox + side + 20, nx1 = W - pad;
+      var cols = state.depth + 2;
+      var perLayer = Math.min(state.width, 6);
+      var top = oy + 6, bot = oy + side - 6;
+      function colX(i) { return nx0 + (nx1 - nx0) * i / (cols - 1); }
+      function ys(n) {
+        if (n === 1) return [(top + bot) / 2];
+        var a = []; for (var i = 0; i < n; i++) a.push(top + (bot - top) * i / (n - 1)); return a;
+      }
+      var layersDiag = [{ x: colX(0), ys: ys(2), label: ['x₁', 'x₂'], color: SECONDARY }];
+      for (var d = 0; d < state.depth; d++) layersDiag.push({ x: colX(d + 1), ys: ys(perLayer), color: PRIMARY });
+      layersDiag.push({ x: colX(cols - 1), ys: ys(1), label: ['ŷ'], color: SECONDARY });
+
+      ctx.strokeStyle = 'rgba(74,158,255,0.28)'; ctx.lineWidth = 1;
+      for (var L = 0; L < layersDiag.length - 1; L++) {
+        var A = layersDiag[L], B = layersDiag[L + 1];
+        A.ys.forEach(function(ay) {
+          B.ys.forEach(function(by) {
+            ctx.beginPath(); ctx.moveTo(A.x + 10, ay); ctx.lineTo(B.x - 10, by); ctx.stroke();
+          });
+        });
+      }
+      layersDiag.forEach(function(Lr) {
+        Lr.ys.forEach(function(yy, idx) {
+          ctx.beginPath(); ctx.arc(Lr.x, yy, 10, 0, 6.2832);
+          ctx.fillStyle = '#0d1225'; ctx.strokeStyle = Lr.color; ctx.lineWidth = 1.8; ctx.fill(); ctx.stroke();
+          if (Lr.label) { ctx.fillStyle = TEXT; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Lr.label[idx], Lr.x, yy + 3); }
+        });
+      });
+    }
+  }
+
+  updateUI();
+  return { resize: draw };
+};
+
+// =====================================================================
+// Single Perceptron widget — INTERACTIVE_WIDGETS.singlePerceptron
+// Adjustable line on data, no training.
+// =====================================================================
+INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
+  var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
+      LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
+  var state = { dataset: 'linear', w1: 0.5, w2: 0.5, b: -0.5, sample: { x: 0.78, y: 0.78 } };
+
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // 2D datasets under the unit square.
+  function generateData(name) {
+    var rnd = mulberry32(7);
+    var pts = [];
+    if (name === 'linear') {
+      for (var i = 0; i < 40; i++) {
+        var x = rnd() * 2 - 1, y = rnd() * 2 - 1;
+        pts.push({ x: x + 1.5, y: y + 1.5, cls: 1 });
+        pts.push({ x: x - 1.5, y: y - 1.5, cls: 0 });
+      }
+    } else if (name === 'xor') {
+      var clusters = [[1.5, 1.5, 1], [1.5, -1.5, 0], [-1.5, 1.5, 0], [-1.5, -1.5, 1]];
+      clusters.forEach(function(c) {
+        for (var i = 0; i < 14; i++) {
+          pts.push({ x: c[0] + (rnd() - 0.5) * 0.6, y: c[1] + (rnd() - 0.5) * 0.6, cls: c[2] });
+        }
+      });
+    }
+    // Normalize to [0.04, 0.96]
+    var xs = pts.map(function(p) { return p.x; });
+    var ys = pts.map(function(p) { return p.y; });
+    var xmn = Math.min.apply(null, xs), xmx = Math.max.apply(null, xs);
+    var ymn = Math.min.apply(null, ys), ymx = Math.max.apply(null, ys);
+    var xr = xmx - xmn || 1, yr = ymx - ymn || 1;
+    pts.forEach(function(p) {
+      p.x = 0.04 + 0.92 * (p.x - xmn) / xr;
+      p.y = 0.04 + 0.92 * (p.y - ymn) / yr;
+    });
+    return pts;
+  }
+
+  host.innerHTML =
+    '<div class="perc-widget">' +
+      '<div class="perc-canvas-wrap"><canvas class="perc-canvas"></canvas></div>' +
+      '<div class="perc-controls">' +
+        '<div class="perc-datasets"></div>' +
+        '<div class="perc-sliders"></div>' +
+        '<p class="perc-readout"></p>' +
+      '</div>' +
+    '</div>';
+  var canvas = host.querySelector('.perc-canvas');
+  var readout = host.querySelector('.perc-readout');
+  var dsEl = host.querySelector('.perc-datasets');
+  var slidersEl = host.querySelector('.perc-sliders');
+
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  var datasets = ['linear', 'xor'];
+  datasets.forEach(function(name) {
+    var btn = document.createElement('button');
+    btn.className = 'perc-ds-btn';
+    btn.textContent = name === 'xor' ? 'XOR' : name.charAt(0).toUpperCase() + name.slice(1);
+    btn.dataset.ds = name;
+    btn.addEventListener('click', function() {
+      state.dataset = name;
+      state.sample = name === 'xor' ? { x: 0.82, y: 0.82 } : { x: 0.78, y: 0.78 };
+      updateUI(); draw();
+    });
+    dsEl.appendChild(btn);
+  });
+
+  function buildSliders() {
+    slidersEl.innerHTML = '';
+    [['w1', 'w₁', -3, 3, 0.1], ['w2', 'w₂', -3, 3, 0.1], ['b', 'b', -3, 3, 0.1]].forEach(function(spec) {
+      var key = spec[0], label = spec[1], mn = spec[2], mx = spec[3], st = spec[4];
+      var row = document.createElement('div');
+      row.className = 'perc-slider';
+      var lab = document.createElement('label');
+      lab.textContent = label;
+      var inp = document.createElement('input');
+      inp.type = 'range'; inp.min = mn; inp.max = mx; inp.step = st;
+      inp.value = state[key].toFixed(1);
+      var val = document.createElement('p');
+      val.className = 'perc-val';
+      val.textContent = state[key].toFixed(1);
+      inp.addEventListener('input', function() {
+        state[key] = parseFloat(inp.value);
+        val.textContent = state[key].toFixed(1);
+        draw();
+      });
+      row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+      slidersEl.appendChild(row);
+    });
+  }
+
+  function updateUI() {
+    host.querySelectorAll('.perc-ds-btn').forEach(function(b) {
+      b.classList.toggle('active', b.dataset.ds === state.dataset);
+    });
+  }
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var w = c.clientWidth, h = c.clientHeight;
+    if (!w || !h) return null;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: w, h: h };
+  }
+
+  function predict(x, y) {
+    return probability(x, y) >= 0.5 ? 1 : 0;
+  }
+
+  function score(x, y) {
+    return state.w1 * x + state.w2 * y + state.b;
+  }
+
+  function probability(x, y) {
+    return 1 / (1 + Math.exp(-score(x, y)));
+  }
+
+  function signed(v) {
+    return (v < 0 ? ' - ' : ' + ') + Math.abs(v).toFixed(1);
+  }
+
+  function drawNetwork(ctx, x0, y0, w, h) {
+    function node(x, y, label, color) {
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, 6.2832);
+      ctx.fillStyle = '#0d1225';
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2;
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = TEXT;
+      ctx.font = '14px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, y + 5);
+    }
+    function edge(x1, y1, x2, y2, label) {
+      ctx.strokeStyle = 'rgba(74,158,255,0.55)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      var mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+      ctx.fillStyle = '#0d1225';
+      ctx.fillRect(mx - 25, my - 9, 50, 16);
+      ctx.fillStyle = PRIMARY;
+      ctx.font = '12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, mx, my + 4);
+    }
+    var xi = x0 + 34, xo = x0 + w - 42;
+    var y1 = y0 + h * 0.32, y2 = y0 + h * 0.68, yo = y0 + h * 0.50;
+    edge(xi + 16, y1, xo - 16, yo, 'w₁=' + state.w1.toFixed(1));
+    edge(xi + 16, y2, xo - 16, yo, 'w₂=' + state.w2.toFixed(1));
+    node(xi, y1, 'x₁', SECONDARY);
+    node(xi, y2, 'x₂', SECONDARY);
+    node(xo, yo, 'ŷ', PRIMARY);
+    ctx.fillStyle = MUTED;
+    ctx.font = '13px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('h = w·x + b', xo, yo + 38);
+    ctx.fillText('y = sigmoid(h)', xo, yo + 56);
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, W = f.w, H = f.h;
+    ctx.clearRect(0, 0, W, H);
+
+    var pad = 18;
+    var rightPanel = 320;
+    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
+    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
+    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
+    var oy = pad + (H - 2 * pad - side) / 2;
+
+    // Background shading: which side of the line each point falls on
+    var GRID = 36;
+    for (var i = 0; i < GRID; i++) {
+      for (var j = 0; j < GRID; j++) {
+        var gx = i / (GRID - 1), gy = j / (GRID - 1);
+        var pred = predict(gx, gy);
+        ctx.fillStyle = pred ? 'rgba(63,185,80,0.14)' : 'rgba(231,76,60,0.08)';
+        ctx.fillRect(ox + gx * side, oy + (1 - gy) * side, side / GRID + 1, side / GRID + 1);
+      }
+    }
+
+    // Decision line w1*x + w2*y + b = 0, clipped to frame
+    var a = state.w1, b = state.w2, c = state.b;
+    var xr = [0, 1], yr = [0, 1];
+    var p0, p1;
+    if (Math.abs(b) > 1e-9) {
+      p0 = [ox + xr[0] * side, oy + (1 - (-(a * xr[0] + c) / b)) * side];
+      p1 = [ox + xr[1] * side, oy + (1 - (-(a * xr[1] + c) / b)) * side];
+    } else if (Math.abs(a) > 1e-9) {
+      var xv = -c / a;
+      p0 = [ox + xv * side, oy + yr[0] * side];
+      p1 = [ox + xv * side, oy + yr[1] * side];
+    } else {
+      p0 = null; p1 = null;
+    }
+
+    if (p0 && p1) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(ox, oy, side, side);
+      ctx.clip();
+      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+      ctx.restore();
+    }
+
+    // Data points
+    var data = generateData(state.dataset);
+    data.forEach(function(p) {
+      var px = ox + p.x * side, py = oy + (1 - p.y) * side;
+      ctx.beginPath(); ctx.arc(px, py, 4.5, 0, 6.2832);
+      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
+      // Misclassification ring
+      if (predict(p.x, p.y) !== p.cls) {
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(px, py, 6.6, 0, 6.2832); ctx.stroke();
+      }
+    });
+
+    var sample = state.sample;
+    var h = score(sample.x, sample.y);
+    var yhat = probability(sample.x, sample.y);
+    var sx = ox + sample.x * side, sy = oy + (1 - sample.y) * side;
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(sx, sy, 8, 0, 6.2832); ctx.stroke();
+    ctx.fillStyle = yhat >= 0.5 ? GREEN : RED;
+    ctx.beginPath(); ctx.arc(sx, sy, 4, 0, 6.2832); ctx.fill();
+
+    // Frame
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy, side, side);
+
+    if (rightPanel > 80) {
+      drawNetwork(ctx, ox + side + 24, oy + 8, rightPanel - 38, side - 16);
+    }
+
+    var correct = 0;
+    data.forEach(function(p) { if (predict(p.x, p.y) === p.cls) correct++; });
+    var acc = data.length ? correct / data.length : 0;
+    var colorWord = yhat >= 0.5 ? 'green' : 'red';
+    readout.innerHTML =
+      'x=(' + sample.x.toFixed(2) + ', ' + sample.y.toFixed(2) + ') → h = ' +
+      state.w1.toFixed(1) + '·' + sample.x.toFixed(2) +
+      signed(state.w2) + '·' + sample.y.toFixed(2) +
+      signed(state.b) + ' = ' + h.toFixed(2) +
+      ', y=sigmoid(h)=' + yhat.toFixed(2) + (yhat >= 0.5 ? ' ≥ 0.5' : ' < 0.5') +
+      ' ⇒ <strong>' + colorWord + '</strong> | Accuracy: <strong>' +
+      (acc * 100).toFixed(0) + '%</strong>';
+  }
+
+  buildSliders();
+  updateUI();
+  return { resize: draw };
+};
 
   </script>
 </body>

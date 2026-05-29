@@ -13,6 +13,34 @@ def read_optional(path: Path) -> str:
     return path.read_text(encoding="utf-8") if path.exists() else ""
 
 
+def numeric_prefix(path: Path) -> tuple[int, str]:
+    """Sort key for slide partials: order by the leading integer in the filename.
+
+    Lets files be named ``10-foo.md``, ``20-bar.md``, ``100-baz.md`` and still sort
+    numerically (plain lexicographic order would put ``100`` before ``20``).
+    """
+    match = re.match(r"(\d+)", path.name)
+    return (int(match.group(1)) if match else 0, path.name)
+
+
+def read_slides(source_dir: Path) -> str:
+    """Read deck markdown from ``source/slides/*.md`` (concatenated) or ``source/slides.md``.
+
+    Partials are joined with the canonical ``\\n\\n---\\n\\n`` slide separator so a deck
+    split into per-section files produces byte-identical output to the single-file form.
+    """
+    slides_dir = source_dir / "slides"
+    if slides_dir.is_dir():
+        parts = sorted(slides_dir.glob("*.md"), key=numeric_prefix)
+        if not parts:
+            raise ValueError(f"ERROR: {slides_dir} exists but contains no *.md slide partials")
+        return "\n\n---\n\n".join(trim_blank_lines(p.read_text(encoding="utf-8")) for p in parts)
+    single = source_dir / "slides.md"
+    if single.exists():
+        return single.read_text(encoding="utf-8")
+    raise ValueError(f"ERROR: no slides found (expected {slides_dir}/ or {single})")
+
+
 def parse_attrs(text: str) -> dict[str, str]:
     return dict(re.findall(r'(\w+)="([^"]*)"', text))
 
@@ -235,11 +263,17 @@ def fill(template: str, token: str, value: str) -> str:
 def build_module(module_dir: Path) -> Path:
     shared_dir = module_dir.parent / "source"
     base_html = (shared_dir / "base.html").read_text(encoding="utf-8")
-    shared_js = (shared_dir / "slides.js").read_text(encoding="utf-8")
     shared_css = (shared_dir / "styles.css").read_text(encoding="utf-8")
 
+    # Concatenate modular JS: infrastructure, shared libraries, then widgets.
+    js_dir = shared_dir / "js"
+    js_parts = []
+    for pattern in ["*.js", "widgets/*.js"]:
+        js_parts.extend(sorted(js_dir.glob(pattern), key=lambda p: str(p)))
+    shared_js = "\n".join(p.read_text(encoding="utf-8") for p in js_parts)
+
     source_dir = module_dir / "source"
-    raw_md = (source_dir / "slides.md").read_text(encoding="utf-8")
+    raw_md = read_slides(source_dir)
     module_config = (source_dir / "config.js").read_text(encoding="utf-8")
     module_css = read_optional(source_dir / "styles.css")
     head_extra = read_optional(source_dir / "head.html")
