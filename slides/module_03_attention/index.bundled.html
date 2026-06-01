@@ -1477,7 +1477,6 @@ From fixed windows to selective retrieval
 ## Predicting the Next Word with an MLP
 
 The task: given the words so far, predict the next one. An MLP reads a **fixed window** of the most recent tokens, flattens them into one long vector, and maps that to a distribution over the vocabulary.
-
 <div style="text-align: center; margin: 8px 0;">
 <svg viewBox="0 0 860 260" width="100%" style="max-height: 250px;">
   <!-- window slots -->
@@ -1570,7 +1569,6 @@ The architecture must match the data. Language needs variable-length context, we
 ## The Fixed-Context Bottleneck
 
 Recurrent models (RNNs, LSTMs) handle variable length by reading tokens one at a time and compressing everything seen so far into a **single hidden state vector**.
-
 <div style="text-align: center; margin: 8px 0;">
 <svg viewBox="0 0 820 150" width="100%" style="max-height: 140px;">
   <g font-size="13" text-anchor="middle" font-weight="600">
@@ -1632,56 +1630,79 @@ Recurrent models (RNNs, LSTMs) handle variable length by reading tokens one at a
 
 ## What Attention Does
 
-Before any math, here is the idea: every word looks at every other word and decides which ones matter for understanding itself. The thicker the line, the stronger the attention.
-
+Before any math, here is the operation: every output word is a **weighted sum of all input value vectors**. The weights are different for each query word, so each token builds its own context.
 <div style="text-align: center; margin: 10px 0;">
-<svg viewBox="0 0 700 220" width="100%" style="max-height: 210px;">
-  <g transform="translate(0, 30)">
-    <rect x="30" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="65" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
-    <rect x="120" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="155" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">cat</text>
-    <rect x="210" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/>
-    <text x="245" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">sat</text>
-    <rect x="300" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="335" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">on</text>
-    <rect x="390" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="425" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
-    <rect x="480" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="515" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">mat</text>
+<svg viewBox="0 0 900 340" width="100%" style="max-height: 320px;">
+  <text x="415" y="20" fill="#8892a4" font-size="12" text-anchor="middle">columns are input values; rows are output tokens</text>
+  <g font-size="12" text-anchor="middle" font-weight="600">
+    <text x="215" y="48" fill="#50c878">v_the</text>
+    <text x="300" y="48" fill="#50c878">v_cat</text>
+    <text x="385" y="48" fill="#50c878">v_sat</text>
+    <text x="470" y="48" fill="#50c878">v_on</text>
+    <text x="555" y="48" fill="#50c878">v_mat</text>
   </g>
-  <line x1="245" y1="65" x2="65" y2="65" stroke="#4a9eff" stroke-width="2" opacity="0.35"/>
-  <line x1="245" y1="65" x2="155" y2="65" stroke="#f5a623" stroke-width="5" opacity="0.8"/>
-  <line x1="245" y1="65" x2="335" y2="65" stroke="#f5a623" stroke-width="4" opacity="0.7"/>
-  <line x1="245" y1="65" x2="425" y2="65" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <line x1="245" y1="65" x2="515" y2="65" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <text x="350" y="115" fill="#8892a4" font-size="13" text-anchor="middle">"sat" attends strongly to "cat" and "on"</text>
-  <g transform="translate(0, 135)">
-    <rect x="30" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="65" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
-    <rect x="120" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="155" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">cat</text>
-    <rect x="210" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="245" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">was</text>
-    <rect x="300" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="335" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">tired</text>
-    <rect x="390" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/>
-    <text x="425" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">it</text>
-    <rect x="480" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="515" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">slept</text>
+  <g font-size="12" text-anchor="end" font-weight="600">
+    <text x="150" y="82" fill="#4a9eff">o_the =</text>
+    <text x="150" y="128" fill="#4a9eff">o_cat =</text>
+    <text x="150" y="174" fill="#f5a623">o_sat =</text>
+    <text x="150" y="220" fill="#4a9eff">o_on =</text>
+    <text x="150" y="266" fill="#4a9eff">o_mat =</text>
   </g>
-  <line x1="425" y1="170" x2="155" y2="170" stroke="#f5a623" stroke-width="5" opacity="0.8"/>
-  <line x1="425" y1="170" x2="65" y2="170" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <line x1="425" y1="170" x2="245" y2="170" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <line x1="425" y1="170" x2="335" y2="170" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <line x1="425" y1="170" x2="515" y2="170" stroke="#4a9eff" stroke-width="2" opacity="0.4"/>
-  <text x="350" y="210" fill="#8892a4" font-size="13" text-anchor="middle">"it" attends back to "cat" (coreference)</text>
+  <g font-size="11" text-anchor="middle">
+    <rect x="175" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="215" y="82" fill="#e8eaf0">0.05</text>
+    <rect x="260" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.50)" stroke="#2a3450"/><text x="300" y="82" fill="#e8eaf0">0.35</text>
+    <rect x="345" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="385" y="82" fill="#e8eaf0">0.10</text>
+    <rect x="430" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="470" y="82" fill="#e8eaf0">0.10</text>
+    <rect x="515" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.57)" stroke="#2a3450"/><text x="555" y="82" fill="#e8eaf0">0.40</text>
+    <rect x="175" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="215" y="128" fill="#e8eaf0">0.10</text>
+    <rect x="260" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="300" y="128" fill="#e8eaf0">0.05</text>
+    <rect x="345" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.64)" stroke="#2a3450"/><text x="385" y="128" fill="#e8eaf0">0.45</text>
+    <rect x="430" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.25)" stroke="#2a3450"/><text x="470" y="128" fill="#e8eaf0">0.15</text>
+    <rect x="515" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.39)" stroke="#2a3450"/><text x="555" y="128" fill="#e8eaf0">0.25</text>
+    <rect x="175" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.13)" stroke="#2a3450"/><text x="215" y="174" fill="#e8eaf0">0.05</text>
+    <rect x="260" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.66)" stroke="#2a3450"/><text x="300" y="174" fill="#e8eaf0">0.45</text>
+    <rect x="345" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.13)" stroke="#2a3450"/><text x="385" y="174" fill="#e8eaf0">0.05</text>
+    <rect x="430" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.46)" stroke="#2a3450"/><text x="470" y="174" fill="#e8eaf0">0.30</text>
+    <rect x="515" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.27)" stroke="#2a3450"/><text x="555" y="174" fill="#e8eaf0">0.15</text>
+    <rect x="175" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="215" y="220" fill="#e8eaf0">0.10</text>
+    <rect x="260" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="300" y="220" fill="#e8eaf0">0.20</text>
+    <rect x="345" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.64)" stroke="#2a3450"/><text x="385" y="220" fill="#e8eaf0">0.45</text>
+    <rect x="430" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="470" y="220" fill="#e8eaf0">0.05</text>
+    <rect x="515" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="555" y="220" fill="#e8eaf0">0.20</text>
+    <rect x="175" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.50)" stroke="#2a3450"/><text x="215" y="266" fill="#e8eaf0">0.35</text>
+    <rect x="260" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.39)" stroke="#2a3450"/><text x="300" y="266" fill="#e8eaf0">0.25</text>
+    <rect x="345" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="385" y="266" fill="#e8eaf0">0.20</text>
+    <rect x="430" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.25)" stroke="#2a3450"/><text x="470" y="266" fill="#e8eaf0">0.15</text>
+    <rect x="515" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="555" y="266" fill="#e8eaf0">0.05</text>
+  </g>
+  <g stroke="#8892a4" stroke-width="1.6" marker-end="url(#arrattn)">
+    <line x1="610" y1="78" x2="670" y2="78"/>
+    <line x1="610" y1="124" x2="670" y2="124"/>
+    <line x1="610" y1="170" x2="670" y2="170"/>
+    <line x1="610" y1="216" x2="670" y2="216"/>
+    <line x1="610" y1="262" x2="670" y2="262"/>
+  </g>
+  <g font-size="12" text-anchor="middle" font-weight="600">
+    <rect x="680" y="62" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="82" fill="#e8eaf0">new the</text>
+    <rect x="680" y="108" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="128" fill="#e8eaf0">new cat</text>
+    <rect x="680" y="154" width="88" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.2"/><text x="724" y="174" fill="#e8eaf0">new sat</text>
+    <rect x="680" y="200" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="220" fill="#e8eaf0">new on</text>
+    <rect x="680" y="246" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="266" fill="#e8eaf0">new mat</text>
+  </g>
+  <text x="445" y="316" fill="#8892a4" font-size="13" text-anchor="middle">
+    Example row: o_sat = 0.05v_the + 0.45v_cat + 0.05v_sat + 0.30v_on + 0.15v_mat
+  </text>
+  <defs>
+    <marker id="arrattn" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/>
+    </marker>
+  </defs>
 </svg>
 </div>
 
 <div class="note">
 
-**The key insight:** each token chooses its own context. A verb looks for its subject; a pronoun looks for its antecedent. The connections are learned, not hand-coded, and the same machinery works at every position.
+**The key insight:** attention is not selecting one token and discarding the rest. It computes a different weighted average for every token, and training learns which weights should become large.
 
 </div>
 
@@ -1809,60 +1830,82 @@ The same token can ask a different question (via $Q$) than it advertises (via $K
 
 ## Constructing the Attention Layer
 
-The projections feed a three-step pipeline. This is the same block from the lookup diagram, now opened up:
+The projections feed a three-step pipeline: compare queries to keys, normalize those scores into weights, then retrieve values with a weighted sum.
 
 <div style="text-align: center; margin: 5px 0;">
-<svg viewBox="0 0 780 270" width="100%" style="max-height: 260px;">
-  <rect x="20" y="8" width="64" height="30" rx="3" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="52" y="28" fill="#e8eaf0" font-size="11" text-anchor="middle">X</text>
-  <rect x="10" y="60" width="74" height="28" rx="3" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="47" y="79" fill="#4a9eff" font-size="11" text-anchor="middle" font-weight="600">W_Q</text>
-  <rect x="10" y="100" width="74" height="28" rx="3" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/>
-  <text x="47" y="119" fill="#f5a623" font-size="11" text-anchor="middle" font-weight="600">W_K</text>
-  <rect x="10" y="140" width="74" height="28" rx="3" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/>
-  <text x="47" y="159" fill="#50c878" font-size="11" text-anchor="middle" font-weight="600">W_V</text>
-  <line x1="52" y1="38" x2="47" y2="60" stroke="#8892a4" stroke-width="1"/>
-  <line x1="52" y1="38" x2="47" y2="100" stroke="#8892a4" stroke-width="1"/>
-  <line x1="52" y1="38" x2="47" y2="140" stroke="#8892a4" stroke-width="1"/>
-  <rect x="120" y="60" width="56" height="28" rx="3" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="148" y="79" fill="#4a9eff" font-size="11" text-anchor="middle" font-weight="600">Q</text>
-  <rect x="120" y="100" width="56" height="28" rx="3" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/>
-  <text x="148" y="119" fill="#f5a623" font-size="11" text-anchor="middle" font-weight="600">K</text>
-  <rect x="120" y="140" width="56" height="28" rx="3" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/>
-  <text x="148" y="159" fill="#50c878" font-size="11" text-anchor="middle" font-weight="600">V</text>
-  <line x1="84" y1="74" x2="120" y2="74" stroke="#4a9eff" stroke-width="1.5"/>
-  <line x1="84" y1="114" x2="120" y2="114" stroke="#f5a623" stroke-width="1.5"/>
-  <line x1="84" y1="154" x2="120" y2="154" stroke="#50c878" stroke-width="1.5"/>
-  <rect x="210" y="70" width="110" height="50" rx="4" fill="rgba(74,158,255,0.08)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="265" y="92" fill="#4a9eff" font-size="12" text-anchor="middle" font-weight="600">1. Compare</text>
-  <text x="265" y="110" fill="#e8eaf0" font-size="11" text-anchor="middle">Q K^T</text>
-  <line x1="176" y1="74" x2="210" y2="86" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbl)"/>
-  <line x1="176" y1="114" x2="210" y2="104" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrbl)"/>
-  <rect x="345" y="78" width="54" height="34" rx="3" fill="#0d1225" stroke="#8892a4" stroke-width="1.5"/>
-  <text x="372" y="99" fill="#e8eaf0" font-size="11" text-anchor="middle">scores</text>
-  <line x1="320" y1="95" x2="345" y2="95" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrgr)"/>
-  <rect x="425" y="70" width="130" height="50" rx="4" fill="rgba(245,166,35,0.08)" stroke="#f5a623" stroke-width="1.5"/>
-  <text x="490" y="92" fill="#f5a623" font-size="12" text-anchor="middle" font-weight="600">2. Normalize</text>
-  <text x="490" y="110" fill="#e8eaf0" font-size="11" text-anchor="middle">softmax / sqrt(d_k)</text>
-  <line x1="399" y1="95" x2="425" y2="95" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrgr)"/>
-  <rect x="575" y="78" width="60" height="34" rx="3" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/>
-  <text x="605" y="99" fill="#e8eaf0" font-size="11" text-anchor="middle">weights</text>
-  <line x1="555" y1="95" x2="575" y2="95" stroke="#50c878" stroke-width="1.5" marker-end="url(#arrgr)"/>
-  <rect x="660" y="70" width="110" height="50" rx="4" fill="rgba(80,200,120,0.08)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="715" y="92" fill="#4a9eff" font-size="12" text-anchor="middle" font-weight="600">3. Retrieve</text>
-  <text x="715" y="110" fill="#e8eaf0" font-size="11" text-anchor="middle">weights * V</text>
-  <line x1="635" y1="95" x2="660" y2="95" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbl)"/>
-  <path d="M148 168 Q148 210 705 210 Q740 210 715 140" fill="none" stroke="#50c878" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrgr)"/>
-  <rect x="690" y="140" width="70" height="32" rx="3" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-  <text x="725" y="160" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">Output</text>
-  <line x1="715" y1="120" x2="715" y2="140" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbl)"/>
-  <text x="10" y="250" fill="#8892a4" font-size="11">Each token vector X is projected into Query, Key, and Value, then the three steps produce a new representation for every token.</text>
+<svg viewBox="0 0 880 300" width="100%" style="max-height: 280px;">
+  <g font-size="12" text-anchor="middle" font-weight="600">
+    <rect x="25" y="122" width="72" height="44" rx="5" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
+    <text x="61" y="148" fill="#e8eaf0">X</text>
+    <text x="61" y="185" fill="#8892a4" font-size="10" font-weight="400">input tokens</text>
+  </g>
+
+  <g stroke="#8892a4" stroke-width="1.3" marker-end="url(#arrgray)">
+    <line x1="98" y1="144" x2="128" y2="76"/>
+    <line x1="98" y1="144" x2="128" y2="144"/>
+    <line x1="98" y1="144" x2="128" y2="212"/>
+  </g>
+
+  <g font-size="12" text-anchor="middle" font-weight="600">
+    <rect x="130" y="58" width="76" height="34" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/><text x="168" y="80" fill="#4a9eff">W_Q</text>
+    <rect x="130" y="126" width="76" height="34" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/><text x="168" y="148" fill="#f5a623">W_K</text>
+    <rect x="130" y="194" width="76" height="34" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/><text x="168" y="216" fill="#50c878">W_V</text>
+  </g>
+
+  <g stroke-width="1.5" marker-end="url(#arrgray)">
+    <line x1="206" y1="75" x2="238" y2="75" stroke="#4a9eff"/>
+    <line x1="206" y1="143" x2="238" y2="143" stroke="#f5a623"/>
+    <line x1="206" y1="211" x2="238" y2="211" stroke="#50c878"/>
+  </g>
+
+  <g font-size="12" text-anchor="middle" font-weight="600">
+    <rect x="240" y="58" width="58" height="34" rx="5" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="269" y="80" fill="#4a9eff">Q</text>
+    <rect x="240" y="126" width="58" height="34" rx="5" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="269" y="148" fill="#f5a623">K</text>
+    <rect x="240" y="194" width="58" height="34" rx="5" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="269" y="216" fill="#50c878">V</text>
+  </g>
+
+  <rect x="350" y="76" width="126" height="62" rx="6" fill="rgba(74,158,255,0.08)" stroke="#4a9eff" stroke-width="1.5"/>
+  <text x="413" y="100" fill="#4a9eff" font-size="13" text-anchor="middle" font-weight="600">1. Compare</text>
+  <text x="413" y="122" fill="#e8eaf0" font-size="12" text-anchor="middle">QK^T</text>
+  <line x1="298" y1="75" x2="350" y2="95" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrblue)"/>
+  <line x1="298" y1="143" x2="350" y2="120" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrorange)"/>
+
+  <rect x="508" y="90" width="74" height="34" rx="5" fill="#0d1225" stroke="#8892a4" stroke-width="1.5"/>
+  <text x="545" y="112" fill="#e8eaf0" font-size="12" text-anchor="middle">scores</text>
+  <line x1="476" y1="107" x2="508" y2="107" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrgray)"/>
+
+  <rect x="616" y="76" width="140" height="62" rx="6" fill="rgba(245,166,35,0.08)" stroke="#f5a623" stroke-width="1.5"/>
+  <text x="686" y="100" fill="#f5a623" font-size="13" text-anchor="middle" font-weight="600">2. Normalize</text>
+  <text x="686" y="122" fill="#e8eaf0" font-size="12" text-anchor="middle">scale, then softmax</text>
+  <line x1="582" y1="107" x2="616" y2="107" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrgray)"/>
+
+  <rect x="782" y="90" width="74" height="34" rx="5" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/>
+  <text x="819" y="112" fill="#e8eaf0" font-size="12" text-anchor="middle">weights</text>
+  <line x1="756" y1="107" x2="782" y2="107" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrorange)"/>
+
+  <rect x="660" y="192" width="134" height="62" rx="6" fill="rgba(80,200,120,0.09)" stroke="#50c878" stroke-width="1.5"/>
+  <text x="727" y="216" fill="#50c878" font-size="13" text-anchor="middle" font-weight="600">3. Retrieve</text>
+  <text x="727" y="238" fill="#e8eaf0" font-size="12" text-anchor="middle">weights @ V</text>
+  <path d="M819 124 C819 158 785 173 745 192" fill="none" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrorange)"/>
+  <path d="M298 211 C410 260 548 260 660 224" fill="none" stroke="#50c878" stroke-width="1.5" marker-end="url(#arrgreen)"/>
+
+  <rect x="506" y="206" width="100" height="36" rx="5" fill="#0d1225" stroke="#3fb950" stroke-width="2"/>
+  <text x="556" y="229" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">output</text>
+  <line x1="660" y1="224" x2="606" y2="224" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrgreen)"/>
+
+  <text x="442" y="286" fill="#8892a4" font-size="12" text-anchor="middle">Compare chooses the weights; retrieve applies those weights to the value vectors.</text>
   <defs>
-    <marker id="arrbl" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+    <marker id="arrblue" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
       <path d="M0,0 L6,3 L0,6 Z" fill="#4a9eff"/>
     </marker>
-    <marker id="arrgr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/>
+    <marker id="arrorange" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/>
+    </marker>
+    <marker id="arrgreen" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#50c878"/>
+    </marker>
+    <marker id="arrgray" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/>
     </marker>
   </defs>
 </svg>
@@ -1898,110 +1941,102 @@ The output is a weighted average of the value vectors.
 
 ---
 
-<!-- .slide: id="qkv-shapes-compat" -->
+<!-- .slide: id="divider-softmax" class="section-divider" data-state="is-section-divider" -->
 
-## Shapes and Pairwise Compatibility
+# Softmax
 
-Consider 5 tokens with $d_{\text{model}} = 8$ and $d_k = 4$. The comparison step produces one score per **pair** of tokens:
+Turning scores into probabilities
 
-$$\text{score}(i, j) = \mathbf q_i \cdot \mathbf k_j$$
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Tensor shapes**
-
-| Tensor | Shape |
-|---|---|
-| $X$ | $(5, 8)$ |
-| $W_Q, W_K, W_V$ | $(8, 4)$ |
-| $Q, K, V$ | $(5, 4)$ |
-| $QK^T$ (scores) | $(5, 5)$ |
-
-</div>
-
-<div>
-
-**Reading the score matrix**
-
-The $(5, 5)$ matrix has one entry per pair. Row $i$ is token $i$'s query compared against every key.
-
-A dot product measures alignment: when query $i$ points the same way as key $j$, the score is large. Training is what makes the model point queries toward the keys that matter.
-
-</div>
-
-</div>
 
 ---
 
-<div class="figure-card">
+<!-- .slide: id="softmax-purpose" -->
 
-![Vaswani et al.](images/vaswani_et_al.jpg)
+## From Logits to a Distribution
 
-<div class="figure-info">
+Softmax is the function that has been quietly doing the normalization step in every attention layer. It takes a vector of raw scores (**logits**) and turns them into a probability distribution:
 
-## Vaswani et al. <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Attention Is All You Need (2017)
-
-- Vaswani, Shazeer, Parmar, Uszkoreit, Jones, Gomez, Kaiser, and Polosukhin (2017)
-- Removed recurrence entirely: no RNN, no convolution, just attention and feed-forward layers
-- Introduced scaled dot-product multi-head attention
-- Defined the **Transformer**: attention blocks and MLP blocks stacked in repeating layers
-- One of the most cited papers in machine learning
-
-</div>
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="transformer-stack" -->
-
-## Attention and MLPs, Stacked
-
-A Transformer interleaves two operations. Attention **mixes information across tokens**; the MLP (feed-forward block) **processes each token on its own**. Stacking the pair many times is what gives the model its depth.
-
-<div style="text-align: center; margin: 6px 0;">
-<svg viewBox="0 0 720 260" width="100%" style="max-height: 250px;">
-  <!-- bottom: embeddings -->
-  <rect x="250" y="222" width="220" height="30" rx="5" fill="#0d1225" stroke="#8892a4" stroke-width="1.5"/>
-  <text x="360" y="242" fill="#e8eaf0" font-size="12" text-anchor="middle">token + positional embeddings</text>
-  <!-- two stacked blocks -->
-  <g>
-    <rect x="230" y="120" width="260" height="92" rx="8" fill="none" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="5,3"/>
-    <text x="205" y="168" fill="#8892a4" font-size="12" text-anchor="middle" transform="rotate(-90 205 168)">layer 1</text>
-    <rect x="250" y="170" width="220" height="32" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/>
-    <text x="360" y="190" fill="#4a9eff" font-size="12" text-anchor="middle" font-weight="600">self-attention (mix across tokens)</text>
-    <rect x="250" y="130" width="220" height="32" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/>
-    <text x="360" y="150" fill="#f5a623" font-size="12" text-anchor="middle" font-weight="600">MLP / feed-forward (per token)</text>
+$$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
+<div style="text-align: center; margin: 8px 0;">
+<svg viewBox="0 0 820 230" width="100%" style="max-height: 220px;">
+  <g font-size="12" text-anchor="middle" font-weight="600">
+    <text x="145" y="22" fill="#f5a623">raw scores z</text>
+    <text x="410" y="22" fill="#f5a623">positive scores e^z</text>
+    <text x="675" y="22" fill="#4a9eff">probabilities</text>
   </g>
-  <g>
-    <rect x="230" y="18" width="260" height="92" rx="8" fill="none" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="5,3"/>
-    <text x="205" y="66" fill="#8892a4" font-size="12" text-anchor="middle" transform="rotate(-90 205 66)">layer 2</text>
-    <rect x="250" y="68" width="220" height="32" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/>
-    <text x="360" y="88" fill="#4a9eff" font-size="12" text-anchor="middle" font-weight="600">self-attention (mix across tokens)</text>
-    <rect x="250" y="28" width="220" height="32" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/>
-    <text x="360" y="48" fill="#f5a623" font-size="12" text-anchor="middle" font-weight="600">MLP / feed-forward (per token)</text>
+  <g font-size="12" text-anchor="middle">
+    <text x="54" y="67" fill="#e8eaf0">cat</text>
+    <text x="54" y="117" fill="#e8eaf0">sat</text>
+    <text x="54" y="167" fill="#e8eaf0">mat</text>
+    <rect x="90" y="48" width="150" height="24" rx="4" fill="rgba(245,166,35,0.62)"/><text x="258" y="65" fill="#e8eaf0">2.0</text>
+    <rect x="90" y="98" width="90" height="24" rx="4" fill="rgba(245,166,35,0.42)"/><text x="198" y="115" fill="#e8eaf0">1.0</text>
+    <rect x="90" y="148" width="50" height="24" rx="4" fill="rgba(245,166,35,0.25)"/><text x="158" y="165" fill="#e8eaf0">0.0</text>
+    <text x="303" y="117" fill="#8892a4" font-size="24">&rarr;</text>
+    <rect x="355" y="48" width="170" height="24" rx="4" fill="rgba(245,166,35,0.72)"/><text x="544" y="65" fill="#e8eaf0">7.39</text>
+    <rect x="355" y="98" width="63" height="24" rx="4" fill="rgba(245,166,35,0.38)"/><text x="438" y="115" fill="#e8eaf0">2.72</text>
+    <rect x="355" y="148" width="24" height="24" rx="4" fill="rgba(245,166,35,0.20)"/><text x="398" y="165" fill="#e8eaf0">1.00</text>
+    <text x="568" y="117" fill="#8892a4" font-size="24">&rarr;</text>
+    <rect x="620" y="48" width="120" height="24" rx="4" fill="rgba(74,158,255,0.72)"/><text x="759" y="65" fill="#e8eaf0">0.67</text>
+    <rect x="620" y="98" width="44" height="24" rx="4" fill="rgba(74,158,255,0.38)"/><text x="682" y="115" fill="#e8eaf0">0.24</text>
+    <rect x="620" y="148" width="16" height="24" rx="4" fill="rgba(74,158,255,0.22)"/><text x="655" y="165" fill="#e8eaf0">0.09</text>
   </g>
-  <g stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrts)">
-    <line x1="360" y1="222" x2="360" y2="204"/>
-    <line x1="360" y1="170" x2="360" y2="164"/>
-    <line x1="360" y1="120" x2="360" y2="102"/>
-    <line x1="360" y1="68" x2="360" y2="62"/>
-    <line x1="360" y1="18" x2="360" y2="6"/>
-  </g>
-  <text x="540" y="14" fill="#8892a4" font-size="12">repeat N times</text>
-  <text x="540" y="120" fill="#8892a4" font-size="12">attention is the</text>
-  <text x="540" y="138" fill="#8892a4" font-size="12">only place tokens</text>
-  <text x="540" y="156" fill="#8892a4" font-size="12">exchange information</text>
-  <defs><marker id="arrts" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
+  <text x="410" y="210" fill="#8892a4" font-size="13" text-anchor="middle">Exponentiate to make scores positive, then divide by the total so the row sums to 1.</text>
 </svg>
+</div>
+
+Inside attention, softmax is applied across the **keys** for each query. At the output, it is applied across the vocabulary to produce next-token probabilities.
+
+---
+
+<!-- .slide: id="softmax-interactive" -->
+
+<section id="softmax-explorer">
+  <h2>Logits to Probabilities (and Temperature)</h2>
+  <div class="interactive-host" data-widget="softmaxExplorer"></div>
+</section>
+
+---
+
+<!-- .slide: id="softmax-temperature" -->
+
+## Temperature
+
+Dividing the logits by a **temperature** $T$ before softmax controls how peaked the distribution is:
+
+$$p_i = \text{softmax}(z / T)_i$$
+
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+<div>
+
+**$T < 1$**
+
+Sharper. The model commits to its top choice. More deterministic text.
+
+</div>
+
+<div>
+
+**$T = 1$**
+
+The distribution exactly as the model produced it.
+
+</div>
+
+<div>
+
+**$T > 1$**
+
+Flatter. More of the probability mass spreads to other tokens. More varied, riskier text.
+
+</div>
+
+</div>
+
+<div class="note">
+
+The same scaling idea appeared in attention: dividing $QK^T$ by $\sqrt{d_k}$ is a fixed temperature that keeps the softmax from saturating as the dimension grows.
+
 </div>
 
 ---
@@ -2010,7 +2045,7 @@ A Transformer interleaves two operations. Attention **mixes information across t
 
 # Scaled Dot-Product Attention
 
-The operation at the heart of every Transformer
+Compare, scale, normalize, retrieve
 
 
 ---
@@ -2020,6 +2055,36 @@ The operation at the heart of every Transformer
 ## Why Scale by $\sqrt{d_k}$?
 
 Dot products grow with dimension. For $d_k = 64$, the expected magnitude of $\mathbf{q} \cdot \mathbf{k}$ is about 8; for $d_k = 1024$, it is about 32.
+<div style="text-align: center; margin: 8px 0;">
+<svg viewBox="0 0 820 250" width="100%" style="max-height: 230px;">
+  <text x="235" y="22" fill="#f5a623" font-size="13" text-anchor="middle" font-weight="600">without scaling: large logits saturate softmax</text>
+  <text x="610" y="22" fill="#4a9eff" font-size="13" text-anchor="middle" font-weight="600">with scaling: weights stay usable</text>
+  <g font-size="11" text-anchor="middle">
+    <text x="95" y="53" fill="#8892a4">scores</text>
+    <text x="95" y="144" fill="#8892a4">softmax</text>
+    <rect x="135" y="44" width="42" height="70" rx="4" fill="rgba(245,166,35,0.72)"/><text x="156" y="132" fill="#e8eaf0">16</text>
+    <rect x="187" y="72" width="42" height="42" rx="4" fill="rgba(245,166,35,0.45)"/><text x="208" y="132" fill="#e8eaf0">8</text>
+    <rect x="239" y="94" width="42" height="20" rx="4" fill="rgba(245,166,35,0.24)"/><text x="260" y="132" fill="#e8eaf0">2</text>
+    <rect x="291" y="102" width="42" height="12" rx="4" fill="rgba(245,166,35,0.16)"/><text x="312" y="132" fill="#e8eaf0">0</text>
+    <rect x="135" y="155" width="42" height="70" rx="4" fill="rgba(231,76,60,0.80)"/><text x="156" y="242" fill="#e8eaf0">1.00</text>
+    <rect x="187" y="222" width="42" height="3" rx="2" fill="rgba(74,158,255,0.20)"/><text x="208" y="242" fill="#8892a4">0.00</text>
+    <rect x="239" y="224" width="42" height="1" rx="1" fill="rgba(74,158,255,0.20)"/><text x="260" y="242" fill="#8892a4">0.00</text>
+    <rect x="291" y="224" width="42" height="1" rx="1" fill="rgba(74,158,255,0.20)"/><text x="312" y="242" fill="#8892a4">0.00</text>
+    <text x="425" y="120" fill="#8892a4" font-size="28">&divide;</text>
+    <text x="425" y="145" fill="#8892a4" font-size="13">&radic;d_k</text>
+    <text x="470" y="53" fill="#8892a4">scores</text>
+    <text x="470" y="144" fill="#8892a4">softmax</text>
+    <rect x="510" y="82" width="42" height="32" rx="4" fill="rgba(74,158,255,0.52)"/><text x="531" y="132" fill="#e8eaf0">2.0</text>
+    <rect x="562" y="96" width="42" height="18" rx="4" fill="rgba(74,158,255,0.34)"/><text x="583" y="132" fill="#e8eaf0">1.0</text>
+    <rect x="614" y="108" width="42" height="6" rx="3" fill="rgba(74,158,255,0.18)"/><text x="635" y="132" fill="#e8eaf0">0.25</text>
+    <rect x="666" y="114" width="42" height="1" rx="1" fill="rgba(74,158,255,0.12)"/><text x="687" y="132" fill="#e8eaf0">0</text>
+    <rect x="510" y="155" width="42" height="44" rx="4" fill="rgba(74,158,255,0.70)"/><text x="531" y="216" fill="#e8eaf0">0.58</text>
+    <rect x="562" y="155" width="42" height="16" rx="4" fill="rgba(74,158,255,0.40)"/><text x="583" y="188" fill="#e8eaf0">0.21</text>
+    <rect x="614" y="155" width="42" height="10" rx="4" fill="rgba(74,158,255,0.30)"/><text x="635" y="182" fill="#e8eaf0">0.13</text>
+    <rect x="666" y="155" width="42" height="7" rx="4" fill="rgba(74,158,255,0.24)"/><text x="687" y="178" fill="#e8eaf0">0.08</text>
+  </g>
+</svg>
+</div>
 
 When inputs to softmax are large, the output becomes **sharply peaked** &mdash; one entry near 1, the rest near 0. This produces tiny gradients that make training unstable.
 
@@ -2096,11 +2161,10 @@ $$\mathbf o_i = \sum_j \alpha_{ij} \mathbf v_j$$
 
 ## Attention Is Not Just for Text
 
-The same mechanism works on any sequence. In a vision-language Transformer, each text token can attend to **regions of an image** &mdash; the bright areas are where attention concentrates.
-
+The same mechanism works on any sequence. In a vision-language model, each text token can attend to **regions of an image** &mdash; the bright areas are where attention concentrates.
 <div class="video-container" style="flex-direction: column;">
-<img src="images/sualization-of-attention-regions-extracted-from-the-first-Transformer-layer-of.webp" alt="Attention regions over an image in a multi-modal Transformer" style="max-height: 470px;">
-<p class="text-muted" style="font-size: 12pt; margin-top: 10px;">Attention regions from the first Transformer layer of Pixel-BERT (Huang et al., 2020). Attention concentrates on the objects the text refers to.</p>
+<img src="images/sualization-of-attention-regions-extracted-from-the-first-Transformer-layer-of.webp" alt="Attention regions over an image in a vision-language model" style="max-height: 470px;">
+<p class="text-muted" style="font-size: 12pt; margin-top: 10px;">Attention regions from Pixel-BERT (Huang et al., 2020). Attention concentrates on the objects the text refers to.</p>
 </div>
 
 ---
@@ -2236,9 +2300,33 @@ In a language model, we predict the next token given all previous tokens:
 
 $$P(w_t \mid w_1, w_2, \ldots, w_{t-1})$$
 
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
+<div>
+
+**During training**
+
+A sequence of length $n$ gives many supervised examples at once:
+
+$$w_1 \rightarrow w_2,\quad w_1,w_2 \rightarrow w_3,\quad \ldots$$
+
+The causal mask lets the model train all positions in parallel while keeping each prediction from seeing its own answer.
+
+</div>
+
+<div>
+
+**During inference**
+
+Future tokens do not exist. The model predicts one token, appends it to the context, then feeds the longer sequence back in to predict the next token.
+
+</div>
+
+</div>
+
 <div class="note">
 
-If token $t$ could see token $t+1$, the model would be **cheating** during training &mdash; it could copy the answer instead of learning to predict. Causal masking enforces the same information constraint during training that the model will face at inference, when future tokens do not exist yet.
+Causal masking makes the training setup match autoregressive generation: every token can use only itself and earlier tokens, never a future answer.
 
 </div>
 
@@ -2257,96 +2345,67 @@ Several lookup patterns running in parallel
 
 ## Why Multiple Heads?
 
-A single attention head produces one weighted average per token. But a token may need to attend to different things for different reasons:
+A single attention head produces one weighted average per token. Multiple heads split the feature dimension, so several lookup patterns can run in parallel.
+<div style="text-align: center; margin: 4px 0;">
+<svg viewBox="0 0 880 230" width="100%" style="max-height: 215px;">
+  <text x="440" y="20" fill="#8892a4" font-size="12" text-anchor="middle">d_model = 512, split into H = 8 heads with d_k = 64 features each</text>
+  <g font-size="10" text-anchor="middle" font-weight="600">
+    <rect x="82" y="44" width="576" height="30" fill="none" stroke="#e8eaf0" stroke-width="1.4"/>
+    <rect x="82" y="44" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="118" y="64" fill="#e8eaf0">64</text>
+    <rect x="154" y="44" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="190" y="64" fill="#e8eaf0">64</text>
+    <rect x="226" y="44" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="262" y="64" fill="#e8eaf0">64</text>
+    <rect x="298" y="44" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="334" y="64" fill="#e8eaf0">64</text>
+    <rect x="370" y="44" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="406" y="64" fill="#e8eaf0">64</text>
+    <rect x="442" y="44" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="478" y="64" fill="#e8eaf0">64</text>
+    <rect x="514" y="44" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="550" y="64" fill="#e8eaf0">64</text>
+    <rect x="586" y="44" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="622" y="64" fill="#e8eaf0">64</text>
+  </g>
+  <g stroke="#e8eaf0" stroke-width="1.2">
+    <line x1="154" y1="38" x2="154" y2="82"/><line x1="226" y1="38" x2="226" y2="82"/>
+    <line x1="298" y1="38" x2="298" y2="82"/><line x1="370" y1="38" x2="370" y2="82"/>
+    <line x1="442" y1="38" x2="442" y2="82"/><line x1="514" y1="38" x2="514" y2="82"/>
+    <line x1="586" y1="38" x2="586" y2="82"/>
+  </g>
+  <text x="710" y="64" fill="#e8eaf0" font-size="12">Q, K, and V are grouped by feature slice</text>
+  <g stroke="#8892a4" stroke-width="1.1" marker-end="url(#arrmhfirst)">
+    <line x1="118" y1="74" x2="118" y2="108"/><line x1="190" y1="74" x2="190" y2="108"/>
+    <line x1="262" y1="74" x2="262" y2="108"/><line x1="334" y1="74" x2="334" y2="108"/>
+    <line x1="406" y1="74" x2="406" y2="108"/><line x1="478" y1="74" x2="478" y2="108"/>
+    <line x1="550" y1="74" x2="550" y2="108"/><line x1="622" y1="74" x2="622" y2="108"/>
+  </g>
+  <g font-size="11" text-anchor="middle" font-weight="600">
+    <rect x="86" y="110" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="118" y="134" fill="#4a9eff">head 1</text>
+    <rect x="158" y="110" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="190" y="134" fill="#f5a623">head 2</text>
+    <rect x="230" y="110" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="262" y="134" fill="#50c878">head 3</text>
+    <rect x="302" y="110" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="334" y="134" fill="#c792ea">head 4</text>
+    <rect x="374" y="110" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="406" y="134" fill="#4a9eff">head 5</text>
+    <rect x="446" y="110" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="478" y="134" fill="#f5a623">head 6</text>
+    <rect x="518" y="110" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="550" y="134" fill="#50c878">head 7</text>
+    <rect x="590" y="110" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="622" y="134" fill="#c792ea">head 8</text>
+  </g>
+  <text x="440" y="187" fill="#8892a4" font-size="13" text-anchor="middle">The outputs are concatenated back to 512 dimensions, then a final projection mixes information across heads.</text>
+  <defs><marker id="arrmhfirst" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
+</svg>
+</div>
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**Head 1** might learn syntactic attention &mdash; verbs attend to their subjects
+**Different comparisons**
 
-**Head 2** might learn coreference &mdash; pronouns attend to their antecedents
-
-**Head 3** might learn positional attention &mdash; each token attends to its immediate neighbor
+One head may track subject-verb links, while another tracks coreference or nearby tokens.
 
 </div>
 
 <div>
 
-Multiple heads let the model learn **different ways to compare tokens** at the same time, instead of forcing one pattern to serve every purpose.
+**Same compute budget**
+
+The total width stays 512 here; it is divided across heads instead of copied for each head.
 
 </div>
 
-</div>
-
----
-
-<!-- .slide: id="multi-head-split" -->
-
-## Splitting the Dimension Across Heads
-
-The model dimension is divided among the heads, so multi-head attention costs the same as a single full-width head. Here: $d_{\text{model}} = 512$, $H = 8$ heads, $d_k = 64$ each.
-
-<div style="text-align: center; margin: 4px 0;">
-<svg viewBox="0 0 880 330" width="100%" style="max-height: 320px;">
-  <!-- Band 1: split bar -->
-  <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="30" y="24" width="56" height="34" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="58" y="45" fill="#e8eaf0">64</text>
-    <rect x="86" y="24" width="56" height="34" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="114" y="45" fill="#e8eaf0">64</text>
-    <rect x="142" y="24" width="56" height="34" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="170" y="45" fill="#e8eaf0">64</text>
-    <rect x="198" y="24" width="56" height="34" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="226" y="45" fill="#e8eaf0">64</text>
-    <rect x="254" y="24" width="56" height="34" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="282" y="45" fill="#e8eaf0">64</text>
-    <rect x="310" y="24" width="56" height="34" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="338" y="45" fill="#e8eaf0">64</text>
-    <rect x="366" y="24" width="56" height="34" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="394" y="45" fill="#e8eaf0">64</text>
-    <rect x="422" y="24" width="56" height="34" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="450" y="45" fill="#e8eaf0">64</text>
-  </g>
-  <rect x="30" y="24" width="448" height="34" fill="none" stroke="#e8eaf0" stroke-width="1.5"/>
-  <text x="520" y="45" fill="#e8eaf0" font-size="13">Q, K, V are split into 8 slices of 64 dims</text>
-  <!-- arrows down -->
-  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmh)">
-    <line x1="58" y1="58" x2="58" y2="92"/><line x1="114" y1="58" x2="114" y2="92"/><line x1="170" y1="58" x2="170" y2="92"/><line x1="226" y1="58" x2="226" y2="92"/>
-    <line x1="282" y1="58" x2="282" y2="92"/><line x1="338" y1="58" x2="338" y2="92"/><line x1="394" y1="58" x2="394" y2="92"/><line x1="450" y1="58" x2="450" y2="92"/>
-  </g>
-  <!-- Band 2: head boxes -->
-  <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="34" y="94" width="48" height="48" rx="4" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="58" y="116" fill="#4a9eff">head</text><text x="58" y="130" fill="#4a9eff">1</text>
-    <rect x="90" y="94" width="48" height="48" rx="4" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="114" y="116" fill="#f5a623">head</text><text x="114" y="130" fill="#f5a623">2</text>
-    <rect x="146" y="94" width="48" height="48" rx="4" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="170" y="116" fill="#50c878">head</text><text x="170" y="130" fill="#50c878">3</text>
-    <rect x="202" y="94" width="48" height="48" rx="4" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="226" y="116" fill="#c792ea">head</text><text x="226" y="130" fill="#c792ea">4</text>
-    <rect x="258" y="94" width="48" height="48" rx="4" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="282" y="116" fill="#4a9eff">head</text><text x="282" y="130" fill="#4a9eff">5</text>
-    <rect x="314" y="94" width="48" height="48" rx="4" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="338" y="116" fill="#f5a623">head</text><text x="338" y="130" fill="#f5a623">6</text>
-    <rect x="370" y="94" width="48" height="48" rx="4" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="394" y="116" fill="#50c878">head</text><text x="394" y="130" fill="#50c878">7</text>
-    <rect x="426" y="94" width="48" height="48" rx="4" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="450" y="116" fill="#c792ea">head</text><text x="450" y="130" fill="#c792ea">8</text>
-  </g>
-  <text x="520" y="122" fill="#e8eaf0" font-size="13">each head runs attention on its own slice</text>
-  <!-- arrows down -->
-  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmh)">
-    <line x1="58" y1="142" x2="58" y2="176"/><line x1="114" y1="142" x2="114" y2="176"/><line x1="170" y1="142" x2="170" y2="176"/><line x1="226" y1="142" x2="226" y2="176"/>
-    <line x1="282" y1="142" x2="282" y2="176"/><line x1="338" y1="142" x2="338" y2="176"/><line x1="394" y1="142" x2="394" y2="176"/><line x1="450" y1="142" x2="450" y2="176"/>
-  </g>
-  <!-- Band 3: concat bar -->
-  <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="30" y="178" width="56" height="34" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/>
-    <rect x="86" y="178" width="56" height="34" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/>
-    <rect x="142" y="178" width="56" height="34" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/>
-    <rect x="198" y="178" width="56" height="34" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/>
-    <rect x="254" y="178" width="56" height="34" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/>
-    <rect x="310" y="178" width="56" height="34" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/>
-    <rect x="366" y="178" width="56" height="34" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/>
-    <rect x="422" y="178" width="56" height="34" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/>
-  </g>
-  <rect x="30" y="178" width="448" height="34" fill="none" stroke="#e8eaf0" stroke-width="1.5"/>
-  <text x="254" y="200" fill="#e8eaf0" font-size="11" text-anchor="middle">concat = 512</text>
-  <text x="520" y="199" fill="#e8eaf0" font-size="13">concatenate the 8 outputs back to 512</text>
-  <!-- arrow down -->
-  <line x1="254" y1="212" x2="254" y2="246" stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmh)"/>
-  <!-- Band 4: W_O + output -->
-  <rect x="170" y="248" width="168" height="34" rx="5" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="254" y="270" fill="#4a9eff" font-size="13" text-anchor="middle" font-weight="600">output projection W_O</text>
-  <text x="520" y="269" fill="#e8eaf0" font-size="13">a final linear layer mixes the heads</text>
-  <text x="254" y="306" fill="#3fb950" font-size="13" text-anchor="middle" font-weight="600">output: 512 dims</text>
-  <defs><marker id="arrmh" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
-</svg>
 </div>
 
 ---
@@ -2404,13 +2463,13 @@ When queries and keys come from different places
   <!-- Cross-attention panel -->
   <text x="615" y="22" fill="#50c878" font-size="14" text-anchor="middle" font-weight="600">Cross-Attention</text>
   <!-- decoder row (queries) -->
-  <text x="455" y="62" fill="#8892a4" font-size="11" text-anchor="end">decoder (Q)</text>
+  <text x="455" y="62" fill="#8892a4" font-size="11" text-anchor="end">target side (Q)</text>
   <g font-size="13" text-anchor="middle" font-weight="600">
     <rect x="470" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="507" y="67" fill="#e8eaf0">the</text>
     <rect x="558" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="2.5"/><text x="595" y="67" fill="#e8eaf0">cat</text>
   </g>
   <!-- encoder row (keys/values) -->
-  <text x="455" y="162" fill="#8892a4" font-size="11" text-anchor="end">encoder (K, V)</text>
+  <text x="455" y="162" fill="#8892a4" font-size="11" text-anchor="end">source side (K, V)</text>
   <g font-size="13" text-anchor="middle" font-weight="600">
     <rect x="470" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="507" y="167" fill="#e8eaf0">le</text>
     <rect x="558" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/><text x="595" y="167" fill="#e8eaf0">chat</text>
@@ -2420,8 +2479,8 @@ When queries and keys come from different places
   <line x1="595" y1="78" x2="595" y2="144" stroke="#50c878" stroke-width="3" marker-end="url(#arrcxgr)"/>
   <line x1="595" y1="78" x2="515" y2="144" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
   <line x1="595" y1="78" x2="690" y2="144" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
-  <text x="615" y="210" fill="#8892a4" font-size="12" text-anchor="middle">Q from the decoder, K and V</text>
-  <text x="615" y="228" fill="#8892a4" font-size="12" text-anchor="middle">from the encoder ("cat" finds "chat")</text>
+  <text x="615" y="210" fill="#8892a4" font-size="12" text-anchor="middle">Q from one sequence, K and V</text>
+  <text x="615" y="228" fill="#8892a4" font-size="12" text-anchor="middle">from another ("cat" finds "chat")</text>
   <defs>
     <marker id="arrcx" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/></marker>
     <marker id="arrcxg" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker>
@@ -2430,57 +2489,7 @@ When queries and keys come from different places
 </svg>
 </div>
 
-In self-attention a sequence looks at itself; in cross-attention one sequence selects information from another. Cross-attention is how a decoder pulls relevant content from an encoder.
-
----
-
-<!-- .slide: id="encoder-decoder" -->
-
-## The Encoder-Decoder Transformer
-
-The original Transformer (Vaswani et al.) combined both: the encoder uses self-attention; the decoder uses masked self-attention **and** cross-attention back into the encoder.
-
-<div style="text-align: center; margin: 4px 0;">
-<svg viewBox="0 0 760 320" width="100%" style="max-height: 300px;">
-  <!-- Encoder column -->
-  <rect x="60" y="40" width="230" height="210" rx="8" fill="none" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="5,3"/>
-  <text x="175" y="32" fill="#4a9eff" font-size="13" text-anchor="middle" font-weight="600">Encoder (N&times;)</text>
-  <rect x="90" y="170" width="170" height="36" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="175" y="192" fill="#e8eaf0" font-size="12" text-anchor="middle">self-attention</text>
-  <rect x="90" y="118" width="170" height="36" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/>
-  <text x="175" y="140" fill="#e8eaf0" font-size="12" text-anchor="middle">feed-forward (MLP)</text>
-  <rect x="90" y="222" width="170" height="22" rx="4" fill="#0d1225" stroke="#8892a4" stroke-width="1"/>
-  <text x="175" y="238" fill="#8892a4" font-size="11" text-anchor="middle">input embeddings + pos</text>
-  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arred)">
-    <line x1="175" y1="222" x2="175" y2="208"/><line x1="175" y1="170" x2="175" y2="156"/><line x1="175" y1="118" x2="175" y2="104"/>
-  </g>
-  <!-- Decoder column -->
-  <rect x="470" y="40" width="230" height="250" rx="8" fill="none" stroke="#50c878" stroke-width="1.5" stroke-dasharray="5,3"/>
-  <text x="585" y="32" fill="#50c878" font-size="13" text-anchor="middle" font-weight="600">Decoder (N&times;)</text>
-  <rect x="500" y="222" width="170" height="34" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="585" y="243" fill="#e8eaf0" font-size="11" text-anchor="middle">masked self-attention</text>
-  <rect x="500" y="170" width="170" height="34" rx="5" fill="rgba(80,200,120,0.16)" stroke="#50c878" stroke-width="1.5"/>
-  <text x="585" y="191" fill="#e8eaf0" font-size="11" text-anchor="middle">cross-attention</text>
-  <rect x="500" y="118" width="170" height="34" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/>
-  <text x="585" y="139" fill="#e8eaf0" font-size="11" text-anchor="middle">feed-forward (MLP)</text>
-  <rect x="500" y="272" width="170" height="20" rx="4" fill="#0d1225" stroke="#8892a4" stroke-width="1"/>
-  <text x="585" y="287" fill="#8892a4" font-size="10" text-anchor="middle">output embeddings + pos</text>
-  <rect x="500" y="74" width="170" height="30" rx="5" fill="#0d1225" stroke="#8892a4" stroke-width="1"/>
-  <text x="585" y="93" fill="#8892a4" font-size="11" text-anchor="middle">linear + softmax</text>
-  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arred)">
-    <line x1="585" y1="272" x2="585" y2="258"/><line x1="585" y1="222" x2="585" y2="206"/><line x1="585" y1="170" x2="585" y2="154"/><line x1="585" y1="118" x2="585" y2="106"/>
-  </g>
-  <!-- cross-attention link from encoder to decoder -->
-  <path d="M260 136 Q380 136 380 187 Q380 187 500 187" fill="none" stroke="#50c878" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arredgr)"/>
-  <text x="380" y="128" fill="#50c878" font-size="11" text-anchor="middle">K, V to cross-attention</text>
-  <defs>
-    <marker id="arred" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker>
-    <marker id="arredgr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#50c878"/></marker>
-  </defs>
-</svg>
-</div>
-
-Modern LLMs (GPT, LLaMA) keep only the decoder with causal self-attention. The encoder-decoder pattern remains common in translation and speech.
+In self-attention, one sequence looks at itself. In cross-attention, one sequence asks questions while another supplies the keys and values. This is useful when text retrieves from an image, an audio stream, a database, or a source sentence in translation.
 
 ---
 
@@ -2546,7 +2555,7 @@ Now two identical words at different positions arrive at attention as **differen
 
 ## Sinusoidal Positional Encodings
 
-The original Transformer used a fixed pattern: each dimension of $P$ is a sine or cosine wave, and each dimension uses a different frequency.
+A common fixed pattern makes each dimension of $P$ a sine or cosine wave, with a different frequency in each dimension.
 
 $$PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d}}\right) \qquad PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d}}\right)$$
 
@@ -2649,101 +2658,6 @@ The same vector is rotated further at each later position. RoPE is used in LLaMA
 
 ---
 
-<!-- .slide: id="divider-softmax" class="section-divider" data-state="is-section-divider" -->
-
-# Softmax
-
-Turning scores into probabilities
-
-
----
-
-<!-- .slide: id="softmax-purpose" -->
-
-## From Logits to a Distribution
-
-Softmax is the function that has been quietly doing the normalization step in every attention layer. It takes a vector of raw scores (**logits**) and turns them into a probability distribution:
-
-$$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Why exponentiate?**
-
-- $e^{z}$ is always positive, so every output is a valid probability
-- It amplifies differences: a slightly larger logit gets a disproportionately larger share
-- The outputs sum to exactly 1
-
-</div>
-
-<div>
-
-**Where it appears**
-
-- **Inside attention:** over the keys, so each query's weights sum to 1
-- **At the output:** over the whole vocabulary, to pick the next token
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="softmax-interactive" -->
-
-<section id="softmax-explorer">
-  <h2>Logits to Probabilities (and Temperature)</h2>
-  <div class="interactive-host" data-widget="softmaxExplorer"></div>
-</section>
-
----
-
-<!-- .slide: id="softmax-temperature" -->
-
-## Temperature
-
-Dividing the logits by a **temperature** $T$ before softmax controls how peaked the distribution is:
-
-$$p_i = \text{softmax}(z / T)_i$$
-
-<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
-
-<div>
-
-**$T < 1$**
-
-Sharper. The model commits to its top choice. More deterministic text.
-
-</div>
-
-<div>
-
-**$T = 1$**
-
-The distribution exactly as the model produced it.
-
-</div>
-
-<div>
-
-**$T > 1$**
-
-Flatter. More of the probability mass spreads to other tokens. More varied, riskier text.
-
-</div>
-
-</div>
-
-<div class="note">
-
-The same scaling idea appeared in attention: dividing $QK^T$ by $\sqrt{d_k}$ is a fixed temperature that keeps the softmax from saturating as the dimension grows.
-
-</div>
-
----
-
 <!-- .slide: id="divider-compute" class="section-divider" data-state="is-section-divider" -->
 
 # Memory and Compute
@@ -2758,7 +2672,6 @@ The cost of every token seeing every other token
 ## The $O(n^2)$ Cost
 
 Attention builds an $n \times n$ score matrix: every token compared against every other token. That matrix is the bottleneck.
-
 <div style="text-align: center; margin: 4px 0;">
 <svg viewBox="0 0 720 250" width="100%" style="max-height: 240px;">
   <!-- big n x n grid -->
@@ -2811,6 +2724,42 @@ The $O(n^2)$ cost is the main barrier to very long contexts: it grows far faster
 </div>
 
 </div>
+
+---
+
+<!-- .slide: id="flash-attention-explained" -->
+
+## FlashAttention: Same Math, Less Memory Traffic
+
+Standard attention often writes the full $n \times n$ attention matrix to GPU memory, then reads it back to multiply by $V$. FlashAttention avoids that expensive round trip.
+<div style="text-align: center; margin: 8px 0;">
+<svg viewBox="0 0 820 250" width="100%" style="max-height: 235px;">
+  <text x="190" y="24" fill="#e74c3c" font-size="13" text-anchor="middle" font-weight="600">standard attention</text>
+  <text x="620" y="24" fill="#3fb950" font-size="13" text-anchor="middle" font-weight="600">FlashAttention</text>
+  <rect x="70" y="52" width="240" height="130" rx="6" fill="rgba(231,76,60,0.08)" stroke="#e74c3c" stroke-width="1.5"/>
+  <text x="190" y="76" fill="#e8eaf0" font-size="12" text-anchor="middle">materialize full score matrix</text>
+  <rect x="116" y="94" width="148" height="64" fill="rgba(74,158,255,0.20)" stroke="#4a9eff" stroke-width="1.2"/>
+  <g stroke="#4a9eff" stroke-width="0.6" opacity="0.45">
+    <line x1="140" y1="94" x2="140" y2="158"/><line x1="164" y1="94" x2="164" y2="158"/><line x1="188" y1="94" x2="188" y2="158"/><line x1="212" y1="94" x2="212" y2="158"/><line x1="236" y1="94" x2="236" y2="158"/>
+    <line x1="116" y1="110" x2="264" y2="110"/><line x1="116" y1="126" x2="264" y2="126"/><line x1="116" y1="142" x2="264" y2="142"/>
+  </g>
+  <text x="190" y="206" fill="#e74c3c" font-size="12" text-anchor="middle">large HBM reads and writes</text>
+  <rect x="500" y="52" width="240" height="130" rx="6" fill="rgba(63,185,80,0.08)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="620" y="76" fill="#e8eaf0" font-size="12" text-anchor="middle">tile Q, K, V in small blocks</text>
+  <g>
+    <rect x="548" y="94" width="148" height="64" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.2"/>
+    <rect x="548" y="94" width="50" height="22" fill="rgba(63,185,80,0.55)" stroke="#3fb950"/>
+    <rect x="598" y="116" width="50" height="22" fill="rgba(63,185,80,0.45)" stroke="#3fb950"/>
+    <rect x="648" y="136" width="48" height="22" fill="rgba(63,185,80,0.35)" stroke="#3fb950"/>
+  </g>
+  <text x="620" y="206" fill="#3fb950" font-size="12" text-anchor="middle">keep intermediates in fast SRAM</text>
+  <line x1="350" y1="118" x2="470" y2="118" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrfa)"/>
+  <text x="410" y="106" fill="#8892a4" font-size="12" text-anchor="middle">reorder computation</text>
+  <defs><marker id="arrfa" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
+</svg>
+</div>
+
+The result is still exact scaled dot-product attention. The speedup comes from doing less slow memory movement, not from changing the equation. Reference: Dao et al. (2022), *FlashAttention*.
 
 ---
 
@@ -3005,7 +2954,7 @@ cd exercises
 uv run python module_03_attention/src/main.py
 ```
 
-The exercise computes scaled dot-product attention step by step on a tiny 5-token sequence, then adds a causal mask and positional embeddings. Check the `output/` directory for plots after each run. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+The exercise implements a tiny attention layer on a 5-token sequence, then adds a causal mask and sinusoidal positional encodings. Check the `output/` directory for plots after each run. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
@@ -3013,7 +2962,7 @@ The exercise computes scaled dot-product attention step by step on a tiny 5-toke
 
 ## Exercise: Attention Mechanisms
 
-Implement scaled dot-product attention on a 5-token sequence with $d_{\text{model}} = 8$ and $d_k = 4$. Each function is mostly written for you &mdash; you fill in **one key line**. <!-- .element: class="text-lg" -->
+Implement scaled dot-product attention inside `TinyAttentionLayer` with $d_{\text{model}} = 8$ and $d_k = 4$. The layer owns the random projection weights; you fill in the key tensor operations. <!-- .element: class="text-lg" -->
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
@@ -3021,7 +2970,7 @@ Implement scaled dot-product attention on a 5-token sequence with $d_{\text{mode
 
 **Unmasked attention (steps 1-5)**
 
-Compute Q, K, V, raw scores, softmax weights, and the weighted output.
+Compute Q, K, V from the layer weights, then compute raw scores, softmax weights, and the weighted output.
 
 </div>
 
@@ -3029,7 +2978,7 @@ Compute Q, K, V, raw scores, softmax weights, and the weighted output.
 
 **Causal mask and position (steps 6-8)**
 
-Add a causal mask to block future tokens, then add positional embeddings and observe the change in attention patterns.
+Add a causal mask to block future tokens, then add sinusoidal positional encodings and observe the change in attention patterns.
 
 </div>
 
@@ -3039,24 +2988,25 @@ Add a causal mask to block future tokens, then add positional embeddings and obs
 
 <!-- .slide: id="exercise-step2-code" -->
 
-## Step 2: compute_qkv()
+## Step 2: TinyAttentionLayer.compute_qkv()
 
 ```python
-def compute_qkv(X: torch.Tensor, d_k: int = 4) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Project the token matrix X into query, key, and value matrices."""
-    torch.manual_seed(42)
-    seq_len, d_model = X.shape
-    W_Q = torch.randn(d_model, d_k) * 0.1
-    W_K = torch.randn(d_model, d_k) * 0.1
-    W_V = torch.randn(d_model, d_k) * 0.1
+    def compute_qkv(self, X: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Project the token matrix X into query, key, and value matrices.
 
-    # TODO: Compute Q, K, V by projecting X through W_Q, W_K, W_V
-    raise NotImplementedError("TODO: compute Q, K, V projections")
+        Args:
+            X: Token embeddings, shape (seq_len, d_model).
+
+        Returns:
+            (Q, K, V): Each tensor has shape (seq_len, d_k).
+        """
+        # TODO: Compute and return Q, K, V by multiplying X by this layer's W_Q, W_K, and W_V.
+        raise NotImplementedError("TODO: compute Q, K, V projections")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** Use matrix multiplication `X @ W_Q`, `X @ W_K`, and `X @ W_V` to project the token embeddings.
+**Hint:** use X @ self.W_Q, X @ self.W_K, and X @ self.W_V.
 
 </div>
 
@@ -3065,10 +3015,7 @@ def compute_qkv(X: torch.Tensor, d_k: int = 4) -> tuple[torch.Tensor, torch.Tens
 **Answer:**
 
 ```python
-Q = X @ W_Q
-K = X @ W_K
-V = X @ W_V
-return Q, K, V
+return X @ self.W_Q, X @ self.W_K, X @ self.W_V
 ```
 
 </div>
@@ -3080,23 +3027,23 @@ return Q, K, V
 ## Step 3: raw_attention_scores()
 
 ```python
-def raw_attention_scores(Q: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
-    """Compute the pairwise compatibility scores: Q @ K^T.
+    def raw_attention_scores(self, Q: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
+        """Compute the pairwise compatibility scores: Q @ K^T.
 
-    Args:
-        Q: Query matrix, shape (seq_len, d_k).
-        K: Key matrix, shape (seq_len, d_k).
+        Args:
+            Q: Query matrix, shape (seq_len, d_k).
+            K: Key matrix, shape (seq_len, d_k).
 
-    Returns:
-        Scores matrix, shape (seq_len, seq_len).
-    """
-    # TODO: Compute the attention scores as the matrix product of Q and K^T
-    raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
+        Returns:
+            Scores matrix, shape (seq_len, seq_len).
+        """
+        # TODO: Compute the attention scores as the matrix product of Q and K^T.
+        raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** Use `Q @ K.T` to compute the matrix product of queries and transposed keys.
+**Hint:** use Q @ K.T (the .T attribute transposes a 2D tensor).
 
 </div>
 
@@ -3117,23 +3064,22 @@ return Q @ K.T
 ## Step 4: scaled_softmax()
 
 ```python
-def scaled_softmax(scores: torch.Tensor, d_k: int) -> torch.Tensor:
-    """Scale scores by 1/sqrt(d_k) and apply softmax along the key dimension.
+    def scaled_softmax(self, scores: torch.Tensor) -> torch.Tensor:
+        """Scale scores by 1/sqrt(d_k) and apply softmax along the key dimension.
 
-    Args:
-        scores: Raw attention scores, shape (seq_len, seq_len).
-        d_k: Dimension of keys (used for scaling).
+        Args:
+            scores: Raw attention scores, shape (seq_len, seq_len).
 
-    Returns:
-        Attention weights, shape (seq_len, seq_len). Each row sums to 1.
-    """
-    # TODO: Scale the scores by 1/sqrt(d_k), then apply softmax along dim=-1
-    raise NotImplementedError("TODO: apply scaled softmax to attention scores")
+        Returns:
+            Attention weights, shape (seq_len, seq_len). Each row sums to 1.
+        """
+        # TODO: Scale the scores by 1/sqrt(d_k), then apply softmax along dim=-1.
+        raise NotImplementedError("TODO: apply scaled softmax to attention scores")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** Divide `scores` by `(d_k ** 0.5)`, then call `F.softmax(..., dim=-1)`.
+**Hint:** divide scores by (self.d_k ** 0.5), then call F.softmax(..., dim=-1).
 
 </div>
 
@@ -3142,7 +3088,7 @@ def scaled_softmax(scores: torch.Tensor, d_k: int) -> torch.Tensor:
 **Answer:**
 
 ```python
-return F.softmax(scores / (d_k ** 0.5), dim=-1)
+return F.softmax(scores / (self.d_k ** 0.5), dim=-1)
 ```
 
 </div>
@@ -3154,23 +3100,23 @@ return F.softmax(scores / (d_k ** 0.5), dim=-1)
 ## Step 5: attention_output()
 
 ```python
-def attention_output(weights: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
-    """Compute the attention output as a weighted sum of value vectors.
+    def attention_output(self, weights: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
+        """Compute the attention output as a weighted sum of value vectors.
 
-    Args:
-        weights: Attention weights, shape (seq_len, seq_len).
-        V: Value matrix, shape (seq_len, d_k).
+        Args:
+            weights: Attention weights, shape (seq_len, seq_len).
+            V: Value matrix, shape (seq_len, d_k).
 
-    Returns:
-        Output tensor, shape (seq_len, d_k).
-    """
-    # TODO: Compute the weighted sum of values using the attention weights
-    raise NotImplementedError("TODO: compute attention output as weighted sum of values")
+        Returns:
+            Output tensor, shape (seq_len, d_k).
+        """
+        # TODO: Compute the weighted sum of values using the attention weights.
+        raise NotImplementedError("TODO: compute attention output as weighted sum of values")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** Multiply the weight matrix by the value matrix: `weights @ V`.
+**Hint:** use weights @ V (matrix multiply the weight matrix by the value matrix).
 
 </div>
 
@@ -3197,7 +3143,7 @@ return weights @ V
         <span class="terminal-title">uv run python module_03_attention/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 1: Create Token Vectors&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 8])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 2: Compute Q, K, V Projections&#10;============================================================</span>&#10;<span class="success">Q shape: torch.Size([5, 4])</span>&#10;<span class="success">K shape: torch.Size([5, 4])</span>&#10;<span class="success">V shape: torch.Size([5, 4])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 3: Raw Attention Scores (QK^T)&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 5])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 4: Scaled Softmax Attention Weights&#10;============================================================</span>&#10;<span class="success">Row sums (should be ~1.0): [1.0, 1.0, 1.0, 1.0, 1.0]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 5: Attention Output (Weighted Sum of Values)&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 4])</span></pre>
+        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 1: Create Token Vectors&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 8])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 2: Compute Q, K, V Projections&#10;============================================================</span>&#10;<span class="success">Q shape: torch.Size([5, 4])</span>&#10;<span class="success">K shape: torch.Size([5, 4])</span>&#10;<span class="success">V shape: torch.Size([5, 4])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 3: Raw Attention Scores (QK^T)&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 5])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 4: Scaled Softmax Attention Weights&#10;============================================================</span>&#10;<span class="success">Row sums (should be ~1.0): [1.0, 1.0, 1.0, 1.0, 1.0]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 5: Attention Output (Weighted Sum of Values)&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 4])</span>&#10;<span class="success">First output vector: [-0.006  0.002  0.027  0.019]</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Unmasked attention weights are nearly uniform because the random projections are small. Each row sums to 1.0.</p>
@@ -3211,26 +3157,27 @@ return weights @ V
 ## Step 6: causal_mask()
 
 ```python
-def causal_mask(seq_len: int) -> torch.Tensor:
-    """Create a causal (lower-triangular) mask for autoregressive attention.
+    def causal_mask(self, seq_len: int) -> torch.Tensor:
+        """Create a causal mask for autoregressive attention.
 
-    A causal mask prevents each token from attending to future tokens.
-    Entry (i, j) is 0 if j <= i (token i may attend to token j),
-    and -inf if j > i (token i must NOT attend to token j).
+        Entry (i, j) is 0 if j <= i, which means token i may attend to token j.
+        Entry (i, j) is -inf if j > i, which blocks future tokens before softmax.
 
-    Args:
-        seq_len: Length of the sequence.
+        Args:
+            seq_len: Length of the sequence.
 
-    Returns:
-        Mask tensor, shape (seq_len, seq_len), with 0s and -infs.
-    """
-    # TODO: Create a lower-triangular mask of 0s with -inf above the diagonal
-    raise NotImplementedError("TODO: create causal mask")
+        Returns:
+            Mask tensor, shape (seq_len, seq_len), with 0s and -infs.
+        """
+        # Create a lower-triangular matrix: 1 means allowed, 0 means blocked.
+        allowed = torch.tril(torch.ones(seq_len, seq_len))
+        # TODO: Convert allowed positions to 0.0 and blocked positions to -inf.
+        raise NotImplementedError("TODO: create causal mask")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** Start with `torch.tril(torch.ones(seq_len, seq_len))`, then use `.masked_fill(mask == 0, float('-inf'))` to replace zeros with $-\infty$.
+**Hint:** use masked_fill twice: first replace 0s with -inf, then replace 1s with 0.0.
 
 </div>
 
@@ -3239,9 +3186,8 @@ def causal_mask(seq_len: int) -> torch.Tensor:
 **Answer:**
 
 ```python
-mask = torch.tril(torch.ones(seq_len, seq_len))
-mask = mask.masked_fill(mask == 0, float('-inf'))
-return mask
+mask = allowed.masked_fill(allowed == 0, float("-inf"))
+return mask.masked_fill(mask == 1, 0.0)
 ```
 
 </div>
@@ -3254,25 +3200,24 @@ return mask
 
 ```python
 def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
-    """Add learned positional embeddings to the token representations.
-
-    Args:
-        X: Token embeddings, shape (seq_len, d_model).
-
-    Returns:
-        X_pos: Token embeddings plus positional embeddings, shape (seq_len, d_model).
-    """
-    torch.manual_seed(42)
+    """Add sinusoidal positional encodings to the token representations."""
     seq_len, d_model = X.shape
-    P = torch.randn(seq_len, d_model) * 0.1
+    position = torch.arange(seq_len, dtype=X.dtype, device=X.device).unsqueeze(1)
+    dim_pair = torch.arange(0, d_model, 2, dtype=X.dtype, device=X.device)
+    angle_rates = 1 / (10000 ** (dim_pair / d_model))
+    angles = position * angle_rates
+    P = torch.zeros_like(X)
+    P[:, 0::2] = torch.sin(angles)
 
-    # TODO: Add the positional embeddings P to the token embeddings X
-    raise NotImplementedError("TODO: add positional embeddings to token embeddings")
+    # TODO: Fill the odd dimensions of P with cosine values from the sinusoidal equation.
+    raise NotImplementedError("TODO: fill cosine positional dimensions")
+
+    return X + P
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** The final embeddings are the sum of the positional encodings `P` and the token embeddings `X`.
+**Hint:** use torch.cos(angles) and assign the result to P[:, 1::2].
 
 </div>
 
@@ -3281,6 +3226,7 @@ def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
 **Answer:**
 
 ```python
+P[:, 1::2] = torch.cos(angles)
 return X + P
 ```
 
@@ -3299,7 +3245,7 @@ return X + P
         <span class="terminal-title">uv run python module_03_attention/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 6: Causal Mask&#10;============================================================</span>&#10;<span class="success">Mask matrix:&#10;[[  1. -inf -inf -inf -inf]&#10; [  1.   1. -inf -inf -inf]&#10; [  1.   1.   1. -inf -inf]&#10; [  1.   1.   1.   1. -inf]&#10; [  1.   1.   1.   1.   1.]]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 7: Masked Attention Output&#10;============================================================</span>&#10;<span class="success">Masked weight matrix:&#10;[[1.    0.    0.    0.    0.   ]&#10; [0.501 0.499 0.    0.    0.   ]&#10; [0.333 0.334 0.334 0.    0.   ]&#10; [0.25  0.251 0.25  0.25  0.   ]&#10; [0.2   0.2   0.2   0.2   0.2  ]]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 8: Positional Embeddings&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 8])</span>&#10;&#10;<span class="header">============================================================&#10;VISUALIZATIONS&#10;============================================================</span>&#10;<span class="success">Saved attention comparison to output/attention_comparison.png</span>&#10;<span class="success">Saved positional effect to output/positional_effect.png</span></pre>
+        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 6: Causal Mask&#10;============================================================</span>&#10;<span class="success">Mask first row: [0. -inf -inf -inf -inf]</span>&#10;<span class="success">Mask last row:  [0. 0. 0. 0. 0.]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 7: Masked Attention Output&#10;============================================================</span>&#10;<span class="success">Masked first row: [1. 0. 0. 0. 0.]</span>&#10;<span class="success">Masked last row:  [0.2 0.2 0.2 0.2 0.2]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 8: Positional Embeddings&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 8])</span>&#10;<span class="success">First token (after pos):  [ 0.164  0.984 -0.05   1.044 -0.076  1.108  0.08   1.168]</span>&#10;<span class="success">Attention weights WITH position: first row [0.198 0.2   0.203 0.202 0.197]</span>&#10;&#10;<span class="header">============================================================&#10;VISUALIZATIONS&#10;============================================================</span>&#10;<span class="success">Saved attention comparison to module_03_attention/output/attention_comparison.png</span>&#10;<span class="success">Saved positional effect to module_03_attention/output/positional_effect.png</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">The causal mask zeroes out the upper triangle, forcing each token to attend only to itself and earlier tokens.</p>
@@ -3319,14 +3265,17 @@ def kv_cache_step(
     new_token: torch.Tensor,
     cached_keys: torch.Tensor,
     cached_values: torch.Tensor,
-    W_Q: torch.Tensor, W_K: torch.Tensor, W_V: torch.Tensor,
+    W_Q: torch.Tensor,
+    W_K: torch.Tensor,
+    W_V: torch.Tensor,
     d_k: int,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    # TODO: project new_token through W_Q, W_K, W_V, then append K and V to cache
+    # TODO: Project new_token through W_Q, W_K, and W_V.
+    new_query = None
     new_key = None
     new_value = None
-    if new_key is None or new_value is None:
-        raise NotImplementedError("Extra credit: project new_token through W_Q, W_K, W_V, then append K and V to cache")
+    if new_query is None or new_key is None or new_value is None:
+        raise NotImplementedError("Extra credit: project new_token through W_Q, W_K, and W_V")
 ```
 
 The runner processes tokens one at a time and compares generation cost with and without the cache. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
@@ -3384,7 +3333,7 @@ A student proposes training a language model without a causal mask, arguing that
 
 <div class="quiz-prompt">
 
-You feed the sentence "the cat sat on the mat" into a Transformer with positional embeddings removed. You then reverse the sentence to "mat the on sat cat the" and feed it in again. How do the attention patterns compare, and what does this tell you?
+You feed the sentence "the cat sat on the mat" into a self-attention layer with positional embeddings removed. You then reverse the sentence to "mat the on sat cat the" and feed it in again. How do the attention patterns compare, and what does this tell you?
 
 </div>
 
@@ -3402,7 +3351,7 @@ You feed the sentence "the cat sat on the mat" into a Transformer with positiona
 
 <div class="quiz-prompt">
 
-GPT-4 Turbo supports 128K token context. If you doubled the context to 256K tokens, by what factor does the attention computation cost increase? Why is this a bigger problem for attention than for the feed-forward layers?
+A model supports a 128K-token context. If you doubled the context to 256K tokens, by what factor does the attention computation cost increase? Why is this a bigger problem for per-token feed-forward layers?
 
 </div>
 
@@ -3437,12 +3386,10 @@ A model has 32 layers, 32 attention heads per layer, and $d_k = 128$ per head. H
 ## References and Further Reading
 
 - Bahdanau, D., Cho, K., &amp; Bengio, Y. (2014). "Neural Machine Translation by Jointly Learning to Align and Translate." *arXiv:1409.0473*.
-- Vaswani, A. et al. (2017). "Attention Is All You Need." *NeurIPS*. *arXiv:1706.03762*.
 - Dao, T. et al. (2022). "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness." *arXiv:2205.14135*.
 - Su, J. et al. (2021). "RoFormer: Enhanced Transformer with Rotary Position Embedding." *arXiv:2104.09864*.
 - Xiao, G. et al. (2023). "Efficient Streaming Language Models with Attention Sinks." *arXiv:2309.17453*.
 - Huang, Z. et al. (2020). "Pixel-BERT: Aligning Image Pixels with Text by Deep Multi-Modal Transformers." *arXiv:2004.00849*.
-- [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) &mdash; visual guide to attention and encoder-decoder
 - [BertViz](https://codecut.ai/bertviz-visualize-attention-in-transformer-language-models/) &mdash; attention visualization tool
 
 ---
@@ -3621,27 +3568,25 @@ Next: Module 4 &mdash; The Transformer
       a: {
         tokens: ['the', 'cat', 'sat', 'on', 'the', 'mat'],
         sel: 2,
-        M: normalizeRows([
-          [0.50, 0.20, 0.10, 0.05, 0.10, 0.05],
-          [0.20, 0.50, 0.15, 0.05, 0.05, 0.05],
-          [0.05, 0.45, 0.30, 0.10, 0.05, 0.05],
-          [0.05, 0.10, 0.40, 0.30, 0.10, 0.05],
-          [0.05, 0.05, 0.10, 0.20, 0.30, 0.30],
-          [0.05, 0.15, 0.35, 0.10, 0.10, 0.25]
-        ])
+        M: [
+          [0.00, 0.34, 0.18, 0.12, 0.28, 0.08],
+          [0.14, 0.00, 0.42, 0.16, 0.08, 0.20],
+          [0.06, 0.46, 0.00, 0.30, 0.08, 0.10],
+          [0.08, 0.12, 0.50, 0.00, 0.20, 0.10],
+          [0.30, 0.08, 0.12, 0.22, 0.00, 0.28],
+          [0.26, 0.24, 0.30, 0.12, 0.08, 0.00]
+        ]
       },
       b: {
-        tokens: ['the', 'cat', 'was', 'tired', 'so', 'it', 'slept'],
-        sel: 5,
-        M: normalizeRows([
-          [0.50, 0.20, 0.10, 0.05, 0.05, 0.05, 0.05],
-          [0.20, 0.50, 0.10, 0.10, 0.03, 0.04, 0.03],
-          [0.05, 0.40, 0.30, 0.15, 0.05, 0.03, 0.02],
-          [0.03, 0.30, 0.20, 0.35, 0.05, 0.04, 0.03],
-          [0.05, 0.10, 0.15, 0.20, 0.30, 0.10, 0.10],
-          [0.05, 0.55, 0.05, 0.10, 0.05, 0.15, 0.05],
-          [0.03, 0.20, 0.05, 0.35, 0.07, 0.10, 0.20]
-        ])
+        tokens: ['alice', 'gave', 'bob', 'her', 'book'],
+        sel: 3,
+        M: [
+          [0.00, 0.20, 0.25, 0.30, 0.25],
+          [0.25, 0.00, 0.35, 0.20, 0.20],
+          [0.20, 0.40, 0.00, 0.15, 0.25],
+          [0.60, 0.15, 0.10, 0.00, 0.15],
+          [0.35, 0.20, 0.10, 0.35, 0.00]
+        ]
       }
     };
     var state = { key: 'a', sel: examples.a.sel };
@@ -3651,7 +3596,7 @@ Next: Module 4 &mdash; The Transformer
         '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
         '<div class="m3-controls">' +
           '<button class="m3-btn active" data-ex="a">"the cat sat on the mat"</button>' +
-          '<button class="m3-btn" data-ex="b">"the cat was tired so it slept"</button>' +
+          '<button class="m3-btn" data-ex="b">"alice gave bob her book"</button>' +
         '</div>' +
         '<p class="m3-readout"></p>' +
       '</div>';
@@ -3705,7 +3650,7 @@ Next: Module 4 &mdash; The Transformer
         ctx.fillText(toks[i], ox - 8, oy + i * cell + cell / 2 + 4);
       }
       ctx.save();
-      ctx.translate(18, oy + n * cell / 2);
+      ctx.translate(ox - 58, oy + n * cell / 2);
       ctx.rotate(-Math.PI / 2);
       ctx.textAlign = 'center'; ctx.fillStyle = COL.primary;
       ctx.fillText('queries', 0, 0);
@@ -3715,13 +3660,13 @@ Next: Module 4 &mdash; The Transformer
       for (var r = 0; r < n; r++) {
         for (var c = 0; c < n; c++) {
           var w = M[r][c];
-          ctx.fillStyle = 'rgba(74,158,255,' + (0.08 + 0.9 * w).toFixed(3) + ')';
+          ctx.fillStyle = (r === c)
+            ? 'rgba(13,18,37,0.95)'
+            : 'rgba(74,158,255,' + (0.08 + 0.9 * w).toFixed(3) + ')';
           ctx.fillRect(ox + c * cell + 1, oy + r * cell + 1, cell - 2, cell - 2);
-          if (w >= 0.18) {
-            ctx.fillStyle = COL.text; ctx.textAlign = 'center';
-            ctx.font = '11px Inter, sans-serif';
-            ctx.fillText(w.toFixed(2), ox + c * cell + cell / 2, oy + r * cell + cell / 2 + 4);
-          }
+          ctx.fillStyle = (r === c) ? COL.muted : COL.text; ctx.textAlign = 'center';
+          ctx.font = '11px Inter, sans-serif';
+          ctx.fillText(w.toFixed(2), ox + c * cell + cell / 2, oy + r * cell + cell / 2 + 4);
         }
       }
       // highlight selected query row
@@ -3733,7 +3678,7 @@ Next: Module 4 &mdash; The Transformer
       var best = 0; for (var k = 1; k < n; k++) if (row[k] > row[best]) best = k;
       readout.innerHTML = 'Click a row to pick a query. <strong>"' + toks[state.sel] +
         '"</strong> attends most to <strong>"' + toks[best] + '"</strong> (' +
-        (row[best] * 100).toFixed(0) + '%). Each row sums to 1.';
+        (row[best] * 100).toFixed(0) + '%). The diagonal is set to 0 here, and each row sums to 1.';
     }
     draw();
     return { resize: draw };
@@ -3869,31 +3814,31 @@ Next: Module 4 &mdash; The Transformer
       var ctx = f.ctx, W = f.w, H = f.h;
       ctx.clearRect(0, 0, W, H);
       ctx.textAlign = 'center'; ctx.fillStyle = COL.muted; ctx.font = '12px Inter, sans-serif';
-      ctx.fillText('encoding value (rows = position, cols = dimension)', W / 2, 16);
-      var ox = 36, oy = 28, gw = W - ox - 14, gh = H - oy - 26;
-      var cw = gw / d, ch = gh / L;
+      ctx.fillText('encoding value (x = sequence position, y = dimension)', W / 2, 16);
+      var ox = 46, oy = 28, gw = W - ox - 14, gh = H - oy - 30;
+      var cw = gw / L, ch = gh / d;
       for (var p = 0; p < L; p++) {
         for (var i = 0; i < d; i++) {
           var v = pe(p, i, d, base);
           ctx.fillStyle = v >= 0
             ? 'rgba(74,158,255,' + (0.12 + 0.85 * v).toFixed(3) + ')'
             : 'rgba(245,166,35,' + (0.12 + 0.85 * (-v)).toFixed(3) + ')';
-          ctx.fillRect(ox + i * cw, oy + p * ch, cw + 0.5, ch + 0.5);
+          ctx.fillRect(ox + p * cw, oy + i * ch, cw + 0.5, ch + 0.5);
         }
       }
       ctx.fillStyle = COL.muted; ctx.textAlign = 'right';
-      ctx.fillText('pos 0', ox - 4, oy + 8);
-      ctx.fillText('pos ' + (L - 1), ox - 4, oy + gh);
+      ctx.fillText('dim 0', ox - 4, oy + 8);
+      ctx.fillText('dim ' + (d - 1), ox - 4, oy + gh);
       ctx.textAlign = 'center';
-      ctx.fillText('dim 0', ox + cw / 2 + 4, H - 8);
-      ctx.fillText('dim ' + (d - 1), ox + gw - cw, H - 8);
+      ctx.fillText('pos 0', ox + cw / 2 + 4, H - 8);
+      ctx.fillText('pos ' + (L - 1), ox + gw - cw, H - 8);
 
       // ---- similarity vs distance ----
       var g = fit(sim); if (!g) return;
       var c2 = g.ctx, W2 = g.w, H2 = g.h;
       c2.clearRect(0, 0, W2, H2);
       c2.textAlign = 'center'; c2.fillStyle = COL.muted; c2.font = '12px Inter, sans-serif';
-      c2.fillText('PE(pos 0) . PE(distance)', W2 / 2, 16);
+      c2.fillText('similarity to position 0 as distance grows', W2 / 2, 16);
       var px = 40, py = 28, pw = W2 - px - 16, ph = H2 - py - 28;
       // axes
       c2.strokeStyle = COL.line; c2.lineWidth = 1;
@@ -3917,9 +3862,15 @@ Next: Module 4 &mdash; The Transformer
       c2.fillStyle = COL.muted; c2.textAlign = 'left';
       c2.fillText('0', px, py + ph + 16);
       c2.textAlign = 'right'; c2.fillText('distance ' + (L - 1), px + pw, py + ph + 16);
+      c2.save();
+      c2.translate(12, py + ph / 2);
+      c2.rotate(-Math.PI / 2);
+      c2.textAlign = 'center';
+      c2.fillText('similarity', 0, 0);
+      c2.restore();
 
       readout.innerHTML = 'd_model = <strong>' + d + '</strong>, base = <strong>' + base.toLocaleString() +
-        '</strong>. Low dimensions oscillate fast (fine position); high dimensions change slowly (coarse position). Nearby positions are most similar, so position feeds a distance signal into attention.';
+        '</strong>. The heatmap shows positions across the x-axis and dimensions down the y-axis. The right plot compares each position to position 0; nearby positions tend to be more similar, giving attention a distance signal.';
     }
     draw();
     return { resize: draw };

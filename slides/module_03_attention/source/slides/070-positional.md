@@ -52,7 +52,7 @@ Now two identical words at different positions arrive at attention as **differen
 
 ## Sinusoidal Positional Encodings
 
-The original Transformer used a fixed pattern: each dimension of $P$ is a sine or cosine wave, and each dimension uses a different frequency.
+A common fixed pattern makes each dimension of $P$ a sine or cosine wave, with a different frequency in each dimension.
 
 $$PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d}}\right) \qquad PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d}}\right)$$
 

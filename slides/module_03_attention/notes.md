@@ -50,11 +50,12 @@ $$\text{score}(i, j) = \mathbf{q}_i \cdot \mathbf{k}_j$$
 
 - This is a dot product — a measure of alignment. When query $i$ points in a similar direction to key $j$, the score is large.
 
-### The Transformer: Attention and MLPs Stacked
-- The Transformer interleaves two operations in every layer: **self-attention**, which mixes information across tokens, and a **position-wise MLP (feed-forward block)**, which processes each token independently.
-- Attention is the only operation that lets tokens exchange information; the MLP adds per-token nonlinear capacity. Stacking the pair $N$ times (with residual connections and layer normalization, covered in Module 4) gives the model its depth.
-- This is the bridge from Module 2 (the MLP) to the full Transformer: attention is the new ingredient that the MLP lacked.
-- **Reference:** Vaswani, A. et al. (2017). "Attention Is All You Need." *NeurIPS*. *arXiv:1706.03762*.
+### Constructing the Attention Layer
+- The attention layer has three conceptual steps:
+  1. **Compare:** compute $QK^T$, so every query is compared against every key.
+  2. **Normalize:** scale the scores and apply softmax row by row.
+  3. **Retrieve:** multiply the normalized weights by $V$, producing a weighted sum of value vectors for every token.
+- The value matrix $V$ feeds the retrieve step directly. It is not itself the output; the output is produced only after the attention weights are applied to $V$.
 
 ## Scaled Dot-Product Attention
 
@@ -62,7 +63,6 @@ $$\text{score}(i, j) = \mathbf{q}_i \cdot \mathbf{k}_j$$
 - For two random vectors of dimension $d_k$ with zero mean and unit variance, the expected magnitude of their dot product is $\sqrt{d_k}$.
 - When inputs to softmax are large, the output becomes sharply peaked (one entry near 1, the rest near 0), producing tiny gradients that make training unstable.
 - Dividing by $\sqrt{d_k}$ keeps the variance of the dot product roughly constant regardless of dimension, preserving gradient flow and stabilizing training.
-- **Reference:** Vaswani, A. et al. (2017). "Attention Is All You Need." *NeurIPS*. *arXiv:1706.03762*.
 
 ### The Full Formula
 - Scaled dot-product attention:
@@ -74,8 +74,8 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\righ
 - The output dimension matches the value dimension ($d_k$), not the sequence length.
 
 ### Attention Beyond Text
-- The same mechanism operates on any sequence, including image patches. In a vision-language Transformer, text tokens can attend to regions of an image, and the attention map highlights the regions the text refers to.
-- **Reference:** Huang, Z., Zeng, Z., Liu, B., Fu, D., & Fu, J. (2020). "Pixel-BERT: Aligning Image Pixels with Text by Deep Multi-Modal Transformers." *arXiv:2004.00849*. (The attention-region visualization in the slides is from this paper's first Transformer layer.)
+- The same mechanism operates on any sequence, including image patches. In a vision-language model, text tokens can attend to regions of an image, and the attention map highlights the regions the text refers to.
+- **Reference:** Huang, Z., Zeng, Z., Liu, B., Fu, D., & Fu, J. (2020). "Pixel-BERT: Aligning Image Pixels with Text by Deep Multi-Modal Transformers." *arXiv:2004.00849*. (The attention-region visualization in the slides is from Pixel-BERT.)
 
 ## Attention Masks
 
@@ -88,7 +88,9 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\righ
 - A causal mask prevents each token from attending to future tokens. Entry $(i, j)$ is 0 if $j \leq i$ and $-\infty$ if $j > i$.
 - **Bidirectional attention** (BERT-style): every token can attend to every other token. Useful for understanding the full context.
 - **Causal attention** (GPT-style): each token can only attend to itself and earlier tokens.
-- **Why causal masking is necessary:** In a language model, we predict $P(w_t \mid w_1, w_2, \ldots, w_{t-1})$. If token $t$ could see token $t+1$ during training, the model would be cheating — it could copy the answer instead of learning to predict. Causal masking enforces the same information constraint during training that the model will face during inference.
+- **Why causal masking is necessary:** In a language model, we predict $P(w_t \mid w_1, w_2, \ldots, w_{t-1})$. If token $t$ could see token $t+1$ during training, the model would be cheating — it could copy the answer instead of learning to predict.
+- **Training:** a length-$n$ sequence provides many next-token prediction examples at once. Causal masking lets all positions be trained in parallel while keeping each position from seeing future answers.
+- **Inference:** future tokens do not exist. The model predicts one token, appends it to the context, and feeds the longer sequence back in to continue generation. Causal masking makes training match this autoregressive information constraint.
 - **Reference:** Devlin, J. et al. (2019). "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding." *NAACL*. Radford, A. et al. (2018). "Improving Language Understanding by Generative Pre-Training." OpenAI.
 
 ## Multi-Head Self-Attention
@@ -118,18 +120,15 @@ $$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_H
 - **Self-attention:** $Q$, $K$, and $V$ all come from the same sequence. Every token looks at every other token in the same sequence.
 - **Cross-attention:** $Q$ comes from one sequence; $K$ and $V$ come from another. One sequence selects information from the other.
 
-### Encoder-Decoder Use Case
-- The original Transformer used both self-attention and cross-attention:
-  - **Encoder:** self-attention over the input sequence, producing contextualized representations.
-  - **Decoder:** causal self-attention over the output sequence, plus cross-attention where decoder queries attend to encoder keys and values.
-- Modern LLMs (GPT, LLaMA) use only the decoder with causal self-attention. The encoder-decoder pattern remains common in translation and speech models.
+### Cross-Attention Use Cases
+- Cross-attention is useful whenever one stream needs to retrieve from another stream: a target sentence retrieving from a source sentence, text retrieving from image regions, audio tokens retrieving from text, or a model retrieving from external records.
+- The key distinction is source of projections: in self-attention, $Q$, $K$, and $V$ come from the same sequence; in cross-attention, $Q$ comes from one sequence while $K$ and $V$ come from another.
 
 ## Positional Embeddings
 
 ### Permutation Equivariance
 - Self-attention without position information is permutation equivariant: if you permute the input, the output is the same permutation of the original output.
 - The model cannot distinguish "dog bites man" from "man bites dog" because both have the same bag of tokens.
-- **Reference:** The original Transformer paper (Vaswani et al., 2017) introduced sinusoidal positional encodings specifically to address this.
 
 ### Learned Positional Embeddings
 - A trainable embedding table with one vector per position, added to the token embeddings:
@@ -188,6 +187,7 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 - It tiles the computation to keep intermediate results in fast SRAM (Static Random-Access Memory), avoiding expensive HBM reads/writes.
 - Same mathematical result as standard attention, but 2-4x faster and 5-20x less memory.
 - FlashAttention-2 and -3 pushed further gains on newer GPU architectures.
+- The slide emphasizes that FlashAttention changes memory movement and computation order, not the mathematical attention equation.
 
 ### Sliding-Window Attention
 - Each token attends only to a local window of neighbors (plus a few global tokens).
@@ -219,12 +219,6 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 - Their attention mechanism was originally a fix for the bottleneck of fixed-size context vectors in encoder-decoder models.
 - The paper made attention a first-class mechanism, not just a patch for RNNs.
 
-### Vaswani et al.
-- **Paper:** Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). "Attention Is All You Need." *NeurIPS*. *arXiv:1706.03762*.
-- Replaced recurrence entirely with attention and feed-forward layers.
-- Introduced scaled dot-product multi-head attention.
-- One of the most cited papers in machine learning.
-
 ### Tri Dao
 - **Paper:** Dao, T., Fu, D., Ermon, S., Rudra, A., & Ré, C. (2022). "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness." *arXiv:2205.14135*.
 - Showed how careful memory-aware attention algorithms can make exact attention much faster on GPUs.
@@ -247,21 +241,21 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 ## Exercise Notes
 
 ### Exercise Structure
-- The single student-facing file is `exercises/module_03_attention/exercise.py`. Steps: (1) `make_token_vectors` (provided), (2) `compute_qkv`, (3) `raw_attention_scores`, (4) `scaled_softmax`, (5) `attention_output`, (6) `causal_mask`, (7) `masked_attention` (provided, uses steps 3-6), (8) `add_positional_embeddings`, extra credit `kv_cache_step`.
+- The single student-facing file is `exercises/module_03_attention/exercise.py`. Steps: (1) `make_token_vectors` (provided), (2) `TinyAttentionLayer.compute_qkv`, (3) `TinyAttentionLayer.raw_attention_scores`, (4) `TinyAttentionLayer.scaled_softmax`, (5) `TinyAttentionLayer.attention_output`, (6) `TinyAttentionLayer.causal_mask`, (7) `TinyAttentionLayer.masked_attention` (provided, uses the earlier methods), (8) `add_positional_embeddings`, extra credit `kv_cache_step`.
 
 ### Parameters
 - `vocab_size = 10`, `d_model = 8`, `d_k = 4`, `seq_len = 5`
 - Token IDs: `[2, 5, 1, 8, 3]` (fixed for reproducibility)
 - Token labels: `["the", "cat", "sat", "on", "mat"]`
-- Random seed: 42 for all random operations
+- Random seed: 42 for token embeddings and the attention layer's projection matrices
 
 ### Expected Output
 - With random seed 42 and small weight initialization (`* 0.1`), the unmasked attention weights are approximately uniform (each entry near 0.2), because the random projections produce nearly orthogonal query and key vectors.
 - The causal mask creates a lower-triangular pattern: token 0 attends only to itself (weight 1.0), token 1 attends equally to tokens 0 and 1 (each near 0.5), and so on.
-- Adding positional embeddings shifts the token representations, which slightly changes the attention pattern.
+- Adding sinusoidal positional encodings shifts the token representations, which slightly changes the attention pattern.
 
 ### Causal Mask Implementation
-- The mask uses `torch.tril(torch.ones(seq_len, seq_len))` to create the lower triangle, then `masked_fill(mask == 0, float('-inf'))` to set upper-triangle entries to $-\infty$.
+- The mask uses `torch.tril(torch.ones(seq_len, seq_len))` to create the lower triangle, then converts allowed entries to $0$ and blocked upper-triangle entries to $-\infty$.
 - After softmax, $-\infty$ entries become exactly 0, and the remaining entries are re-normalized to sum to 1.
 
 ### KV Cache Extra Credit

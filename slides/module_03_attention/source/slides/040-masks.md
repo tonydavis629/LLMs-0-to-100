@@ -113,6 +113,20 @@ In a language model, we predict the next token given all previous tokens:
 
 $$P(w_t \mid w_1, w_2, \ldots, w_{t-1})$$
 
+:::columns cols="2" gap="30px"
+**During training**
+
+A sequence of length $n$ gives many supervised examples at once:
+
+$$w_1 \rightarrow w_2,\quad w_1,w_2 \rightarrow w_3,\quad \ldots$$
+
+The causal mask lets the model train all positions in parallel while keeping each prediction from seeing its own answer.
++++
+**During inference**
+
+Future tokens do not exist. The model predicts one token, appends it to the context, then feeds the longer sequence back in to predict the next token.
+:::
+
 :::note
-If token $t$ could see token $t+1$, the model would be **cheating** during training &mdash; it could copy the answer instead of learning to predict. Causal masking enforces the same information constraint during training that the model will face at inference, when future tokens do not exist yet.
+Causal masking makes the training setup match autoregressive generation: every token can use only itself and earlier tokens, never a future answer.
 :::

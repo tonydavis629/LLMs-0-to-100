@@ -20,7 +20,7 @@ A student proposes training a language model without a causal mask, arguing that
 ---
 
 :::quiz id="quiz-q3" title="Q3: Positional Information"
-You feed the sentence "the cat sat on the mat" into a Transformer with positional embeddings removed. You then reverse the sentence to "mat the on sat cat the" and feed it in again. How do the attention patterns compare, and what does this tell you?
+You feed the sentence "the cat sat on the mat" into a self-attention layer with positional embeddings removed. You then reverse the sentence to "mat the on sat cat the" and feed it in again. How do the attention patterns compare, and what does this tell you?
 +++
 **Answer:** Without positional information, the attention patterns are identical up to the permutation of tokens. Self-attention is permutation equivariant: if you permute the input, the output is the same permutation of the original output. The model cannot distinguish "the cat sat" from "sat cat the" because it has no way to know which token came first. Positional embeddings break this symmetry by giving each position a unique signature.
 :::
@@ -28,7 +28,7 @@ You feed the sentence "the cat sat on the mat" into a Transformer with positiona
 ---
 
 :::quiz id="quiz-q4" title="Q4: O(n^2) Scaling"
-GPT-4 Turbo supports 128K token context. If you doubled the context to 256K tokens, by what factor does the attention computation cost increase? Why is this a bigger problem for attention than for the feed-forward layers?
+A model supports a 128K-token context. If you doubled the context to 256K tokens, by what factor does the attention computation cost increase? Why is this a bigger problem for per-token feed-forward layers?
 +++
 **Answer:** The attention cost increases by a factor of 4 (from $O(n^2)$ to $O((2n)^2) = O(4n^2)$). The feed-forward layers process each token independently, so their cost is $O(n)$ &mdash; doubling context doubles the feed-forward cost. The $O(n^2)$ attention cost is why long context is disproportionately expensive, and why techniques like FlashAttention, sliding-window attention, and sparse attention patterns are active research areas.
 :::
@@ -48,10 +48,8 @@ A model has 32 layers, 32 attention heads per layer, and $d_k = 128$ per head. H
 ## References and Further Reading
 
 - Bahdanau, D., Cho, K., &amp; Bengio, Y. (2014). "Neural Machine Translation by Jointly Learning to Align and Translate." *arXiv:1409.0473*.
-- Vaswani, A. et al. (2017). "Attention Is All You Need." *NeurIPS*. *arXiv:1706.03762*.
 - Dao, T. et al. (2022). "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness." *arXiv:2205.14135*.
 - Su, J. et al. (2021). "RoFormer: Enhanced Transformer with Rotary Position Embedding." *arXiv:2104.09864*.
 - Xiao, G. et al. (2023). "Efficient Streaming Language Models with Attention Sinks." *arXiv:2309.17453*.
 - Huang, Z. et al. (2020). "Pixel-BERT: Aligning Image Pixels with Text by Deep Multi-Modal Transformers." *arXiv:2004.00849*.
-- [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) &mdash; visual guide to attention and encoder-decoder
 - [BertViz](https://codecut.ai/bertviz-visualize-attention-in-transformer-language-models/) &mdash; attention visualization tool

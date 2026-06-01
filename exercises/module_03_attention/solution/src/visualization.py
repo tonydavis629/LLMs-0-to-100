@@ -7,6 +7,8 @@ and the effect of positional embeddings on attention patterns.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import numpy as np
 import matplotlib
 matplotlib.use("Agg")
@@ -17,6 +19,15 @@ _FG = "#e8eaf0"
 _MUTED = "#8892a4"
 _PRIMARY = "#4a9eff"
 _SECONDARY = "#f5a623"
+
+
+def _display_path(filepath: str) -> str:
+    """Return a short path for terminal output when possible."""
+    path = Path(filepath)
+    try:
+        return str(path.relative_to(Path.cwd()))
+    except ValueError:
+        return str(path)
 
 
 def plot_attention_matrix(
@@ -96,7 +107,7 @@ def plot_attention_comparison(
     fig.tight_layout()
     fig.savefig(filepath, dpi=150, bbox_inches="tight", facecolor=_BG)
     plt.close(fig)
-    print(f"Saved attention comparison to {filepath}")
+    print(f"Saved attention comparison to {_display_path(filepath)}")
 
 
 def plot_positional_effect(
@@ -130,7 +141,7 @@ def plot_positional_effect(
     fig.tight_layout()
     fig.savefig(filepath, dpi=150, bbox_inches="tight", facecolor=_BG)
     plt.close(fig)
-    print(f"Saved positional effect to {filepath}")
+    print(f"Saved positional effect to {_display_path(filepath)}")
 
 
 def plot_kv_cache_growth(
@@ -170,4 +181,4 @@ def plot_kv_cache_growth(
     fig.tight_layout()
     fig.savefig(filepath, dpi=150, bbox_inches="tight", facecolor=_BG)
     plt.close(fig)
-    print(f"Saved KV cache plot to {filepath}")
+    print(f"Saved KV cache plot to {_display_path(filepath)}")

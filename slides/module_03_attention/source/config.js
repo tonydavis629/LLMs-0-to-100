@@ -155,27 +155,25 @@
       a: {
         tokens: ['the', 'cat', 'sat', 'on', 'the', 'mat'],
         sel: 2,
-        M: normalizeRows([
-          [0.50, 0.20, 0.10, 0.05, 0.10, 0.05],
-          [0.20, 0.50, 0.15, 0.05, 0.05, 0.05],
-          [0.05, 0.45, 0.30, 0.10, 0.05, 0.05],
-          [0.05, 0.10, 0.40, 0.30, 0.10, 0.05],
-          [0.05, 0.05, 0.10, 0.20, 0.30, 0.30],
-          [0.05, 0.15, 0.35, 0.10, 0.10, 0.25]
-        ])
+        M: [
+          [0.00, 0.34, 0.18, 0.12, 0.28, 0.08],
+          [0.14, 0.00, 0.42, 0.16, 0.08, 0.20],
+          [0.06, 0.46, 0.00, 0.30, 0.08, 0.10],
+          [0.08, 0.12, 0.50, 0.00, 0.20, 0.10],
+          [0.30, 0.08, 0.12, 0.22, 0.00, 0.28],
+          [0.26, 0.24, 0.30, 0.12, 0.08, 0.00]
+        ]
       },
       b: {
-        tokens: ['the', 'cat', 'was', 'tired', 'so', 'it', 'slept'],
-        sel: 5,
-        M: normalizeRows([
-          [0.50, 0.20, 0.10, 0.05, 0.05, 0.05, 0.05],
-          [0.20, 0.50, 0.10, 0.10, 0.03, 0.04, 0.03],
-          [0.05, 0.40, 0.30, 0.15, 0.05, 0.03, 0.02],
-          [0.03, 0.30, 0.20, 0.35, 0.05, 0.04, 0.03],
-          [0.05, 0.10, 0.15, 0.20, 0.30, 0.10, 0.10],
-          [0.05, 0.55, 0.05, 0.10, 0.05, 0.15, 0.05],
-          [0.03, 0.20, 0.05, 0.35, 0.07, 0.10, 0.20]
-        ])
+        tokens: ['alice', 'gave', 'bob', 'her', 'book'],
+        sel: 3,
+        M: [
+          [0.00, 0.20, 0.25, 0.30, 0.25],
+          [0.25, 0.00, 0.35, 0.20, 0.20],
+          [0.20, 0.40, 0.00, 0.15, 0.25],
+          [0.60, 0.15, 0.10, 0.00, 0.15],
+          [0.35, 0.20, 0.10, 0.35, 0.00]
+        ]
       }
     };
     var state = { key: 'a', sel: examples.a.sel };
@@ -185,7 +183,7 @@
         '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
         '<div class="m3-controls">' +
           '<button class="m3-btn active" data-ex="a">"the cat sat on the mat"</button>' +
-          '<button class="m3-btn" data-ex="b">"the cat was tired so it slept"</button>' +
+          '<button class="m3-btn" data-ex="b">"alice gave bob her book"</button>' +
         '</div>' +
         '<p class="m3-readout"></p>' +
       '</div>';
@@ -239,7 +237,7 @@
         ctx.fillText(toks[i], ox - 8, oy + i * cell + cell / 2 + 4);
       }
       ctx.save();
-      ctx.translate(18, oy + n * cell / 2);
+      ctx.translate(ox - 58, oy + n * cell / 2);
       ctx.rotate(-Math.PI / 2);
       ctx.textAlign = 'center'; ctx.fillStyle = COL.primary;
       ctx.fillText('queries', 0, 0);
@@ -249,13 +247,13 @@
       for (var r = 0; r < n; r++) {
         for (var c = 0; c < n; c++) {
           var w = M[r][c];
-          ctx.fillStyle = 'rgba(74,158,255,' + (0.08 + 0.9 * w).toFixed(3) + ')';
+          ctx.fillStyle = (r === c)
+            ? 'rgba(13,18,37,0.95)'
+            : 'rgba(74,158,255,' + (0.08 + 0.9 * w).toFixed(3) + ')';
           ctx.fillRect(ox + c * cell + 1, oy + r * cell + 1, cell - 2, cell - 2);
-          if (w >= 0.18) {
-            ctx.fillStyle = COL.text; ctx.textAlign = 'center';
-            ctx.font = '11px Inter, sans-serif';
-            ctx.fillText(w.toFixed(2), ox + c * cell + cell / 2, oy + r * cell + cell / 2 + 4);
-          }
+          ctx.fillStyle = (r === c) ? COL.muted : COL.text; ctx.textAlign = 'center';
+          ctx.font = '11px Inter, sans-serif';
+          ctx.fillText(w.toFixed(2), ox + c * cell + cell / 2, oy + r * cell + cell / 2 + 4);
         }
       }
       // highlight selected query row
@@ -267,7 +265,7 @@
       var best = 0; for (var k = 1; k < n; k++) if (row[k] > row[best]) best = k;
       readout.innerHTML = 'Click a row to pick a query. <strong>"' + toks[state.sel] +
         '"</strong> attends most to <strong>"' + toks[best] + '"</strong> (' +
-        (row[best] * 100).toFixed(0) + '%). Each row sums to 1.';
+        (row[best] * 100).toFixed(0) + '%). The diagonal is set to 0 here, and each row sums to 1.';
     }
     draw();
     return { resize: draw };
@@ -403,31 +401,31 @@
       var ctx = f.ctx, W = f.w, H = f.h;
       ctx.clearRect(0, 0, W, H);
       ctx.textAlign = 'center'; ctx.fillStyle = COL.muted; ctx.font = '12px Inter, sans-serif';
-      ctx.fillText('encoding value (rows = position, cols = dimension)', W / 2, 16);
-      var ox = 36, oy = 28, gw = W - ox - 14, gh = H - oy - 26;
-      var cw = gw / d, ch = gh / L;
+      ctx.fillText('encoding value (x = sequence position, y = dimension)', W / 2, 16);
+      var ox = 46, oy = 28, gw = W - ox - 14, gh = H - oy - 30;
+      var cw = gw / L, ch = gh / d;
       for (var p = 0; p < L; p++) {
         for (var i = 0; i < d; i++) {
           var v = pe(p, i, d, base);
           ctx.fillStyle = v >= 0
             ? 'rgba(74,158,255,' + (0.12 + 0.85 * v).toFixed(3) + ')'
             : 'rgba(245,166,35,' + (0.12 + 0.85 * (-v)).toFixed(3) + ')';
-          ctx.fillRect(ox + i * cw, oy + p * ch, cw + 0.5, ch + 0.5);
+          ctx.fillRect(ox + p * cw, oy + i * ch, cw + 0.5, ch + 0.5);
         }
       }
       ctx.fillStyle = COL.muted; ctx.textAlign = 'right';
-      ctx.fillText('pos 0', ox - 4, oy + 8);
-      ctx.fillText('pos ' + (L - 1), ox - 4, oy + gh);
+      ctx.fillText('dim 0', ox - 4, oy + 8);
+      ctx.fillText('dim ' + (d - 1), ox - 4, oy + gh);
       ctx.textAlign = 'center';
-      ctx.fillText('dim 0', ox + cw / 2 + 4, H - 8);
-      ctx.fillText('dim ' + (d - 1), ox + gw - cw, H - 8);
+      ctx.fillText('pos 0', ox + cw / 2 + 4, H - 8);
+      ctx.fillText('pos ' + (L - 1), ox + gw - cw, H - 8);
 
       // ---- similarity vs distance ----
       var g = fit(sim); if (!g) return;
       var c2 = g.ctx, W2 = g.w, H2 = g.h;
       c2.clearRect(0, 0, W2, H2);
       c2.textAlign = 'center'; c2.fillStyle = COL.muted; c2.font = '12px Inter, sans-serif';
-      c2.fillText('PE(pos 0) . PE(distance)', W2 / 2, 16);
+      c2.fillText('similarity to position 0 as distance grows', W2 / 2, 16);
       var px = 40, py = 28, pw = W2 - px - 16, ph = H2 - py - 28;
       // axes
       c2.strokeStyle = COL.line; c2.lineWidth = 1;
@@ -451,9 +449,15 @@
       c2.fillStyle = COL.muted; c2.textAlign = 'left';
       c2.fillText('0', px, py + ph + 16);
       c2.textAlign = 'right'; c2.fillText('distance ' + (L - 1), px + pw, py + ph + 16);
+      c2.save();
+      c2.translate(12, py + ph / 2);
+      c2.rotate(-Math.PI / 2);
+      c2.textAlign = 'center';
+      c2.fillText('similarity', 0, 0);
+      c2.restore();
 
       readout.innerHTML = 'd_model = <strong>' + d + '</strong>, base = <strong>' + base.toLocaleString() +
-        '</strong>. Low dimensions oscillate fast (fine position); high dimensions change slowly (coarse position). Nearby positions are most similar, so position feeds a distance signal into attention.';
+        '</strong>. The heatmap shows positions across the x-axis and dimensions down the y-axis. The right plot compares each position to position 0; nearby positions tend to be more similar, giving attention a distance signal.';
     }
     draw();
     return { resize: draw };

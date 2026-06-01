@@ -8,7 +8,6 @@
 ## The $O(n^2)$ Cost
 
 Attention builds an $n \times n$ score matrix: every token compared against every other token. That matrix is the bottleneck.
-
 <div style="text-align: center; margin: 4px 0;">
 <svg viewBox="0 0 720 250" width="100%" style="max-height: 240px;">
   <!-- big n x n grid -->
@@ -45,6 +44,42 @@ The $O(n^2)$ cost is the main barrier to very long contexts: it grows far faster
 - Identical result to standard attention, but 2-4x faster and 5-20x less memory
 - FlashAttention-2 and -3 pushed further on newer GPUs
 :::
+
+---
+
+<!-- .slide: id="flash-attention-explained" -->
+
+## FlashAttention: Same Math, Less Memory Traffic
+
+Standard attention often writes the full $n \times n$ attention matrix to GPU memory, then reads it back to multiply by $V$. FlashAttention avoids that expensive round trip.
+<div style="text-align: center; margin: 8px 0;">
+<svg viewBox="0 0 820 250" width="100%" style="max-height: 235px;">
+  <text x="190" y="24" fill="#e74c3c" font-size="13" text-anchor="middle" font-weight="600">standard attention</text>
+  <text x="620" y="24" fill="#3fb950" font-size="13" text-anchor="middle" font-weight="600">FlashAttention</text>
+  <rect x="70" y="52" width="240" height="130" rx="6" fill="rgba(231,76,60,0.08)" stroke="#e74c3c" stroke-width="1.5"/>
+  <text x="190" y="76" fill="#e8eaf0" font-size="12" text-anchor="middle">materialize full score matrix</text>
+  <rect x="116" y="94" width="148" height="64" fill="rgba(74,158,255,0.20)" stroke="#4a9eff" stroke-width="1.2"/>
+  <g stroke="#4a9eff" stroke-width="0.6" opacity="0.45">
+    <line x1="140" y1="94" x2="140" y2="158"/><line x1="164" y1="94" x2="164" y2="158"/><line x1="188" y1="94" x2="188" y2="158"/><line x1="212" y1="94" x2="212" y2="158"/><line x1="236" y1="94" x2="236" y2="158"/>
+    <line x1="116" y1="110" x2="264" y2="110"/><line x1="116" y1="126" x2="264" y2="126"/><line x1="116" y1="142" x2="264" y2="142"/>
+  </g>
+  <text x="190" y="206" fill="#e74c3c" font-size="12" text-anchor="middle">large HBM reads and writes</text>
+  <rect x="500" y="52" width="240" height="130" rx="6" fill="rgba(63,185,80,0.08)" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="620" y="76" fill="#e8eaf0" font-size="12" text-anchor="middle">tile Q, K, V in small blocks</text>
+  <g>
+    <rect x="548" y="94" width="148" height="64" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.2"/>
+    <rect x="548" y="94" width="50" height="22" fill="rgba(63,185,80,0.55)" stroke="#3fb950"/>
+    <rect x="598" y="116" width="50" height="22" fill="rgba(63,185,80,0.45)" stroke="#3fb950"/>
+    <rect x="648" y="136" width="48" height="22" fill="rgba(63,185,80,0.35)" stroke="#3fb950"/>
+  </g>
+  <text x="620" y="206" fill="#3fb950" font-size="12" text-anchor="middle">keep intermediates in fast SRAM</text>
+  <line x1="350" y1="118" x2="470" y2="118" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrfa)"/>
+  <text x="410" y="106" fill="#8892a4" font-size="12" text-anchor="middle">reorder computation</text>
+  <defs><marker id="arrfa" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
+</svg>
+</div>
+
+The result is still exact scaled dot-product attention. The speedup comes from doing less slow memory movement, not from changing the equation. Reference: Dao et al. (2022), *FlashAttention*.
 
 ---
 

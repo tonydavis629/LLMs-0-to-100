@@ -8,7 +8,6 @@
 ## Predicting the Next Word with an MLP
 
 The task: given the words so far, predict the next one. An MLP reads a **fixed window** of the most recent tokens, flattens them into one long vector, and maps that to a distribution over the vocabulary.
-
 <div style="text-align: center; margin: 8px 0;">
 <svg viewBox="0 0 860 260" width="100%" style="max-height: 250px;">
   <!-- window slots -->
@@ -87,7 +86,6 @@ The architecture must match the data. Language needs variable-length context, we
 ## The Fixed-Context Bottleneck
 
 Recurrent models (RNNs, LSTMs) handle variable length by reading tokens one at a time and compressing everything seen so far into a **single hidden state vector**.
-
 <div style="text-align: center; margin: 8px 0;">
 <svg viewBox="0 0 820 150" width="100%" style="max-height: 140px;">
   <g font-size="13" text-anchor="middle" font-weight="600">
@@ -131,53 +129,76 @@ Recurrent models (RNNs, LSTMs) handle variable length by reading tokens one at a
 
 ## What Attention Does
 
-Before any math, here is the idea: every word looks at every other word and decides which ones matter for understanding itself. The thicker the line, the stronger the attention.
-
+Before any math, here is the operation: every output word is a **weighted sum of all input value vectors**. The weights are different for each query word, so each token builds its own context.
 <div style="text-align: center; margin: 10px 0;">
-<svg viewBox="0 0 700 220" width="100%" style="max-height: 210px;">
-  <g transform="translate(0, 30)">
-    <rect x="30" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="65" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
-    <rect x="120" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="155" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">cat</text>
-    <rect x="210" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/>
-    <text x="245" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">sat</text>
-    <rect x="300" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="335" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">on</text>
-    <rect x="390" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="425" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
-    <rect x="480" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="515" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">mat</text>
+<svg viewBox="0 0 900 340" width="100%" style="max-height: 320px;">
+  <text x="415" y="20" fill="#8892a4" font-size="12" text-anchor="middle">columns are input values; rows are output tokens</text>
+  <g font-size="12" text-anchor="middle" font-weight="600">
+    <text x="215" y="48" fill="#50c878">v_the</text>
+    <text x="300" y="48" fill="#50c878">v_cat</text>
+    <text x="385" y="48" fill="#50c878">v_sat</text>
+    <text x="470" y="48" fill="#50c878">v_on</text>
+    <text x="555" y="48" fill="#50c878">v_mat</text>
   </g>
-  <line x1="245" y1="65" x2="65" y2="65" stroke="#4a9eff" stroke-width="2" opacity="0.35"/>
-  <line x1="245" y1="65" x2="155" y2="65" stroke="#f5a623" stroke-width="5" opacity="0.8"/>
-  <line x1="245" y1="65" x2="335" y2="65" stroke="#f5a623" stroke-width="4" opacity="0.7"/>
-  <line x1="245" y1="65" x2="425" y2="65" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <line x1="245" y1="65" x2="515" y2="65" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <text x="350" y="115" fill="#8892a4" font-size="13" text-anchor="middle">"sat" attends strongly to "cat" and "on"</text>
-  <g transform="translate(0, 135)">
-    <rect x="30" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="65" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
-    <rect x="120" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="155" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">cat</text>
-    <rect x="210" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="245" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">was</text>
-    <rect x="300" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="335" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">tired</text>
-    <rect x="390" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/>
-    <text x="425" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">it</text>
-    <rect x="480" y="0" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="515" y="22" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">slept</text>
+  <g font-size="12" text-anchor="end" font-weight="600">
+    <text x="150" y="82" fill="#4a9eff">o_the =</text>
+    <text x="150" y="128" fill="#4a9eff">o_cat =</text>
+    <text x="150" y="174" fill="#f5a623">o_sat =</text>
+    <text x="150" y="220" fill="#4a9eff">o_on =</text>
+    <text x="150" y="266" fill="#4a9eff">o_mat =</text>
   </g>
-  <line x1="425" y1="170" x2="155" y2="170" stroke="#f5a623" stroke-width="5" opacity="0.8"/>
-  <line x1="425" y1="170" x2="65" y2="170" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <line x1="425" y1="170" x2="245" y2="170" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <line x1="425" y1="170" x2="335" y2="170" stroke="#4a9eff" stroke-width="1.5" opacity="0.3"/>
-  <line x1="425" y1="170" x2="515" y2="170" stroke="#4a9eff" stroke-width="2" opacity="0.4"/>
-  <text x="350" y="210" fill="#8892a4" font-size="13" text-anchor="middle">"it" attends back to "cat" (coreference)</text>
+  <g font-size="11" text-anchor="middle">
+    <rect x="175" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="215" y="82" fill="#e8eaf0">0.05</text>
+    <rect x="260" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.50)" stroke="#2a3450"/><text x="300" y="82" fill="#e8eaf0">0.35</text>
+    <rect x="345" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="385" y="82" fill="#e8eaf0">0.10</text>
+    <rect x="430" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="470" y="82" fill="#e8eaf0">0.10</text>
+    <rect x="515" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.57)" stroke="#2a3450"/><text x="555" y="82" fill="#e8eaf0">0.40</text>
+    <rect x="175" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="215" y="128" fill="#e8eaf0">0.10</text>
+    <rect x="260" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="300" y="128" fill="#e8eaf0">0.05</text>
+    <rect x="345" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.64)" stroke="#2a3450"/><text x="385" y="128" fill="#e8eaf0">0.45</text>
+    <rect x="430" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.25)" stroke="#2a3450"/><text x="470" y="128" fill="#e8eaf0">0.15</text>
+    <rect x="515" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.39)" stroke="#2a3450"/><text x="555" y="128" fill="#e8eaf0">0.25</text>
+    <rect x="175" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.13)" stroke="#2a3450"/><text x="215" y="174" fill="#e8eaf0">0.05</text>
+    <rect x="260" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.66)" stroke="#2a3450"/><text x="300" y="174" fill="#e8eaf0">0.45</text>
+    <rect x="345" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.13)" stroke="#2a3450"/><text x="385" y="174" fill="#e8eaf0">0.05</text>
+    <rect x="430" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.46)" stroke="#2a3450"/><text x="470" y="174" fill="#e8eaf0">0.30</text>
+    <rect x="515" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.27)" stroke="#2a3450"/><text x="555" y="174" fill="#e8eaf0">0.15</text>
+    <rect x="175" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="215" y="220" fill="#e8eaf0">0.10</text>
+    <rect x="260" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="300" y="220" fill="#e8eaf0">0.20</text>
+    <rect x="345" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.64)" stroke="#2a3450"/><text x="385" y="220" fill="#e8eaf0">0.45</text>
+    <rect x="430" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="470" y="220" fill="#e8eaf0">0.05</text>
+    <rect x="515" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="555" y="220" fill="#e8eaf0">0.20</text>
+    <rect x="175" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.50)" stroke="#2a3450"/><text x="215" y="266" fill="#e8eaf0">0.35</text>
+    <rect x="260" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.39)" stroke="#2a3450"/><text x="300" y="266" fill="#e8eaf0">0.25</text>
+    <rect x="345" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="385" y="266" fill="#e8eaf0">0.20</text>
+    <rect x="430" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.25)" stroke="#2a3450"/><text x="470" y="266" fill="#e8eaf0">0.15</text>
+    <rect x="515" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="555" y="266" fill="#e8eaf0">0.05</text>
+  </g>
+  <g stroke="#8892a4" stroke-width="1.6" marker-end="url(#arrattn)">
+    <line x1="610" y1="78" x2="670" y2="78"/>
+    <line x1="610" y1="124" x2="670" y2="124"/>
+    <line x1="610" y1="170" x2="670" y2="170"/>
+    <line x1="610" y1="216" x2="670" y2="216"/>
+    <line x1="610" y1="262" x2="670" y2="262"/>
+  </g>
+  <g font-size="12" text-anchor="middle" font-weight="600">
+    <rect x="680" y="62" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="82" fill="#e8eaf0">new the</text>
+    <rect x="680" y="108" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="128" fill="#e8eaf0">new cat</text>
+    <rect x="680" y="154" width="88" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.2"/><text x="724" y="174" fill="#e8eaf0">new sat</text>
+    <rect x="680" y="200" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="220" fill="#e8eaf0">new on</text>
+    <rect x="680" y="246" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="266" fill="#e8eaf0">new mat</text>
+  </g>
+  <text x="445" y="316" fill="#8892a4" font-size="13" text-anchor="middle">
+    Example row: o_sat = 0.05v_the + 0.45v_cat + 0.05v_sat + 0.30v_on + 0.15v_mat
+  </text>
+  <defs>
+    <marker id="arrattn" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+      <path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/>
+    </marker>
+  </defs>
 </svg>
 </div>
 
 :::note
-**The key insight:** each token chooses its own context. A verb looks for its subject; a pronoun looks for its antecedent. The connections are learned, not hand-coded, and the same machinery works at every position.
+**The key insight:** attention is not selecting one token and discarding the rest. It computes a different weighted average for every token, and training learns which weights should become large.
 :::

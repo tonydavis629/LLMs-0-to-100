@@ -7,87 +7,58 @@
 
 ## Why Multiple Heads?
 
-A single attention head produces one weighted average per token. But a token may need to attend to different things for different reasons:
-
-:::columns cols="2" gap="30px"
-**Head 1** might learn syntactic attention &mdash; verbs attend to their subjects
-
-**Head 2** might learn coreference &mdash; pronouns attend to their antecedents
-
-**Head 3** might learn positional attention &mdash; each token attends to its immediate neighbor
-+++
-Multiple heads let the model learn **different ways to compare tokens** at the same time, instead of forcing one pattern to serve every purpose.
-:::
-
----
-
-<!-- .slide: id="multi-head-split" -->
-
-## Splitting the Dimension Across Heads
-
-The model dimension is divided among the heads, so multi-head attention costs the same as a single full-width head. Here: $d_{\text{model}} = 512$, $H = 8$ heads, $d_k = 64$ each.
-
+A single attention head produces one weighted average per token. Multiple heads split the feature dimension, so several lookup patterns can run in parallel.
 <div style="text-align: center; margin: 4px 0;">
-<svg viewBox="0 0 880 330" width="100%" style="max-height: 320px;">
-  <!-- Band 1: split bar -->
+<svg viewBox="0 0 880 230" width="100%" style="max-height: 215px;">
+  <text x="440" y="20" fill="#8892a4" font-size="12" text-anchor="middle">d_model = 512, split into H = 8 heads with d_k = 64 features each</text>
   <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="30" y="24" width="56" height="34" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="58" y="45" fill="#e8eaf0">64</text>
-    <rect x="86" y="24" width="56" height="34" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="114" y="45" fill="#e8eaf0">64</text>
-    <rect x="142" y="24" width="56" height="34" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="170" y="45" fill="#e8eaf0">64</text>
-    <rect x="198" y="24" width="56" height="34" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="226" y="45" fill="#e8eaf0">64</text>
-    <rect x="254" y="24" width="56" height="34" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="282" y="45" fill="#e8eaf0">64</text>
-    <rect x="310" y="24" width="56" height="34" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="338" y="45" fill="#e8eaf0">64</text>
-    <rect x="366" y="24" width="56" height="34" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="394" y="45" fill="#e8eaf0">64</text>
-    <rect x="422" y="24" width="56" height="34" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="450" y="45" fill="#e8eaf0">64</text>
+    <rect x="82" y="44" width="576" height="30" fill="none" stroke="#e8eaf0" stroke-width="1.4"/>
+    <rect x="82" y="44" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="118" y="64" fill="#e8eaf0">64</text>
+    <rect x="154" y="44" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="190" y="64" fill="#e8eaf0">64</text>
+    <rect x="226" y="44" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="262" y="64" fill="#e8eaf0">64</text>
+    <rect x="298" y="44" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="334" y="64" fill="#e8eaf0">64</text>
+    <rect x="370" y="44" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="406" y="64" fill="#e8eaf0">64</text>
+    <rect x="442" y="44" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="478" y="64" fill="#e8eaf0">64</text>
+    <rect x="514" y="44" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="550" y="64" fill="#e8eaf0">64</text>
+    <rect x="586" y="44" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="622" y="64" fill="#e8eaf0">64</text>
   </g>
-  <rect x="30" y="24" width="448" height="34" fill="none" stroke="#e8eaf0" stroke-width="1.5"/>
-  <text x="520" y="45" fill="#e8eaf0" font-size="13">Q, K, V are split into 8 slices of 64 dims</text>
-  <!-- arrows down -->
-  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmh)">
-    <line x1="58" y1="58" x2="58" y2="92"/><line x1="114" y1="58" x2="114" y2="92"/><line x1="170" y1="58" x2="170" y2="92"/><line x1="226" y1="58" x2="226" y2="92"/>
-    <line x1="282" y1="58" x2="282" y2="92"/><line x1="338" y1="58" x2="338" y2="92"/><line x1="394" y1="58" x2="394" y2="92"/><line x1="450" y1="58" x2="450" y2="92"/>
+  <g stroke="#e8eaf0" stroke-width="1.2">
+    <line x1="154" y1="38" x2="154" y2="82"/><line x1="226" y1="38" x2="226" y2="82"/>
+    <line x1="298" y1="38" x2="298" y2="82"/><line x1="370" y1="38" x2="370" y2="82"/>
+    <line x1="442" y1="38" x2="442" y2="82"/><line x1="514" y1="38" x2="514" y2="82"/>
+    <line x1="586" y1="38" x2="586" y2="82"/>
   </g>
-  <!-- Band 2: head boxes -->
-  <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="34" y="94" width="48" height="48" rx="4" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="58" y="116" fill="#4a9eff">head</text><text x="58" y="130" fill="#4a9eff">1</text>
-    <rect x="90" y="94" width="48" height="48" rx="4" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="114" y="116" fill="#f5a623">head</text><text x="114" y="130" fill="#f5a623">2</text>
-    <rect x="146" y="94" width="48" height="48" rx="4" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="170" y="116" fill="#50c878">head</text><text x="170" y="130" fill="#50c878">3</text>
-    <rect x="202" y="94" width="48" height="48" rx="4" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="226" y="116" fill="#c792ea">head</text><text x="226" y="130" fill="#c792ea">4</text>
-    <rect x="258" y="94" width="48" height="48" rx="4" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="282" y="116" fill="#4a9eff">head</text><text x="282" y="130" fill="#4a9eff">5</text>
-    <rect x="314" y="94" width="48" height="48" rx="4" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="338" y="116" fill="#f5a623">head</text><text x="338" y="130" fill="#f5a623">6</text>
-    <rect x="370" y="94" width="48" height="48" rx="4" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="394" y="116" fill="#50c878">head</text><text x="394" y="130" fill="#50c878">7</text>
-    <rect x="426" y="94" width="48" height="48" rx="4" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="450" y="116" fill="#c792ea">head</text><text x="450" y="130" fill="#c792ea">8</text>
+  <text x="710" y="64" fill="#e8eaf0" font-size="12">Q, K, and V are grouped by feature slice</text>
+  <g stroke="#8892a4" stroke-width="1.1" marker-end="url(#arrmhfirst)">
+    <line x1="118" y1="74" x2="118" y2="108"/><line x1="190" y1="74" x2="190" y2="108"/>
+    <line x1="262" y1="74" x2="262" y2="108"/><line x1="334" y1="74" x2="334" y2="108"/>
+    <line x1="406" y1="74" x2="406" y2="108"/><line x1="478" y1="74" x2="478" y2="108"/>
+    <line x1="550" y1="74" x2="550" y2="108"/><line x1="622" y1="74" x2="622" y2="108"/>
   </g>
-  <text x="520" y="122" fill="#e8eaf0" font-size="13">each head runs attention on its own slice</text>
-  <!-- arrows down -->
-  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmh)">
-    <line x1="58" y1="142" x2="58" y2="176"/><line x1="114" y1="142" x2="114" y2="176"/><line x1="170" y1="142" x2="170" y2="176"/><line x1="226" y1="142" x2="226" y2="176"/>
-    <line x1="282" y1="142" x2="282" y2="176"/><line x1="338" y1="142" x2="338" y2="176"/><line x1="394" y1="142" x2="394" y2="176"/><line x1="450" y1="142" x2="450" y2="176"/>
+  <g font-size="11" text-anchor="middle" font-weight="600">
+    <rect x="86" y="110" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="118" y="134" fill="#4a9eff">head 1</text>
+    <rect x="158" y="110" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="190" y="134" fill="#f5a623">head 2</text>
+    <rect x="230" y="110" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="262" y="134" fill="#50c878">head 3</text>
+    <rect x="302" y="110" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="334" y="134" fill="#c792ea">head 4</text>
+    <rect x="374" y="110" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="406" y="134" fill="#4a9eff">head 5</text>
+    <rect x="446" y="110" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="478" y="134" fill="#f5a623">head 6</text>
+    <rect x="518" y="110" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="550" y="134" fill="#50c878">head 7</text>
+    <rect x="590" y="110" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="622" y="134" fill="#c792ea">head 8</text>
   </g>
-  <!-- Band 3: concat bar -->
-  <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="30" y="178" width="56" height="34" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/>
-    <rect x="86" y="178" width="56" height="34" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/>
-    <rect x="142" y="178" width="56" height="34" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/>
-    <rect x="198" y="178" width="56" height="34" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/>
-    <rect x="254" y="178" width="56" height="34" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/>
-    <rect x="310" y="178" width="56" height="34" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/>
-    <rect x="366" y="178" width="56" height="34" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/>
-    <rect x="422" y="178" width="56" height="34" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/>
-  </g>
-  <rect x="30" y="178" width="448" height="34" fill="none" stroke="#e8eaf0" stroke-width="1.5"/>
-  <text x="254" y="200" fill="#e8eaf0" font-size="11" text-anchor="middle">concat = 512</text>
-  <text x="520" y="199" fill="#e8eaf0" font-size="13">concatenate the 8 outputs back to 512</text>
-  <!-- arrow down -->
-  <line x1="254" y1="212" x2="254" y2="246" stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmh)"/>
-  <!-- Band 4: W_O + output -->
-  <rect x="170" y="248" width="168" height="34" rx="5" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="254" y="270" fill="#4a9eff" font-size="13" text-anchor="middle" font-weight="600">output projection W_O</text>
-  <text x="520" y="269" fill="#e8eaf0" font-size="13">a final linear layer mixes the heads</text>
-  <text x="254" y="306" fill="#3fb950" font-size="13" text-anchor="middle" font-weight="600">output: 512 dims</text>
-  <defs><marker id="arrmh" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
+  <text x="440" y="187" fill="#8892a4" font-size="13" text-anchor="middle">The outputs are concatenated back to 512 dimensions, then a final projection mixes information across heads.</text>
+  <defs><marker id="arrmhfirst" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
 </svg>
 </div>
+
+:::columns cols="2" gap="30px"
+**Different comparisons**
+
+One head may track subject-verb links, while another tracks coreference or nearby tokens.
++++
+**Same compute budget**
+
+The total width stays 512 here; it is divided across heads instead of copied for each head.
+:::
 
 ---
 

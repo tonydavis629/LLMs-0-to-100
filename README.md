@@ -109,7 +109,7 @@ Use arrow keys to navigate. Press `S` for speaker notes.
 1. **Course Introduction** -- Information theory, Shannon, n-gram language models
 2. **Perceptrons and Optimization** -- Neural networks, backpropagation, gradient descent
 3. **Attention Mechanisms** -- Q/K/V, multi-head attention, positional encoding
-4. **Transformer Architectures** -- Encoder-decoder, BERT, GPT
+4. **LLM Architectures** — Tokenization, transformer block, encoder/decoder/decoder-only, MoE
 5. **Pretraining** -- Masked LM, autoregressive training
 6. **Finetuning** -- InstructGPT, LoRA, parameter-efficient methods
 7. **RL Post-Training** -- RLHF, GRPO, DPO

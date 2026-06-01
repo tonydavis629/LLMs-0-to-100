@@ -1,13 +1,13 @@
 """
 Module 3 Exercise: Attention Mechanisms
 
-Implement scaled dot-product attention step by step on a tiny token sequence.
-You will compute Q, K, V projections, raw attention scores, scaled softmax
-weights, the weighted output, and then add a causal mask and positional
-embeddings to see how they change the attention pattern.
+Implement a tiny attention layer step by step on a small token sequence.
+You will create Q, K, and V from a layer's learned weight matrices, compute
+attention scores, turn those scores into weights, produce the weighted sum,
+add a causal mask, and add sinusoidal positional encodings.
 
 Fill in the lines marked with `raise NotImplementedError(...)`.
-Each one needs only ONE line of code (or two at most).
+Each blank needs only one expression or one short assignment.
 """
 
 from __future__ import annotations
@@ -36,194 +36,171 @@ def make_token_vectors(vocab_size: int = 10, d_model: int = 8, seq_len: int = 5)
         X: Tensor of shape (seq_len, d_model) with one row per token.
     """
     torch.manual_seed(42)
-    # Embedding matrix: one row per vocabulary entry
+    # Create the embedding table: one vector for each vocabulary item.
     E = torch.randn(vocab_size, d_model) * 0.1
-    # Pick seq_len token ids (just the first ones for reproducibility)
+    # Choose token ids for the toy sentence.
     token_ids = torch.tensor([2, 5, 1, 8, 3])
-    # Look up each token's embedding vector
-    X = E[token_ids]
+    # Slice the embedding table to get one vector per token in the sequence.
+    X = E[token_ids[:seq_len]]
     return X
 
 
 # ---------------------------------------------------------------------------
-# Step 2: Compute Q, K, and V projections
+# Steps 2-7: A tiny single-head attention layer
 # ---------------------------------------------------------------------------
 
 
-def compute_qkv(X: torch.Tensor, d_k: int = 4) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Project the token matrix X into query, key, and value matrices.
+class TinyAttentionLayer:
+    """A minimal attention layer with randomly initialized projection weights."""
 
-    Each projection uses its own learned weight matrix:
-        Q = X @ W_Q,  K = X @ W_K,  V = X @ W_V
+    def __init__(self, d_model: int = 8, d_k: int = 4, seed: int = 42) -> None:
+        """Initialize the projection matrices used by one attention head.
 
-    Args:
-        X: Token embeddings, shape (seq_len, d_model).
-        d_k: Dimension of queries, keys, and values.
+        Args:
+            d_model: Dimension of each token embedding.
+            d_k: Dimension of the query, key, and value vectors.
+            seed: Random seed so the exercise output is reproducible.
+        """
+        # Store dimensions so other methods can use them.
+        self.d_model = d_model
+        self.d_k = d_k
+        # Fix the random seed so every run creates the same weights.
+        torch.manual_seed(seed)
+        # Random weights stand in for learned weights in a trained model.
+        self.W_Q = torch.randn(d_model, d_k) * 0.1
+        self.W_K = torch.randn(d_model, d_k) * 0.1
+        self.W_V = torch.randn(d_model, d_k) * 0.1
 
-    Returns:
-        (Q, K, V): Each of shape (seq_len, d_k).
-    """
-    torch.manual_seed(42)
-    seq_len, d_model = X.shape
-    # Random projection matrices (learned in practice)
-    W_Q = torch.randn(d_model, d_k) * 0.1
-    W_K = torch.randn(d_model, d_k) * 0.1
-    W_V = torch.randn(d_model, d_k) * 0.1
+    def compute_qkv(self, X: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Project the token matrix X into query, key, and value matrices.
 
-    # TODO: Compute Q, K, V by projecting X through W_Q, W_K, W_V
-    # HINT: use matrix multiplication X @ W_Q, X @ W_K, X @ W_V
-    raise NotImplementedError("TODO: compute Q, K, V projections")
+        Args:
+            X: Token embeddings, shape (seq_len, d_model).
 
+        Returns:
+            (Q, K, V): Each tensor has shape (seq_len, d_k).
+        """
+        # TODO: Compute and return Q, K, V by multiplying X by this layer's W_Q, W_K, and W_V.
+        # HINT: use X @ self.W_Q, X @ self.W_K, and X @ self.W_V.
+        raise NotImplementedError("TODO: compute Q, K, V projections")
 
-# ---------------------------------------------------------------------------
-# Step 3: Compute raw attention scores with QK^T
-# ---------------------------------------------------------------------------
+    def raw_attention_scores(self, Q: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
+        """Compute the pairwise compatibility scores: Q @ K^T.
 
+        Args:
+            Q: Query matrix, shape (seq_len, d_k).
+            K: Key matrix, shape (seq_len, d_k).
 
-def raw_attention_scores(Q: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
-    """Compute the pairwise compatibility scores: Q @ K^T.
+        Returns:
+            Scores matrix, shape (seq_len, seq_len).
+        """
+        # TODO: Compute the attention scores as the matrix product of Q and K^T.
+        # HINT: use Q @ K.T (the .T attribute transposes a 2D tensor).
+        raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
 
-    Each entry (i, j) measures how much query i aligns with key j.
+    def scaled_softmax(self, scores: torch.Tensor) -> torch.Tensor:
+        """Scale scores by 1/sqrt(d_k) and apply softmax along the key dimension.
 
-    Args:
-        Q: Query matrix, shape (seq_len, d_k).
-        K: Key matrix, shape (seq_len, d_k).
+        Args:
+            scores: Raw attention scores, shape (seq_len, seq_len).
 
-    Returns:
-        Scores matrix, shape (seq_len, seq_len).
-    """
-    # TODO: Compute the attention scores as the matrix product of Q and K^T
-    # HINT: use Q @ K.T (the .T attribute transposes a 2D tensor)
-    raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
+        Returns:
+            Attention weights, shape (seq_len, seq_len). Each row sums to 1.
+        """
+        # TODO: Scale the scores by 1/sqrt(d_k), then apply softmax along dim=-1.
+        # HINT: divide scores by (self.d_k ** 0.5), then call F.softmax(..., dim=-1).
+        raise NotImplementedError("TODO: apply scaled softmax to attention scores")
 
+    def attention_output(self, weights: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
+        """Compute the attention output as a weighted sum of value vectors.
 
-# ---------------------------------------------------------------------------
-# Step 4: Apply scaled softmax to produce attention weights
-# ---------------------------------------------------------------------------
+        Args:
+            weights: Attention weights, shape (seq_len, seq_len).
+            V: Value matrix, shape (seq_len, d_k).
 
+        Returns:
+            Output tensor, shape (seq_len, d_k).
+        """
+        # TODO: Compute the weighted sum of values using the attention weights.
+        # HINT: use weights @ V (matrix multiply the weight matrix by the value matrix).
+        raise NotImplementedError("TODO: compute attention output as weighted sum of values")
 
-def scaled_softmax(scores: torch.Tensor, d_k: int) -> torch.Tensor:
-    """Scale scores by 1/sqrt(d_k) and apply softmax along the key dimension.
+    def causal_mask(self, seq_len: int) -> torch.Tensor:
+        """Create a causal mask for autoregressive attention.
 
-    The scaling prevents dot products from growing large with dimension,
-    which would push softmax into regions with tiny gradients.
+        Entry (i, j) is 0 if j <= i, which means token i may attend to token j.
+        Entry (i, j) is -inf if j > i, which blocks future tokens before softmax.
 
-    Args:
-        scores: Raw attention scores, shape (seq_len, seq_len).
-        d_k: Dimension of keys (used for scaling).
+        Args:
+            seq_len: Length of the sequence.
 
-    Returns:
-        Attention weights, shape (seq_len, seq_len). Each row sums to 1.
-    """
-    # TODO: Scale the scores by 1/sqrt(d_k), then apply softmax along dim=-1
-    # HINT: divide scores by (d_k ** 0.5), then call F.softmax(..., dim=-1)
-    raise NotImplementedError("TODO: apply scaled softmax to attention scores")
+        Returns:
+            Mask tensor, shape (seq_len, seq_len), with 0s and -infs.
+        """
+        # Create a lower-triangular matrix: 1 means allowed, 0 means blocked.
+        allowed = torch.tril(torch.ones(seq_len, seq_len))
+        # TODO: Convert allowed positions to 0.0 and blocked positions to -inf.
+        # HINT: use masked_fill twice: first replace 0s with -inf, then replace 1s with 0.0.
+        raise NotImplementedError("TODO: create causal mask")
 
+    def masked_attention(self, X: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Compute scaled dot-product attention with a causal mask.
 
-# ---------------------------------------------------------------------------
-# Step 5: Compute the weighted sum of value vectors
-# ---------------------------------------------------------------------------
+        Args:
+            X: Token embeddings, shape (seq_len, d_model).
 
-
-def attention_output(weights: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
-    """Compute the attention output as a weighted sum of value vectors.
-
-    Each output token is a weighted average of all value vectors,
-    with weights given by the attention matrix.
-
-    Args:
-        weights: Attention weights, shape (seq_len, seq_len).
-        V: Value matrix, shape (seq_len, d_k).
-
-    Returns:
-        Output tensor, shape (seq_len, d_k).
-    """
-    # TODO: Compute the weighted sum of values using the attention weights
-    # HINT: use weights @ V (matrix multiply the weight matrix by the value matrix)
-    raise NotImplementedError("TODO: compute attention output as weighted sum of values")
-
-
-# ---------------------------------------------------------------------------
-# Step 6: Add a causal mask
-# ---------------------------------------------------------------------------
-
-
-def causal_mask(seq_len: int) -> torch.Tensor:
-    """Create a causal (lower-triangular) mask for autoregressive attention.
-
-    A causal mask prevents each token from attending to future tokens.
-    Entry (i, j) is 0 if j <= i (token i may attend to token j),
-    and -inf if j > i (token i must NOT attend to token j).
-
-    Args:
-        seq_len: Length of the sequence.
-
-    Returns:
-        Mask tensor, shape (seq_len, seq_len), with 0s and -infs.
-    """
-    # TODO: Create a lower-triangular mask of 0s with -inf above the diagonal
-    # HINT: use torch.tril(torch.ones(seq_len, seq_len)) for the lower triangle,
-    #        then convert: 1 -> 0.0 and 0 -> float('-inf')
-    raise NotImplementedError("TODO: create causal mask")
-
-
-# ---------------------------------------------------------------------------
-# Step 7: Compute masked attention weights
-# ---------------------------------------------------------------------------
-
-
-def masked_attention(Q: torch.Tensor, K: torch.Tensor, V: torch.Tensor, d_k: int) -> torch.Tensor:
-    """Compute scaled dot-product attention with a causal mask.
-
-    Steps: (1) raw scores QK^T, (2) scale by 1/sqrt(d_k),
-    (3) add causal mask, (4) softmax, (5) weighted sum of V.
-
-    Args:
-        Q: Query matrix, shape (seq_len, d_k).
-        K: Key matrix, shape (seq_len, d_k).
-        V: Value matrix, shape (seq_len, d_k).
-        d_k: Key dimension for scaling.
-
-    Returns:
-        Output tensor, shape (seq_len, d_k).
-    """
-    seq_len = Q.shape[0]
-    scores = raw_attention_scores(Q, K)
-    scaled = scores / (d_k ** 0.5)
-    mask = causal_mask(seq_len)
-    # Add the mask: -inf entries become 0 after softmax
-    scaled = scaled + mask
-    weights = F.softmax(scaled, dim=-1)
-    return attention_output(weights, V)
+        Returns:
+            (output, weights): masked attention output and masked weights.
+        """
+        # Project the input tokens into Q, K, and V.
+        Q, K, V = self.compute_qkv(X)
+        # Compare every query to every key.
+        scores = self.raw_attention_scores(Q, K)
+        # Scale scores before masking and softmax.
+        scaled = scores / (self.d_k ** 0.5)
+        # Add a mask that blocks future positions.
+        masked_scores = scaled + self.causal_mask(X.shape[0])
+        # Normalize each row into attention weights.
+        weights = F.softmax(masked_scores, dim=-1)
+        # Retrieve values using the masked weights.
+        output = self.attention_output(weights, V)
+        return output, weights
 
 
 # ---------------------------------------------------------------------------
-# Step 8: Add positional embeddings
+# Step 8: Add sinusoidal positional encodings
 # ---------------------------------------------------------------------------
 
 
 def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
-    """Add learned positional embeddings to the token representations.
-
-    Without position information, attention is permutation-equivariant:
-    it treats "dog bites man" the same as "man bites dog".
-    Positional embeddings give each position a unique vector that
-    the model can use to distinguish token order.
+    """Add sinusoidal positional encodings to the token representations.
 
     Args:
         X: Token embeddings, shape (seq_len, d_model).
 
     Returns:
-        X_pos: Token embeddings plus positional embeddings, shape (seq_len, d_model).
+        X_pos: Token embeddings plus positional encodings, shape (seq_len, d_model).
     """
-    torch.manual_seed(42)
+    # Read the sequence length and embedding width from the input tensor.
     seq_len, d_model = X.shape
-    # Learned positional embedding: one vector per position
-    P = torch.randn(seq_len, d_model) * 0.1
+    # Create a column vector [0, 1, 2, ...] for token positions.
+    position = torch.arange(seq_len, dtype=X.dtype, device=X.device).unsqueeze(1)
+    # Create the even dimension indices: 0, 2, 4, ...
+    dim_pair = torch.arange(0, d_model, 2, dtype=X.dtype, device=X.device)
+    # Compute the denominator term from the sinusoidal encoding equation.
+    angle_rates = 1 / (10000 ** (dim_pair / d_model))
+    # Broadcast positions against dimension frequencies to get all angles.
+    angles = position * angle_rates
+    # Start with zeros, then fill even dimensions with sine values.
+    P = torch.zeros_like(X)
+    P[:, 0::2] = torch.sin(angles)
 
-    # TODO: Add the positional embeddings P to the token embeddings X
-    # HINT: simply add X + P (elementwise addition of the two tensors)
-    raise NotImplementedError("TODO: add positional embeddings to token embeddings")
+    # TODO: Fill the odd dimensions of P with cosine values from the sinusoidal equation.
+    # HINT: use torch.cos(angles) and assign the result to P[:, 1::2].
+    raise NotImplementedError("TODO: fill cosine positional dimensions")
+
+    # Add position information to each token embedding.
+    return X + P
 
 
 # ---------------------------------------------------------------------------
@@ -242,10 +219,6 @@ def kv_cache_step(
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """Compute attention for one new token using a KV cache.
 
-    During autoregressive generation, we process one new token at a time.
-    Instead of recomputing keys and values for all previous tokens, we
-    cache them and only compute the new key and value for the latest token.
-
     Args:
         new_token: The raw new token embedding, shape (1, d_model).
         cached_keys: All previously computed keys, shape (n_cached, d_k).
@@ -261,23 +234,23 @@ def kv_cache_step(
             updated_keys: Keys with the new key appended, shape (n_cached+1, d_k).
             updated_values: Values with the new value appended, shape (n_cached+1, d_k).
     """
-    # TODO: Compute new Q, K, V from the raw token using W_Q, W_K, W_V
-    # HINT: project the new_token through all three weight matrices with @
+    # TODO: Project new_token through W_Q, W_K, and W_V.
+    # HINT: use new_token @ W_Q, new_token @ W_K, and new_token @ W_V.
+    new_query = None
     new_key = None
     new_value = None
-    if new_key is None or new_value is None:
-        raise NotImplementedError("Extra credit: project new_token through W_Q, W_K, W_V, then append K and V to cache")
+    if new_query is None or new_key is None or new_value is None:
+        raise NotImplementedError("Extra credit: project new_token through W_Q, W_K, and W_V")
 
-    # Append new key and value to the cache
+    # Append the new key and value to the existing cache.
     updated_keys = torch.cat([cached_keys, new_key], dim=0)
     updated_values = torch.cat([cached_values, new_value], dim=0)
 
-    # Compute the new query
-    new_query = new_token @ W_Q
-    # Compute attention: new query attends to ALL keys (no causal mask needed
-    # because the new token is the last one, so it can see all previous tokens)
+    # Compare the new query with all cached keys.
     scores = new_query @ updated_keys.T / (d_k ** 0.5)
+    # Convert the scores into weights over all cached values.
     weights = F.softmax(scores, dim=-1)
+    # Retrieve the weighted sum of cached values.
     output = weights @ updated_values
 
     return output, updated_keys, updated_values

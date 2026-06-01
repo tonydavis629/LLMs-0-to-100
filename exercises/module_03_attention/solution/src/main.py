@@ -25,13 +25,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from exercise import (
+    TinyAttentionLayer,
     make_token_vectors,
-    compute_qkv,
-    raw_attention_scores,
-    scaled_softmax,
-    attention_output,
-    causal_mask,
-    masked_attention,
     add_positional_embeddings,
     kv_cache_step,
 )
@@ -48,20 +43,21 @@ if not (_MODULE_DIR / "data").exists():
 OUTPUT_DIR = _MODULE_DIR / "output"
 
 
-def _try_run(label: str, fn, *args):
+def _try_run(label: str, fn, *args, **kwargs):
     """Run a function, printing its result or skipping on NotImplementedError.
 
     Args:
         label: Section header to print.
         fn: The function to call.
-        *args: Arguments to pass to fn.
+        *args: Positional arguments to pass to fn.
+        **kwargs: Keyword arguments to pass to fn.
 
     Returns:
         The function's return value, or None if skipped.
     """
     print(f"=== {label} ===")
     try:
-        result = fn(*args)
+        result = fn(*args, **kwargs)
         if result is not None:
             print(result)
         return result
@@ -72,6 +68,13 @@ def _try_run(label: str, fn, *args):
         print()
 
 
+def _skip_dependency(label: str, reason: str) -> None:
+    """Print a consistent skip message when an earlier step has no result."""
+    print(f"=== {label} ===")
+    print(f"  [skipped: {reason}]")
+    print()
+
+
 def main():
     OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -79,6 +82,7 @@ def main():
     d_k = 4
     seq_len = 5
     token_labels = ["the", "cat", "sat", "on", "mat"]
+    layer = TinyAttentionLayer(d_model=d_model, d_k=d_k)
 
     # Store results for later steps
     X = None
@@ -107,12 +111,14 @@ def main():
     print("STEP 2: Compute Q, K, V Projections")
     print("=" * 60)
     if X is not None:
-        result = _try_run("Q, K, V projections", compute_qkv, X, d_k)
+        result = _try_run("Q, K, V projections", layer.compute_qkv, X)
         if result is not None:
             Q, K, V = result
             print(f"  Q shape: {Q.shape}")
             print(f"  K shape: {K.shape}")
             print(f"  V shape: {V.shape}")
+    else:
+        _skip_dependency("Q, K, V projections", "complete Step 1 first")
 
     # ------------------------------------------------------------------
     # Step 3: Compute raw attention scores
@@ -121,10 +127,12 @@ def main():
     print("STEP 3: Raw Attention Scores (QK^T)")
     print("=" * 60)
     if Q is not None:
-        scores = _try_run("Raw scores", raw_attention_scores, Q, K)
+        scores = _try_run("Raw scores", layer.raw_attention_scores, Q, K)
         if scores is not None:
             print(f"  Shape: {scores.shape}")
             print(f"  Scores matrix:\n{scores.detach().numpy().round(3)}")
+    else:
+        _skip_dependency("Raw scores", "complete Step 2 first")
 
     # ------------------------------------------------------------------
     # Step 4: Apply scaled softmax
@@ -133,11 +141,14 @@ def main():
     print("STEP 4: Scaled Softmax Attention Weights")
     print("=" * 60)
     if scores is not None:
-        weights_unmasked = _try_run("Scaled softmax weights", scaled_softmax, scores, d_k)
+        weights_unmasked = _try_run("Scaled softmax weights", layer.scaled_softmax, scores)
         if weights_unmasked is not None:
             print(f"  Shape: {weights_unmasked.shape}")
-            print(f"  Row sums (should be ~1.0): {weights_unmasked.sum(dim=-1).tolist()}")
+            row_sums = weights_unmasked.sum(dim=-1).detach().numpy().round(3).tolist()
+            print(f"  Row sums (should be ~1.0): {row_sums}")
             print(f"  Weight matrix:\n{weights_unmasked.detach().numpy().round(3)}")
+    else:
+        _skip_dependency("Scaled softmax weights", "complete Step 3 first")
 
     # ------------------------------------------------------------------
     # Step 5: Compute weighted sum of values
@@ -146,10 +157,12 @@ def main():
     print("STEP 5: Attention Output (Weighted Sum of Values)")
     print("=" * 60)
     if weights_unmasked is not None and V is not None:
-        output_unmasked = _try_run("Attention output", attention_output, weights_unmasked, V)
+        output_unmasked = _try_run("Attention output", layer.attention_output, weights_unmasked, V)
         if output_unmasked is not None:
             print(f"  Shape: {output_unmasked.shape}")
             print(f"  First output vector: {output_unmasked[0].detach().numpy().round(3)}")
+    else:
+        _skip_dependency("Attention output", "complete Steps 2-4 first")
 
     # ------------------------------------------------------------------
     # Step 6: Causal mask
@@ -157,7 +170,7 @@ def main():
     print("=" * 60)
     print("STEP 6: Causal Mask")
     print("=" * 60)
-    mask = _try_run("Causal mask", causal_mask, seq_len)
+    mask = _try_run("Causal mask", layer.causal_mask, seq_len)
     if mask is not None:
         print(f"  Mask matrix:\n{mask.numpy().round(1)}")
 
@@ -167,17 +180,14 @@ def main():
     print("=" * 60)
     print("STEP 7: Masked Attention Output")
     print("=" * 60)
-    if Q is not None:
-        output_masked = _try_run("Masked attention", masked_attention, Q, K, V, d_k)
-        if output_masked is not None:
-            # Recompute weights for visualization
-            scores_m = raw_attention_scores(Q, K)
-            scaled_m = scores_m / (d_k ** 0.5)
-            mask_m = causal_mask(seq_len)
-            scaled_m = scaled_m + mask_m
-            weights_masked = F.softmax(scaled_m, dim=-1)
+    if X is not None:
+        masked_result = _try_run("Masked attention", layer.masked_attention, X)
+        if masked_result is not None:
+            output_masked, weights_masked = masked_result
             print(f"  Masked weight matrix:\n{weights_masked.detach().numpy().round(3)}")
             print(f"  First output vector: {output_masked[0].detach().numpy().round(3)}")
+    else:
+        _skip_dependency("Masked attention", "complete Step 1 first")
 
     # ------------------------------------------------------------------
     # Step 8: Positional embeddings
@@ -193,10 +203,12 @@ def main():
             print(f"  First token (after pos):  {X_pos[0].detach().numpy().round(3)}")
 
             # Recompute attention with positional embeddings
-            Q_pos, K_pos, V_pos = compute_qkv(X_pos, d_k)
-            scores_pos = raw_attention_scores(Q_pos, K_pos)
-            weights_pos = scaled_softmax(scores_pos, d_k)
+            Q_pos, K_pos, V_pos = layer.compute_qkv(X_pos)
+            scores_pos = layer.raw_attention_scores(Q_pos, K_pos)
+            weights_pos = layer.scaled_softmax(scores_pos)
             print(f"\n  Attention weights WITH position:\n{weights_pos.detach().numpy().round(3)}")
+    else:
+        _skip_dependency("Token vectors + position", "complete Step 1 first")
 
     # ------------------------------------------------------------------
     # Save comparison plots
@@ -217,9 +229,9 @@ def main():
         # Recompute with positional embeddings for comparison
         try:
             X_pos = add_positional_embeddings(X)
-            Q_pos, K_pos, V_pos = compute_qkv(X_pos, d_k)
-            scores_pos = raw_attention_scores(Q_pos, K_pos)
-            weights_pos = scaled_softmax(scores_pos, d_k)
+            Q_pos, K_pos, V_pos = layer.compute_qkv(X_pos)
+            scores_pos = layer.raw_attention_scores(Q_pos, K_pos)
+            weights_pos = layer.scaled_softmax(scores_pos)
             plot_positional_effect(
                 weights_unmasked.detach().numpy(),
                 weights_pos.detach().numpy(),
@@ -237,20 +249,16 @@ def main():
     print("=" * 60)
     if X is not None and Q is not None:
         try:
-            torch.manual_seed(42)
-            d_model_val = X.shape[1]
-            W_K_cache = torch.randn(d_model_val, d_k) * 0.1
-            W_V_cache = torch.randn(d_model_val, d_k) * 0.1
-
             # Start with the first token's key and value in the cache
             cached_keys = K[:1]
             cached_values = V[:1]
 
             print("  Processing tokens one at a time with KV cache:")
             for t in range(1, seq_len):
-                new_q = Q[t:t+1]
+                new_tok = X[t:t+1]
                 output_t, cached_keys, cached_values = kv_cache_step(
-                    new_q, cached_keys, cached_values, W_K_cache, W_V_cache, d_k
+                    new_tok, cached_keys, cached_values,
+                    layer.W_Q, layer.W_K, layer.W_V, d_k
                 )
                 print(f"    Token {t} ({token_labels[t]}): cache size = {cached_keys.shape[0]}, output norm = {output_t.norm().item():.4f}")
 
@@ -261,7 +269,7 @@ def main():
 
             for n_tokens in cache_sizes:
                 X_sub = X[:n_tokens]
-                Q_sub, K_sub, V_sub = compute_qkv(X_sub, d_k)
+                Q_sub, K_sub, V_sub = layer.compute_qkv(X_sub)
 
                 # Without cache: recompute everything from scratch
                 start = time.perf_counter()
@@ -286,6 +294,8 @@ def main():
             )
         except NotImplementedError as e:
             print(f"  [skipped: {e}]")
+    else:
+        _skip_dependency("KV cache simulation", "complete Steps 1-2 first")
 
     print("=" * 60)
     print("Done! Check the output/ directory for plots.")
