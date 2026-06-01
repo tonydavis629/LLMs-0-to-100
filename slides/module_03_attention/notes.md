@@ -50,6 +50,12 @@ $$\text{score}(i, j) = \mathbf{q}_i \cdot \mathbf{k}_j$$
 
 - This is a dot product — a measure of alignment. When query $i$ points in a similar direction to key $j$, the score is large.
 
+### The Transformer: Attention and MLPs Stacked
+- The Transformer interleaves two operations in every layer: **self-attention**, which mixes information across tokens, and a **position-wise MLP (feed-forward block)**, which processes each token independently.
+- Attention is the only operation that lets tokens exchange information; the MLP adds per-token nonlinear capacity. Stacking the pair $N$ times (with residual connections and layer normalization, covered in Module 4) gives the model its depth.
+- This is the bridge from Module 2 (the MLP) to the full Transformer: attention is the new ingredient that the MLP lacked.
+- **Reference:** Vaswani, A. et al. (2017). "Attention Is All You Need." *NeurIPS*. *arXiv:1706.03762*.
+
 ## Scaled Dot-Product Attention
 
 ### Why Scale by $\sqrt{d_k}$?
@@ -66,6 +72,10 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\righ
 - Each output token is a weighted average of value vectors, where the weights come from query-key compatibility.
 - If token $i$ attends strongly to token $j$, the output at position $i$ is dominated by $\mathbf{v}_j$.
 - The output dimension matches the value dimension ($d_k$), not the sequence length.
+
+### Attention Beyond Text
+- The same mechanism operates on any sequence, including image patches. In a vision-language Transformer, text tokens can attend to regions of an image, and the attention map highlights the regions the text refers to.
+- **Reference:** Huang, Z., Zeng, Z., Liu, B., Fu, D., & Fu, J. (2020). "Pixel-BERT: Aligning Image Pixels with Text by Deep Multi-Modal Transformers." *arXiv:2004.00849*. (The attention-region visualization in the slides is from this paper's first Transformer layer.)
 
 ## Attention Masks
 
@@ -148,6 +158,21 @@ $$\mathbf{q}_m^T \mathbf{k}_n = f(m)^T f(n) = g(m - n)$$
 - RoPE is used in LLaMA, Mistral, and most modern LLMs.
 - **Reference:** Su, J. et al. (2021). "RoFormer: Enhanced Transformer with Rotary Position Embedding." *arXiv:2104.09864*.
 
+## Softmax
+
+### From Logits to a Distribution
+- Softmax is the normalization step used throughout attention. It maps a vector of raw scores (logits) to a probability distribution:
+
+$$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
+
+- Exponentiation guarantees positivity (so outputs are valid probabilities), amplifies differences between logits, and the outputs sum to exactly 1.
+- Softmax appears in two places in an LLM: **inside attention** (over the keys, so each query's weights sum to 1) and **at the output** (over the vocabulary, to produce the next-token distribution).
+
+### Temperature
+- Dividing logits by a temperature $T$ before softmax controls how peaked the distribution is: $p_i = \text{softmax}(z / T)_i$.
+- $T < 1$ sharpens the distribution (more deterministic); $T > 1$ flattens it (more diverse, riskier sampling); $T = 1$ leaves it unchanged.
+- The $1/\sqrt{d_k}$ scaling in attention is itself a fixed temperature that prevents the softmax from saturating as dimension grows.
+
 ## Memory and Compute Tradeoffs
 
 ### The $O(n^2)$ Cost
@@ -205,14 +230,13 @@ $$\mathbf{q}_m^T \mathbf{k}_n = f(m)^T f(n) = g(m - n)$$
 - Showed how careful memory-aware attention algorithms can make exact attention much faster on GPUs.
 - FlashAttention-2 (2023) and FlashAttention-3 (2024) pushed further gains.
 
-## Side Quests
+## Attention Sinks and Interpretability
 
-### Register Tokens in Vision Transformers
-- **Paper:** Darcet, O., Oquab, M., Mairal, J., & Bojanowski, P. (2023). "Vision Transformers Need Registers." *arXiv:2309.16588*.
-- Observed high-norm artifact tokens in ViT feature maps, often in low-information background patches.
-- Interpretation: the model repurposes some patch tokens as internal scratch space for computation.
-- Register tokens add extra learned token positions so the model has dedicated places for internal computation.
-- This is a concrete example of token positions having roles beyond "word at position $i$."
+### Attention Sinks
+- **Observation:** in a trained language model, a large fraction of every head's attention mass lands on the **very first token**, even when that token is contentless (such as a start marker).
+- **Why:** softmax weights must sum to 1, so a head always has to place its weight somewhere. When a head has nothing useful to attend to on a given token, it needs a "no-op" target for the leftover mass. Under causal masking, the first token is the one position visible to every later token, which makes it the natural sink.
+- **Practical use:** keeping these first tokens in the KV cache stabilizes streaming generation over very long contexts.
+- **Reference:** Xiao, G., Tian, Y., Chen, B., Han, S., & Lewis, M. (2023). "Efficient Streaming Language Models with Attention Sinks" (StreamingLLM). *arXiv:2309.17453*.
 
 ### Attention Maps Are Not Always Explanations
 - Attention weights can be useful visual diagnostics — they show where the model is looking.

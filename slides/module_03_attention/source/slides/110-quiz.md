@@ -50,7 +50,8 @@ A model has 32 layers, 32 attention heads per layer, and $d_k = 128$ per head. H
 - Bahdanau, D., Cho, K., &amp; Bengio, Y. (2014). "Neural Machine Translation by Jointly Learning to Align and Translate." *arXiv:1409.0473*.
 - Vaswani, A. et al. (2017). "Attention Is All You Need." *NeurIPS*. *arXiv:1706.03762*.
 - Dao, T. et al. (2022). "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness." *arXiv:2205.14135*.
-- Darcet, O. et al. (2023). "Vision Transformers Need Registers." *arXiv:2309.16588*.
 - Su, J. et al. (2021). "RoFormer: Enhanced Transformer with Rotary Position Embedding." *arXiv:2104.09864*.
+- Xiao, G. et al. (2023). "Efficient Streaming Language Models with Attention Sinks." *arXiv:2309.17453*.
+- Huang, Z. et al. (2020). "Pixel-BERT: Aligning Image Pixels with Text by Deep Multi-Modal Transformers." *arXiv:2004.00849*.
 - [The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/) &mdash; visual guide to attention and encoder-decoder
 - [BertViz](https://codecut.ai/bertviz-visualize-attention-in-transformer-language-models/) &mdash; attention visualization tool

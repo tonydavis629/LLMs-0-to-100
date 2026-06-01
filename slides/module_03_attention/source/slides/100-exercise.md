@@ -40,15 +40,7 @@ Add a causal mask to block future tokens, then add positional embeddings and obs
 :::step id="exercise-step2-code" title="Step 2: compute_qkv()"
 ```python
 def compute_qkv(X: torch.Tensor, d_k: int = 4) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Project the token matrix X into query, key, and value matrices.
-
-    Args:
-        X: Token embeddings, shape (seq_len, d_model).
-        d_k: Dimension of queries, keys, and values.
-
-    Returns:
-        (Q, K, V): Each of shape (seq_len, d_k).
-    """
+    """Project the token matrix X into query, key, and value matrices."""
     torch.manual_seed(42)
     seq_len, d_model = X.shape
     W_Q = torch.randn(d_model, d_k) * 0.1
@@ -56,7 +48,6 @@ def compute_qkv(X: torch.Tensor, d_k: int = 4) -> tuple[torch.Tensor, torch.Tens
     W_V = torch.randn(d_model, d_k) * 0.1
 
     # TODO: Compute Q, K, V by projecting X through W_Q, W_K, W_V
-    # HINT: use matrix multiplication X @ W_Q, X @ W_K, X @ W_V
     raise NotImplementedError("TODO: compute Q, K, V projections")
 ```
 +++
@@ -87,7 +78,6 @@ def raw_attention_scores(Q: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
         Scores matrix, shape (seq_len, seq_len).
     """
     # TODO: Compute the attention scores as the matrix product of Q and K^T
-    # HINT: use Q @ K.T (the .T attribute transposes a 2D tensor)
     raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
 ```
 +++
@@ -115,7 +105,6 @@ def scaled_softmax(scores: torch.Tensor, d_k: int) -> torch.Tensor:
         Attention weights, shape (seq_len, seq_len). Each row sums to 1.
     """
     # TODO: Scale the scores by 1/sqrt(d_k), then apply softmax along dim=-1
-    # HINT: divide scores by (d_k ** 0.5), then call F.softmax(..., dim=-1)
     raise NotImplementedError("TODO: apply scaled softmax to attention scores")
 ```
 +++
@@ -143,7 +132,6 @@ def attention_output(weights: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
         Output tensor, shape (seq_len, d_k).
     """
     # TODO: Compute the weighted sum of values using the attention weights
-    # HINT: use weights @ V (matrix multiply the weight matrix by the value matrix)
     raise NotImplementedError("TODO: compute attention output as weighted sum of values")
 ```
 +++
@@ -205,8 +193,6 @@ def causal_mask(seq_len: int) -> torch.Tensor:
         Mask tensor, shape (seq_len, seq_len), with 0s and -infs.
     """
     # TODO: Create a lower-triangular mask of 0s with -inf above the diagonal
-    # HINT: use torch.tril(torch.ones(seq_len, seq_len)) for the lower triangle,
-    #        then convert: 1 -> 0.0 and 0 -> float('-inf')
     raise NotImplementedError("TODO: create causal mask")
 ```
 +++
@@ -239,11 +225,10 @@ def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
     P = torch.randn(seq_len, d_model) * 0.1
 
     # TODO: Add the positional embeddings P to the token embeddings X
-    # HINT: simply add X + P (elementwise addition of the two tensors)
     raise NotImplementedError("TODO: add positional embeddings to token embeddings")
 ```
 +++
-**Hint:** Simply add the two tensors: `X + P`.
+**Hint:** The final embeddings are the sum of the positional encodings `P` and the token embeddings `X`.
 +++
 **Answer:**
 
