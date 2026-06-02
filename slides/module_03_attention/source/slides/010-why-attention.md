@@ -129,76 +129,10 @@ Recurrent models (RNNs, LSTMs) handle variable length by reading tokens one at a
 
 ## What Attention Does
 
-Before any math, here is the operation: every output word is a **weighted sum of all input value vectors**. The weights are different for each query word, so each token builds its own context.
-<div style="text-align: center; margin: 10px 0;">
-<svg viewBox="0 0 900 340" width="100%" style="max-height: 320px;">
-  <text x="415" y="20" fill="#8892a4" font-size="12" text-anchor="middle">columns are input values; rows are output tokens</text>
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <text x="215" y="48" fill="#50c878">v_the</text>
-    <text x="300" y="48" fill="#50c878">v_cat</text>
-    <text x="385" y="48" fill="#50c878">v_sat</text>
-    <text x="470" y="48" fill="#50c878">v_on</text>
-    <text x="555" y="48" fill="#50c878">v_mat</text>
-  </g>
-  <g font-size="12" text-anchor="end" font-weight="600">
-    <text x="150" y="82" fill="#4a9eff">o_the =</text>
-    <text x="150" y="128" fill="#4a9eff">o_cat =</text>
-    <text x="150" y="174" fill="#f5a623">o_sat =</text>
-    <text x="150" y="220" fill="#4a9eff">o_on =</text>
-    <text x="150" y="266" fill="#4a9eff">o_mat =</text>
-  </g>
-  <g font-size="11" text-anchor="middle">
-    <rect x="175" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="215" y="82" fill="#e8eaf0">0.05</text>
-    <rect x="260" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.50)" stroke="#2a3450"/><text x="300" y="82" fill="#e8eaf0">0.35</text>
-    <rect x="345" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="385" y="82" fill="#e8eaf0">0.10</text>
-    <rect x="430" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="470" y="82" fill="#e8eaf0">0.10</text>
-    <rect x="515" y="62" width="80" height="32" rx="4" fill="rgba(74,158,255,0.57)" stroke="#2a3450"/><text x="555" y="82" fill="#e8eaf0">0.40</text>
-    <rect x="175" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="215" y="128" fill="#e8eaf0">0.10</text>
-    <rect x="260" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="300" y="128" fill="#e8eaf0">0.05</text>
-    <rect x="345" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.64)" stroke="#2a3450"/><text x="385" y="128" fill="#e8eaf0">0.45</text>
-    <rect x="430" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.25)" stroke="#2a3450"/><text x="470" y="128" fill="#e8eaf0">0.15</text>
-    <rect x="515" y="108" width="80" height="32" rx="4" fill="rgba(74,158,255,0.39)" stroke="#2a3450"/><text x="555" y="128" fill="#e8eaf0">0.25</text>
-    <rect x="175" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.13)" stroke="#2a3450"/><text x="215" y="174" fill="#e8eaf0">0.05</text>
-    <rect x="260" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.66)" stroke="#2a3450"/><text x="300" y="174" fill="#e8eaf0">0.45</text>
-    <rect x="345" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.13)" stroke="#2a3450"/><text x="385" y="174" fill="#e8eaf0">0.05</text>
-    <rect x="430" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.46)" stroke="#2a3450"/><text x="470" y="174" fill="#e8eaf0">0.30</text>
-    <rect x="515" y="154" width="80" height="32" rx="4" fill="rgba(245,166,35,0.27)" stroke="#2a3450"/><text x="555" y="174" fill="#e8eaf0">0.15</text>
-    <rect x="175" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.18)" stroke="#2a3450"/><text x="215" y="220" fill="#e8eaf0">0.10</text>
-    <rect x="260" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="300" y="220" fill="#e8eaf0">0.20</text>
-    <rect x="345" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.64)" stroke="#2a3450"/><text x="385" y="220" fill="#e8eaf0">0.45</text>
-    <rect x="430" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="470" y="220" fill="#e8eaf0">0.05</text>
-    <rect x="515" y="200" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="555" y="220" fill="#e8eaf0">0.20</text>
-    <rect x="175" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.50)" stroke="#2a3450"/><text x="215" y="266" fill="#e8eaf0">0.35</text>
-    <rect x="260" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.39)" stroke="#2a3450"/><text x="300" y="266" fill="#e8eaf0">0.25</text>
-    <rect x="345" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.32)" stroke="#2a3450"/><text x="385" y="266" fill="#e8eaf0">0.20</text>
-    <rect x="430" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.25)" stroke="#2a3450"/><text x="470" y="266" fill="#e8eaf0">0.15</text>
-    <rect x="515" y="246" width="80" height="32" rx="4" fill="rgba(74,158,255,0.11)" stroke="#2a3450"/><text x="555" y="266" fill="#e8eaf0">0.05</text>
-  </g>
-  <g stroke="#8892a4" stroke-width="1.6" marker-end="url(#arrattn)">
-    <line x1="610" y1="78" x2="670" y2="78"/>
-    <line x1="610" y1="124" x2="670" y2="124"/>
-    <line x1="610" y1="170" x2="670" y2="170"/>
-    <line x1="610" y1="216" x2="670" y2="216"/>
-    <line x1="610" y1="262" x2="670" y2="262"/>
-  </g>
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <rect x="680" y="62" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="82" fill="#e8eaf0">new the</text>
-    <rect x="680" y="108" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="128" fill="#e8eaf0">new cat</text>
-    <rect x="680" y="154" width="88" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.2"/><text x="724" y="174" fill="#e8eaf0">new sat</text>
-    <rect x="680" y="200" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="220" fill="#e8eaf0">new on</text>
-    <rect x="680" y="246" width="88" height="32" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="724" y="266" fill="#e8eaf0">new mat</text>
-  </g>
-  <text x="445" y="316" fill="#8892a4" font-size="13" text-anchor="middle">
-    Example row: o_sat = 0.05v_the + 0.45v_cat + 0.05v_sat + 0.30v_on + 0.15v_mat
-  </text>
-  <defs>
-    <marker id="arrattn" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-      <path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/>
-    </marker>
-  </defs>
-</svg>
-</div>
+Before any math, here is the operation: every word builds its output by **pulling information from the other words**. Click any word to see what it attends to &mdash; a thicker arrow means more of that word's value flows in.
+
+<div class="interactive-host" data-widget="attentionArrows"></div>
 
 :::note
-**The key insight:** attention is not selecting one token and discarding the rest. It computes a different weighted average for every token, and training learns which weights should become large.
+**The key insight:** attention is not selecting one token and discarding the rest. Each token computes a different weighted average over all the others, and training learns which of those weights should become large.
 :::

@@ -31,10 +31,10 @@ Dot products grow with dimension. For $d_k = 64$, the expected magnitude of $\ma
     <rect x="562" y="96" width="42" height="18" rx="4" fill="rgba(74,158,255,0.34)"/><text x="583" y="132" fill="#e8eaf0">1.0</text>
     <rect x="614" y="108" width="42" height="6" rx="3" fill="rgba(74,158,255,0.18)"/><text x="635" y="132" fill="#e8eaf0">0.25</text>
     <rect x="666" y="114" width="42" height="1" rx="1" fill="rgba(74,158,255,0.12)"/><text x="687" y="132" fill="#e8eaf0">0</text>
-    <rect x="510" y="155" width="42" height="44" rx="4" fill="rgba(74,158,255,0.70)"/><text x="531" y="216" fill="#e8eaf0">0.58</text>
-    <rect x="562" y="155" width="42" height="16" rx="4" fill="rgba(74,158,255,0.40)"/><text x="583" y="188" fill="#e8eaf0">0.21</text>
-    <rect x="614" y="155" width="42" height="10" rx="4" fill="rgba(74,158,255,0.30)"/><text x="635" y="182" fill="#e8eaf0">0.13</text>
-    <rect x="666" y="155" width="42" height="7" rx="4" fill="rgba(74,158,255,0.24)"/><text x="687" y="178" fill="#e8eaf0">0.08</text>
+    <rect x="510" y="181" width="42" height="44" rx="4" fill="rgba(74,158,255,0.70)"/><text x="531" y="242" fill="#e8eaf0">0.58</text>
+    <rect x="562" y="209" width="42" height="16" rx="4" fill="rgba(74,158,255,0.40)"/><text x="583" y="242" fill="#e8eaf0">0.21</text>
+    <rect x="614" y="215" width="42" height="10" rx="4" fill="rgba(74,158,255,0.30)"/><text x="635" y="242" fill="#e8eaf0">0.13</text>
+    <rect x="666" y="218" width="42" height="7" rx="4" fill="rgba(74,158,255,0.24)"/><text x="687" y="242" fill="#e8eaf0">0.08</text>
   </g>
 </svg>
 </div>
@@ -49,16 +49,16 @@ Dividing by $\sqrt{d_k}$ keeps the variance of the dot product roughly constant 
 
 <!-- .slide: id="scaled-softmax" -->
 
-## Scaled Softmax
+## From Scores to the Attention Map
 
-The attention weight from query $i$ to key $j$:
+This is the **same softmax** from the previous section, now applied to the **scaled** scores &mdash; once per query. The attention weight from query $i$ to key $j$ is:
 
 $$\alpha_{ij} = \frac{\exp\left(\mathbf q_i \cdot \mathbf k_j / \sqrt{d_k}\right)}{\sum_{j'} \exp\left(\mathbf q_i \cdot \mathbf k_{j'} / \sqrt{d_k}\right)}$$
 
-Each row of the attention matrix sums to 1. The weights form a **soft selection** over all tokens.
+The only new ingredient is the $\sqrt{d_k}$ divisor: the fixed temperature from the previous slide. Each query $i$ produces one row $\alpha_{i\cdot}$, and stacking those rows gives the **attention map**.
 
 :::note
-**Without scaling:** for large $d_k$, the softmax saturates and gradients vanish. With scaling, the distribution stays smooth and learning proceeds. A small but critical engineering detail.
+**Why the scaling matters here:** for large $d_k$ the unscaled scores grow, the softmax saturates, and gradients vanish. Dividing by $\sqrt{d_k}$ keeps the distribution smooth so learning proceeds &mdash; a small but critical engineering detail.
 :::
 
 ---
@@ -87,6 +87,18 @@ $$\mathbf o_i = \sum_j \alpha_{ij} \mathbf v_j$$
 
 ---
 
+<!-- .slide: id="full-attention-formula" -->
+
+## The Complete Formula
+
+Scaled dot-product attention in one line:
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
+
+Compare, normalize, retrieve. Three matrix operations. No recurrence, no convolution, no fixed-size bottleneck. The model learns what to look at.
+
+---
+
 <!-- .slide: id="attention-heatmap" -->
 
 :::interactive id="attn-heatmap" widget="attentionHeatmap" title="Attention as a Heatmap"
@@ -103,15 +115,3 @@ The same mechanism works on any sequence. In a vision-language model, each text 
 <img src="images/sualization-of-attention-regions-extracted-from-the-first-Transformer-layer-of.webp" alt="Attention regions over an image in a vision-language model" style="max-height: 470px;">
 <p class="text-muted" style="font-size: 12pt; margin-top: 10px;">Attention regions from Pixel-BERT (Huang et al., 2020). Attention concentrates on the objects the text refers to.</p>
 </div>
-
----
-
-<!-- .slide: id="full-attention-formula" -->
-
-## The Complete Formula
-
-Scaled dot-product attention in one line:
-
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
-
-Compare, normalize, retrieve. Three matrix operations. No recurrence, no convolution, no fixed-size bottleneck. The model learns what to look at.

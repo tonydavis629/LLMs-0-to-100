@@ -191,13 +191,12 @@ def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
     angle_rates = 1 / (10000 ** (dim_pair / d_model))
     # Broadcast positions against dimension frequencies to get all angles.
     angles = position * angle_rates
-    # Start with zeros, then fill even dimensions with sine values.
+    # Start with zeros, then fill in the sinusoidal pattern.
     P = torch.zeros_like(X)
-    P[:, 0::2] = torch.sin(angles)
 
-    # TODO: Fill the odd dimensions of P with cosine values from the sinusoidal equation.
-    # HINT: use torch.cos(angles) and assign the result to P[:, 1::2].
-    raise NotImplementedError("TODO: fill cosine positional dimensions")
+    # TODO: Fill the even dimensions of P with sine values and the odd dimensions with cosine values, using the angles above.
+    # HINT: assign torch.sin(angles) to P[:, 0::2] and torch.cos(angles) to P[:, 1::2].
+    raise NotImplementedError("TODO: fill sine and cosine positional dimensions")
 
     # Add position information to each token embedding.
     return X + P

@@ -111,6 +111,23 @@
   gap: 10px;
 }
 
+/* softmax explorer: all five logit sliders on one row, temperature below */
+.m3-sliders.m3-logits {
+  grid-template-columns: repeat(5, 1fr);
+  max-width: 100%;
+  gap: 4px 16px;
+}
+
+.m3-sliders.m3-logits .m3-slider {
+  grid-template-columns: 40px 1fr 36px;
+  gap: 7px;
+}
+
+.m3-sliders.m3-temp {
+  max-width: 480px;
+  margin-top: 2px;
+}
+
 .reveal .m3-slider label {
   font-size: 12pt;
   color: var(--primary-color);

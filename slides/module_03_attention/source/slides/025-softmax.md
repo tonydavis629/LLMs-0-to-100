@@ -7,11 +7,11 @@
 
 ## From Logits to a Distribution
 
-Softmax is the function that has been quietly doing the normalization step in every attention layer. It takes a vector of raw scores (**logits**) and turns them into a probability distribution:
+Softmax is the function quietly doing the normalization step in every attention layer. It takes a vector of raw scores (the **logits**) and turns them into a probability distribution:
 
 $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 <div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 230" width="100%" style="max-height: 220px;">
+<svg viewBox="0 0 820 185" width="100%" style="max-height: 165px;">
   <g font-size="12" text-anchor="middle" font-weight="600">
     <text x="145" y="22" fill="#f5a623">raw scores z</text>
     <text x="410" y="22" fill="#f5a623">positive scores e^z</text>
@@ -33,11 +33,18 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
     <rect x="620" y="98" width="44" height="24" rx="4" fill="rgba(74,158,255,0.38)"/><text x="682" y="115" fill="#e8eaf0">0.24</text>
     <rect x="620" y="148" width="16" height="24" rx="4" fill="rgba(74,158,255,0.22)"/><text x="655" y="165" fill="#e8eaf0">0.09</text>
   </g>
-  <text x="410" y="210" fill="#8892a4" font-size="13" text-anchor="middle">Exponentiate to make scores positive, then divide by the total so the row sums to 1.</text>
 </svg>
 </div>
 
-Inside attention, softmax is applied across the **keys** for each query. At the output, it is applied across the vocabulary to produce next-token probabilities.
+:::columns cols="2" gap="40px"
+**What is a logit?**
+
+A logit is the unnormalized score the model assigns to one option &mdash; any real number, positive or negative. On its own it is not a probability; it only carries meaning *relative* to the other logits in the vector.
++++
+**Why $e^{z}$?**
+
+Exponentiating makes every score positive (probabilities cannot be negative) and widens the gaps, so a higher logit pulls clearly ahead while the ranking is preserved. It is smooth and differentiable, so gradients flow back through it during training. Dividing by the sum then forces the values to total 1.
+:::
 
 ---
 

@@ -19,7 +19,6 @@
   <!-- self arcs (token to token within same row) -->
   <path d="M195 100 Q151 64 107 100" fill="none" stroke="#f5a623" stroke-width="2" marker-end="url(#arrcx)"/>
   <path d="M195 100 Q239 64 283 100" fill="none" stroke="#f5a623" stroke-width="2" marker-end="url(#arrcx)"/>
-  <path d="M107 132 Q151 168 195 132" fill="none" stroke="#8892a4" stroke-width="1.2" opacity="0.6" marker-end="url(#arrcxg)"/>
   <text x="195" y="200" fill="#8892a4" font-size="12" text-anchor="middle">Q, K, V all from the</text>
   <text x="195" y="218" fill="#8892a4" font-size="12" text-anchor="middle">same sequence</text>
   <!-- divider -->

@@ -1243,155 +1243,7 @@
   color: var(--secondary-color);
 }
 
-/* Module 3 overrides on top of the shared slides/source/styles.css. */
-:root {
-  --slide-padding-top: 40px;
-  --content-gap: 30px;
-}
-
-/* ===========================================
-   MODULE 3 INTERACTIVE WIDGETS
-   Shared chrome for the attention widgets defined in config.js.
-   =========================================== */
-
-.m3-widget {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  width: 100%;
-  height: 100%;
-}
-
-.m3-canvas-wrap {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-}
-
-.m3-canvas {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  background: #0d1225;
-  border: 1px solid var(--line-color);
-  border-radius: var(--box-radius);
-}
-
-.m3-dual {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 14px;
-  flex: 1;
-  min-height: 0;
-}
-
-.m3-controls {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.m3-btn {
-  font-family: var(--body-font);
-  font-size: 13pt;
-  color: var(--text-color);
-  background: rgba(74, 158, 255, 0.10);
-  border: 1px solid rgba(74, 158, 255, 0.35);
-  border-radius: 6px;
-  padding: 7px 16px;
-  cursor: pointer;
-}
-
-.m3-btn:hover {
-  background: rgba(74, 158, 255, 0.22);
-}
-
-.m3-btn.m3-primary {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #0a0e1a;
-  font-weight: 600;
-}
-
-.m3-btn.m3-reset {
-  background: rgba(245, 166, 35, 0.12);
-  border-color: rgba(245, 166, 35, 0.40);
-  color: var(--secondary-color);
-}
-
-.m3-btn.active {
-  background: var(--primary-color);
-  border-color: var(--primary-color);
-  color: #0a0e1a;
-  font-weight: 600;
-}
-
-.reveal .m3-readout {
-  font-size: 13pt;
-  color: var(--muted-color);
-  text-align: center;
-  margin: 0;
-  min-height: 1.4em;
-}
-
-.reveal .m3-readout strong {
-  color: var(--secondary-color);
-}
-
-.m3-sliders {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 6px 20px;
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.m3-slider {
-  display: grid;
-  grid-template-columns: 96px 1fr 52px;
-  align-items: center;
-  gap: 10px;
-}
-
-/* softmax explorer: all five logit sliders on one row, temperature below */
-.m3-sliders.m3-logits {
-  grid-template-columns: repeat(5, 1fr);
-  max-width: 100%;
-  gap: 4px 16px;
-}
-
-.m3-sliders.m3-logits .m3-slider {
-  grid-template-columns: 40px 1fr 36px;
-  gap: 7px;
-}
-
-.m3-sliders.m3-temp {
-  max-width: 480px;
-  margin-top: 2px;
-}
-
-.reveal .m3-slider label {
-  font-size: 12pt;
-  color: var(--primary-color);
-  font-weight: 600;
-  margin: 0;
-}
-
-.m3-slider input[type="range"] {
-  width: 100%;
-  accent-color: var(--primary-color);
-}
-
-.reveal .m3-slider .m3-val {
-  font-size: 12pt;
-  color: var(--text-color);
-  font-family: monospace;
-  text-align: right;
-  margin: 0;
-}
+/* Module 4 overrides — mostly uses shared styles.css */
 
   </style>
 </head>
@@ -1407,40 +1259,37 @@
 
 # LLMs 0 to 100
 
-Module 3: Attention Mechanisms
+Module 4: LLM Architectures
 
-From Fixed Windows to Learned Lookups
+From the Transformer to GPT-2
 
 ---
 
 <!-- .slide: id="review-1" -->
 
-## Review: Module 2
+## Review: Module 3
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**The MLP**
+**Self-Attention as a Learned Lookup**
 
-A multi-layer perceptron applies repeated linear transformations with nonlinear activations between them:
+Compare every token (query) against every other token (key), normalize with softmax, and retrieve a weighted sum of values:
 
-$$\mathbf{h} = \sigma(W\mathbf{x} + \mathbf{b})$$
+$$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
 
-An MLP with enough hidden units can approximate any continuous function (universal approximation theorem).
+Each output token is a weighted average of value vectors, with weights from query-key compatibility.
 
 </div>
 
 <div>
 
-**Limitations for Sequences**
+**The Missing Pieces**
 
-An MLP over a fixed window of tokens treats each position identically, but:
-
-- The context window is fixed: token 1 cannot directly inform token 50
-- Flattening token vectors destroys the idea that the same pattern can appear in many positions
-- Parameter count grows with context length
-- There is no direct mechanism for one token to select information from another token
+- A single attention layer is not a model; it needs embeddings, depth (stacked blocks), and an output head
+- Positional embeddings inject order into a bag of attention scores
+- Causal masking ensures autoregressive generation: each token only attends to itself and previous tokens
 
 </div>
 
@@ -1450,168 +1299,237 @@ An MLP over a fixed window of tokens treats each position identically, but:
 
 <!-- .slide: id="review-2" -->
 
-## Review: Why the Architecture Matters
+## Review: The Full Transformer Picture
+
+Three design decisions that define what a transformer can do:
+
+1. **Attention direction** &mdash; causal (autoregressive) or bidirectional (encoding)
+2. **Architecture family** &mdash; encoder-decoder, encoder-only, or decoder-only
+3. **Output objective** &mdash; next-token prediction, masked-token prediction, or sequence-to-sequence
+
+These choices determine whether the model generates, classifies, or translates. This module explores each family in depth.
+
+---
+
+<!-- .slide: id="divider-rnn" class="section-divider" data-state="is-section-divider" -->
+
+# Before Transformers
+
+The recurrent era and its limitations
+
+
+---
+
+<!-- .slide: id="rnn-idea" -->
+
+## Recurrent Neural Networks
+
+An RNN processes tokens one at a time, carrying a hidden state forward as a running summary of everything seen so far:
+
+$$\mathbf{h}_t = f(\mathbf{h}_{t-1}, \mathbf{x}_t; W)$$
+
+At every step the old hidden state and the new token are combined to produce a new hidden state. The same weights are reused at every time step, so the network has a fixed parameter count regardless of sequence length.
+
+The hidden state is a fixed-size vector that must compress the entire history into a single point. Long sentences force that vector to carry information from dozens or hundreds of steps back.
+
+---
+
+<!-- .slide: id="rnn-problems" -->
+
+## The Problems with Recurrence
+
+Recurrent training is fundamentally hard for three reasons:
+
+- **Vanishing and exploding gradients.** Gradients must survive repeated matrix multiplications as they travel backward through time. Over long sequences the product of many weight matrices either shrinks to near zero (vanishing) or blows up (exploding). This is the same backprop multiplication rule from Module 2, amplified across many recurrent steps.
+
+- **Sequential dependency.** Token $t$ cannot be processed until tokens $1$ through $t-1$ are done. This makes training impossible to parallelize across the sequence: for a batch of $n$ tokens, the RNN takes $n$ serial steps instead of one parallel step.
+
+- **Fixed-size bottleneck.** The hidden state has a fixed dimension. No matter how long the input, all context must be squeezed through one vector of the same size.
+
+---
+
+<!-- .slide: id="lstm-gru" -->
+
+## LSTMs and GRUs: Gating Mechanisms
+
+The Long Short-Term Memory network (1997) added **gating** to the recurrent cell so information could flow across many time steps without vanishing:
+
+$$\mathbf{f}_t = \sigma(W_f \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(forget gate)}$$
+$$\mathbf{i}_t = \sigma(W_i \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(input gate)}$$
+$$\mathbf{o}_t = \sigma(W_o \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(output gate)}$$
+
+By selectively remembering and forgetting, LSTMs mitigated the gradient problem. GRUs (2014) simplified the gates to just two: update and reset.
+
+Both kept the **sequential and bottleneck limitations.** The cell was improved, but the architecture was still fundamentally serial.
+
+---
+
+<div class="figure-card">
+
+![Sepp Hochreiter & Jürgen Schmidhuber](images/hochreiter_schmidhuber.jpg)
+
+<div class="figure-info">
+
+## Sepp Hochreiter & Jürgen Schmidhuber <!-- .element: class="fragment fade-in" -->
+
+<div class="fragment fade-in">
+
+### Introduced Long Short-Term Memory (1997)
+
+- Schmidhuber and Hochreiter's LSTM added forget, input, and output gates to recurrent cells
+- For the first time, gradients could propagate across hundreds of time steps without vanishing
+- LSTMs became the default choice for sequence modeling from 1997 until the transformer era
+- Hochreiter & Schmidhuber, "Long Short-Term Memory," *Neural Computation* (1997)
+
+</div>
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="seq2seq" -->
+
+## Sequence-to-Sequence Learning
+
+Encoder-decoder RNNs (Sutskever et al., 2014) split the problem into two recurrent networks:
+
+- **Encoder:** reads the input sequence and compresses it into a single fixed-size context vector
+- **Decoder:** generates the output sequence, conditioned on that vector
+
+This was the dominant architecture for machine translation. But the fixed-vector bottleneck is severe: a long source sentence must be compressed into the same-size vector as a short one.
+
+Bahdanau attention (Module 3) was invented specifically to fix this bottleneck, letting the decoder attend directly to encoder states instead of relying on a single compressed vector.
+
+---
+
+<div class="figure-card">
+
+![Ilya Sutskever, Oriol Vinyals & Quoc Le](images/sutskever_vinyals_le.jpg)
+
+<div class="figure-info">
+
+## Ilya Sutskever, Oriol Vinyals & Quoc Le <!-- .element: class="fragment fade-in" -->
+
+<div class="fragment fade-in">
+
+### Sequence to Sequence Learning with Neural Networks (2014)
+
+- Sutskever, Vinyals, and Le introduced the encoder-decoder RNN framework for neural machine translation
+- The encoder compresses the entire input into one vector; the decoder generates from it
+- This fixed-vector bottleneck is exactly what Bahdanau attention was invented to fix
+- Sutskever et al., <https://arxiv.org/abs/1409.3215>
+
+</div>
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="attention-is-all-you-need" -->
+
+## "Attention Is All You Need" (2017)
+
+Vaswani et al. removed recurrence entirely. In its place: stacked multi-head self-attention with position-wise feed-forward networks.
+
+Why this mattered:
+
+- **Full parallelism across positions.** Every token can be processed at the same time during training; only the causal mask enforces order at inference time.
+
+- **Constant path length.** In an RNN, information from token 1 must travel through every intermediate hidden state to reach token $n$. In a transformer, token 1 and token $n$ interact directly through one attention layer. The longest signal path is $O(1)$ layers, not $O(n)$ recurrent steps.
+
+- **No fixed-size bottleneck.** Each layer accesses the full sequence through attention; nothing is compressed into a single vector.
+
+The transformer is best understood as a direct response to RNN limitations. Every design choice trades sequential recurrence for parallel computation.
+
+---
+
+<!-- .slide: id="divider-tokenization" class="section-divider" data-state="is-section-divider" -->
+
+# Tokenization
+
+What is the atomic unit of a language model?
+
+
+---
+
+<!-- .slide: id="unit-problem" -->
+
+## The Unit Problem
+
+What should a language model read? Three natural choices, each with a fatal flaw:
+
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 25px;">
+
+<div>
+
+**Characters**
+
+Tiny vocabulary (maybe 256 bytes), but sequences become very long. The model wastes capacity relearning spelling and morphology. Each token carries almost no meaning.
+
+</div>
+
+<div>
+
+**Words**
+
+Meaningful units, but the vocabulary explodes to hundreds of thousands. Any unseen word is out-of-vocabulary with no way to represent it. Misspellings, typos, and brand-new words break the model.
+
+</div>
+
+<div>
+
+**Subwords**
+
+The compromise: frequent words stay whole, rare words split into reusable pieces. "tokenization" becomes "token" + "ization". Morphology, typos, and new coinages are all representable.
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="bpe-algorithm" -->
+
+## Byte-Pair Encoding
+
+BPE starts from individual characters or bytes, then **repeatedly merges the most frequent adjacent pair** into a new token:
+
+1. Start with character vocabulary
+2. Count every adjacent pair in the training corpus
+3. Merge the most frequent pair; add the merged symbol to the vocabulary
+4. Repeat until the vocabulary reaches the desired size
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**From Module 2**
+**Example**
 
-The single neuron could not solve XOR because a linear boundary cannot separate entangled classes. The fix was a hidden layer with a nonlinearity &mdash; the architecture had to match the structure of the problem.
+Corpus: `low low lower lowest`
 
-</div>
+Start: `l o w` (plus space, etc.)
 
-<div>
+Most frequent pair: `lo` (appears 4 times)
 
-**Same Principle, Bigger Scale**
+Merge: `lo w lo w lo wer lo west`
 
-Language has structure that an MLP does not match:
+Next: `low` (appears 4 times)
 
-- Every token can depend on any earlier token, not just its neighbors
-- The same syntactic pattern ("the ___") appears at every position
-- The relevant context length varies per token
-
-**The architecture must match the structure of the data.**
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="divider-why-attention" class="section-divider" data-state="is-section-divider" -->
-
-# Why Attention?
-
-From fixed windows to selective retrieval
-
-
----
-
-<!-- .slide: id="mlp-failure" -->
-
-## Predicting the Next Word with an MLP
-
-The task: given the words so far, predict the next one. An MLP reads a **fixed window** of the most recent tokens, flattens them into one long vector, and maps that to a distribution over the vocabulary.
-<div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 860 260" width="100%" style="max-height: 250px;">
-  <!-- window slots -->
-  <text x="30" y="28" fill="#8892a4" font-size="13">Fixed window of 4 tokens</text>
-  <g font-size="14" font-weight="600" text-anchor="middle">
-    <rect x="30" y="40" width="90" height="38" rx="5" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/>
-    <text x="75" y="64" fill="#e8eaf0">cat</text>
-    <rect x="135" y="40" width="90" height="38" rx="5" fill="#0d1225" stroke="#50c878" stroke-width="2"/>
-    <text x="180" y="64" fill="#e8eaf0">sat</text>
-    <rect x="240" y="40" width="90" height="38" rx="5" fill="#0d1225" stroke="#f5a623" stroke-width="2"/>
-    <text x="285" y="64" fill="#e8eaf0">on</text>
-    <rect x="345" y="40" width="90" height="38" rx="5" fill="#0d1225" stroke="#c792ea" stroke-width="2"/>
-    <text x="390" y="64" fill="#e8eaf0">the</text>
-  </g>
-  <g font-size="11" fill="#8892a4" text-anchor="middle">
-    <text x="75" y="95">slot 1 &middot; W&#8321;</text>
-    <text x="180" y="95">slot 2 &middot; W&#8322;</text>
-    <text x="285" y="95">slot 3 &middot; W&#8323;</text>
-    <text x="390" y="95">slot 4 &middot; W&#8324;</text>
-  </g>
-  <!-- arrows to hidden -->
-  <line x1="75" y1="100" x2="232" y2="150" stroke="#4a9eff" stroke-width="1.5"/>
-  <line x1="180" y1="100" x2="232" y2="150" stroke="#50c878" stroke-width="1.5"/>
-  <line x1="285" y1="100" x2="232" y2="150" stroke="#f5a623" stroke-width="1.5"/>
-  <line x1="390" y1="100" x2="232" y2="150" stroke="#c792ea" stroke-width="1.5"/>
-  <rect x="150" y="150" width="165" height="34" rx="5" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="232" y="172" fill="#e8eaf0" font-size="13" text-anchor="middle">hidden layer</text>
-  <line x1="315" y1="167" x2="360" y2="167" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrm)"/>
-  <rect x="360" y="150" width="150" height="34" rx="5" fill="#0d1225" stroke="#8892a4" stroke-width="1.5"/>
-  <text x="435" y="172" fill="#e8eaf0" font-size="13" text-anchor="middle">softmax over vocab</text>
-  <line x1="510" y1="167" x2="560" y2="167" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrm)"/>
-  <rect x="560" y="148" width="100" height="38" rx="5" fill="#0d1225" stroke="#3fb950" stroke-width="2.5"/>
-  <text x="610" y="172" fill="#3fb950" font-size="15" text-anchor="middle" font-weight="600">mat</text>
-  <text x="610" y="135" fill="#8892a4" font-size="12" text-anchor="middle">prediction</text>
-  <defs>
-    <marker id="arrm" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-      <path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/>
-    </marker>
-  </defs>
-</svg>
-</div>
-
-Each slot has its own weight block. The window works for this sentence, but the structure of language does not fit a fixed grid of positions.
-
----
-
-<!-- .slide: id="mlp-rigid-positions" -->
-
-<section id="mlp-rigid">
-  <h2>Rigid Positionality: Weights Are Bound to Slots</h2>
-  <div class="interactive-host" data-widget="mlpRigid"></div>
-</section>
-
----
-
-<!-- .slide: id="mlp-two-failures" -->
-
-## Two Things the MLP Cannot Do
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Rigid positionality**
-
-Each slot connects to its own weights. The word "the" in slot 1 and "the" in slot 4 are processed by completely different parameters. Whatever the model learns about "the" at one position must be relearned from scratch at every other position.
+Result: vocabulary contains `low`, `er`, `est`, and the individual characters.
 
 </div>
 
 <div>
 
-**No selective retrieval**
+**What this means**
 
-To predict "mat", the useful context is "sat" and "cat". But the MLP flattens the whole window into one vector and treats every slot equally. There is no mechanism for one token to reach out and pull information from another.
-
-</div>
+"lower" becomes `["low", "er"]`. "lowest" becomes `["low", "est"]`. The shared prefix "low" is reused. Rare words are decomposed into familiar pieces; frequent words are kept intact. The model never sees an unrepresentable token.
 
 </div>
-
-<div class="note">
-
-The architecture must match the data. Language needs variable-length context, weight sharing across positions, and a way to selectively retrieve information. An MLP over a fixed window provides none of these.
-
-</div>
-
----
-
-<!-- .slide: id="fixed-context-bottleneck" -->
-
-## The Fixed-Context Bottleneck
-
-Recurrent models (RNNs, LSTMs) handle variable length by reading tokens one at a time and compressing everything seen so far into a **single hidden state vector**.
-<div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 150" width="100%" style="max-height: 140px;">
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="20" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="55" y="72" fill="#e8eaf0">the</text>
-    <rect x="110" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="145" y="72" fill="#e8eaf0">cat</text>
-    <rect x="200" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="235" y="72" fill="#e8eaf0">sat</text>
-    <rect x="290" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="325" y="72" fill="#e8eaf0">on</text>
-    <rect x="380" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="415" y="72" fill="#e8eaf0">the</text>
-    <rect x="470" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="505" y="72" fill="#e8eaf0">mat</text>
-  </g>
-  <g stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrb)">
-    <line x1="90" y1="67" x2="108" y2="67"/><line x1="180" y1="67" x2="198" y2="67"/>
-    <line x1="270" y1="67" x2="288" y2="67"/><line x1="360" y1="67" x2="378" y2="67"/>
-    <line x1="450" y1="67" x2="468" y2="67"/><line x1="540" y1="67" x2="600" y2="67"/>
-  </g>
-  <rect x="600" y="46" width="170" height="42" rx="6" fill="rgba(231,76,60,0.10)" stroke="#e74c3c" stroke-width="2"/>
-  <text x="685" y="64" fill="#e8eaf0" font-size="12" text-anchor="middle">one fixed-size</text>
-  <text x="685" y="80" fill="#e8eaf0" font-size="12" text-anchor="middle">hidden state</text>
-  <text x="685" y="118" fill="#e74c3c" font-size="12" text-anchor="middle">everything squeezed through here</text>
-  <defs><marker id="arrb" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
-</svg>
-</div>
-
-<div class="note">
-
-**Problem:** no matter how long the input, all of it must fit through one fixed-size bottleneck. The model has to decide what to keep before it knows what will be needed later. Early tokens fade as the state is overwritten.
 
 </div>
 
@@ -1619,243 +1537,270 @@ Recurrent models (RNNs, LSTMs) handle variable length by reading tokens one at a
 
 <div class="figure-card">
 
-![Bahdanau, Cho &amp; Bengio](images/bahdanau_cho_bengio.jpg)
+![Rico Sennrich, Barry Haddow & Alexandra Birch](images/sennrich_haddow_birch.jpg)
 
 <div class="figure-info">
 
-## Bahdanau, Cho &amp; Bengio <!-- .element: class="fragment fade-in" -->
+## Rico Sennrich, Barry Haddow & Alexandra Birch <!-- .element: class="fragment fade-in" -->
 
 <div class="fragment fade-in">
 
-### Made Attention a Central Mechanism
+### Adapted BPE for Neural Machine Translation (2016)
 
-- Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio (2014)
-- "Neural Machine Translation by Jointly Learning to Align and Translate"
-- Their translation model learned to **align** each output word to the most relevant input words
-- Instead of one compressed vector, the decoder could look back at every input representation directly
-- Attention began as a fix for the fixed-size bottleneck, then became a first-class mechanism
-
-</div>
+- Sennrich, Haddow, and Birch adapted Byte-Pair Encoding &mdash; originally a 1994 compression scheme by Philip Gage &mdash; into subword tokenization for NMT
+- The idea: let the data decide which character sequences deserve their own tokens
+- This became the dominant tokenization method for transformer models
+- Sennrich et al., <https://arxiv.org/abs/1508.07909>
 
 </div>
 
 </div>
-
----
-
-<!-- .slide: id="attention-concept-viz" -->
-
-## What Attention Does
-
-Before any math, here is the operation: every word builds its output by **pulling information from the other words**. Click any word to see what it attends to &mdash; a thicker arrow means more of that word's value flows in.
-
-<div class="interactive-host" data-widget="attentionArrows"></div>
-
-<div class="note">
-
-**The key insight:** attention is not selecting one token and discarding the rest. Each token computes a different weighted average over all the others, and training learns which of those weights should become large.
 
 </div>
 
 ---
 
-<!-- .slide: id="divider-qkv" class="section-divider" data-state="is-section-divider" -->
+<!-- .slide: id="byte-level-bpe" -->
 
-# Queries, Keys, and Values
+## Byte-Level BPE and the Vocabulary Table
 
-The learned projections that turn the intuition into an operation
+GPT-2 runs BPE over **raw bytes** instead of Unicode characters. Every possible string &mdash; including emoji, code, non-Latin scripts, and arbitrary whitespace &mdash; is representable with no true out-of-vocabulary tokens.
+
+The vocabulary and the token-to-ID table are learned together during the merge process. Typical sizes:
+
+- GPT-2: about 50k tokens
+- Modern models: 100k&ndash;200k tokens
+
+A larger vocabulary means shorter sequences (fewer tokens per sentence) but a bigger embedding matrix and a larger output projection layer. This is a direct memory-parameter trade-off.
+
+Other schemes exist: **WordPiece** (BERT), **Unigram** and **SentencePiece** (T5, Llama). They differ in how the merge or segmentation objective is defined, but the core idea is the same: break rare words into reusable pieces.
+
+---
+
+<!-- .slide: id="tokenization-practice" -->
+
+## Why Tokenization Matters in Practice
+
+Token counts drive both context limits and API cost:
+
+- A model's "context window" is measured in tokens, not words. A 4K context holds roughly 3,000 English words but often fewer in other languages.
+
+- Non-English text frequently costs more tokens. The same sentence in Japanese or Arabic may require 1.5&ndash;2x more tokens than English. This is the **"token tax"** on multilingual use.
+
+- Tokenization explains why models struggle to count letters, reverse strings, or do digit arithmetic. The model never sees the string "12345"; it sees a token ID for the entire number "12345" and has no access to its individual digits.
+
+- A tokenizer and a model are trained separately. The model only ever sees token IDs. Glitch tokens &mdash; rare tokens that appear in the vocabulary but almost never in training data &mdash; can trigger bizarre behavior because the model learned no reliable representation for them.
+
+The handoff to the model is simple: each token ID indexes one row of the embedding matrix. That vector is the only thing the transformer ever sees.
+
+---
+
+<!-- .slide: id="divider-block" class="section-divider" data-state="is-section-divider" -->
+
+# Anatomy of a Transformer Block
+
+How one layer transforms its input
 
 
 ---
 
-<!-- .slide: id="attention-as-lookup" -->
+<!-- .slide: id="embedding-layer" -->
 
-## Attention as a Learned Lookup
+## The Embedding Layer
 
-Attention is a differentiable database query. Every token asks a question, every token advertises what it offers, and the answer is a blend of the most relevant content.
+Each token ID indexes one row of a learned embedding matrix $W_E \in \mathbb{R}^{V \times d_{\text{model}}}$.
 
-<div style="text-align: center; margin: 6px 0;">
-<svg viewBox="0 0 760 190" width="100%" style="max-height: 180px;">
-  <text x="70" y="20" fill="#8892a4" font-size="12" text-anchor="middle">input tokens</text>
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <rect x="35" y="30" width="70" height="26" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="70" y="47" fill="#e8eaf0">the</text>
-    <rect x="35" y="62" width="70" height="26" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="70" y="79" fill="#e8eaf0">cat</text>
-    <rect x="35" y="94" width="70" height="26" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="70" y="111" fill="#e8eaf0">sat</text>
-    <rect x="35" y="126" width="70" height="26" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="70" y="143" fill="#e8eaf0">on</text>
-  </g>
-  <line x1="105" y1="91" x2="250" y2="91" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrlk)"/>
-  <rect x="250" y="36" width="260" height="112" rx="8" fill="rgba(74,158,255,0.06)" stroke="#4a9eff" stroke-width="2"/>
-  <text x="380" y="58" fill="#4a9eff" font-size="15" text-anchor="middle" font-weight="600">Attention Layer</text>
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <rect x="270" y="74" width="64" height="50" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/><text x="302" y="95" fill="#4a9eff">Query</text><text x="302" y="113" fill="#8892a4" font-size="10" font-weight="400">ask</text>
-    <rect x="348" y="74" width="64" height="50" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/><text x="380" y="95" fill="#f5a623">Key</text><text x="380" y="113" fill="#8892a4" font-size="10" font-weight="400">advertise</text>
-    <rect x="426" y="74" width="64" height="50" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/><text x="458" y="95" fill="#50c878">Value</text><text x="458" y="113" fill="#8892a4" font-size="10" font-weight="400">offer</text>
-  </g>
-  <line x1="510" y1="91" x2="650" y2="91" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrlk)"/>
-  <text x="700" y="20" fill="#8892a4" font-size="12" text-anchor="middle">contextualized</text>
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <rect x="655" y="44" width="90" height="26" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="700" y="61" fill="#e8eaf0">the&#39;</text>
-    <rect x="655" y="76" width="90" height="26" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="700" y="93" fill="#e8eaf0">cat&#39;</text>
-    <rect x="655" y="108" width="90" height="26" rx="4" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="700" y="125" fill="#e8eaf0">sat&#39;</text>
-  </g>
-  <defs><marker id="arrlk" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
-</svg>
-</div>
+$$\mathbf{x}_i = W_E[t_i] + W_P[i]$$
 
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 40px;">
+The positional embedding $W_P[i]$ adds position information. Without this addition, a bag of attention scores has no inherent notion of order: shuffling the input tokens would leave the output unchanged.
+
+The result is a sequence of vectors $\mathbf{x}_1, \dots, \mathbf{x}_n$ that flows into the first transformer block.
+
+---
+
+<!-- .slide: id="residual-stream" -->
+
+## The Residual Stream
+
+Picture the transformer not as a pipeline but as a **running vector** that flows through the network:
+
+$$\mathbf{x}_{\text{out}} = \mathbf{x}_{\text{in}} + \text{sub-layer}(\text{norm}(\mathbf{x}_{\text{in}}))$$
+
+Each sub-layer reads from the stream, computes its contribution, and writes it back. The stream is never replaced; it is only updated by addition. This means:
+
+- Every block can still "see" the original embedding signal
+- Gradients have a direct highway back to the input through the residual adds
+- The entire depth of the model relies on this highway to avoid vanishing gradients
+
+---
+
+<!-- .slide: id="attention-sublayer" -->
+
+## Sub-layer 1: Multi-Head Self-Attention
+
+Queries, keys, and values are projected from the normalized residual stream. Attention computes a weighted mixture of values, then the output is projected back to $d_{\text{model}}$ and added to the stream:
+
+$$\mathbf{x} = \mathbf{x} + \text{Attention}(\text{LayerNorm}(\mathbf{x}))$$
+
+Attention is where tokens communicate. It is the only operation where information moves between positions in the same layer. The FFN processes each position independently.
+
+---
+
+<!-- .slide: id="ffn-sublayer" -->
+
+## Sub-layer 2: The Feed-Forward Network
+
+After attention, every position is processed by the same two-layer MLP:
+
+$$\text{FFN}(\mathbf{x}) = W_2 \cdot \text{GELU}(W_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2$$
+
+The hidden dimension is typically about $4 \times d_{\text{model}}$ (3,072 for GPT-2 small). This is applied independently at every position, with no mixing between tokens.
+
+A large share of a model's parameters and stored **"knowledge"** live here. Each FFN neuron can be viewed as a key-value pair: when the input activates a neuron (via ReLU/GELU), it retrieves a stored output vector. The FFN is where facts like "Paris is the capital of France" are encoded.
+
+---
+
+<!-- .slide: id="norm-and-residual" -->
+
+## Residual Connections and Normalization
+
+Residual connections are the gradient highway that makes deep stacks trainable. Without them, gradients would decay exponentially with depth.
+
+Normalization stabilizes the distribution of activations:
+
+$$\text{LayerNorm}(x) = \gamma \odot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta$$
+
+- **Post-norm** (original transformer): normalize after the sub-layer output
+- **Pre-norm** (modern default): normalize before the sub-layer input, then add the residual. More stable to train at depth.
+
+**RMSNorm** is the modern simplification: drop the mean-centering step and just divide by the root-mean-square.
+
+---
+
+<!-- .slide: id="stacking-and-head" -->
+
+## Stacking Blocks and the Output Head
+
+Identical blocks are stacked $N$ times to build depth:
+
+$$\text{block}_N(\dots \text{block}_2(\text{block}_1(\mathbf{x}_{\text{embed}})) \dots) = \mathbf{x}_{\text{final}}$$
+
+After the last block, a final layer norm and the **language-modeling head** project back to vocabulary-sized logits:
+
+$$\text{logits} = W_{\text{head}} \cdot \text{LayerNorm}(\mathbf{x}_{\text{final}})$$
+
+**Weight tying** reuses the embedding matrix as the output projection: $W_{\text{head}} = W_E^T$. This saves parameters and enforces that input and output live in the same semantic space.
+
+---
+
+<!-- .slide: id="forward-pass-and-params" -->
+
+## One Forward Pass: Tokens to Logits
+
+Trace the full path:
+
+1. Token IDs $\rightarrow$ embedding lookup + position
+2. Pass through $N$ transformer blocks (attention + FFN, each with pre-norm and residual)
+3. Final layer norm
+4. Unembedding / LM head $\rightarrow$ logits
+5. Softmax $\rightarrow$ next-token probabilities
+
+Parameter counting for GPT-2 small ($d_{\text{model}}=768$, $N=12$, $V=50257$):
+
+| Component | Parameters | Share |
+|-----------|-----------|-------|
+| Embeddings | $V \cdot d$ | ~38% |
+| Attention (all layers) | $N \cdot 4 d^2$ | ~29% |
+| FFN (all layers) | $N \cdot 8 d^2$ | ~29% |
+| Output head (tied) | 0 (shares embed) | 0% |
+| **Total** | **~124M** | **100%** |
+
+---
+
+<!-- .slide: id="side-quest-residual" -->
+
+## Side Quest: The Residual Stream and Induction Heads
+
+Mechanistic interpretability reads the transformer as components reading from and writing to a shared residual stream. **Induction heads** (Olsson et al., 2022) implement a simple copy-and-continue pattern:
+
+- When the model sees a pattern like `[A] [B] ... [A]`, it predicts `[B]` as the next token
+- This is the mechanism behind in-context learning: the model copies a pattern it observed earlier in the context
+
+Induction heads are linked to the emergence of few-shot learning at scale. They make the residual-stream metaphor concrete: each head reads the stream, detects a previous occurrence of a token, and writes a prediction back.
+
+---
+
+<!-- .slide: id="divider-families" class="section-divider" data-state="is-section-divider" -->
+
+# Three Architectural Families
+
+Encoder-decoder, encoder-only, and decoder-only
+
+
+---
+
+<!-- .slide: id="encoder-decoder" -->
+
+## Family 1: Encoder-Decoder
+
+The original transformer (Vaswani et al., 2017). The encoder builds bidirectional representations; the decoder generates while attending back through cross-attention.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**Traditional database**
+**Encoder stack**
 
-Exact match on a key, returns one record. Hand-designed index, not differentiable.
-
-</div>
-
-<div>
-
-**Attention**
-
-Soft match between query and key vectors, returns a weighted blend of all values. Fully differentiable, and the queries, keys, and values are all **learned**.
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="qkv-projections" -->
-
-## Introducing the Projections
-
-Each token vector is projected into three different spaces by three learned weight matrices:
-
-$$Q = XW_Q, \qquad K = XW_K, \qquad V = XW_V$$
-
-<div style="text-align: center; margin: 6px 0;">
-<svg viewBox="0 0 760 150" width="100%" style="max-height: 140px;">
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="30" y="55" width="70" height="48" rx="5" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/><text x="65" y="84" fill="#e8eaf0">X</text>
-    <text x="65" y="120" fill="#8892a4" font-size="10" font-weight="400">(n &times; d_model)</text>
-  </g>
-  <g stroke-width="1.5">
-    <line x1="100" y1="79" x2="150" y2="40" stroke="#4a9eff" marker-end="url(#arrp)"/>
-    <line x1="100" y1="79" x2="150" y2="79" stroke="#f5a623" marker-end="url(#arrp)"/>
-    <line x1="100" y1="79" x2="150" y2="118" stroke="#50c878" marker-end="url(#arrp)"/>
-  </g>
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <rect x="152" y="24" width="74" height="30" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/><text x="189" y="44" fill="#4a9eff">W_Q</text>
-    <rect x="152" y="62" width="74" height="30" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/><text x="189" y="82" fill="#f5a623">W_K</text>
-    <rect x="152" y="100" width="74" height="30" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/><text x="189" y="120" fill="#50c878">W_V</text>
-  </g>
-  <g stroke-width="1.5">
-    <line x1="226" y1="39" x2="276" y2="39" stroke="#4a9eff" marker-end="url(#arrp)"/>
-    <line x1="226" y1="77" x2="276" y2="77" stroke="#f5a623" marker-end="url(#arrp)"/>
-    <line x1="226" y1="115" x2="276" y2="115" stroke="#50c878" marker-end="url(#arrp)"/>
-  </g>
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="278" y="24" width="64" height="30" rx="5" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="310" y="44" fill="#4a9eff">Q</text>
-    <rect x="278" y="62" width="64" height="30" rx="5" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="310" y="82" fill="#f5a623">K</text>
-    <rect x="278" y="100" width="64" height="30" rx="5" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="310" y="120" fill="#50c878">V</text>
-  </g>
-  <text x="420" y="60" fill="#8892a4" font-size="12">Same token, three roles:</text>
-  <text x="420" y="84" fill="#e8eaf0" font-size="12">what it asks (Q), what it</text>
-  <text x="420" y="104" fill="#e8eaf0" font-size="12">advertises (K), what it offers (V).</text>
-  <defs><marker id="arrp" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
-</svg>
-</div>
-
-<div class="note">
-
-The same token can ask a different question (via $Q$) than it advertises (via $K$) or offers (via $V$). The three projection matrices are learned during training; nothing here is hand-designed.
-
-</div>
-
----
-
-<!-- .slide: id="attention-layer-construct" -->
-
-## Constructing the Attention Layer
-
-The projections feed a two-step pipeline: **compare** queries to keys to build the attention map, then **retrieve** values by applying that map to V.
-
-<div style="text-align: center; margin: 5px 0;">
-<svg viewBox="0 0 880 300" width="100%" style="max-height: 280px;">
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <rect x="22" y="132" width="68" height="44" rx="5" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
-    <text x="56" y="158" fill="#e8eaf0">X</text>
-    <text x="56" y="194" fill="#8892a4" font-size="10" font-weight="400">input tokens</text>
-  </g>
-  <g stroke="#8892a4" stroke-width="1.3" marker-end="url(#arrgray)">
-    <line x1="90" y1="150" x2="114" y2="92"/>
-    <line x1="90" y1="154" x2="114" y2="154"/>
-    <line x1="90" y1="158" x2="114" y2="216"/>
-  </g>
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <rect x="116" y="74" width="72" height="32" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/><text x="152" y="95" fill="#4a9eff">W_Q</text>
-    <rect x="116" y="138" width="72" height="32" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/><text x="152" y="159" fill="#f5a623">W_K</text>
-    <rect x="116" y="202" width="72" height="32" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/><text x="152" y="223" fill="#50c878">W_V</text>
-  </g>
-  <g stroke-width="1.5" marker-end="url(#arrgray)">
-    <line x1="188" y1="90" x2="218" y2="90" stroke="#4a9eff"/>
-    <line x1="188" y1="154" x2="218" y2="154" stroke="#f5a623"/>
-    <line x1="188" y1="218" x2="218" y2="218" stroke="#50c878"/>
-  </g>
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="220" y="74" width="52" height="32" rx="5" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="246" y="95" fill="#4a9eff">Q</text>
-    <rect x="220" y="138" width="52" height="32" rx="5" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="246" y="159" fill="#f5a623">K</text>
-    <rect x="220" y="202" width="52" height="32" rx="5" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="246" y="223" fill="#50c878">V</text>
-  </g>
-  <rect x="312" y="86" width="126" height="72" rx="6" fill="rgba(74,158,255,0.08)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="375" y="114" fill="#4a9eff" font-size="13" text-anchor="middle" font-weight="600">1. Compare</text>
-  <text x="375" y="138" fill="#e8eaf0" font-size="13" text-anchor="middle">QK^T</text>
-  <line x1="272" y1="90" x2="312" y2="108" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrblue)"/>
-  <line x1="272" y1="154" x2="312" y2="138" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrorange)"/>
-  <rect x="620" y="150" width="132" height="72" rx="6" fill="rgba(80,200,120,0.09)" stroke="#50c878" stroke-width="1.5"/>
-  <text x="686" y="178" fill="#50c878" font-size="13" text-anchor="middle" font-weight="600">2. Retrieve</text>
-  <text x="686" y="202" fill="#e8eaf0" font-size="13" text-anchor="middle">map @ V</text>
-  <line x1="438" y1="124" x2="618" y2="168" stroke="#c792ea" stroke-width="1.8" marker-end="url(#arrpurple)"/>
-  <text x="524" y="130" fill="#c792ea" font-size="12" text-anchor="middle" font-weight="600">attention map</text>
-  <path d="M272 218 C430 252 520 248 620 204" fill="none" stroke="#50c878" stroke-width="1.5" marker-end="url(#arrgreen)"/>
-  <rect x="772" y="168" width="84" height="38" rx="5" fill="#0d1225" stroke="#3fb950" stroke-width="2"/>
-  <text x="814" y="192" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">output</text>
-  <line x1="752" y1="186" x2="772" y2="186" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrgreen)"/>
-  <text x="440" y="288" fill="#8892a4" font-size="12" text-anchor="middle">Compare builds the attention map from Q and K; retrieve applies that map to the value vectors V.</text>
-  <defs>
-    <marker id="arrblue" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-      <path d="M0,0 L6,3 L0,6 Z" fill="#4a9eff"/>
-    </marker>
-    <marker id="arrorange" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-      <path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/>
-    </marker>
-    <marker id="arrgreen" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-      <path d="M0,0 L7,3.5 L0,7 Z" fill="#50c878"/>
-    </marker>
-    <marker id="arrpurple" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-      <path d="M0,0 L7,3.5 L0,7 Z" fill="#c792ea"/>
-    </marker>
-    <marker id="arrgray" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
-      <path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/>
-    </marker>
-  </defs>
-</svg>
-</div>
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 40px;">
-
-<div>
-
-**Compare**
-
-Dot products measure how well each query aligns with each key. A softmax over each row turns those scores into the **attention map** &mdash; one row of weights per token.
+Bidirectional self-attention (no causal mask). Each token can attend to every other token in the input. Produces a sequence of context vectors.
 
 </div>
 
 <div>
 
-**Retrieve**
+**Decoder stack**
 
-Each token's output is its row of the attention map applied to the value vectors: a **weighted sum of V**.
+Causal self-attention (masked) plus cross-attention to the encoder output. Each generated token can attend to all encoder tokens and all previously generated tokens.
+
+</div>
+
+</div>
+
+Natural fit for sequence-to-sequence tasks: translation, summarization, where input and output are clearly distinct sequences. T5 and BART follow this design.
+
+---
+
+<!-- .slide: id="encoder-only" -->
+
+## Family 2: Encoder-Only
+
+Bidirectional attention, no causal mask, no decoder. Trained with **masked language modeling** (forward reference to Module 5): some input tokens are hidden, and the model must predict them from their context on both sides.
+
+$$\text{output}_i = f(\mathbf{x}_1, \dots, \mathbf{x}_n) \quad \text{for all } i$$
+
+Use cases: classification, sentence embeddings, retrieval, named-entity recognition. The model produces representations, not generations.
+
+BERT (Devlin et al., 2018) made this architecture dominant for "understanding" tasks. RoBERTa improved the training recipe without changing the architecture.
+
+---
+
+<div class="figure-card">
+
+![Jacob Devlin, Ming-Wei Chang, Kenton Lee & Kristina Toutanova](images/devlin_chang_lee_toutanova.jpg)
+
+<div class="figure-info">
+
+## Jacob Devlin, Ming-Wei Chang, Kenton Lee & Kristina Toutanova <!-- .element: class="fragment fade-in" -->
+
+<div class="fragment fade-in">
+
+### Introduced BERT (2018)
+
+- Devlin et al. introduced bidirectional pretraining with masked language modeling
+- Before BERT, language models were either left-to-right or shallowly bidirectional
+- BERT made encoder-only transformers the standard for understanding tasks
+- Devlin et al., <https://arxiv.org/abs/1810.04805>
+
+</div>
 
 </div>
 
@@ -1863,63 +1808,146 @@ Each token's output is its row of the attention map applied to the value vectors
 
 ---
 
-<!-- .slide: id="divider-softmax" class="section-divider" data-state="is-section-divider" -->
+<!-- .slide: id="decoder-only" -->
 
-# Softmax
+## Family 3: Decoder-Only
 
-Turning scores into probabilities
+Causal masking, autoregressive next-token prediction. Each token attends only to itself and previous tokens.
+
+$$\text{output}_t = f(\mathbf{x}_1, \dots, \mathbf{x}_t)$$
+
+Built for generation, but capable of nearly everything through prompting. GPT (Radford et al., 2018), GPT-2 (2019), GPT-3 (2020), and the Llama lineage all share this design.
+
+Why decoder-only won for LLMs:
+
+- A single stack is simpler and scales cleanly
+- The next-token objective gives a dense training signal at every position
+- The generative objective subsumes "understanding" tasks: you can phrase classification as a completion prompt
+- No task-specific heads are needed; everything becomes text generation
+- In-context and few-shot learning emerge at scale
+
+---
+
+<div class="figure-card">
+
+![Alec Radford & OpenAI Team](images/radford_gpt.jpg)
+
+<div class="figure-info">
+
+## Alec Radford & OpenAI Team <!-- .element: class="fragment fade-in" -->
+
+<div class="fragment fade-in">
+
+### Introduced GPT and GPT-2 (2018-2019)
+
+- Radford et al. demonstrated that autoregressive pretraining on unlabeled text produces powerful general-purpose models
+- GPT-2 showed that scale alone (1.5B parameters) produces coherent multi-paragraph text
+- The decoder-only design became the dominant LLM paradigm
+- Radford et al., "Improving Language Understanding by Generative Pre-Training" (2018); "Language Models are Unsupervised Multitask Learners" (2019)
+
+</div>
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="honest-tradeoffs" -->
+
+## The Honest Trade-offs
+
+Decoder-only did **not** win on every axis. It won on generality and scaling:
+
+- **Encoder-only** is still more efficient for fixed-vector embeddings, retrieval, and classification. If you only need a sentence representation, BERT-style models are faster.
+
+- **Encoder-decoder** remains strong where input and output are clearly distinct, as in machine translation. The input can be processed bidirectionally while the output is generated autoregressively.
+
+- **Decoder-only** excels when the task is open-ended or when you want a single model to handle many tasks through prompting. The price is that every task must be phrased as text completion.
+
+The choice depends on the problem, not on decoder-only being universally superior.
+
+---
+
+<!-- .slide: id="divider-beyond" class="section-divider" data-state="is-section-divider" -->
+
+# Beyond the Vanilla Transformer
+
+Modern blocks, MoE, and sub-quadratic alternatives
 
 
 ---
 
-<!-- .slide: id="softmax-purpose" -->
+<!-- .slide: id="modern-block" -->
 
-## From Logits to a Distribution
+## The Modern Block: 2017 vs Llama-Style
 
-Softmax is the function quietly doing the normalization step in every attention layer. It takes a vector of raw scores (the **logits**) and turns them into a probability distribution:
+The vanilla transformer block has been refined in nearly every component:
 
-$$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
-<div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 185" width="100%" style="max-height: 165px;">
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <text x="145" y="22" fill="#f5a623">raw scores z</text>
-    <text x="410" y="22" fill="#f5a623">positive scores e^z</text>
-    <text x="675" y="22" fill="#4a9eff">probabilities</text>
-  </g>
-  <g font-size="12" text-anchor="middle">
-    <text x="54" y="67" fill="#e8eaf0">cat</text>
-    <text x="54" y="117" fill="#e8eaf0">sat</text>
-    <text x="54" y="167" fill="#e8eaf0">mat</text>
-    <rect x="90" y="48" width="150" height="24" rx="4" fill="rgba(245,166,35,0.62)"/><text x="258" y="65" fill="#e8eaf0">2.0</text>
-    <rect x="90" y="98" width="90" height="24" rx="4" fill="rgba(245,166,35,0.42)"/><text x="198" y="115" fill="#e8eaf0">1.0</text>
-    <rect x="90" y="148" width="50" height="24" rx="4" fill="rgba(245,166,35,0.25)"/><text x="158" y="165" fill="#e8eaf0">0.0</text>
-    <text x="303" y="117" fill="#8892a4" font-size="24">&rarr;</text>
-    <rect x="355" y="48" width="170" height="24" rx="4" fill="rgba(245,166,35,0.72)"/><text x="544" y="65" fill="#e8eaf0">7.39</text>
-    <rect x="355" y="98" width="63" height="24" rx="4" fill="rgba(245,166,35,0.38)"/><text x="438" y="115" fill="#e8eaf0">2.72</text>
-    <rect x="355" y="148" width="24" height="24" rx="4" fill="rgba(245,166,35,0.20)"/><text x="398" y="165" fill="#e8eaf0">1.00</text>
-    <text x="568" y="117" fill="#8892a4" font-size="24">&rarr;</text>
-    <rect x="620" y="48" width="120" height="24" rx="4" fill="rgba(74,158,255,0.72)"/><text x="759" y="65" fill="#e8eaf0">0.67</text>
-    <rect x="620" y="98" width="44" height="24" rx="4" fill="rgba(74,158,255,0.38)"/><text x="682" y="115" fill="#e8eaf0">0.24</text>
-    <rect x="620" y="148" width="16" height="24" rx="4" fill="rgba(74,158,255,0.22)"/><text x="655" y="165" fill="#e8eaf0">0.09</text>
-  </g>
-</svg>
-</div>
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 40px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**What is a logit?**
+**Original Transformer (2017)**
 
-A logit is the unnormalized score the model assigns to one option &mdash; any real number, positive or negative. On its own it is not a probability; it only carries meaning *relative* to the other logits in the vector.
+- LayerNorm
+- ReLU activation in FFN
+- Sinusoidal positional embeddings
+- Post-norm (normalize after sub-layer)
+- Bias terms in all linear layers
 
 </div>
 
 <div>
 
-**Why $e^{z}$?**
+**Modern Llama-Style**
 
-Exponentiating makes every score positive (probabilities cannot be negative) and widens the gaps, so a higher logit pulls clearly ahead while the ranking is preserved. It is smooth and differentiable, so gradients flow back through it during training. Dividing by the sum then forces the values to total 1.
+- RMSNorm (simpler, faster)
+- SwiGLU activation (smoother, better gradients)
+- RoPE (rotary positional embeddings, callback to Module 3)
+- Pre-norm (normalize before sub-layer)
+- **Dropped bias terms** in linear layers (saves parameters)
+
+</div>
+
+</div>
+
+These changes are mostly independent but together produce a more stable and more efficient training run.
+
+---
+
+<!-- .slide: id="moe" -->
+
+## Mixture of Experts
+
+Replace the single FFN with **many expert FFNs** plus a router that activates only a few per token:
+
+$$\text{MoE}(\mathbf{x}) = \sum_{i=1}^{E} g(\mathbf{x})_i \cdot \text{FFN}_i(\mathbf{x})$$
+
+where $g(\mathbf{x})$ is the router output (a sparse gate) and only the top-$k$ experts receive nonzero weight.
+
+This buys far more parameters at roughly the same compute per token: a 176B-parameter MoE model may only activate 33B parameters on any given forward pass. The serving and memory implications come later (forward reference to Module 9).
+
+---
+
+<div class="figure-card">
+
+![Noam Shazeer](images/shazeer.jpg)
+
+<div class="figure-info">
+
+## Noam Shazeer <!-- .element: class="fragment fade-in" -->
+
+<div class="fragment fade-in">
+
+### Co-Author of the Original Transformer; Lead on MoE
+
+- Shazeer co-authored "Attention Is All You Need" and led the sparsely-gated Mixture-of-Experts layer
+- He also introduced SwiGLU and other modern block improvements
+- Most of the transformer ecosystem traces back to his architectural innovations
+- Shazeer et al., <https://arxiv.org/abs/1701.06538>; Touvron et al., <https://arxiv.org/abs/2302.13971>
+
+</div>
 
 </div>
 
@@ -1927,1039 +1955,110 @@ Exponentiating makes every score positive (probabilities cannot be negative) and
 
 ---
 
-<!-- .slide: id="softmax-interactive" -->
+<!-- .slide: id="sub-quadratic" -->
 
-<section id="softmax-explorer">
-  <h2>Logits to Probabilities (and Temperature)</h2>
-  <div class="interactive-host" data-widget="softmaxExplorer"></div>
-</section>
+## Sub-Quadratic Alternatives
+
+Attention is $O(n^2)$ in sequence length. For very long contexts, this is the bottleneck. Active research explores alternatives:
+
+- **State-space models** (Mamba): a recurrent update with input-dependent gates. Linear in sequence length, but the state is a fixed-size compression.
+- **Linear attention:** kernelize the softmax to avoid the $n \times n$ matrix entirely. Exact in some variants, approximate in others.
+- **RWKV:** combines a recurrent update with linear attention-like weights, aiming to get the best of both worlds.
+
+Hybrids like **Jamba** mix attention layers with Mamba layers: attention for short-range precision, state-space for long-range compression.
+
+These are clearly labeled active research. The transformer remains the dominant architecture, but the $O(n^2)$ cost ensures that alternatives will continue to be explored.
 
 ---
 
-<!-- .slide: id="softmax-temperature" -->
+<!-- .slide: id="divider-sampling" class="section-divider" data-state="is-section-divider" -->
+
+# Generating Text
+
+From logits to tokens: decoding strategies
+
+
+---
+
+<!-- .slide: id="logits-to-text" -->
+
+## From Logits to Text
+
+A forward pass gives a probability distribution over the vocabulary for the next token. Decoding chooses one token, appends it to the context, and repeats.
+
+$$p_i = \frac{\exp(z_i)}{\sum_j \exp(z_j)}$$
+
+where $z_i$ is the logit for vocabulary item $i$. The choice of how to sample from this distribution is the **decoding strategy**, and it shapes what you actually read.
+
+---
+
+<!-- .slide: id="greedy-decoding" -->
+
+## Greedy Decoding
+
+Always pick the token with the highest probability:
+
+$$\text{token}_t = \arg\max_i \, p_i$$
+
+Simple, deterministic, and fast. But it produces repetitive, flat text because it never explores lower-probability but more interesting continuations. Once the model enters a loop ("the the the"), greediness keeps it there.
+
+---
+
+<!-- .slide: id="temperature" -->
 
 ## Temperature
 
-Dividing the logits by a **temperature** $T$ before softmax controls how peaked the distribution is:
+Scale the logits before softmax to control randomness:
 
-$$p_i = \text{softmax}(z / T)_i$$
+$$p_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}$$
 
-<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+- $T < 1$: sharpens the distribution. The model becomes more conservative, sticking to high-probability tokens.
+- $T = 1$: the original distribution.
+- $T > 1$: flattens the distribution. Unlikely tokens gain probability; the output becomes more random and creative.
 
-<div>
-
-**$T < 1$**
-
-Sharper. The model commits to its top choice. More deterministic text.
-
-</div>
-
-<div>
-
-**$T = 1$**
-
-The distribution exactly as the model produced it.
-
-</div>
-
-<div>
-
-**$T > 1$**
-
-Flatter. More of the probability mass spreads to other tokens. More varied, riskier text.
-
-</div>
-
-</div>
-
-<div class="note">
-
-The same scaling idea appeared in attention: dividing $QK^T$ by $\sqrt{d_k}$ is a fixed temperature that keeps the softmax from saturating as the dimension grows.
-
-</div>
+Temperature is the simplest way to tune the exploration-exploitation trade-off at inference time.
 
 ---
 
-<!-- .slide: id="divider-scaled-dot-product" class="section-divider" data-state="is-section-divider" -->
+<!-- .slide: id="topk-topp" -->
 
-# Scaled Dot-Product Attention
+## Top-k and Top-p (Nucleus) Sampling
 
-Compare, scale, normalize, retrieve
-
-
----
-
-<!-- .slide: id="scaling-problem" -->
-
-## Why Scale by $\sqrt{d_k}$?
-
-Dot products grow with dimension. For $d_k = 64$, the expected magnitude of $\mathbf{q} \cdot \mathbf{k}$ is about 8; for $d_k = 1024$, it is about 32.
-<div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 250" width="100%" style="max-height: 230px;">
-  <text x="235" y="22" fill="#f5a623" font-size="13" text-anchor="middle" font-weight="600">without scaling: large logits saturate softmax</text>
-  <text x="610" y="22" fill="#4a9eff" font-size="13" text-anchor="middle" font-weight="600">with scaling: weights stay usable</text>
-  <g font-size="11" text-anchor="middle">
-    <text x="95" y="53" fill="#8892a4">scores</text>
-    <text x="95" y="144" fill="#8892a4">softmax</text>
-    <rect x="135" y="44" width="42" height="70" rx="4" fill="rgba(245,166,35,0.72)"/><text x="156" y="132" fill="#e8eaf0">16</text>
-    <rect x="187" y="72" width="42" height="42" rx="4" fill="rgba(245,166,35,0.45)"/><text x="208" y="132" fill="#e8eaf0">8</text>
-    <rect x="239" y="94" width="42" height="20" rx="4" fill="rgba(245,166,35,0.24)"/><text x="260" y="132" fill="#e8eaf0">2</text>
-    <rect x="291" y="102" width="42" height="12" rx="4" fill="rgba(245,166,35,0.16)"/><text x="312" y="132" fill="#e8eaf0">0</text>
-    <rect x="135" y="155" width="42" height="70" rx="4" fill="rgba(231,76,60,0.80)"/><text x="156" y="242" fill="#e8eaf0">1.00</text>
-    <rect x="187" y="222" width="42" height="3" rx="2" fill="rgba(74,158,255,0.20)"/><text x="208" y="242" fill="#8892a4">0.00</text>
-    <rect x="239" y="224" width="42" height="1" rx="1" fill="rgba(74,158,255,0.20)"/><text x="260" y="242" fill="#8892a4">0.00</text>
-    <rect x="291" y="224" width="42" height="1" rx="1" fill="rgba(74,158,255,0.20)"/><text x="312" y="242" fill="#8892a4">0.00</text>
-    <text x="425" y="120" fill="#8892a4" font-size="28">&divide;</text>
-    <text x="425" y="145" fill="#8892a4" font-size="13">&radic;d_k</text>
-    <text x="470" y="53" fill="#8892a4">scores</text>
-    <text x="470" y="144" fill="#8892a4">softmax</text>
-    <rect x="510" y="82" width="42" height="32" rx="4" fill="rgba(74,158,255,0.52)"/><text x="531" y="132" fill="#e8eaf0">2.0</text>
-    <rect x="562" y="96" width="42" height="18" rx="4" fill="rgba(74,158,255,0.34)"/><text x="583" y="132" fill="#e8eaf0">1.0</text>
-    <rect x="614" y="108" width="42" height="6" rx="3" fill="rgba(74,158,255,0.18)"/><text x="635" y="132" fill="#e8eaf0">0.25</text>
-    <rect x="666" y="114" width="42" height="1" rx="1" fill="rgba(74,158,255,0.12)"/><text x="687" y="132" fill="#e8eaf0">0</text>
-    <rect x="510" y="181" width="42" height="44" rx="4" fill="rgba(74,158,255,0.70)"/><text x="531" y="242" fill="#e8eaf0">0.58</text>
-    <rect x="562" y="209" width="42" height="16" rx="4" fill="rgba(74,158,255,0.40)"/><text x="583" y="242" fill="#e8eaf0">0.21</text>
-    <rect x="614" y="215" width="42" height="10" rx="4" fill="rgba(74,158,255,0.30)"/><text x="635" y="242" fill="#e8eaf0">0.13</text>
-    <rect x="666" y="218" width="42" height="7" rx="4" fill="rgba(74,158,255,0.24)"/><text x="687" y="242" fill="#e8eaf0">0.08</text>
-  </g>
-</svg>
-</div>
-
-When inputs to softmax are large, the output becomes **sharply peaked** &mdash; one entry near 1, the rest near 0. This produces tiny gradients that make training unstable.
-
-<div class="note">
-
-Dividing by $\sqrt{d_k}$ keeps the variance of the dot product roughly constant regardless of dimension. This preserves gradient flow and stabilizes training.
-
-</div>
-
----
-
-<!-- .slide: id="scaled-softmax" -->
-
-## From Scores to the Attention Map
-
-This is the **same softmax** from the previous section, now applied to the **scaled** scores &mdash; once per query. The attention weight from query $i$ to key $j$ is:
-
-$$\alpha_{ij} = \frac{\exp\left(\mathbf q_i \cdot \mathbf k_j / \sqrt{d_k}\right)}{\sum_{j'} \exp\left(\mathbf q_i \cdot \mathbf k_{j'} / \sqrt{d_k}\right)}$$
-
-The only new ingredient is the $\sqrt{d_k}$ divisor: the fixed temperature from the previous slide. Each query $i$ produces one row $\alpha_{i\cdot}$, and stacking those rows gives the **attention map**.
-
-<div class="note">
-
-**Why the scaling matters here:** for large $d_k$ the unscaled scores grow, the softmax saturates, and gradients vanish. Dividing by $\sqrt{d_k}$ keeps the distribution smooth so learning proceeds &mdash; a small but critical engineering detail.
-
-</div>
-
----
-
-<!-- .slide: id="attention-output" -->
-
-## The Attention Output
-
-The output for each token is a weighted average of the value vectors:
-
-$$\mathbf o_i = \sum_j \alpha_{ij} \mathbf v_j$$
+Temperature alone can still sample implausible tokens. Two truncation methods fix this:
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**Interpretation**
+**Top-k**
 
-- Each output vector $\mathbf o_i$ is a mixture of all value vectors
-- The mixture weights $\alpha_{ij}$ come from query-key compatibility
-- If token $i$ attends strongly to token $j$, its output is dominated by $\mathbf v_j$
+Keep only the $k$ most likely tokens, zero out the rest, renormalize, and sample. Fixed $k = 50$ is common. Simple, but can be too restrictive for peaked distributions or too permissive for flat ones.
 
 </div>
 
 <div>
 
-**Properties**
+**Top-p (nucleus)**
 
-- Different tokens can attend to different subsets of the sequence
-- The same token can be attended to by many others
-- The output dimension matches the value dimension, not the sequence length
+Keep the smallest set of tokens whose cumulative probability exceeds $p$. For a peaked distribution, this may be only 5 tokens. For a flat distribution, it may be 200. Adapts dynamically to the distribution shape.
 
 </div>
 
 </div>
+
+In practice, temperature and top-p/top-k are used together: scale by temperature first, then truncate, then sample.
 
 ---
 
-<!-- .slide: id="full-attention-formula" -->
+<!-- .slide: id="beam-search" -->
 
-## The Complete Formula
+## Beam Search
 
-Scaled dot-product attention in one line:
+Instead of committing to one token, keep the $b$ best partial sequences at every step. At each step, expand every beam with every possible next token, score the $b \times V$ candidates, and keep the top $b$.
 
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
+Best for constrained sequence-to-sequence tasks like translation, where there is a single correct answer and exploration helps. Poor for open-ended generation: the most likely sequence under a language model is usually vacuous, repetitive, or otherwise undesirable.
 
-Compare, normalize, retrieve. Three matrix operations. No recurrence, no convolution, no fixed-size bottleneck. The model learns what to look at.
-
----
-
-<!-- .slide: id="attention-heatmap" -->
-
-<section id="attn-heatmap">
-  <h2>Attention as a Heatmap</h2>
-  <div class="interactive-host" data-widget="attentionHeatmap"></div>
-</section>
-
----
-
-<!-- .slide: id="attention-not-just-text" -->
-
-## Attention Is Not Just for Text
-
-The same mechanism works on any sequence. In a vision-language model, each text token can attend to **regions of an image** &mdash; the bright areas are where attention concentrates.
-<div class="video-container" style="flex-direction: column;">
-<img src="images/sualization-of-attention-regions-extracted-from-the-first-Transformer-layer-of.webp" alt="Attention regions over an image in a vision-language model" style="max-height: 470px;">
-<p class="text-muted" style="font-size: 12pt; margin-top: 10px;">Attention regions from Pixel-BERT (Huang et al., 2020). Attention concentrates on the objects the text refers to.</p>
-</div>
-
----
-
-<!-- .slide: id="divider-masks" class="section-divider" data-state="is-section-divider" -->
-
-# Attention Masks
-
-Controlling what each token can see
-
-
----
-
-<!-- .slide: id="padding-masks" -->
-
-## Padding Masks
-
-In a batch, sequences have different lengths, so shorter ones are padded with a special token. A **padding mask** stops attention from flowing to those fake positions.
-
-<div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 190" width="100%" style="max-height: 180px;">
-  <text x="150" y="24" fill="#8892a4" font-size="12">A query attends over the keys (one padded sequence):</text>
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="150" y="36" width="86" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="193" y="57" fill="#e8eaf0">the</text>
-    <rect x="246" y="36" width="86" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="289" y="57" fill="#e8eaf0">cat</text>
-    <rect x="342" y="36" width="86" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="385" y="57" fill="#e8eaf0">sat</text>
-    <rect x="438" y="36" width="86" height="32" rx="4" fill="#0d1225" stroke="#e74c3c" stroke-width="1.5"/><text x="481" y="57" fill="#8892a4">[PAD]</text>
-    <rect x="534" y="36" width="86" height="32" rx="4" fill="#0d1225" stroke="#e74c3c" stroke-width="1.5"/><text x="577" y="57" fill="#8892a4">[PAD]</text>
-  </g>
-  <!-- mask row -->
-  <text x="138" y="98" fill="#8892a4" font-size="12" text-anchor="end">add mask</text>
-  <g font-size="12" text-anchor="middle" font-family="monospace">
-    <text x="193" y="98" fill="#3fb950">0</text>
-    <text x="289" y="98" fill="#3fb950">0</text>
-    <text x="385" y="98" fill="#3fb950">0</text>
-    <text x="481" y="98" fill="#e74c3c">-inf</text>
-    <text x="577" y="98" fill="#e74c3c">-inf</text>
-  </g>
-  <!-- weights row -->
-  <text x="138" y="145" fill="#8892a4" font-size="12" text-anchor="end">after softmax</text>
-  <g font-size="13" text-anchor="middle">
-    <rect x="150" y="120" width="86" height="40" rx="4" fill="rgba(74,158,255,0.45)"/><text x="193" y="145" fill="#e8eaf0">0.41</text>
-    <rect x="246" y="120" width="86" height="40" rx="4" fill="rgba(74,158,255,0.38)"/><text x="289" y="145" fill="#e8eaf0">0.34</text>
-    <rect x="342" y="120" width="86" height="40" rx="4" fill="rgba(74,158,255,0.28)"/><text x="385" y="145" fill="#e8eaf0">0.25</text>
-    <rect x="438" y="120" width="86" height="40" rx="4" fill="rgba(231,76,60,0.10)" stroke="#e74c3c" stroke-width="1" stroke-dasharray="3,2"/><text x="481" y="145" fill="#8892a4">0.00</text>
-    <rect x="534" y="120" width="86" height="40" rx="4" fill="rgba(231,76,60,0.10)" stroke="#e74c3c" stroke-width="1" stroke-dasharray="3,2"/><text x="577" y="145" fill="#8892a4">0.00</text>
-  </g>
-</svg>
-</div>
-
-Setting padded positions to $-\infty$ before softmax sends their weight to exactly zero. Padding masks are a practical necessity for batched training.
-
----
-
-<!-- .slide: id="causal-masks" -->
-
-## Causal Masks
-
-A **causal mask** stops each token from attending to **future** tokens. This is essential for autoregressive generation (GPT-style). The allowed region is a lower triangle:
-
-<div style="text-align: center; margin: 6px 0;">
-<svg viewBox="0 0 560 320" width="100%" style="max-height: 300px;">
-  <text x="280" y="18" fill="#8892a4" font-size="12" text-anchor="middle">rows = query token &middot; columns = key token</text>
-  <!-- column labels -->
-  <g font-size="12" text-anchor="middle" fill="#f5a623" font-weight="600">
-    <text x="170" y="48">the</text><text x="234" y="48">cat</text><text x="298" y="48">sat</text><text x="362" y="48">on</text><text x="426" y="48">mat</text>
-  </g>
-  <!-- row labels + grid -->
-  <g font-size="12" fill="#4a9eff" font-weight="600">
-    <text x="100" y="78" text-anchor="end">the</text>
-    <text x="100" y="122" text-anchor="end">cat</text>
-    <text x="100" y="166" text-anchor="end">sat</text>
-    <text x="100" y="210" text-anchor="end">on</text>
-    <text x="100" y="254" text-anchor="end">mat</text>
-  </g>
-  <!-- cells: 5x5, cell size 56, origin x=140 y=56 -->
-  <!-- allowed = lower triangle (j<=i): blue; blocked: dark with -inf -->
-  <g font-size="11" text-anchor="middle">
-    <!-- row 0 (the): only col0 -->
-    <rect x="140" y="56" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="170" y="81" fill="#e8eaf0">&#10003;</text>
-    <rect x="204" y="56" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="234" y="81" fill="#46506a">-inf</text>
-    <rect x="268" y="56" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="298" y="81" fill="#46506a">-inf</text>
-    <rect x="332" y="56" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="362" y="81" fill="#46506a">-inf</text>
-    <rect x="396" y="56" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="426" y="81" fill="#46506a">-inf</text>
-    <!-- row 1 (cat): col0,1 -->
-    <rect x="140" y="100" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="170" y="125" fill="#e8eaf0">&#10003;</text>
-    <rect x="204" y="100" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="234" y="125" fill="#e8eaf0">&#10003;</text>
-    <rect x="268" y="100" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="298" y="125" fill="#46506a">-inf</text>
-    <rect x="332" y="100" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="362" y="125" fill="#46506a">-inf</text>
-    <rect x="396" y="100" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="426" y="125" fill="#46506a">-inf</text>
-    <!-- row 2 (sat): col0,1,2 -->
-    <rect x="140" y="144" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="170" y="169" fill="#e8eaf0">&#10003;</text>
-    <rect x="204" y="144" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="234" y="169" fill="#e8eaf0">&#10003;</text>
-    <rect x="268" y="144" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="298" y="169" fill="#e8eaf0">&#10003;</text>
-    <rect x="332" y="144" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="362" y="169" fill="#46506a">-inf</text>
-    <rect x="396" y="144" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="426" y="169" fill="#46506a">-inf</text>
-    <!-- row 3 (on): col0-3 -->
-    <rect x="140" y="188" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="170" y="213" fill="#e8eaf0">&#10003;</text>
-    <rect x="204" y="188" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="234" y="213" fill="#e8eaf0">&#10003;</text>
-    <rect x="268" y="188" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="298" y="213" fill="#e8eaf0">&#10003;</text>
-    <rect x="332" y="188" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="362" y="213" fill="#e8eaf0">&#10003;</text>
-    <rect x="396" y="188" width="60" height="40" rx="3" fill="#0d1225" stroke="#2a3450"/><text x="426" y="213" fill="#46506a">-inf</text>
-    <!-- row 4 (mat): all -->
-    <rect x="140" y="232" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="170" y="257" fill="#e8eaf0">&#10003;</text>
-    <rect x="204" y="232" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="234" y="257" fill="#e8eaf0">&#10003;</text>
-    <rect x="268" y="232" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="298" y="257" fill="#e8eaf0">&#10003;</text>
-    <rect x="332" y="232" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="362" y="257" fill="#e8eaf0">&#10003;</text>
-    <rect x="396" y="232" width="60" height="40" rx="3" fill="rgba(74,158,255,0.40)" stroke="#2a3450"/><text x="426" y="257" fill="#e8eaf0">&#10003;</text>
-  </g>
-  <text x="298" y="298" fill="#8892a4" font-size="12" text-anchor="middle">each token sees only itself and the tokens before it</text>
-</svg>
-</div>
-
----
-
-<!-- .slide: id="why-causal" -->
-
-## Why Causal Masking?
-
-In a language model, we predict the next token given all previous tokens:
-
-$$P(w_t \mid w_1, w_2, \ldots, w_{t-1})$$
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**During training**
-
-A sequence of length $n$ gives many supervised examples at once:
-
-$$w_1 \rightarrow w_2,\quad w_1,w_2 \rightarrow w_3,\quad \ldots$$
-
-The causal mask lets the model train all positions in parallel while keeping each prediction from seeing its own answer.
-
-</div>
-
-<div>
-
-**During inference**
-
-Future tokens do not exist. The model predicts one token, appends it to the context, then feeds the longer sequence back in to predict the next token.
-
-</div>
-
-</div>
-
-<div class="note">
-
-Causal masking makes the training setup match autoregressive generation: every token can use only itself and earlier tokens, never a future answer.
-
-</div>
-
----
-
-<!-- .slide: id="tensor-shapes" -->
-
-## Review: The Shape of the Data
-
-Before stacking heads and adding positions, picture what a batch of text looks like inside the model. Everything flows as one tensor of shape **(B, seq_len, d_model)**.
-
-<div style="text-align: center; margin: 6px 0;">
-<svg viewBox="0 0 900 380" width="100%" style="max-height: 350px;">
-  <text x="450" y="22" fill="#8892a4" font-size="12" text-anchor="middle">a batch of sequences, stored as one tensor</text>
-  <g stroke="#46506e" stroke-width="1.2">
-    <line x1="210" y1="120" x2="298" y2="60"/>
-    <line x1="510" y1="120" x2="598" y2="60" marker-end="url(#arrdim)"/>
-    <line x1="510" y1="320" x2="598" y2="260"/>
-  </g>
-  <rect x="298" y="60" width="300" height="200" rx="3" fill="rgba(74,158,255,0.05)" stroke="#2a3450" stroke-width="1.2"/>
-  <rect x="254" y="90" width="300" height="200" rx="3" fill="rgba(74,158,255,0.07)" stroke="#2a3450" stroke-width="1.2"/>
-  <rect x="210" y="120" width="300" height="200" rx="3" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"/>
-  <g stroke="rgba(74,158,255,0.18)" stroke-width="1">
-    <line x1="260" y1="120" x2="260" y2="320"/><line x1="310" y1="120" x2="310" y2="320"/>
-    <line x1="360" y1="120" x2="360" y2="320"/><line x1="410" y1="120" x2="410" y2="320"/>
-    <line x1="460" y1="120" x2="460" y2="320"/>
-  </g>
-  <g stroke="#4a9eff" stroke-width="1">
-    <line x1="210" y1="160" x2="510" y2="160"/><line x1="210" y1="200" x2="510" y2="200"/>
-    <line x1="210" y1="240" x2="510" y2="240"/><line x1="210" y1="280" x2="510" y2="280"/>
-  </g>
-  <rect x="210" y="160" width="300" height="40" fill="rgba(245,166,35,0.14)" stroke="#f5a623" stroke-width="1.8"/>
-  <g font-size="13" fill="#e8eaf0" font-weight="600">
-    <text x="222" y="145">the</text>
-    <text x="222" y="185">cat</text>
-    <text x="222" y="225">sat</text>
-    <text x="222" y="265">on</text>
-    <text x="222" y="305">mat</text>
-  </g>
-  <text x="612" y="64" fill="#4a9eff" font-size="13" font-weight="600">batch B</text>
-  <text x="612" y="80" fill="#8892a4" font-size="11">sequences in parallel</text>
-  <g stroke="#8892a4" stroke-width="1.2">
-    <line x1="190" y1="120" x2="184" y2="120"/><line x1="184" y1="120" x2="184" y2="320"/><line x1="184" y1="320" x2="190" y2="320"/>
-  </g>
-  <text x="150" y="226" fill="#8892a4" font-size="12" text-anchor="middle" transform="rotate(-90 150 226)">seq_len (tokens)</text>
-  <g stroke="#8892a4" stroke-width="1.2">
-    <line x1="210" y1="334" x2="210" y2="340"/><line x1="210" y1="340" x2="510" y2="340"/><line x1="510" y1="340" x2="510" y2="334"/>
-  </g>
-  <text x="360" y="360" fill="#8892a4" font-size="12" text-anchor="middle">d_model features per token</text>
-  <line x1="510" y1="180" x2="624" y2="180" stroke="#f5a623" stroke-width="1.4" marker-end="url(#arrsec)"/>
-  <text x="630" y="176" fill="#f5a623" font-size="12">one row = one token,</text>
-  <text x="630" y="194" fill="#f5a623" font-size="12">a vector of length d_model</text>
-  <defs>
-    <marker id="arrdim" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#46506e"/></marker>
-    <marker id="arrsec" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/></marker>
-  </defs>
-</svg>
-</div>
-
-<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
-
-<div>
-
-**batch (B)**
-
-Several sequences run through the model in parallel. They never attend to each other.
-
-</div>
-
-<div>
-
-**seq_len (tokens)**
-
-One row per token. **Positional encodings** add a signal along this axis so order is preserved.
-
-</div>
-
-<div>
-
-**d_model (features)**
-
-Each token's feature vector. **Multi-head attention** splits this axis into parallel heads.
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="divider-multi-head" class="section-divider" data-state="is-section-divider" -->
-
-# Multi-Head Attention
-
-Several lookup patterns running in parallel
-
-
----
-
-<!-- .slide: id="why-multi-head" -->
-
-## Why Multiple Heads?
-
-A single attention head produces one weighted average per token. Multiple heads split the feature dimension, so several lookup patterns can run in parallel.
-<div style="text-align: center; margin: 4px 0;">
-<svg viewBox="0 0 880 300" width="100%" style="max-height: 290px;">
-  <text x="370" y="20" fill="#8892a4" font-size="12" text-anchor="middle">Each token is one embedding vector of size d_model</text>
-  <rect x="82" y="30" width="576" height="30" rx="3" fill="rgba(232,234,240,0.10)" stroke="#e8eaf0" stroke-width="1.6"/>
-  <text x="370" y="50" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">d_model = 512</text>
-  <line x1="82" y1="66" x2="82" y2="72" stroke="#8892a4" stroke-width="1"/>
-  <line x1="658" y1="66" x2="658" y2="72" stroke="#8892a4" stroke-width="1"/>
-  <line x1="82" y1="72" x2="658" y2="72" stroke="#8892a4" stroke-width="1"/>
-  <text x="370" y="86" fill="#8892a4" font-size="11" text-anchor="middle">512 features per token</text>
-  <line x1="370" y1="92" x2="370" y2="116" stroke="#8892a4" stroke-width="1.4" marker-end="url(#arrmhfirst)"/>
-  <text x="382" y="110" fill="#8892a4" font-size="11" text-anchor="start">split into H = 8 heads of d_k = 64</text>
-  <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="82" y="120" width="576" height="30" fill="none" stroke="#e8eaf0" stroke-width="1.4"/>
-    <rect x="82" y="120" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="118" y="140" fill="#e8eaf0">64</text>
-    <rect x="154" y="120" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="190" y="140" fill="#e8eaf0">64</text>
-    <rect x="226" y="120" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="262" y="140" fill="#e8eaf0">64</text>
-    <rect x="298" y="120" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="334" y="140" fill="#e8eaf0">64</text>
-    <rect x="370" y="120" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="406" y="140" fill="#e8eaf0">64</text>
-    <rect x="442" y="120" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="478" y="140" fill="#e8eaf0">64</text>
-    <rect x="514" y="120" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="550" y="140" fill="#e8eaf0">64</text>
-    <rect x="586" y="120" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="622" y="140" fill="#e8eaf0">64</text>
-  </g>
-  <g stroke="#e8eaf0" stroke-width="1.2">
-    <line x1="154" y1="120" x2="154" y2="150"/><line x1="226" y1="120" x2="226" y2="150"/>
-    <line x1="298" y1="120" x2="298" y2="150"/><line x1="370" y1="120" x2="370" y2="150"/>
-    <line x1="442" y1="120" x2="442" y2="150"/><line x1="514" y1="120" x2="514" y2="150"/>
-    <line x1="586" y1="120" x2="586" y2="150"/>
-  </g>
-  <text x="710" y="138" fill="#e8eaf0" font-size="12">Q, K, V grouped by slice</text>
-  <g stroke="#8892a4" stroke-width="1.1" marker-end="url(#arrmhfirst)">
-    <line x1="118" y1="150" x2="118" y2="184"/><line x1="190" y1="150" x2="190" y2="184"/>
-    <line x1="262" y1="150" x2="262" y2="184"/><line x1="334" y1="150" x2="334" y2="184"/>
-    <line x1="406" y1="150" x2="406" y2="184"/><line x1="478" y1="150" x2="478" y2="184"/>
-    <line x1="550" y1="150" x2="550" y2="184"/><line x1="622" y1="150" x2="622" y2="184"/>
-  </g>
-  <g font-size="11" text-anchor="middle" font-weight="600">
-    <rect x="86" y="186" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="118" y="210" fill="#4a9eff">head 1</text>
-    <rect x="158" y="186" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="190" y="210" fill="#f5a623">head 2</text>
-    <rect x="230" y="186" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="262" y="210" fill="#50c878">head 3</text>
-    <rect x="302" y="186" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="334" y="210" fill="#c792ea">head 4</text>
-    <rect x="374" y="186" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="406" y="210" fill="#4a9eff">head 5</text>
-    <rect x="446" y="186" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="478" y="210" fill="#f5a623">head 6</text>
-    <rect x="518" y="186" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="550" y="210" fill="#50c878">head 7</text>
-    <rect x="590" y="186" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="622" y="210" fill="#c792ea">head 8</text>
-  </g>
-  <text x="440" y="262" fill="#8892a4" font-size="13" text-anchor="middle">The outputs are concatenated back to 512 dimensions, then a final projection mixes information across heads.</text>
-  <defs><marker id="arrmhfirst" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
-</svg>
-</div>
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Different comparisons**
-
-One head may track subject-verb links, while another tracks coreference or nearby tokens.
-
-</div>
-
-<div>
-
-**Same compute budget**
-
-The total width stays 512 here; it is divided across heads instead of copied for each head.
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="multi-head-mechanics" -->
-
-## Multi-Head Mechanics
-
-Each head $h$ has its own projections and computes attention independently:
-
-$$\text{head}_h = \text{Attention}(XW_Q^h, XW_K^h, XW_V^h)$$
-
-The heads are concatenated and projected back through $W_O$:
-
-$$\text{MultiHead}(X) = \text{Concat}(\text{head}_1, \ldots, \text{head}_H) W_O$$
-
-<div class="note">
-
-**Compute budget:** the total projection size across all heads is kept equal to $d_{\text{model}}$. With 8 heads and $d_{\text{model}} = 512$, each head uses $d_k = 64$. Multi-head attention is not more expensive than single-head &mdash; it is the same compute, split into independent patterns.
-
-</div>
-
----
-
-<!-- .slide: id="divider-cross-attention" class="section-divider" data-state="is-section-divider" -->
-
-# Cross Attention
-
-When queries and keys come from different places
-
-
----
-
-<!-- .slide: id="cross-vs-self" -->
-
-## Cross Attention vs. Self-Attention
-
-<div style="text-align: center; margin: 6px 0;">
-<svg viewBox="0 0 820 250" width="100%" style="max-height: 240px;">
-  <!-- Self-attention panel -->
-  <text x="195" y="22" fill="#4a9eff" font-size="14" text-anchor="middle" font-weight="600">Self-Attention</text>
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="70" y="100" width="74" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="107" y="121" fill="#e8eaf0">the</text>
-    <rect x="158" y="100" width="74" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="195" y="121" fill="#e8eaf0">cat</text>
-    <rect x="246" y="100" width="74" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="283" y="121" fill="#e8eaf0">sat</text>
-  </g>
-  <!-- self arcs (token to token within same row) -->
-  <path d="M195 100 Q151 64 107 100" fill="none" stroke="#f5a623" stroke-width="2" marker-end="url(#arrcx)"/>
-  <path d="M195 100 Q239 64 283 100" fill="none" stroke="#f5a623" stroke-width="2" marker-end="url(#arrcx)"/>
-  <text x="195" y="200" fill="#8892a4" font-size="12" text-anchor="middle">Q, K, V all from the</text>
-  <text x="195" y="218" fill="#8892a4" font-size="12" text-anchor="middle">same sequence</text>
-  <!-- divider -->
-  <line x1="410" y1="40" x2="410" y2="220" stroke="#2a3450" stroke-width="1"/>
-  <!-- Cross-attention panel -->
-  <text x="615" y="22" fill="#50c878" font-size="14" text-anchor="middle" font-weight="600">Cross-Attention</text>
-  <!-- decoder row (queries) -->
-  <text x="455" y="62" fill="#8892a4" font-size="11" text-anchor="end">target side (Q)</text>
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="470" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="507" y="67" fill="#e8eaf0">the</text>
-    <rect x="558" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="2.5"/><text x="595" y="67" fill="#e8eaf0">cat</text>
-  </g>
-  <!-- encoder row (keys/values) -->
-  <text x="455" y="162" fill="#8892a4" font-size="11" text-anchor="end">source side (K, V)</text>
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="470" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="507" y="167" fill="#e8eaf0">le</text>
-    <rect x="558" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/><text x="595" y="167" fill="#e8eaf0">chat</text>
-    <rect x="646" y="146" width="100" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="696" y="167" fill="#e8eaf0">sportif</text>
-  </g>
-  <!-- cross arrows: "cat" query attends to "chat" key -->
-  <line x1="595" y1="78" x2="595" y2="144" stroke="#50c878" stroke-width="3" marker-end="url(#arrcxgr)"/>
-  <line x1="595" y1="78" x2="515" y2="144" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
-  <line x1="595" y1="78" x2="690" y2="144" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
-  <text x="615" y="210" fill="#8892a4" font-size="12" text-anchor="middle">Q from one sequence, K and V</text>
-  <text x="615" y="228" fill="#8892a4" font-size="12" text-anchor="middle">from another ("cat" finds "chat")</text>
-  <defs>
-    <marker id="arrcx" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/></marker>
-    <marker id="arrcxg" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker>
-    <marker id="arrcxgr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#50c878"/></marker>
-  </defs>
-</svg>
-</div>
-
-In self-attention, one sequence looks at itself. In cross-attention, one sequence asks questions while another supplies the keys and values. This is useful when text retrieves from an image, an audio stream, a database, or a source sentence in translation.
-
----
-
-<!-- .slide: id="divider-positional" class="section-divider" data-state="is-section-divider" -->
-
-# Positional Embeddings
-
-Teaching the model that order matters
-
-
----
-
-<!-- .slide: id="permutation-equivariance" -->
-
-## Attention Ignores Order
-
-Self-attention compares every token to every other token, but the comparison does not depend on **where** the tokens sit. Shuffle the inputs and the outputs come back in exactly the same shuffle &mdash; the operation is **permutation equivariant**.
-
-<div class="note">
-
-**This is a problem.** "dog bites man" and "man bites dog" contain the same bag of tokens. With no position information, attention treats them identically. It learns *what to look at* but not *where things are*.
-
-</div>
-
----
-
-<!-- .slide: id="permutation-demo" -->
-
-<section id="perm-shuffle">
-  <h2>Same Tokens, Reordered: Same Attention</h2>
-  <div class="interactive-host" data-widget="permutationShuffle"></div>
-</section>
-
----
-
-<!-- .slide: id="adding-position" -->
-
-## The Fix: Add a Position Signal
-
-If the tokens carry no order, we give each position its own signature and **add it to the token embedding** before attention ever runs:
-
-$$X_{\text{pos}} = X + P$$
-
-<div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 720 130" width="100%" style="max-height: 120px;">
-  <g font-size="12" text-anchor="middle" font-weight="600">
-    <rect x="40" y="40" width="120" height="40" rx="5" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="100" y="65" fill="#e8eaf0">token embedding</text>
-    <text x="100" y="100" fill="#8892a4" font-size="11" font-weight="400">what the word is</text>
-    <text x="195" y="65" fill="#e8eaf0" font-size="22">+</text>
-    <rect x="230" y="40" width="120" height="40" rx="5" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="290" y="65" fill="#e8eaf0">position signal</text>
-    <text x="290" y="100" fill="#8892a4" font-size="11" font-weight="400">where it sits</text>
-    <text x="385" y="65" fill="#e8eaf0" font-size="22">=</text>
-    <rect x="420" y="40" width="150" height="40" rx="5" fill="#0d1225" stroke="#3fb950" stroke-width="1.5"/><text x="495" y="65" fill="#e8eaf0">position-aware input</text>
-  </g>
-</svg>
-</div>
-
-Now two identical words at different positions arrive at attention as **different vectors**, so "dog bites man" is no longer the same as "man bites dog". The open question: what should $P$ look like?
-
----
-
-<!-- .slide: id="sinusoidal" -->
-
-## Sinusoidal Positional Encodings
-
-A common fixed pattern makes each dimension of $P$ a sine or cosine wave, with a different frequency in each dimension.
-
-$$PE_{(pos, 2i)} = \sin\left(\frac{pos}{10000^{2i/d}}\right) \qquad PE_{(pos, 2i+1)} = \cos\left(\frac{pos}{10000^{2i/d}}\right)$$
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Low dimensions** use high frequencies &mdash; they flip quickly from token to token, encoding fine position.
-
-</div>
-
-<div>
-
-**High dimensions** use low frequencies &mdash; they change slowly, encoding coarse position over long spans.
-
-</div>
-
-</div>
-
-No parameters to learn, and the pattern extends to sequence lengths never seen in training.
-
----
-
-<!-- .slide: id="sinusoidal-interactive" -->
-
-<section id="pe-explorer">
-  <h2>Sinusoidal Encodings and Their Effect on Attention</h2>
-  <div class="interactive-host" data-widget="positionalEncoding"></div>
-</section>
-
----
-
-<!-- .slide: id="learned-and-other" -->
-
-## Learned and Relative Schemes
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Learned positional embeddings**
-
-A trainable table with one vector per position, added like any embedding:
-
-$$X_{\text{pos}} = X + P, \quad P \in \mathbb{R}^{L \times d}$$
-
-Simple and effective, but limited to the maximum length seen in training. Used in BERT and GPT-2.
-
-</div>
-
-<div>
-
-**Relative and bias-based schemes**
-
-What often matters is the **distance** between tokens, not absolute index.
-
-- **Relative position** encodings inject a term that depends on $m - n$
-- **ALiBi** adds a distance penalty straight onto the attention scores
-- These extrapolate to longer contexts more gracefully
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="rope" -->
-
-## RoPE: Position as Rotation
-
-**RoPE** (Rotary Position Embedding, Su et al. 2021) encodes position by **rotating** each query and key by an angle proportional to its position. The dot product between a query at position $m$ and a key at position $n$ then depends only on the **relative offset** $m - n$.
-
-<div style="text-align: center; margin: 6px 0;">
-<svg viewBox="0 0 720 230" width="100%" style="max-height: 220px;">
-  <!-- three positions, each rotating the same base vector more -->
-  <g font-size="12" text-anchor="middle">
-    <!-- pos 0 -->
-    <circle cx="120" cy="120" r="70" fill="none" stroke="#2a3450" stroke-width="1"/>
-    <line x1="120" y1="120" x2="190" y2="120" stroke="#4a9eff" stroke-width="3" marker-end="url(#arrr)"/>
-    <text x="120" y="210" fill="#8892a4">position 0</text>
-    <text x="120" y="32" fill="#4a9eff" font-weight="600">angle 0</text>
-    <!-- pos 1 -->
-    <circle cx="340" cy="120" r="70" fill="none" stroke="#2a3450" stroke-width="1"/>
-    <line x1="340" y1="120" x2="389" y2="71" stroke="#4a9eff" stroke-width="3" marker-end="url(#arrr)"/>
-    <path d="M410 120 A70 70 0 0 0 389 71" fill="none" stroke="#f5a623" stroke-width="1.5"/>
-    <text x="340" y="210" fill="#8892a4">position 1</text>
-    <text x="340" y="32" fill="#f5a623" font-weight="600">rotate by &#952;</text>
-    <!-- pos 2 -->
-    <circle cx="560" cy="120" r="70" fill="none" stroke="#2a3450" stroke-width="1"/>
-    <line x1="560" y1="120" x2="560" y2="50" stroke="#4a9eff" stroke-width="3" marker-end="url(#arrr)"/>
-    <path d="M630 120 A70 70 0 0 0 560 50" fill="none" stroke="#f5a623" stroke-width="1.5"/>
-    <text x="560" y="210" fill="#8892a4">position 2</text>
-    <text x="560" y="32" fill="#f5a623" font-weight="600">rotate by 2&#952;</text>
-  </g>
-  <defs><marker id="arrr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4a9eff"/></marker></defs>
-</svg>
-</div>
-
-The same vector is rotated further at each later position. RoPE is used in LLaMA, Mistral, and most modern LLMs.
-
----
-
-<!-- .slide: id="divider-compute" class="section-divider" data-state="is-section-divider" -->
-
-# Memory and Compute
-
-The cost of every token seeing every other token
-
-
----
-
-<!-- .slide: id="n-squared-cost" -->
-
-## The $O(n^2)$ Cost
-
-Attention builds an $n \times n$ score matrix: every token compared against every other token. That matrix is the bottleneck.
-<div style="text-align: center; margin: 4px 0;">
-<svg viewBox="0 0 720 250" width="100%" style="max-height: 240px;">
-  <!-- big n x n grid -->
-  <text x="170" y="22" fill="#8892a4" font-size="12" text-anchor="middle">n keys</text>
-  <text x="36" y="135" fill="#8892a4" font-size="12" text-anchor="middle" transform="rotate(-90 36 135)">n queries</text>
-  <g>
-    <rect x="60" y="36" width="200" height="200" fill="rgba(74,158,255,0.18)" stroke="#4a9eff" stroke-width="1.5"/>
-    <!-- grid lines -->
-    <g stroke="#4a9eff" stroke-width="0.5" opacity="0.35">
-      <line x1="85" y1="36" x2="85" y2="236"/><line x1="110" y1="36" x2="110" y2="236"/><line x1="135" y1="36" x2="135" y2="236"/><line x1="160" y1="36" x2="160" y2="236"/><line x1="185" y1="36" x2="185" y2="236"/><line x1="210" y1="36" x2="210" y2="236"/><line x1="235" y1="36" x2="235" y2="236"/>
-      <line x1="60" y1="61" x2="260" y2="61"/><line x1="60" y1="86" x2="260" y2="86"/><line x1="60" y1="111" x2="260" y2="111"/><line x1="60" y1="136" x2="260" y2="136"/><line x1="60" y1="161" x2="260" y2="161"/><line x1="60" y1="186" x2="260" y2="186"/><line x1="60" y1="211" x2="260" y2="211"/>
-    </g>
-    <text x="160" y="140" fill="#e8eaf0" font-size="16" text-anchor="middle" font-weight="600">n&#178; entries</text>
-  </g>
-  <!-- text panel -->
-  <text x="320" y="70" fill="#e8eaf0" font-size="14">Compute: O(n&#178; &middot; d_k)</text>
-  <text x="320" y="100" fill="#e8eaf0" font-size="14">Memory: O(n&#178;)</text>
-  <text x="320" y="140" fill="#f5a623" font-size="14">Double the context, and the</text>
-  <text x="320" y="162" fill="#f5a623" font-size="14">attention cost quadruples.</text>
-  <text x="320" y="200" fill="#8892a4" font-size="13">At 128K tokens, the matrix has</text>
-  <text x="320" y="220" fill="#8892a4" font-size="13">about 16 billion entries.</text>
-</svg>
-</div>
-
-The $O(n^2)$ cost is the main barrier to very long contexts: it grows far faster than the per-token feed-forward work, which is only $O(n)$.
-
----
-
-<div class="figure-card">
-
-![Tri Dao](images/dao.jpg)
-
-<div class="figure-info">
-
-## Tri Dao <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Made Exact Attention Fast
-
-- Tri Dao and collaborators (2022): FlashAttention
-- Observed that materializing the full $n \times n$ matrix in slow GPU memory (HBM) is the real bottleneck
-- FlashAttention computes **exact** attention without ever writing the full matrix to HBM
-- IO-aware: it tiles the computation to keep intermediate results in fast on-chip SRAM
-- Identical result to standard attention, but 2-4x faster and 5-20x less memory
-- FlashAttention-2 and -3 pushed further on newer GPUs
-
-</div>
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="flash-attention-explained" -->
-
-## FlashAttention: Same Math, Less Memory Traffic
-
-Standard attention often writes the full $n \times n$ attention matrix to GPU memory, then reads it back to multiply by $V$. FlashAttention avoids that expensive round trip.
-<div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 250" width="100%" style="max-height: 235px;">
-  <text x="190" y="24" fill="#e74c3c" font-size="13" text-anchor="middle" font-weight="600">standard attention</text>
-  <text x="620" y="24" fill="#3fb950" font-size="13" text-anchor="middle" font-weight="600">FlashAttention</text>
-  <rect x="70" y="52" width="240" height="130" rx="6" fill="rgba(231,76,60,0.08)" stroke="#e74c3c" stroke-width="1.5"/>
-  <text x="190" y="76" fill="#e8eaf0" font-size="12" text-anchor="middle">materialize full score matrix</text>
-  <rect x="116" y="94" width="148" height="64" fill="rgba(74,158,255,0.20)" stroke="#4a9eff" stroke-width="1.2"/>
-  <g stroke="#4a9eff" stroke-width="0.6" opacity="0.45">
-    <line x1="140" y1="94" x2="140" y2="158"/><line x1="164" y1="94" x2="164" y2="158"/><line x1="188" y1="94" x2="188" y2="158"/><line x1="212" y1="94" x2="212" y2="158"/><line x1="236" y1="94" x2="236" y2="158"/>
-    <line x1="116" y1="110" x2="264" y2="110"/><line x1="116" y1="126" x2="264" y2="126"/><line x1="116" y1="142" x2="264" y2="142"/>
-  </g>
-  <text x="190" y="206" fill="#e74c3c" font-size="12" text-anchor="middle">large HBM reads and writes</text>
-  <rect x="500" y="52" width="240" height="130" rx="6" fill="rgba(63,185,80,0.08)" stroke="#3fb950" stroke-width="1.5"/>
-  <text x="620" y="76" fill="#e8eaf0" font-size="12" text-anchor="middle">tile Q, K, V in small blocks</text>
-  <g>
-    <rect x="548" y="94" width="148" height="64" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.2"/>
-    <rect x="548" y="94" width="50" height="22" fill="rgba(63,185,80,0.55)" stroke="#3fb950"/>
-    <rect x="598" y="116" width="50" height="22" fill="rgba(63,185,80,0.45)" stroke="#3fb950"/>
-    <rect x="648" y="136" width="48" height="22" fill="rgba(63,185,80,0.35)" stroke="#3fb950"/>
-  </g>
-  <text x="620" y="206" fill="#3fb950" font-size="12" text-anchor="middle">keep intermediates in fast SRAM</text>
-  <line x1="350" y1="118" x2="470" y2="118" stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrfa)"/>
-  <text x="410" y="106" fill="#8892a4" font-size="12" text-anchor="middle">reorder computation</text>
-  <defs><marker id="arrfa" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
-</svg>
-</div>
-
-The result is still exact scaled dot-product attention. The speedup comes from doing less slow memory movement, not from changing the equation. Reference: Dao et al. (2022), *FlashAttention*.
-
----
-
-<!-- .slide: id="mitigations" -->
-
-## Modern Mitigations
-
-Several approaches reduce the $O(n^2)$ cost without sacrificing too much quality:
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**FlashAttention**
-
-Computes exact attention without materializing the full matrix. Same result, far less memory traffic.
-
-</div>
-
-<div>
-
-**Sliding-window attention**
-
-Each token attends only to a local window of neighbors (plus a few global tokens). Reduces the effective $n$.
-
-</div>
-
-<div>
-
-**Multi-query attention (MQA)**
-
-All heads share one K and V projection. Only Q is per-head. Shrinks the KV cache.
-
-</div>
-
-<div>
-
-**Grouped-query attention (GQA)**
-
-A compromise: heads are divided into groups that share K and V. Used in LLaMA 2/3.
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="divider-kv-cache" class="section-divider" data-state="is-section-divider" -->
-
-# KV Cache
-
-Reusing work during generation
-
-
----
-
-<!-- .slide: id="kv-cache-idea" -->
-
-## The KV Cache
-
-During autoregressive inference, the model generates one token at a time, and each new token attends to **every** token before it. Done naively, every step re-projects the keys and values for all previous tokens &mdash; the same vectors, computed again and again.
-
-The keys and values for past tokens never change. So compute them once and **store** them.
-
----
-
-<!-- .slide: id="kv-cache-demo" -->
-
-<section id="kv-cache-viz">
-  <h2>Recompute Every Step, or Cache and Reuse</h2>
-  <div class="interactive-host" data-widget="kvCache"></div>
-</section>
-
----
-
-<!-- .slide: id="kv-cache-tradeoffs" -->
-
-## KV Cache Tradeoffs
-
-The KV cache is a classic memory-vs-compute tradeoff:
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Speed win**
-
-Each generation step does $O(1)$ projection work instead of $O(n)$. Total generation cost drops from $O(n^2)$ to $O(n)$.
-
-</div>
-
-<div>
-
-**Memory cost**
-
-The cache stores $2 \times n_{\text{layers}} \times n_{\text{heads}} \times n_{\text{tokens}} \times d_k$ floats. For a 70B model with 128K context, that can be tens of gigabytes.
-
-</div>
-
-</div>
-
-<div class="note">
-
-**KV cache memory is a major limit** for long context and large-batch serving. This is why MQA and GQA exist &mdash; fewer unique K and V heads means a smaller cache.
-
-</div>
-
----
-
-<!-- .slide: id="attention-sinks" -->
-
-## Attention Sinks
-
-In a trained language model, a large share of every head's attention lands on the **very first token** &mdash; even when that token is something contentless like a start marker.
-
-<div style="text-align: center; margin: 6px 0;">
-<svg viewBox="0 0 660 130" width="100%" style="max-height: 120px;">
-  <text x="30" y="20" fill="#8892a4" font-size="12">attention from a token late in the sequence:</text>
-  <g text-anchor="middle" font-size="11">
-    <rect x="40" y="30" width="60" height="70" rx="3" fill="rgba(245,166,35,0.55)"/><text x="70" y="115" fill="#e8eaf0">tok 1</text><text x="70" y="70" fill="#e8eaf0" font-weight="600">0.62</text>
-    <rect x="110" y="86" width="60" height="14" rx="3" fill="rgba(74,158,255,0.45)"/><text x="140" y="115" fill="#8892a4">tok 2</text>
-    <rect x="180" y="90" width="60" height="10" rx="3" fill="rgba(74,158,255,0.45)"/><text x="210" y="115" fill="#8892a4">tok 3</text>
-    <rect x="250" y="84" width="60" height="16" rx="3" fill="rgba(74,158,255,0.45)"/><text x="280" y="115" fill="#8892a4">tok 4</text>
-    <rect x="320" y="92" width="60" height="8" rx="3" fill="rgba(74,158,255,0.45)"/><text x="350" y="115" fill="#8892a4">tok 5</text>
-    <rect x="390" y="78" width="60" height="22" rx="3" fill="rgba(74,158,255,0.45)"/><text x="420" y="115" fill="#8892a4">tok 6</text>
-    <rect x="460" y="88" width="60" height="12" rx="3" fill="rgba(74,158,255,0.45)"/><text x="490" y="115" fill="#8892a4">tok 7</text>
-  </g>
-</svg>
-</div>
-
-**Why would the model dump attention on a token that carries no relevant meaning?**
-
-<div class="fragment note">
-
-Softmax weights must sum to 1, so a head always has to put its weight **somewhere**. When a head has nothing useful to attend to on a given token, it needs a no-op target to dump the leftover mass. Under causal masking, the first token is the one position visible to **every** later token, which makes it the natural sink. Xiao et al. (2023, StreamingLLM) showed that simply keeping these first tokens in the cache stabilizes very long generation.
-
-</div>
-
----
-
-<!-- .slide: id="attention-maps" -->
-
-## Attention Maps Are Not Always Explanations
-
-Attention weights are a useful diagnostic &mdash; they show where the model is looking. But high attention does not prove causal importance.
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Attention weights can suggest hypotheses**
-
-- A pronoun attending to its antecedent is a real, interpretable pattern
-- Useful for debugging and building intuition
-
-</div>
-
-<div>
-
-**But high attention is not proof**
-
-- Attention is one of many operations in the network
-- The model can route information through other pathways
-- Ablation tests are needed for stronger causal claims
-
-</div>
-
-</div>
-
-**The distinction:** visualization suggests hypotheses; ablation tests confirm them.
+This sets up the exercise: a trained model is only half the story. The decoding strategy shapes what you actually read.
 
 ---
 
@@ -2967,7 +2066,7 @@ Attention weights are a useful diagnostic &mdash; they show where the model is l
 
 # Exercise
 
-Attention Visualization and Positional Embedding Visualization
+Assemble GPT-2 and Generate Text
 
 
 ---
@@ -2976,39 +2075,39 @@ Attention Visualization and Positional Embedding Visualization
 
 ## Running the Exercise
 
-Open `module_03_attention/exercise.py` and fill in the `NotImplementedError` lines. Run after each step &mdash; unfinished functions are skipped automatically. <!-- .element: class="text-lg" -->
+Open `module_04_architectures/exercise.py` and fill in the `NotImplementedError` lines. Run after each step &mdash; unfinished functions are skipped automatically. <!-- .element: class="text-lg" -->
 
 ```bash
 # Run the exercise (skips any not yet implemented)
 cd exercises
-uv run python module_03_attention/src/main.py
+uv run python module_04_architectures/src/main.py
 ```
 
-The exercise implements a tiny attention layer on a 5-token sequence, then adds a causal mask and sinusoidal positional encodings. Check the `output/` directory for plots after each run. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+The exercise wires attention into a complete decoder-only model, loads real GPT-2 weights, and generates text. Check the `output/` directory for plots after each run. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
 <!-- .slide: id="exercise-overview" -->
 
-## Exercise: Attention Mechanisms
+## Exercise: Assemble GPT-2
 
-Implement scaled dot-product attention inside `TinyAttentionLayer` with $d_{\text{model}} = 8$ and $d_k = 4$. The layer owns the random projection weights; you fill in the key tensor operations. <!-- .element: class="text-lg" -->
+Build the full decoder-only transformer from scratch, load pretrained weights, and generate text with different decoding strategies. <!-- .element: class="text-lg" -->
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**Unmasked attention (steps 1-5)**
+**Model assembly (steps 1&ndash;5)**
 
-Compute Q, K, V from the layer weights, then compute raw scores, softmax weights, and the weighted output.
+Implement embeddings, the FFN, a transformer block, the full stack, and the weight-loading bridge to HuggingFace.
 
 </div>
 
 <div>
 
-**Causal mask and position (steps 6-8)**
+**Generation (steps 6&ndash;7)**
 
-Add a causal mask to block future tokens, then add sinusoidal positional encodings and observe the change in attention patterns.
+Implement greedy decoding, temperature scaling, and top-k sampling. Observe how decoding strategy shapes the output.
 
 </div>
 
@@ -3016,27 +2115,24 @@ Add a causal mask to block future tokens, then add sinusoidal positional encodin
 
 ---
 
-<!-- .slide: id="exercise-step2-code" -->
+<!-- .slide: id="exercise-step1-code" -->
 
-## Step 2: TinyAttentionLayer.compute_qkv()
+## Step 1: EmbeddingLayer.forward()
 
 ```python
-    def compute_qkv(self, X: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        """Project the token matrix X into query, key, and value matrices.
+    def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
+        """Look up token and positional embeddings and add them."""
+        b, t = token_ids.size()
+        position = torch.arange(t, dtype=torch.long, device=token_ids.device)
+        position = position.unsqueeze(0).expand(b, t)
 
-        Args:
-            X: Token embeddings, shape (seq_len, d_model).
-
-        Returns:
-            (Q, K, V): Each tensor has shape (seq_len, d_k).
-        """
-        # TODO: Compute and return Q, K, V by multiplying X by this layer's W_Q, W_K, and W_V.
-        raise NotImplementedError("TODO: compute Q, K, V projections")
+        # TODO: Look up token embeddings and position embeddings, then add them.
+        raise NotImplementedError("TODO: token embedding lookup + positional embedding")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** use X @ self.W_Q, X @ self.W_K, and X @ self.W_V.
+**Hint:** use `self.token_embed(token_ids) + self.pos_embed(position)`.
 
 </div>
 
@@ -3045,7 +2141,36 @@ Add a causal mask to block future tokens, then add sinusoidal positional encodin
 **Answer:**
 
 ```python
-return X @ self.W_Q, X @ self.W_K, X @ self.W_V
+return self.token_embed(token_ids) + self.pos_embed(position)
+```
+
+</div>
+
+---
+
+<!-- .slide: id="exercise-step2-code" -->
+
+## Step 2: FeedForward.forward()
+
+```python
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Apply the two-layer FFN with GELU nonlinearity."""
+        # TODO: Apply fc1, then F.gelu(...), then fc2, then dropout.
+        raise NotImplementedError("TODO: FFN forward pass")
+```
+
+<div class="fragment hint-box">
+
+**Hint:** use `self.fc2(self.dropout(F.gelu(self.fc1(x))))`.
+
+</div>
+
+<div class="fragment note">
+
+**Answer:**
+
+```python
+return self.fc2(self.dropout(F.gelu(self.fc1(x))))
 ```
 
 </div>
@@ -3054,26 +2179,18 @@ return X @ self.W_Q, X @ self.W_K, X @ self.W_V
 
 <!-- .slide: id="exercise-step3-code" -->
 
-## Step 3: raw_attention_scores()
+## Step 3: TransformerBlock.forward()
 
 ```python
-    def raw_attention_scores(self, Q: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
-        """Compute the pairwise compatibility scores: Q @ K^T.
-
-        Args:
-            Q: Query matrix, shape (seq_len, d_k).
-            K: Key matrix, shape (seq_len, d_k).
-
-        Returns:
-            Scores matrix, shape (seq_len, seq_len).
-        """
-        # TODO: Compute the attention scores as the matrix product of Q and K^T.
-        raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Pre-norm transformer block with residual connections."""
+        # TODO: Pre-norm attention with residual, then pre-norm FFN with residual.
+        raise NotImplementedError("TODO: transformer block forward pass")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** use Q @ K.T (the .T attribute transposes a 2D tensor).
+**Hint:** `x = x + self.attn(self.ln1(x))` then `x = x + self.ffn(self.ln2(x))`.
 
 </div>
 
@@ -3082,7 +2199,9 @@ return X @ self.W_Q, X @ self.W_K, X @ self.W_V
 **Answer:**
 
 ```python
-return Q @ K.T
+x = x + self.attn(self.ln1(x))
+x = x + self.ffn(self.ln2(x))
+return x
 ```
 
 </div>
@@ -3091,25 +2210,18 @@ return Q @ K.T
 
 <!-- .slide: id="exercise-step4-code" -->
 
-## Step 4: scaled_softmax()
+## Step 4: GPT2Model.forward()
 
 ```python
-    def scaled_softmax(self, scores: torch.Tensor) -> torch.Tensor:
-        """Scale scores by 1/sqrt(d_k) and apply softmax along the key dimension.
-
-        Args:
-            scores: Raw attention scores, shape (seq_len, seq_len).
-
-        Returns:
-            Attention weights, shape (seq_len, seq_len). Each row sums to 1.
-        """
-        # TODO: Scale the scores by 1/sqrt(d_k), then apply softmax along dim=-1.
-        raise NotImplementedError("TODO: apply scaled softmax to attention scores")
+    def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
+        """Run a full forward pass from token IDs to logits."""
+        # TODO: embed -> run every block -> final layer norm -> LM head.
+        raise NotImplementedError("TODO: full GPT-2 forward pass")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** divide scores by (self.d_k ** 0.5), then call F.softmax(..., dim=-1).
+**Hint:** embed first, then loop over `self.blocks`, then `self.ln_f`, then `self.lm_head`.
 
 </div>
 
@@ -3118,96 +2230,76 @@ return Q @ K.T
 **Answer:**
 
 ```python
-return F.softmax(scores / (self.d_k ** 0.5), dim=-1)
+x = self.embed(token_ids)
+for block in self.blocks:
+    x = block(x)
+return self.lm_head(self.ln_f(x))
 ```
 
 </div>
 
 ---
 
-<!-- .slide: id="exercise-step5-code" -->
-
-## Step 5: attention_output()
-
-```python
-    def attention_output(self, weights: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
-        """Compute the attention output as a weighted sum of value vectors.
-
-        Args:
-            weights: Attention weights, shape (seq_len, seq_len).
-            V: Value matrix, shape (seq_len, d_k).
-
-        Returns:
-            Output tensor, shape (seq_len, d_k).
-        """
-        # TODO: Compute the weighted sum of values using the attention weights.
-        raise NotImplementedError("TODO: compute attention output as weighted sum of values")
-```
-
-<div class="fragment hint-box">
-
-**Hint:** use weights @ V (matrix multiply the weight matrix by the value matrix).
-
-</div>
-
-<div class="fragment note">
-
-**Answer:**
-
-```python
-return weights @ V
-```
-
-</div>
-
----
-
-<section id="exercise-step5-output">
-  <h2>Steps 1&ndash;5: Unmasked Attention Output</h2>
+<section id="exercise-step4-output">
+  <h2>Steps 1&ndash;4: Model Forward Pass</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
         <span class="terminal-dot green"></span>
-        <span class="terminal-title">uv run python module_03_attention/src/main.py</span>
+        <span class="terminal-title">uv run python module_04_architectures/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 1: Create Token Vectors&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 8])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 2: Compute Q, K, V Projections&#10;============================================================</span>&#10;<span class="success">Q shape: torch.Size([5, 4])</span>&#10;<span class="success">K shape: torch.Size([5, 4])</span>&#10;<span class="success">V shape: torch.Size([5, 4])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 3: Raw Attention Scores (QK^T)&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 5])</span>&#10;&#10;<span class="header">============================================================&#10;STEP 4: Scaled Softmax Attention Weights&#10;============================================================</span>&#10;<span class="success">Row sums (should be ~1.0): [1.0, 1.0, 1.0, 1.0, 1.0]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 5: Attention Output (Weighted Sum of Values)&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 4])</span>&#10;<span class="success">First output vector: [-0.006  0.002  0.027  0.019]</span></pre>
+        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 1: Embedding Layer&#10;============================================================</span>&#10;<span class="success">Output shape: torch.Size([1, 3, 768])</span>&#10;<span class="success">Expected: (1, 3, 768)</span>&#10;&#10;<span class="header">============================================================&#10;STEP 2: Feed-Forward Network&#10;============================================================</span>&#10;<span class="success">Output shape: torch.Size([1, 3, 768])</span>&#10;<span class="success">Expected: (1, 3, 768)</span>&#10;&#10;<span class="header">============================================================&#10;STEP 3: Transformer Block&#10;============================================================</span>&#10;<span class="success">Output shape: torch.Size([1, 3, 768])</span>&#10;<span class="success">Expected: (1, 3, 768)</span>&#10;&#10;<span class="header">============================================================&#10;STEP 4: Full GPT2Model Forward Pass&#10;============================================================</span>&#10;<span class="success">Output shape: torch.Size([1, 3, 50257])</span>&#10;<span class="success">Expected: (1, 3, 50257)</span>&#10;<span class="success">Total parameters: 124,439,808</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Unmasked attention weights are nearly uniform because the random projections are small. Each row sums to 1.0.</p>
+    <p class="text-lg terminal-caption">The model produces logits of shape (batch, seq, vocab_size). Total parameters: ~124M, matching GPT-2 small.</p>
   </div>
 </section>
 
 ---
 
+<!-- .slide: id="exercise-step5" -->
+
+## Step 5: Load Pretrained Weights (Provided)
+
+`load_gpt2_weights(model)` downloads the official GPT-2 small checkpoint from HuggingFace and copies each tensor into the matching layer of your model. A name-mapping table bridges the different naming conventions:
+
+| Custom name | Pretrained name |
+|-------------|-----------------|
+| `embed.token_embed.weight` | `transformer.wte.weight` |
+| `embed.pos_embed.weight` | `transformer.wpe.weight` |
+| `blocks.0.attn.c_attn.weight` | `transformer.h.0.attn.c_attn.weight` |
+| `ln_f.weight` | `transformer.ln_f.weight` |
+| `lm_head.weight` | `lm_head.weight` |
+
+The shape of every tensor is verified before copying. If your model architecture is correct, all 148 parameter tensors load successfully.
+
+---
+
 <!-- .slide: id="exercise-step6-code" -->
 
-## Step 6: causal_mask()
+## Step 6: greedy_decode()
 
 ```python
-    def causal_mask(self, seq_len: int) -> torch.Tensor:
-        """Create a causal mask for autoregressive attention.
+    def greedy_decode(model, tokenizer, prompt, max_new=10):
+        token_ids = tokenizer.encode(prompt, return_tensors="pt")
+        for _ in range(max_new):
+            logits = model(token_ids)
+            next_logits = logits[:, -1, :]
 
-        Entry (i, j) is 0 if j <= i, which means token i may attend to token j.
-        Entry (i, j) is -inf if j > i, which blocks future tokens before softmax.
-
-        Args:
-            seq_len: Length of the sequence.
-
-        Returns:
-            Mask tensor, shape (seq_len, seq_len), with 0s and -infs.
-        """
-        # Create a lower-triangular matrix: 1 means allowed, 0 means blocked.
-        allowed = torch.tril(torch.ones(seq_len, seq_len))
-        # TODO: Convert allowed positions to 0.0 and blocked positions to -inf.
-        raise NotImplementedError("TODO: create causal mask")
+            # TODO: Pick the token with the highest logit (argmax).
+            next_token = None
+            if next_token is None:
+                raise NotImplementedError("TODO: greedy argmax next token")
+            token_ids = torch.cat([token_ids, next_token], dim=1)
+        return tokenizer.decode(token_ids[0])
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** use masked_fill twice: first replace 0s with -inf, then replace 1s with 0.0.
+**Hint:** use `torch.argmax(next_logits, dim=-1, keepdim=True)`.
 
 </div>
 
@@ -3216,37 +2308,33 @@ return weights @ V
 **Answer:**
 
 ```python
-mask = allowed.masked_fill(allowed == 0, float("-inf"))
-return mask.masked_fill(mask == 1, 0.0)
+next_token = torch.argmax(next_logits, dim=-1, keepdim=True)
 ```
 
 </div>
 
 ---
 
-<!-- .slide: id="exercise-step8-code" -->
+<!-- .slide: id="exercise-step7-code" -->
 
-## Step 8: add_positional_embeddings()
+## Step 7: sample_with_temperature_topk()
 
 ```python
-def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
-    """Add sinusoidal positional encodings to the token representations."""
-    seq_len, d_model = X.shape
-    position = torch.arange(seq_len, dtype=X.dtype, device=X.device).unsqueeze(1)
-    dim_pair = torch.arange(0, d_model, 2, dtype=X.dtype, device=X.device)
-    angle_rates = 1 / (10000 ** (dim_pair / d_model))
-    angles = position * angle_rates
-    P = torch.zeros_like(X)
+    def sample_with_temperature_topk(model, tokenizer, prompt, max_new=10,
+                                     temperature=1.0, top_k=50):
+        token_ids = tokenizer.encode(prompt, return_tensors="pt")
+        for _ in range(max_new):
+            logits = model(token_ids)
+            next_logits = logits[:, -1, :]
 
-    # TODO: Fill the even dimensions of P with sine values and the odd dimensions with cosine values, using the angles above.
-    raise NotImplementedError("TODO: fill sine and cosine positional dimensions")
-
-    return X + P
+            # TODO: Scale logits by temperature, then apply top-k filtering, then sample.
+            raise NotImplementedError("TODO: temperature scaling + top-k sampling")
+        return tokenizer.decode(token_ids[0])
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** assign torch.sin(angles) to P[:, 0::2] and torch.cos(angles) to P[:, 1::2].
+**Hint:** divide by `temperature`, use `torch.topk` to zero out tokens below the k-th largest logit, then `F.softmax` and `torch.multinomial`.
 
 </div>
 
@@ -3255,29 +2343,34 @@ def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
 **Answer:**
 
 ```python
-P[:, 0::2] = torch.sin(angles)
-P[:, 1::2] = torch.cos(angles)
+next_logits = next_logits / temperature
+topk_vals, _ = torch.topk(next_logits, top_k, dim=-1)
+threshold = topk_vals[:, -1].unsqueeze(-1)
+next_logits = next_logits.masked_fill(next_logits < threshold, float("-inf"))
+probs = F.softmax(next_logits, dim=-1)
+next_token = torch.multinomial(probs, num_samples=1)
+token_ids = torch.cat([token_ids, next_token], dim=1)
 ```
 
 </div>
 
 ---
 
-<section id="exercise-step8-output">
-  <h2>Steps 6&ndash;8: Causal Mask and Positional Embeddings</h2>
+<section id="exercise-step7-output">
+  <h2>Steps 6&ndash;7: Generation Output</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
         <span class="terminal-dot green"></span>
-        <span class="terminal-title">uv run python module_03_attention/src/main.py</span>
+        <span class="terminal-title">uv run python module_04_architectures/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 6: Causal Mask&#10;============================================================</span>&#10;<span class="success">Mask first row: [0. -inf -inf -inf -inf]</span>&#10;<span class="success">Mask last row:  [0. 0. 0. 0. 0.]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 7: Masked Attention Output&#10;============================================================</span>&#10;<span class="success">Masked first row: [1. 0. 0. 0. 0.]</span>&#10;<span class="success">Masked last row:  [0.2 0.2 0.2 0.2 0.2]</span>&#10;&#10;<span class="header">============================================================&#10;STEP 8: Positional Embeddings&#10;============================================================</span>&#10;<span class="success">Shape: torch.Size([5, 8])</span>&#10;<span class="success">First token (after pos):  [ 0.164  0.984 -0.05   1.044 -0.076  1.108  0.08   1.168]</span>&#10;<span class="success">Attention weights WITH position: first row [0.198 0.2   0.203 0.202 0.197]</span>&#10;&#10;<span class="header">============================================================&#10;VISUALIZATIONS&#10;============================================================</span>&#10;<span class="success">Saved attention comparison to module_03_attention/output/attention_comparison.png</span>&#10;<span class="success">Saved positional effect to module_03_attention/output/positional_effect.png</span></pre>
+        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 6: Greedy Decoding&#10;============================================================</span>&#10;<span class="success">Prompt:  "The capital of France is"</span>&#10;<span class="success">Output:  "The capital of France is Paris. The city is home to the"</span>&#10;&#10;<span class="header">============================================================&#10;STEP 7: Temperature and Top-k Sampling&#10;============================================================</span>&#10;<span class="success">Prompt:  "The capital of France is"</span>&#10;<span class="success">Output (temp=0.8): "The capital of France is Paris, and the French"</span>&#10;<span class="success">Output (temp=1.4): "The capital of France is known as the 'City of"</span>&#10;&#10;<span class="header">============================================================&#10;VISUALIZATIONS&#10;============================================================</span>&#10;<span class="success">Saved token probability plot to module_04_architectures/output/token_probs.png</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">The causal mask zeroes out the upper triangle, forcing each token to attend only to itself and earlier tokens.</p>
+    <p class="text-lg terminal-caption">Greedy output is deterministic. Sampling with temperature produces varied completions.</p>
   </div>
 </section>
 
@@ -3285,29 +2378,12 @@ P[:, 1::2] = torch.cos(angles)
 
 <!-- .slide: id="exercise-extra-credit" -->
 
-## Extra Credit: KV Cache
+## Extra Credit
 
-Implement `kv_cache_step()` &mdash; simulate the KV cache used during autoregressive generation. Instead of recomputing keys and values for all tokens, cache them and only project the new token. <!-- .element: class="text-lg" -->
-
-```python
-def kv_cache_step(
-    new_token: torch.Tensor,
-    cached_keys: torch.Tensor,
-    cached_values: torch.Tensor,
-    W_Q: torch.Tensor,
-    W_K: torch.Tensor,
-    W_V: torch.Tensor,
-    d_k: int,
-) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    # TODO: Project new_token through W_Q, W_K, and W_V.
-    new_query = None
-    new_key = None
-    new_value = None
-    if new_query is None or new_key is None or new_value is None:
-        raise NotImplementedError("Extra credit: project new_token through W_Q, W_K, and W_V")
-```
-
-The runner processes tokens one at a time and compares generation cost with and without the cache. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+- Implement **top-p (nucleus) sampling**: keep the smallest set of tokens whose cumulative probability exceeds $p$, then sample.
+- **Tie the embedding and output weights**: set `self.lm_head.weight = self.embed.token_embed.weight` and verify the parameter count drops by about 38M (the size of the embedding matrix).
+- **Swap the causal mask for a bidirectional one** in `CausalSelfAttention` and observe how open-ended generation breaks.
+- Implement a **tiny BPE training loop** on a short string (a handful of merges) to see tokenization from the inside. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
@@ -3315,111 +2391,114 @@ The runner processes tokens one at a time and compares generation cost with and 
 
 # Quiz
 
-Test your understanding
-
 
 ---
 
-<!-- .slide: id="quiz-q1" -->
+<!-- .slide: id="quiz-ffn" -->
 
-## Q1: Learned Lookup
+## Why Does the FFN Matter?
 
 <div class="quiz-prompt">
 
-In the attention mechanism, the query, key, and value projections are learned during training. If you froze these projections at random initialization (never trained them), what would the attention weights look like, and why?
+The attention sub-layer mixes information between positions, but the FFN processes each position independently. Why is the FFN still crucial?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-**Answer:** The attention weights would be approximately uniform &mdash; each token would attend equally to all other tokens. Random projections produce query and key vectors that are approximately orthogonal, so all dot products $QK^T$ are roughly equal, and softmax assigns nearly equal weight to every position. The learning is what makes the attention pattern **selective** rather than uniform.
+The FFN is where most of the model's parameters and stored "knowledge" live. Each neuron acts like a key-value pair: when its input activates it, the neuron retrieves a learned output vector. Without the FFN, the model would only mix existing embeddings and would have no way to store or recall facts.
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-q2" -->
+<!-- .slide: id="quiz-pre-post-norm" -->
 
-## Q2: Causal Masking and Training
+## Pre-Norm vs Post-Norm
 
 <div class="quiz-prompt">
 
-A student proposes training a language model without a causal mask, arguing that "seeing future tokens during training will help the model learn faster." Explain why this approach fails at inference time.
+The original transformer placed LayerNorm after each sub-layer (post-norm). Modern models place it before (pre-norm). Why is pre-norm preferred?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-**Answer:** During inference, the model generates tokens one at a time and cannot see future tokens (they do not exist yet). If the model was trained with bidirectional attention, it learned to rely on future context that will not be available at inference time. The model's predictions would degrade because it is missing information it was trained to expect. Causal masking ensures the training and inference information constraints match.
+Pre-norm is more stable to train at depth. With post-norm, gradients must propagate through the normalization layer before reaching the residual add, and in deep stacks this compounds into vanishing or exploding gradients. Pre-norm puts the normalization outside the residual path, keeping the gradient highway clean.
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-q3" -->
+<!-- .slide: id="quiz-decoder-only" -->
 
-## Q3: Positional Information
+## Why Did Decoder-Only Win for LLMs?
 
 <div class="quiz-prompt">
 
-You feed the sentence "the cat sat on the mat" into a self-attention layer with positional embeddings removed. You then reverse the sentence to "mat the on sat cat the" and feed it in again. How do the attention patterns compare, and what does this tell you?
+Decoder-only models are not universally better. What specific advantages made them the dominant LLM architecture?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-**Answer:** Without positional information, the attention patterns are identical up to the permutation of tokens. Self-attention is permutation equivariant: if you permute the input, the output is the same permutation of the original output. The model cannot distinguish "the cat sat" from "sat cat the" because it has no way to know which token came first. Positional embeddings break this symmetry by giving each position a unique signature.
+A single stack is simpler and scales cleanly. The next-token objective gives a dense training signal at every position. The generative objective subsumes "understanding" tasks: classification can be phrased as text completion. And emergent in-context learning appears at scale without task-specific heads.
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-q4" -->
+<!-- .slide: id="quiz-token-tax" -->
 
-## Q4: O(n^2) Scaling
+## The Tokenization Trade-Off
 
 <div class="quiz-prompt">
 
-A model supports a 128K-token context. If you doubled the context to 256K tokens, by what factor does the attention computation cost increase? Why is this a bigger problem for per-token feed-forward layers?
+A larger vocabulary means shorter sequences but a larger embedding matrix. Why does non-English text often cost more tokens per sentence?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-**Answer:** The attention cost increases by a factor of 4 (from $O(n^2)$ to $O((2n)^2) = O(4n^2)$). The feed-forward layers process each token independently, so their cost is $O(n)$ &mdash; doubling context doubles the feed-forward cost. The $O(n^2)$ attention cost is why long context is disproportionately expensive, and why techniques like FlashAttention, sliding-window attention, and sparse attention patterns are active research areas.
+English is overrepresented in training corpora, so English subword sequences are shorter (more words fit whole in the vocabulary). Languages with different scripts or less training data are split into more pieces. This is the "token tax": the same semantic content requires more tokens, inflating both cost and context-window usage.
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-q5" -->
+<!-- .slide: id="quiz-moe" -->
 
-## Q5: KV Cache Trade-offs
+## How Does MoE Add Parameters Without Adding Compute?
 
 <div class="quiz-prompt">
 
-A model has 32 layers, 32 attention heads per layer, and $d_k = 128$ per head. How many floats are stored in the KV cache for a 4096-token sequence? If you switch from multi-head attention to grouped-query attention with 4 groups, what is the reduction factor?
+Mixture of Experts replaces one large FFN with many smaller FFNs plus a router. Why does total compute per token stay roughly constant?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-**Answer:** With multi-head attention: $2 \times 32 \times 32 \times 4096 \times 128 = 1,073,741,824$ floats (about 4 GB in float32). The "2" accounts for both K and V. With GQA and 4 groups, K and V are shared within each group of 8 heads, so the cache for K and V shrinks by a factor of 8: $2 \times 32 \times 4 \times 4096 \times 128 \approx 134$ million floats (about 512 MB). The reduction factor is 8, equal to the number of heads per group.
+The router selects only a small subset of experts (e.g., top-2 out of 64) for each token. Most expert parameters are inactive on any given forward pass. Parameter count scales with the number of experts, but compute scales only with the activated subset.
 
 </div>
 
 ---
 
-<!-- .slide: id="resources" -->
+<!-- .slide: id="quiz-temperature" -->
 
-## References and Further Reading
+## The Effect of Temperature on Sampling
 
-- Bahdanau, D., Cho, K., &amp; Bengio, Y. (2014). "Neural Machine Translation by Jointly Learning to Align and Translate." *arXiv:1409.0473*.
-- Dao, T. et al. (2022). "FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness." *arXiv:2205.14135*.
-- Su, J. et al. (2021). "RoFormer: Enhanced Transformer with Rotary Position Embedding." *arXiv:2104.09864*.
-- Xiao, G. et al. (2023). "Efficient Streaming Language Models with Attention Sinks." *arXiv:2309.17453*.
-- Huang, Z. et al. (2020). "Pixel-BERT: Aligning Image Pixels with Text by Deep Multi-Modal Transformers." *arXiv:2004.00849*.
-- [BertViz](https://codecut.ai/bertviz-visualize-attention-in-transformer-language-models/) &mdash; attention visualization tool
+<div class="quiz-prompt">
+
+Temperature $T$ scales logits before softmax. How does a very high temperature change the sample distribution, and why might that be undesirable?
+
+</div>
+
+<div class="fragment note quiz-answer">
+
+High temperature flattens the distribution, making unlikely tokens nearly as probable as likely ones. The output becomes random, ungrammatical, and thematically inconsistent. Conversely, very low temperature sharpens the peak, producing repetitive, deterministic text. The sweet spot is typically $T \approx 0.7\text{--}1.0$.
+
+</div>
 
 ---
 
@@ -3427,8 +2506,35 @@ A model has 32 layers, 32 attention heads per layer, and $d_k = 128$ per head. H
 
 # Questions?
 
-Next: Module 4 &mdash; The Transformer
+Next: Module 5 &mdash; Pretraining and Fine-Tuning
 
+
+---
+
+<!-- .slide: id="resources" -->
+
+## Resources
+
+### Papers and Books
+
+- Sutskever, Vinyals, and Le, "Sequence to Sequence Learning with Neural Networks," <https://arxiv.org/abs/1409.3215>
+- Hochreiter and Schmidhuber, "Long Short-Term Memory" (1997), *Neural Computation*
+- Sennrich, Haddow, and Birch, "Neural Machine Translation of Rare Words with Subword Units," <https://arxiv.org/abs/1508.07909>
+- Devlin et al., "BERT: Pre-training of Deep Bidirectional Transformers," <https://arxiv.org/abs/1810.04805>
+- Radford et al., "Improving Language Understanding by Generative Pre-Training" (2018) and "Language Models are Unsupervised Multitask Learners" (GPT-2, 2019)
+- Touvron et al., "LLaMA: Open and Efficient Foundation Language Models," <https://arxiv.org/abs/2302.13971>
+- Shazeer et al., "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer," <https://arxiv.org/abs/1701.06538>
+- Gu and Dao, "Mamba: Linear-Time Sequence Modeling with Selective State Spaces," <https://arxiv.org/abs/2312.00752>
+
+### Tools and Explorables
+
+- <https://tiktokenizer.vercel.app> &mdash; interactive tokenizer playground
+- <https://github.com/karpathy/minbpe> &mdash; minimal BPE implementation
+- <https://github.com/karpathy/build-nanogpt> &mdash; build GPT-2 from scratch
+- <https://github.com/rasbt/LLMs-from-scratch> &mdash; full LLM implementation book (chapters 2&ndash;4 most relevant)
+- <https://nlp.seas.harvard.edu/annotated-transformer/> &mdash; annotated encoder-decoder implementation
+- <https://poloclub.github.io/transformer-explainer/> &mdash; interactive GPT-2 architecture walkthrough
+- <https://www.krupadave.com/articles/everything-about-transformers?x=v3> &mdash; comprehensive visual transformer guide
         </textarea>
       </section>
     </div>
@@ -3441,790 +2547,11 @@ Next: Module 4 &mdash; The Transformer
   <!-- Per-module config: sets window.MODULE_CONFIG before the shared logic runs -->
   <script>
 (function () {
-  // ===================================================================
-  // Module 3 interactive widgets. Each factory owns its host element and
-  // redraws on resize / when its slide becomes visible. Registered via
-  // MODULE_CONFIG.widgets, which deck.js merges into INTERACTIVE_WIDGETS.
-  // ===================================================================
-
-  var COL = {
-    text: '#e8eaf0', muted: '#8892a4', line: '#2a3450',
-    primary: '#4a9eff', secondary: '#f5a623', green: '#3fb950',
-    red: '#e74c3c', purple: '#c792ea', bg: '#0d1225'
-  };
-  var SLOTC = ['#4a9eff', '#f5a623', '#50c878', '#c792ea'];
-
-  function fit(canvas) {
-    var dpr = window.devicePixelRatio || 1;
-    var w = canvas.clientWidth, h = canvas.clientHeight;
-    if (!w || !h) return null;
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    var ctx = canvas.getContext('2d');
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    return { ctx: ctx, w: w, h: h };
-  }
-
-  // Keep slider/button interaction from leaking to reveal navigation.
-  function stop(host) {
-    ['pointerdown', 'keydown', 'click'].forEach(function (ev) {
-      host.addEventListener(ev, function (e) { e.stopPropagation(); });
-    });
-  }
-
-  function rounded(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  }
-
-  function normalizeRows(M) {
-    return M.map(function (row) {
-      var s = row.reduce(function (a, b) { return a + b; }, 0);
-      return row.map(function (v) { return v / s; });
-    });
-  }
-
-  // ===================================================================
-  // WIDGET: mlpRigid  — weights are bound to fixed slots
-  // ===================================================================
-  function mlpRigid(host) {
-    var words = ['the', 'cat', 'sat', 'on', 'the', 'mat'];
-    var trackIdx = 2; // "sat"
-    var state = { start: 0 };
-
-    host.innerHTML =
-      '<div class="m3-widget">' +
-        '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
-        '<div class="m3-controls">' +
-          '<button class="m3-btn m3-primary" data-act="slide">Slide window &rarr;</button>' +
-          '<button class="m3-btn m3-reset" data-act="reset">Reset</button>' +
-        '</div>' +
-        '<p class="m3-readout"></p>' +
-      '</div>';
-    var canvas = host.querySelector('.m3-canvas');
-    var readout = host.querySelector('.m3-readout');
-    stop(host);
-
-    host.querySelector('[data-act="slide"]').addEventListener('click', function () {
-      state.start = (state.start + 1) % 3; draw();
-    });
-    host.querySelector('[data-act="reset"]').addEventListener('click', function () {
-      state.start = 0; draw();
-    });
-
-    function draw() {
-      var f = fit(canvas); if (!f) return;
-      var ctx = f.ctx, W = f.w, H = f.h;
-      ctx.clearRect(0, 0, W, H);
-      ctx.textAlign = 'center';
-
-      var n = words.length;
-      var step = Math.min(120, (W - 80) / n);
-      var x0 = (W - step * n) / 2 + step / 2;
-      var bw = step - 14;
-
-      // strip of full sentence
-      var stripY = 64;
-      ctx.font = '600 14px Inter, sans-serif';
-      ctx.fillStyle = COL.muted;
-      ctx.fillText('the model reads a fixed window of 4 tokens', W / 2, 20);
-      // window rectangle
-      var winX = x0 + state.start * step - step / 2 + 6;
-      ctx.strokeStyle = COL.secondary; ctx.lineWidth = 2;
-      ctx.setLineDash([5, 3]);
-      rounded(ctx, winX, stripY - 22, step * 4 - 12, 44, 6); ctx.stroke();
-      ctx.setLineDash([]);
-
-      var slotCx = [];
-      for (var i = 0; i < n; i++) {
-        var cx = x0 + i * step;
-        var inWin = (i >= state.start && i < state.start + 4);
-        var slot = i - state.start;
-        if (inWin) slotCx[slot] = cx;
-        ctx.fillStyle = COL.bg;
-        var tracked = (i === trackIdx);
-        ctx.strokeStyle = tracked ? COL.secondary : (inWin ? COL.text : COL.line);
-        ctx.lineWidth = tracked ? 2.5 : 1.4;
-        rounded(ctx, cx - bw / 2, stripY - 16, bw, 32, 5); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = inWin ? COL.text : COL.muted;
-        ctx.font = '600 14px Inter, sans-serif';
-        ctx.fillText(words[i], cx, stripY + 5);
-      }
-
-      // weight blocks row
-      var wbY = H - 86;
-      ctx.font = '600 12px Inter, sans-serif';
-      for (var s = 0; s < 4; s++) {
-        if (slotCx[s] === undefined) continue;
-        var c = slotCx[s];
-        // arrow from windowed word down to weight block
-        ctx.strokeStyle = SLOTC[s]; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(c, stripY + 18); ctx.lineTo(c, wbY - 2); ctx.stroke();
-        ctx.fillStyle = 'rgba(255,255,255,0.04)';
-        ctx.strokeStyle = SLOTC[s];
-        rounded(ctx, c - 36, wbY, 72, 44, 6); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = SLOTC[s];
-        ctx.fillText('slot ' + (s + 1), c, wbY + 18);
-        ctx.fillText('W' + (s + 1), c, wbY + 36);
-      }
-
-      // tracked word annotation
-      var trackSlot = trackIdx - state.start;
-      ctx.font = '600 13px Inter, sans-serif';
-      if (trackSlot >= 0 && trackSlot < 4) {
-        var tc = slotCx[trackSlot];
-        ctx.fillStyle = COL.secondary;
-        ctx.fillText('"sat" here', tc, wbY - 16);
-        readout.innerHTML = '"sat" now sits in <strong>slot ' + (trackSlot + 1) +
-          '</strong>, processed by weight block <strong>W' + (trackSlot + 1) +
-          '</strong>. Slide it and it meets entirely different parameters &mdash; nothing it learned transfers.';
-      }
-    }
-    draw();
-    return { resize: draw };
-  }
-
-  // ===================================================================
-  // WIDGET: attentionHeatmap — NxN attention weights for a sentence
-  // ===================================================================
-  function attentionHeatmap(host) {
-    var examples = {
-      a: {
-        tokens: ['the', 'cat', 'sat', 'on', 'the', 'mat'],
-        sel: 2,
-        M: [
-          [0.00, 0.34, 0.18, 0.12, 0.28, 0.08],
-          [0.14, 0.00, 0.42, 0.16, 0.08, 0.20],
-          [0.06, 0.46, 0.00, 0.30, 0.08, 0.10],
-          [0.08, 0.12, 0.50, 0.00, 0.20, 0.10],
-          [0.30, 0.08, 0.12, 0.22, 0.00, 0.28],
-          [0.26, 0.24, 0.30, 0.12, 0.08, 0.00]
-        ]
-      },
-      b: {
-        tokens: ['alice', 'gave', 'bob', 'her', 'book'],
-        sel: 3,
-        M: [
-          [0.00, 0.20, 0.25, 0.30, 0.25],
-          [0.25, 0.00, 0.35, 0.20, 0.20],
-          [0.20, 0.40, 0.00, 0.15, 0.25],
-          [0.60, 0.15, 0.10, 0.00, 0.15],
-          [0.35, 0.20, 0.10, 0.35, 0.00]
-        ]
-      }
-    };
-    var state = { key: 'a', sel: examples.a.sel };
-
-    host.innerHTML =
-      '<div class="m3-widget">' +
-        '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
-        '<div class="m3-controls">' +
-          '<button class="m3-btn active" data-ex="a">"the cat sat on the mat"</button>' +
-          '<button class="m3-btn" data-ex="b">"alice gave bob her book"</button>' +
-        '</div>' +
-        '<p class="m3-readout"></p>' +
-      '</div>';
-    var canvas = host.querySelector('.m3-canvas');
-    var readout = host.querySelector('.m3-readout');
-    stop(host);
-
-    host.querySelectorAll('[data-ex]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        state.key = b.getAttribute('data-ex');
-        state.sel = examples[state.key].sel;
-        host.querySelectorAll('[data-ex]').forEach(function (x) { x.classList.toggle('active', x === b); });
-        draw();
-      });
-    });
-
-    var layout = null;
-    canvas.addEventListener('click', function (e) {
-      if (!layout) return;
-      var rect = canvas.getBoundingClientRect();
-      // rescale the click into canvas layout pixels (reveal scales the deck).
-      var sy = canvas.clientHeight / rect.height || 1;
-      var my = (e.clientY - rect.top) * sy;
-      var row = Math.floor((my - layout.oy) / layout.cell);
-      if (row >= 0 && row < layout.n) { state.sel = row; draw(); }
-    });
-
-    function draw() {
-      var f = fit(canvas); if (!f) return;
-      var ctx = f.ctx, W = f.w, H = f.h;
-      ctx.clearRect(0, 0, W, H);
-      var ex = examples[state.key];
-      var toks = ex.tokens, M = ex.M, n = toks.length;
-      var pad = 64;
-      var avail = Math.min(W - pad - 40, H - pad - 30);
-      var cell = avail / n;
-      var ox = pad + (W - pad - 40 - n * cell) / 2;
-      var oy = pad;
-      layout = { ox: ox, oy: oy, cell: cell, n: n };
-
-      ctx.font = '12px Inter, sans-serif';
-      // column (key) labels
-      ctx.fillStyle = COL.secondary; ctx.textAlign = 'center';
-      ctx.fillText('keys (attended to)', ox + n * cell / 2, 22);
-      for (var j = 0; j < n; j++) {
-        ctx.fillStyle = COL.secondary;
-        ctx.fillText(toks[j], ox + j * cell + cell / 2, oy - 8);
-      }
-      // row (query) labels
-      ctx.textAlign = 'right';
-      for (var i = 0; i < n; i++) {
-        ctx.fillStyle = (i === state.sel) ? COL.secondary : COL.primary;
-        ctx.fillText(toks[i], ox - 8, oy + i * cell + cell / 2 + 4);
-      }
-      ctx.save();
-      ctx.translate(ox - 58, oy + n * cell / 2);
-      ctx.rotate(-Math.PI / 2);
-      ctx.textAlign = 'center'; ctx.fillStyle = COL.primary;
-      ctx.fillText('queries', 0, 0);
-      ctx.restore();
-
-      // cells
-      for (var r = 0; r < n; r++) {
-        for (var c = 0; c < n; c++) {
-          var w = M[r][c];
-          ctx.fillStyle = (r === c)
-            ? 'rgba(13,18,37,0.95)'
-            : 'rgba(74,158,255,' + (0.08 + 0.9 * w).toFixed(3) + ')';
-          ctx.fillRect(ox + c * cell + 1, oy + r * cell + 1, cell - 2, cell - 2);
-          ctx.fillStyle = (r === c) ? COL.muted : COL.text; ctx.textAlign = 'center';
-          ctx.font = '11px Inter, sans-serif';
-          ctx.fillText(w.toFixed(2), ox + c * cell + cell / 2, oy + r * cell + cell / 2 + 4);
-        }
-      }
-      // highlight selected query row
-      ctx.strokeStyle = COL.secondary; ctx.lineWidth = 2.5;
-      ctx.strokeRect(ox, oy + state.sel * cell, n * cell, cell);
-
-      // readout: top attended key for selected query
-      var row = M[state.sel];
-      var best = 0; for (var k = 1; k < n; k++) if (row[k] > row[best]) best = k;
-      readout.innerHTML = 'Click a row to pick a query. <strong>"' + toks[state.sel] +
-        '"</strong> attends most to <strong>"' + toks[best] + '"</strong> (' +
-        (row[best] * 100).toFixed(0) + '%). The diagonal is set to 0 here, and each row sums to 1.';
-    }
-    draw();
-    return { resize: draw };
-  }
-
-  // ===================================================================
-  // WIDGET: attentionArrows — click a word; arcs fan out to the words it
-  // attends to. Thicker, brighter arc = more attention.
-  // ===================================================================
-  function attentionArrows(host) {
-    var tokens = ['the', 'cat', 'sat', 'on', 'the', 'mat'];
-    // rows = query (the word doing the attending), cols = key (attended to).
-    // The diagonal is 0: a word does not attend to itself here, so every arc
-    // points at a different word. normalizeRows then spreads each row's weight
-    // across the other tokens.
-    var M = normalizeRows([
-      [0.00, 0.18, 0.10, 0.10, 0.22, 0.10],  // the
-      [0.12, 0.00, 0.26, 0.06, 0.10, 0.16],  // cat
-      [0.05, 0.46, 0.00, 0.09, 0.05, 0.15],  // sat
-      [0.05, 0.10, 0.34, 0.00, 0.06, 0.25],  // on
-      [0.10, 0.06, 0.10, 0.14, 0.00, 0.30],  // the
-      [0.05, 0.16, 0.26, 0.18, 0.10, 0.00]   // mat
-    ]);
-    var state = { sel: 2 };
-
-    host.innerHTML =
-      '<div class="m3-widget">' +
-        '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
-        '<p class="m3-readout"></p>' +
-      '</div>';
-    var canvas = host.querySelector('.m3-canvas');
-    var readout = host.querySelector('.m3-readout');
-    stop(host);
-
-    var boxes = [];
-    canvas.addEventListener('click', function (e) {
-      var rect = canvas.getBoundingClientRect();
-      // reveal scales the whole deck, so the on-screen rect differs from the
-      // canvas layout size; rescale the click into layout (drawing) pixels.
-      var sx = canvas.clientWidth / rect.width || 1;
-      var sy = canvas.clientHeight / rect.height || 1;
-      var mx = (e.clientX - rect.left) * sx, my = (e.clientY - rect.top) * sy;
-      for (var i = 0; i < boxes.length; i++) {
-        var b = boxes[i];
-        if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
-          state.sel = i; draw(); return;
-        }
-      }
-    });
-
-    function head(ctx, fromx, fromy, tox, toy, color) {
-      var ang = Math.atan2(toy - fromy, tox - fromx);
-      var s = 8;
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.moveTo(tox, toy);
-      ctx.lineTo(tox - s * Math.cos(ang - 0.45), toy - s * Math.sin(ang - 0.45));
-      ctx.lineTo(tox - s * Math.cos(ang + 0.45), toy - s * Math.sin(ang + 0.45));
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    function draw() {
-      var f = fit(canvas); if (!f) return;
-      var ctx = f.ctx, W = f.w, H = f.h;
-      ctx.clearRect(0, 0, W, H);
-      var n = tokens.length;
-      ctx.textAlign = 'center';
-
-      // Word row sits low; arcs bow up into the open space above it.
-      ctx.font = '600 17px Inter, sans-serif';
-      var bh = 40, rowY = H - 74, gap = 16;
-      var widths = tokens.map(function (t) { return Math.max(66, ctx.measureText(t).width + 36); });
-      var totalW = widths.reduce(function (a, b) { return a + b; }, 0) + gap * (n - 1);
-      var x = (W - totalW) / 2;
-      boxes = [];
-      var cx = [];
-      for (var i = 0; i < n; i++) {
-        boxes.push({ x: x, y: rowY, w: widths[i], h: bh });
-        cx.push(x + widths[i] / 2);
-        x += widths[i] + gap;
-      }
-
-      var row = M[state.sel];
-      var maxw = Math.max.apply(null, row);
-      var topY = rowY - 4;
-      var capBow = H - 116;
-
-      // Arcs from the query to every other token.
-      for (var k = 0; k < n; k++) {
-        if (k === state.sel) continue;
-        var w = row[k];
-        var sx = cx[state.sel], ex = cx[k];
-        var dist = Math.abs(ex - sx);
-        var bow = Math.min(capBow, 46 + dist * 0.42);
-        var midx = (sx + ex) / 2, cy = topY - bow;
-        var col = 'rgba(74,158,255,' + (0.16 + 0.74 * (w / maxw)).toFixed(3) + ')';
-        ctx.strokeStyle = col;
-        ctx.lineWidth = 1 + 13 * w;
-        ctx.beginPath();
-        ctx.moveTo(sx, topY);
-        ctx.quadraticCurveTo(midx, cy, ex, topY);
-        ctx.stroke();
-        head(ctx, midx, cy, ex, topY, col);
-        if (w > 0.12) {
-          ctx.fillStyle = COL.text; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center';
-          ctx.fillText((w * 100).toFixed(0) + '%', ex, topY - 9);
-        }
-      }
-      // Word boxes (query highlighted).
-      for (var b2 = 0; b2 < n; b2++) {
-        var on = (b2 === state.sel);
-        ctx.fillStyle = on ? 'rgba(245,166,35,0.16)' : '#0d1225';
-        ctx.strokeStyle = on ? COL.secondary : COL.line;
-        ctx.lineWidth = on ? 2.5 : 1.4;
-        rounded(ctx, boxes[b2].x, boxes[b2].y, boxes[b2].w, bh, 7);
-        ctx.fill(); ctx.stroke();
-        ctx.fillStyle = on ? COL.secondary : COL.text;
-        ctx.font = '600 17px Inter, sans-serif'; ctx.textAlign = 'center';
-        ctx.fillText(tokens[b2], cx[b2], rowY + bh / 2 + 6);
-      }
-      ctx.fillStyle = COL.muted; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
-      ctx.fillText('query: "' + tokens[state.sel] + '"   (click any word)', W / 2, H - 14);
-
-      var best = 0; for (var t = 0; t < n; t++) if (row[t] > row[best]) best = t;
-      readout.innerHTML = '<strong>"' + tokens[state.sel] + '"</strong> attends most to <strong>"' +
-        tokens[best] + '"</strong> (' + (row[best] * 100).toFixed(0) +
-        '%). Thicker arrows carry more attention; the output for this word is a weighted blend of all the value vectors.';
-    }
-    draw();
-    return { resize: draw };
-  }
-
-  // ===================================================================
-  // WIDGET: permutationShuffle — order does not change attention
-  // ===================================================================
-  function permutationShuffle(host) {
-    var ids = ['dog', 'bites', 'man'];
-    // affinity by token identity (row-normalized), independent of position
-    var AFF = normalizeRows([
-      [0.20, 0.30, 0.50],  // dog -> dog, bites, man
-      [0.45, 0.10, 0.45],  // bites
-      [0.50, 0.30, 0.20]   // man
-    ]);
-    var perms = [[0, 1, 2], [2, 1, 0], [1, 2, 0], [2, 0, 1]];
-    var state = { p: 0 };
-
-    host.innerHTML =
-      '<div class="m3-widget">' +
-        '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
-        '<div class="m3-controls">' +
-          '<button class="m3-btn m3-primary" data-act="shuffle">Reorder tokens</button>' +
-          '<button class="m3-btn m3-reset" data-act="reset">Reset</button>' +
-        '</div>' +
-        '<p class="m3-readout"></p>' +
-      '</div>';
-    var canvas = host.querySelector('.m3-canvas');
-    var readout = host.querySelector('.m3-readout');
-    stop(host);
-    host.querySelector('[data-act="shuffle"]').addEventListener('click', function () {
-      state.p = (state.p + 1) % perms.length; draw();
-    });
-    host.querySelector('[data-act="reset"]').addEventListener('click', function () {
-      state.p = 0; draw();
-    });
-
-    function draw() {
-      var f = fit(canvas); if (!f) return;
-      var ctx = f.ctx, W = f.w, H = f.h;
-      ctx.clearRect(0, 0, W, H);
-      var perm = perms[state.p];
-      var n = 3;
-      var order = perm.map(function (k) { return ids[k]; });
-
-      // token row
-      ctx.textAlign = 'center';
-      ctx.fillStyle = COL.muted; ctx.font = '13px Inter, sans-serif';
-      ctx.fillText('current order', W / 2, 24);
-      var tw = 96, gap = 18, totalW = n * tw + (n - 1) * gap;
-      var tx = (W - totalW) / 2;
-      for (var i = 0; i < n; i++) {
-        ctx.fillStyle = COL.bg; ctx.strokeStyle = COL.primary; ctx.lineWidth = 1.5;
-        rounded(ctx, tx + i * (tw + gap), 36, tw, 34, 6); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = COL.text; ctx.font = '600 15px Inter, sans-serif';
-        ctx.fillText(order[i], tx + i * (tw + gap) + tw / 2, 58);
-      }
-
-      // attention matrix in current order
-      var cell = Math.min(96, (H - 130) / n);
-      var mW = n * cell;
-      var ox = (W - mW) / 2, oy = 96 + ((H - 96) - (n * cell + 24)) / 2;
-      ctx.font = '12px Inter, sans-serif';
-      for (var j = 0; j < n; j++) {
-        ctx.fillStyle = COL.secondary; ctx.textAlign = 'center';
-        ctx.fillText(order[j], ox + j * cell + cell / 2, oy - 8);
-        ctx.fillStyle = COL.primary; ctx.textAlign = 'right';
-        ctx.fillText(order[j], ox - 8, oy + j * cell + cell / 2 + 4);
-      }
-      for (var r = 0; r < n; r++) {
-        for (var c = 0; c < n; c++) {
-          var w = AFF[perm[r]][perm[c]];
-          ctx.fillStyle = 'rgba(74,158,255,' + (0.10 + 0.85 * w).toFixed(3) + ')';
-          ctx.fillRect(ox + c * cell + 1, oy + r * cell + 1, cell - 2, cell - 2);
-          ctx.fillStyle = COL.text; ctx.textAlign = 'center'; ctx.font = '11px Inter, sans-serif';
-          ctx.fillText(w.toFixed(2), ox + c * cell + cell / 2, oy + r * cell + cell / 2 + 4);
-        }
-      }
-      // highlight the dog->man pair wherever it now sits
-      var dr = perm.indexOf(0), dc = perm.indexOf(2);
-      ctx.strokeStyle = COL.secondary; ctx.lineWidth = 2.5;
-      ctx.strokeRect(ox + dc * cell, oy + dr * cell, cell, cell);
-
-      readout.innerHTML = 'attention("dog" &rarr; "man") = <strong>' +
-        AFF[0][2].toFixed(2) + '</strong> in every ordering. Reorder the tokens and the value is unchanged &mdash; <strong>order carries no information</strong>.';
-    }
-    draw();
-    return { resize: draw };
-  }
-
-  // ===================================================================
-  // WIDGET: positionalEncoding — sinusoidal heatmap + distance signal
-  // ===================================================================
-  function positionalEncoding(host) {
-    var state = { d: 32, exp: 4, L: 40 };
-
-    host.innerHTML =
-      '<div class="m3-widget">' +
-        '<div class="m3-dual">' +
-          '<div class="m3-canvas-wrap"><canvas class="m3-canvas pe-heat"></canvas></div>' +
-          '<div class="m3-canvas-wrap"><canvas class="m3-canvas pe-sim"></canvas></div>' +
-        '</div>' +
-        '<div class="m3-sliders">' +
-          '<div class="m3-slider"><label>d_model</label><input type="range" min="8" max="64" step="8" value="32" data-k="d"><p class="m3-val">32</p></div>' +
-          '<div class="m3-slider"><label>base 10^</label><input type="range" min="2" max="5" step="1" value="4" data-k="exp"><p class="m3-val">4</p></div>' +
-        '</div>' +
-        '<p class="m3-readout"></p>' +
-      '</div>';
-    var heat = host.querySelector('.pe-heat');
-    var sim = host.querySelector('.pe-sim');
-    var readout = host.querySelector('.m3-readout');
-    stop(host);
-    host.querySelectorAll('input[type="range"]').forEach(function (inp) {
-      inp.addEventListener('input', function () {
-        state[inp.getAttribute('data-k')] = parseInt(inp.value, 10);
-        inp.parentElement.querySelector('.m3-val').textContent = inp.value;
-        draw();
-      });
-    });
-
-    function pe(pos, i, d, base) {
-      var denom = Math.pow(base, (2 * Math.floor(i / 2)) / d);
-      var angle = pos / denom;
-      return (i % 2 === 0) ? Math.sin(angle) : Math.cos(angle);
-    }
-
-    function draw() {
-      var base = Math.pow(10, state.exp);
-      var d = state.d, L = state.L;
-      // ---- heatmap ----
-      var f = fit(heat); if (!f) return;
-      var ctx = f.ctx, W = f.w, H = f.h;
-      ctx.clearRect(0, 0, W, H);
-      ctx.textAlign = 'center'; ctx.fillStyle = COL.muted; ctx.font = '12px Inter, sans-serif';
-      ctx.fillText('encoding value (x = sequence position, y = dimension)', W / 2, 16);
-      var ox = 46, oy = 50, gw = W - ox - 14, gh = H - oy - 30;
-      // legend for the diverging colour scale (sits between the title and the grid)
-      var lgy = 30;
-      ctx.textAlign = 'left'; ctx.font = '11px Inter, sans-serif';
-      ctx.fillStyle = 'rgba(74,158,255,0.85)'; ctx.fillRect(ox, lgy, 16, 11);
-      ctx.fillStyle = COL.muted; ctx.fillText('positive', ox + 22, lgy + 9);
-      ctx.fillStyle = 'rgba(245,166,35,0.85)'; ctx.fillRect(ox + 92, lgy, 16, 11);
-      ctx.fillStyle = COL.muted; ctx.fillText('negative', ox + 114, lgy + 9);
-      var cw = gw / L, ch = gh / d;
-      for (var p = 0; p < L; p++) {
-        for (var i = 0; i < d; i++) {
-          var v = pe(p, i, d, base);
-          ctx.fillStyle = v >= 0
-            ? 'rgba(74,158,255,' + (0.12 + 0.85 * v).toFixed(3) + ')'
-            : 'rgba(245,166,35,' + (0.12 + 0.85 * (-v)).toFixed(3) + ')';
-          ctx.fillRect(ox + p * cw, oy + i * ch, cw + 0.5, ch + 0.5);
-        }
-      }
-      ctx.fillStyle = COL.muted; ctx.textAlign = 'right';
-      ctx.fillText('dim 0', ox - 4, oy + 8);
-      ctx.fillText('dim ' + (d - 1), ox - 4, oy + gh);
-      ctx.textAlign = 'center';
-      ctx.fillText('pos 0', ox + cw / 2 + 4, H - 8);
-      ctx.fillText('pos ' + (L - 1), ox + gw - cw, H - 8);
-
-      // ---- similarity vs distance ----
-      var g = fit(sim); if (!g) return;
-      var c2 = g.ctx, W2 = g.w, H2 = g.h;
-      c2.clearRect(0, 0, W2, H2);
-      c2.textAlign = 'center'; c2.fillStyle = COL.muted; c2.font = '12px Inter, sans-serif';
-      c2.fillText('similarity to position 0 as distance grows', W2 / 2, 16);
-      var px = 40, py = 28, pw = W2 - px - 16, ph = H2 - py - 28;
-      // axes
-      c2.strokeStyle = COL.line; c2.lineWidth = 1;
-      c2.beginPath(); c2.moveTo(px, py); c2.lineTo(px, py + ph); c2.lineTo(px + pw, py + ph); c2.stroke();
-      // compute dot products PE(0).PE(k)
-      var vals = [];
-      for (var k = 0; k < L; k++) {
-        var dot = 0;
-        for (var ii = 0; ii < d; ii++) dot += pe(0, ii, d, base) * pe(k, ii, d, base);
-        vals.push(dot);
-      }
-      var maxv = vals[0] || 1;
-      c2.strokeStyle = COL.primary; c2.lineWidth = 2;
-      c2.beginPath();
-      for (var kk = 0; kk < L; kk++) {
-        var xx = px + (kk / (L - 1)) * pw;
-        var yy = py + ph - (vals[kk] / maxv) * ph;
-        if (kk === 0) c2.moveTo(xx, yy); else c2.lineTo(xx, yy);
-      }
-      c2.stroke();
-      c2.fillStyle = COL.muted; c2.textAlign = 'left';
-      c2.fillText('0', px, py + ph + 16);
-      c2.textAlign = 'right'; c2.fillText('distance ' + (L - 1), px + pw, py + ph + 16);
-      c2.save();
-      c2.translate(12, py + ph / 2);
-      c2.rotate(-Math.PI / 2);
-      c2.textAlign = 'center';
-      c2.fillText('similarity', 0, 0);
-      c2.restore();
-
-      readout.innerHTML = 'd_model = <strong>' + d + '</strong>, base = <strong>' + base.toLocaleString() +
-        '</strong>. The heatmap shows positions across the x-axis and dimensions down the y-axis. The right plot compares each position to position 0; nearby positions tend to be more similar, giving attention a distance signal.';
-    }
-    draw();
-    return { resize: draw };
-  }
-
-  // ===================================================================
-  // WIDGET: softmaxExplorer — logits to a distribution, with temperature
-  // ===================================================================
-  function softmaxExplorer(host) {
-    var toks = ['mat', 'rug', 'sofa', 'roof', 'sky'];
-    var state = { logits: [3.2, 2.6, 1.4, 0.9, -0.3], T: 1.0 };
-
-    var logitHTML = '';
-    toks.forEach(function (t, i) {
-      logitHTML += '<div class="m3-slider"><label>"' + t + '"</label>' +
-        '<input type="range" min="-2" max="6" step="0.1" value="' + state.logits[i] + '" data-i="' + i + '">' +
-        '<p class="m3-val">' + state.logits[i].toFixed(1) + '</p></div>';
-    });
-    var tempHTML = '<div class="m3-slider"><label>temperature</label>' +
-      '<input type="range" min="0.2" max="10" step="0.1" value="1" data-t="1"><p class="m3-val">1.0</p></div>';
-
-    host.innerHTML =
-      '<div class="m3-widget">' +
-        '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
-        '<div class="m3-sliders m3-logits">' + logitHTML + '</div>' +
-        '<div class="m3-sliders m3-temp">' + tempHTML + '</div>' +
-        '<p class="m3-readout"></p>' +
-      '</div>';
-    var canvas = host.querySelector('.m3-canvas');
-    var readout = host.querySelector('.m3-readout');
-    stop(host);
-    host.querySelectorAll('input[data-i]').forEach(function (inp) {
-      inp.addEventListener('input', function () {
-        state.logits[parseInt(inp.getAttribute('data-i'), 10)] = parseFloat(inp.value);
-        inp.parentElement.querySelector('.m3-val').textContent = parseFloat(inp.value).toFixed(1);
-        draw();
-      });
-    });
-    host.querySelector('input[data-t]').addEventListener('input', function () {
-      state.T = parseFloat(this.value);
-      this.parentElement.querySelector('.m3-val').textContent = state.T.toFixed(1);
-      draw();
-    });
-
-    function softmax(z, T) {
-      var m = Math.max.apply(null, z);
-      var ex = z.map(function (v) { return Math.exp((v - m) / T); });
-      var s = ex.reduce(function (a, b) { return a + b; }, 0);
-      return ex.map(function (v) { return v / s; });
-    }
-
-    function draw() {
-      var f = fit(canvas); if (!f) return;
-      var ctx = f.ctx, W = f.w, H = f.h;
-      ctx.clearRect(0, 0, W, H);
-      var n = toks.length;
-      var p = softmax(state.logits, state.T);
-      var colW = (W - 80) / n;
-      var midY = H / 2;
-      ctx.textAlign = 'center';
-
-      // top: logits ; bottom: probabilities
-      ctx.font = '12px Inter, sans-serif'; ctx.fillStyle = COL.muted;
-      ctx.fillText('logits (raw scores)', 70, 18);
-      ctx.fillText('probabilities (after softmax)', 110, midY + 16);
-
-      var maxL = 6, minL = -2;
-      var topH = midY - 40;
-      for (var i = 0; i < n; i++) {
-        var cx = 60 + i * colW + colW / 2;
-        // logit bar (above midline)
-        var lh = ((state.logits[i] - minL) / (maxL - minL)) * topH;
-        ctx.fillStyle = 'rgba(245,166,35,0.55)';
-        ctx.fillRect(cx - colW * 0.3, midY - 24 - lh, colW * 0.6, lh);
-        ctx.fillStyle = COL.text; ctx.font = '11px Inter, sans-serif';
-        ctx.fillText(state.logits[i].toFixed(1), cx, midY - 28 - lh);
-        // token label at midline
-        ctx.fillStyle = COL.primary; ctx.font = '600 13px Inter, sans-serif';
-        ctx.fillText(toks[i], cx, midY - 6);
-        // prob bar (below midline)
-        var botH = H - midY - 50;
-        var ph = p[i] * botH;
-        ctx.fillStyle = 'rgba(74,158,255,' + (0.35 + 0.6 * p[i]).toFixed(3) + ')';
-        ctx.fillRect(cx - colW * 0.3, midY + 24, colW * 0.6, ph);
-        ctx.fillStyle = COL.text; ctx.font = '11px Inter, sans-serif';
-        ctx.fillText((p[i] * 100).toFixed(0) + '%', cx, midY + 24 + ph + 14);
-      }
-      ctx.strokeStyle = COL.line; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(30, midY); ctx.lineTo(W - 20, midY); ctx.stroke();
-
-      var top = 0; for (var k = 1; k < n; k++) if (p[k] > p[top]) top = k;
-      var spread = state.T >= 4
-        ? ' At high temperature the probabilities flatten toward uniform (' + (100 / n).toFixed(0) + '% each).'
-        : ' Lower temperature sharpens the peak; higher temperature flattens it.';
-      readout.innerHTML = 'Temperature <strong>' + state.T.toFixed(1) + '</strong>: top token is <strong>"' +
-        toks[top] + '"</strong> at <strong>' + (p[top] * 100).toFixed(0) + '%</strong>.' + spread;
-    }
-    draw();
-    return { resize: draw };
-  }
-
-  // ===================================================================
-  // WIDGET: kvCache — recompute every step vs cache and reuse
-  // ===================================================================
-  function kvCache(host) {
-    var toks = ['the', 'cat', 'sat', 'on', 'the', 'mat'];
-    var N = toks.length;
-    var state = { t: 1 };
-
-    host.innerHTML =
-      '<div class="m3-widget">' +
-        '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
-        '<div class="m3-controls">' +
-          '<button class="m3-btn m3-primary" data-act="next">Generate next token</button>' +
-          '<button class="m3-btn m3-reset" data-act="reset">Reset</button>' +
-        '</div>' +
-        '<p class="m3-readout"></p>' +
-      '</div>';
-    var canvas = host.querySelector('.m3-canvas');
-    var readout = host.querySelector('.m3-readout');
-    stop(host);
-    host.querySelector('[data-act="next"]').addEventListener('click', function () {
-      if (state.t < N) state.t++; draw();
-    });
-    host.querySelector('[data-act="reset"]').addEventListener('click', function () {
-      state.t = 1; draw();
-    });
-
-    function panel(ctx, x0, y0, pw, ph, title, cached) {
-      ctx.textAlign = 'center';
-      ctx.fillStyle = cached ? COL.green : COL.secondary;
-      ctx.font = '600 14px Inter, sans-serif';
-      ctx.fillText(title, x0 + pw / 2, y0);
-      var cell = Math.min((pw - 30) / N, (ph - 50) / N);
-      var gx = x0 + (pw - cell * N) / 2, gy = y0 + 28;
-      // column labels (positions)
-      ctx.font = '10px Inter, sans-serif'; ctx.fillStyle = COL.muted;
-      for (var c = 0; c < N; c++) ctx.fillText(toks[c], gx + c * cell + cell / 2, gy - 5);
-      var computed = 0;
-      for (var s = 0; s < state.t; s++) {
-        for (var c2 = 0; c2 <= s; c2++) {
-          var bright, fill;
-          if (!cached) { bright = (s === state.t - 1); fill = 'rgba(245,166,35,' + (bright ? 0.7 : 0.28) + ')'; computed++; }
-          else {
-            if (c2 === s) { fill = 'rgba(63,185,80,0.7)'; computed++; }
-            else fill = 'rgba(136,146,164,0.18)';
-          }
-          ctx.fillStyle = fill;
-          ctx.fillRect(gx + c2 * cell + 1, gy + s * cell + 1, cell - 2, cell - 2);
-        }
-      }
-      // grid frame
-      ctx.strokeStyle = COL.line; ctx.lineWidth = 1;
-      ctx.strokeRect(gx, gy, cell * N, cell * state.t);
-      ctx.fillStyle = COL.muted; ctx.font = '9px Inter, sans-serif'; ctx.textAlign = 'left';
-      ctx.fillText('step', gx - 2, gy + cell * state.t + 12);
-      return computed;
-    }
-
-    function draw() {
-      var f = fit(canvas); if (!f) return;
-      var ctx = f.ctx, W = f.w, H = f.h;
-      ctx.clearRect(0, 0, W, H);
-      ctx.textAlign = 'center'; ctx.fillStyle = COL.muted; ctx.font = '12px Inter, sans-serif';
-      ctx.fillText('rows = generation step, columns = token position (orange/green = K,V computed this step)', W / 2, 18);
-      var pw = (W - 60) / 2, ph = H - 70, y0 = 44;
-      var noCache = panel(ctx, 20, y0, pw, ph, 'Without cache: recompute all', false);
-      var withCache = panel(ctx, 40 + pw, y0, pw, ph, 'With cache: compute only the new one', true);
-      readout.innerHTML = 'After <strong>' + state.t + '</strong> tokens, K,V projections computed: ' +
-        '<strong>' + noCache + '</strong> without cache vs <strong>' + withCache +
-        '</strong> with cache. Without caching, every past token is re-projected at every step.';
-    }
-    draw();
-    return { resize: draw };
-  }
-
+  // Module 4 config — minimal; most visuals are SVG diagrams inline in slides.
   window.MODULE_CONFIG = {
-    title: 'LLMs 0 to 100 - Module 3',
+    title: 'LLMs 0 to 100 - Module 4',
     manimSections: {},
-    widgets: {
-      mlpRigid: mlpRigid,
-      attentionArrows: attentionArrows,
-      attentionHeatmap: attentionHeatmap,
-      permutationShuffle: permutationShuffle,
-      positionalEncoding: positionalEncoding,
-      softmaxExplorer: softmaxExplorer,
-      kvCache: kvCache
-    }
+    widgets: {}
   };
 }());
 

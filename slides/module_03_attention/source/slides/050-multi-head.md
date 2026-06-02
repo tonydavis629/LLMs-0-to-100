@@ -9,43 +9,51 @@
 
 A single attention head produces one weighted average per token. Multiple heads split the feature dimension, so several lookup patterns can run in parallel.
 <div style="text-align: center; margin: 4px 0;">
-<svg viewBox="0 0 880 230" width="100%" style="max-height: 215px;">
-  <text x="440" y="20" fill="#8892a4" font-size="12" text-anchor="middle">d_model = 512, split into H = 8 heads with d_k = 64 features each</text>
+<svg viewBox="0 0 880 300" width="100%" style="max-height: 290px;">
+  <text x="370" y="20" fill="#8892a4" font-size="12" text-anchor="middle">Each token is one embedding vector of size d_model</text>
+  <rect x="82" y="30" width="576" height="30" rx="3" fill="rgba(232,234,240,0.10)" stroke="#e8eaf0" stroke-width="1.6"/>
+  <text x="370" y="50" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">d_model = 512</text>
+  <line x1="82" y1="66" x2="82" y2="72" stroke="#8892a4" stroke-width="1"/>
+  <line x1="658" y1="66" x2="658" y2="72" stroke="#8892a4" stroke-width="1"/>
+  <line x1="82" y1="72" x2="658" y2="72" stroke="#8892a4" stroke-width="1"/>
+  <text x="370" y="86" fill="#8892a4" font-size="11" text-anchor="middle">512 features per token</text>
+  <line x1="370" y1="92" x2="370" y2="116" stroke="#8892a4" stroke-width="1.4" marker-end="url(#arrmhfirst)"/>
+  <text x="382" y="110" fill="#8892a4" font-size="11" text-anchor="start">split into H = 8 heads of d_k = 64</text>
   <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="82" y="44" width="576" height="30" fill="none" stroke="#e8eaf0" stroke-width="1.4"/>
-    <rect x="82" y="44" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="118" y="64" fill="#e8eaf0">64</text>
-    <rect x="154" y="44" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="190" y="64" fill="#e8eaf0">64</text>
-    <rect x="226" y="44" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="262" y="64" fill="#e8eaf0">64</text>
-    <rect x="298" y="44" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="334" y="64" fill="#e8eaf0">64</text>
-    <rect x="370" y="44" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="406" y="64" fill="#e8eaf0">64</text>
-    <rect x="442" y="44" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="478" y="64" fill="#e8eaf0">64</text>
-    <rect x="514" y="44" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="550" y="64" fill="#e8eaf0">64</text>
-    <rect x="586" y="44" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="622" y="64" fill="#e8eaf0">64</text>
+    <rect x="82" y="120" width="576" height="30" fill="none" stroke="#e8eaf0" stroke-width="1.4"/>
+    <rect x="82" y="120" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="118" y="140" fill="#e8eaf0">64</text>
+    <rect x="154" y="120" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="190" y="140" fill="#e8eaf0">64</text>
+    <rect x="226" y="120" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="262" y="140" fill="#e8eaf0">64</text>
+    <rect x="298" y="120" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="334" y="140" fill="#e8eaf0">64</text>
+    <rect x="370" y="120" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="406" y="140" fill="#e8eaf0">64</text>
+    <rect x="442" y="120" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="478" y="140" fill="#e8eaf0">64</text>
+    <rect x="514" y="120" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="550" y="140" fill="#e8eaf0">64</text>
+    <rect x="586" y="120" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="622" y="140" fill="#e8eaf0">64</text>
   </g>
   <g stroke="#e8eaf0" stroke-width="1.2">
-    <line x1="154" y1="38" x2="154" y2="82"/><line x1="226" y1="38" x2="226" y2="82"/>
-    <line x1="298" y1="38" x2="298" y2="82"/><line x1="370" y1="38" x2="370" y2="82"/>
-    <line x1="442" y1="38" x2="442" y2="82"/><line x1="514" y1="38" x2="514" y2="82"/>
-    <line x1="586" y1="38" x2="586" y2="82"/>
+    <line x1="154" y1="120" x2="154" y2="150"/><line x1="226" y1="120" x2="226" y2="150"/>
+    <line x1="298" y1="120" x2="298" y2="150"/><line x1="370" y1="120" x2="370" y2="150"/>
+    <line x1="442" y1="120" x2="442" y2="150"/><line x1="514" y1="120" x2="514" y2="150"/>
+    <line x1="586" y1="120" x2="586" y2="150"/>
   </g>
-  <text x="710" y="64" fill="#e8eaf0" font-size="12">Q, K, and V are grouped by feature slice</text>
+  <text x="710" y="138" fill="#e8eaf0" font-size="12">Q, K, V grouped by slice</text>
   <g stroke="#8892a4" stroke-width="1.1" marker-end="url(#arrmhfirst)">
-    <line x1="118" y1="74" x2="118" y2="108"/><line x1="190" y1="74" x2="190" y2="108"/>
-    <line x1="262" y1="74" x2="262" y2="108"/><line x1="334" y1="74" x2="334" y2="108"/>
-    <line x1="406" y1="74" x2="406" y2="108"/><line x1="478" y1="74" x2="478" y2="108"/>
-    <line x1="550" y1="74" x2="550" y2="108"/><line x1="622" y1="74" x2="622" y2="108"/>
+    <line x1="118" y1="150" x2="118" y2="184"/><line x1="190" y1="150" x2="190" y2="184"/>
+    <line x1="262" y1="150" x2="262" y2="184"/><line x1="334" y1="150" x2="334" y2="184"/>
+    <line x1="406" y1="150" x2="406" y2="184"/><line x1="478" y1="150" x2="478" y2="184"/>
+    <line x1="550" y1="150" x2="550" y2="184"/><line x1="622" y1="150" x2="622" y2="184"/>
   </g>
   <g font-size="11" text-anchor="middle" font-weight="600">
-    <rect x="86" y="110" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="118" y="134" fill="#4a9eff">head 1</text>
-    <rect x="158" y="110" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="190" y="134" fill="#f5a623">head 2</text>
-    <rect x="230" y="110" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="262" y="134" fill="#50c878">head 3</text>
-    <rect x="302" y="110" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="334" y="134" fill="#c792ea">head 4</text>
-    <rect x="374" y="110" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="406" y="134" fill="#4a9eff">head 5</text>
-    <rect x="446" y="110" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="478" y="134" fill="#f5a623">head 6</text>
-    <rect x="518" y="110" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="550" y="134" fill="#50c878">head 7</text>
-    <rect x="590" y="110" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="622" y="134" fill="#c792ea">head 8</text>
+    <rect x="86" y="186" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="118" y="210" fill="#4a9eff">head 1</text>
+    <rect x="158" y="186" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="190" y="210" fill="#f5a623">head 2</text>
+    <rect x="230" y="186" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="262" y="210" fill="#50c878">head 3</text>
+    <rect x="302" y="186" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="334" y="210" fill="#c792ea">head 4</text>
+    <rect x="374" y="186" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="406" y="210" fill="#4a9eff">head 5</text>
+    <rect x="446" y="186" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="478" y="210" fill="#f5a623">head 6</text>
+    <rect x="518" y="186" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="550" y="210" fill="#50c878">head 7</text>
+    <rect x="590" y="186" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="622" y="210" fill="#c792ea">head 8</text>
   </g>
-  <text x="440" y="187" fill="#8892a4" font-size="13" text-anchor="middle">The outputs are concatenated back to 512 dimensions, then a final projection mixes information across heads.</text>
+  <text x="440" y="262" fill="#8892a4" font-size="13" text-anchor="middle">The outputs are concatenated back to 512 dimensions, then a final projection mixes information across heads.</text>
   <defs><marker id="arrmhfirst" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
 </svg>
 </div>

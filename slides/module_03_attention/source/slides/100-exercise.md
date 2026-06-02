@@ -217,21 +217,20 @@ def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
     angle_rates = 1 / (10000 ** (dim_pair / d_model))
     angles = position * angle_rates
     P = torch.zeros_like(X)
-    P[:, 0::2] = torch.sin(angles)
 
-    # TODO: Fill the odd dimensions of P with cosine values from the sinusoidal equation.
-    raise NotImplementedError("TODO: fill cosine positional dimensions")
+    # TODO: Fill the even dimensions of P with sine values and the odd dimensions with cosine values, using the angles above.
+    raise NotImplementedError("TODO: fill sine and cosine positional dimensions")
 
     return X + P
 ```
 +++
-**Hint:** use torch.cos(angles) and assign the result to P[:, 1::2].
+**Hint:** assign torch.sin(angles) to P[:, 0::2] and torch.cos(angles) to P[:, 1::2].
 +++
 **Answer:**
 
 ```python
+P[:, 0::2] = torch.sin(angles)
 P[:, 1::2] = torch.cos(angles)
-return X + P
 ```
 :::
 

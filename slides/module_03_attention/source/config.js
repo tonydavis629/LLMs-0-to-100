@@ -204,7 +204,9 @@
     canvas.addEventListener('click', function (e) {
       if (!layout) return;
       var rect = canvas.getBoundingClientRect();
-      var my = e.clientY - rect.top;
+      // rescale the click into canvas layout pixels (reveal scales the deck).
+      var sy = canvas.clientHeight / rect.height || 1;
+      var my = (e.clientY - rect.top) * sy;
       var row = Math.floor((my - layout.oy) / layout.cell);
       if (row >= 0 && row < layout.n) { state.sel = row; draw(); }
     });
@@ -266,6 +268,134 @@
       readout.innerHTML = 'Click a row to pick a query. <strong>"' + toks[state.sel] +
         '"</strong> attends most to <strong>"' + toks[best] + '"</strong> (' +
         (row[best] * 100).toFixed(0) + '%). The diagonal is set to 0 here, and each row sums to 1.';
+    }
+    draw();
+    return { resize: draw };
+  }
+
+  // ===================================================================
+  // WIDGET: attentionArrows — click a word; arcs fan out to the words it
+  // attends to. Thicker, brighter arc = more attention.
+  // ===================================================================
+  function attentionArrows(host) {
+    var tokens = ['the', 'cat', 'sat', 'on', 'the', 'mat'];
+    // rows = query (the word doing the attending), cols = key (attended to).
+    // The diagonal is 0: a word does not attend to itself here, so every arc
+    // points at a different word. normalizeRows then spreads each row's weight
+    // across the other tokens.
+    var M = normalizeRows([
+      [0.00, 0.18, 0.10, 0.10, 0.22, 0.10],  // the
+      [0.12, 0.00, 0.26, 0.06, 0.10, 0.16],  // cat
+      [0.05, 0.46, 0.00, 0.09, 0.05, 0.15],  // sat
+      [0.05, 0.10, 0.34, 0.00, 0.06, 0.25],  // on
+      [0.10, 0.06, 0.10, 0.14, 0.00, 0.30],  // the
+      [0.05, 0.16, 0.26, 0.18, 0.10, 0.00]   // mat
+    ]);
+    var state = { sel: 2 };
+
+    host.innerHTML =
+      '<div class="m3-widget">' +
+        '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
+        '<p class="m3-readout"></p>' +
+      '</div>';
+    var canvas = host.querySelector('.m3-canvas');
+    var readout = host.querySelector('.m3-readout');
+    stop(host);
+
+    var boxes = [];
+    canvas.addEventListener('click', function (e) {
+      var rect = canvas.getBoundingClientRect();
+      // reveal scales the whole deck, so the on-screen rect differs from the
+      // canvas layout size; rescale the click into layout (drawing) pixels.
+      var sx = canvas.clientWidth / rect.width || 1;
+      var sy = canvas.clientHeight / rect.height || 1;
+      var mx = (e.clientX - rect.left) * sx, my = (e.clientY - rect.top) * sy;
+      for (var i = 0; i < boxes.length; i++) {
+        var b = boxes[i];
+        if (mx >= b.x && mx <= b.x + b.w && my >= b.y && my <= b.y + b.h) {
+          state.sel = i; draw(); return;
+        }
+      }
+    });
+
+    function head(ctx, fromx, fromy, tox, toy, color) {
+      var ang = Math.atan2(toy - fromy, tox - fromx);
+      var s = 8;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(tox, toy);
+      ctx.lineTo(tox - s * Math.cos(ang - 0.45), toy - s * Math.sin(ang - 0.45));
+      ctx.lineTo(tox - s * Math.cos(ang + 0.45), toy - s * Math.sin(ang + 0.45));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw() {
+      var f = fit(canvas); if (!f) return;
+      var ctx = f.ctx, W = f.w, H = f.h;
+      ctx.clearRect(0, 0, W, H);
+      var n = tokens.length;
+      ctx.textAlign = 'center';
+
+      // Word row sits low; arcs bow up into the open space above it.
+      ctx.font = '600 17px Inter, sans-serif';
+      var bh = 40, rowY = H - 74, gap = 16;
+      var widths = tokens.map(function (t) { return Math.max(66, ctx.measureText(t).width + 36); });
+      var totalW = widths.reduce(function (a, b) { return a + b; }, 0) + gap * (n - 1);
+      var x = (W - totalW) / 2;
+      boxes = [];
+      var cx = [];
+      for (var i = 0; i < n; i++) {
+        boxes.push({ x: x, y: rowY, w: widths[i], h: bh });
+        cx.push(x + widths[i] / 2);
+        x += widths[i] + gap;
+      }
+
+      var row = M[state.sel];
+      var maxw = Math.max.apply(null, row);
+      var topY = rowY - 4;
+      var capBow = H - 116;
+
+      // Arcs from the query to every other token.
+      for (var k = 0; k < n; k++) {
+        if (k === state.sel) continue;
+        var w = row[k];
+        var sx = cx[state.sel], ex = cx[k];
+        var dist = Math.abs(ex - sx);
+        var bow = Math.min(capBow, 46 + dist * 0.42);
+        var midx = (sx + ex) / 2, cy = topY - bow;
+        var col = 'rgba(74,158,255,' + (0.16 + 0.74 * (w / maxw)).toFixed(3) + ')';
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 1 + 13 * w;
+        ctx.beginPath();
+        ctx.moveTo(sx, topY);
+        ctx.quadraticCurveTo(midx, cy, ex, topY);
+        ctx.stroke();
+        head(ctx, midx, cy, ex, topY, col);
+        if (w > 0.12) {
+          ctx.fillStyle = COL.text; ctx.font = '11px Inter, sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText((w * 100).toFixed(0) + '%', ex, topY - 9);
+        }
+      }
+      // Word boxes (query highlighted).
+      for (var b2 = 0; b2 < n; b2++) {
+        var on = (b2 === state.sel);
+        ctx.fillStyle = on ? 'rgba(245,166,35,0.16)' : '#0d1225';
+        ctx.strokeStyle = on ? COL.secondary : COL.line;
+        ctx.lineWidth = on ? 2.5 : 1.4;
+        rounded(ctx, boxes[b2].x, boxes[b2].y, boxes[b2].w, bh, 7);
+        ctx.fill(); ctx.stroke();
+        ctx.fillStyle = on ? COL.secondary : COL.text;
+        ctx.font = '600 17px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(tokens[b2], cx[b2], rowY + bh / 2 + 6);
+      }
+      ctx.fillStyle = COL.muted; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('query: "' + tokens[state.sel] + '"   (click any word)', W / 2, H - 14);
+
+      var best = 0; for (var t = 0; t < n; t++) if (row[t] > row[best]) best = t;
+      readout.innerHTML = '<strong>"' + tokens[state.sel] + '"</strong> attends most to <strong>"' +
+        tokens[best] + '"</strong> (' + (row[best] * 100).toFixed(0) +
+        '%). Thicker arrows carry more attention; the output for this word is a weighted blend of all the value vectors.';
     }
     draw();
     return { resize: draw };
@@ -402,7 +532,14 @@
       ctx.clearRect(0, 0, W, H);
       ctx.textAlign = 'center'; ctx.fillStyle = COL.muted; ctx.font = '12px Inter, sans-serif';
       ctx.fillText('encoding value (x = sequence position, y = dimension)', W / 2, 16);
-      var ox = 46, oy = 28, gw = W - ox - 14, gh = H - oy - 30;
+      var ox = 46, oy = 50, gw = W - ox - 14, gh = H - oy - 30;
+      // legend for the diverging colour scale (sits between the title and the grid)
+      var lgy = 30;
+      ctx.textAlign = 'left'; ctx.font = '11px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(74,158,255,0.85)'; ctx.fillRect(ox, lgy, 16, 11);
+      ctx.fillStyle = COL.muted; ctx.fillText('positive', ox + 22, lgy + 9);
+      ctx.fillStyle = 'rgba(245,166,35,0.85)'; ctx.fillRect(ox + 92, lgy, 16, 11);
+      ctx.fillStyle = COL.muted; ctx.fillText('negative', ox + 114, lgy + 9);
       var cw = gw / L, ch = gh / d;
       for (var p = 0; p < L; p++) {
         for (var i = 0; i < d; i++) {
@@ -470,19 +607,20 @@
     var toks = ['mat', 'rug', 'sofa', 'roof', 'sky'];
     var state = { logits: [3.2, 2.6, 1.4, 0.9, -0.3], T: 1.0 };
 
-    var sliderHTML = '';
+    var logitHTML = '';
     toks.forEach(function (t, i) {
-      sliderHTML += '<div class="m3-slider"><label>logit "' + t + '"</label>' +
+      logitHTML += '<div class="m3-slider"><label>"' + t + '"</label>' +
         '<input type="range" min="-2" max="6" step="0.1" value="' + state.logits[i] + '" data-i="' + i + '">' +
         '<p class="m3-val">' + state.logits[i].toFixed(1) + '</p></div>';
     });
-    sliderHTML += '<div class="m3-slider"><label>temperature</label>' +
-      '<input type="range" min="0.2" max="3" step="0.1" value="1" data-t="1"><p class="m3-val">1.0</p></div>';
+    var tempHTML = '<div class="m3-slider"><label>temperature</label>' +
+      '<input type="range" min="0.2" max="10" step="0.1" value="1" data-t="1"><p class="m3-val">1.0</p></div>';
 
     host.innerHTML =
       '<div class="m3-widget">' +
         '<div class="m3-canvas-wrap"><canvas class="m3-canvas"></canvas></div>' +
-        '<div class="m3-sliders">' + sliderHTML + '</div>' +
+        '<div class="m3-sliders m3-logits">' + logitHTML + '</div>' +
+        '<div class="m3-sliders m3-temp">' + tempHTML + '</div>' +
         '<p class="m3-readout"></p>' +
       '</div>';
     var canvas = host.querySelector('.m3-canvas');
@@ -548,9 +686,11 @@
       ctx.beginPath(); ctx.moveTo(30, midY); ctx.lineTo(W - 20, midY); ctx.stroke();
 
       var top = 0; for (var k = 1; k < n; k++) if (p[k] > p[top]) top = k;
+      var spread = state.T >= 4
+        ? ' At high temperature the probabilities flatten toward uniform (' + (100 / n).toFixed(0) + '% each).'
+        : ' Lower temperature sharpens the peak; higher temperature flattens it.';
       readout.innerHTML = 'Temperature <strong>' + state.T.toFixed(1) + '</strong>: top token is <strong>"' +
-        toks[top] + '"</strong> at <strong>' + (p[top] * 100).toFixed(0) +
-        '%</strong>. Lower temperature sharpens the peak; higher temperature flattens it.';
+        toks[top] + '"</strong> at <strong>' + (p[top] * 100).toFixed(0) + '%</strong>.' + spread;
     }
     draw();
     return { resize: draw };
@@ -636,6 +776,7 @@
     manimSections: {},
     widgets: {
       mlpRigid: mlpRigid,
+      attentionArrows: attentionArrows,
       attentionHeatmap: attentionHeatmap,
       permutationShuffle: permutationShuffle,
       positionalEncoding: positionalEncoding,
