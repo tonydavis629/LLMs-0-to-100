@@ -28,12 +28,20 @@ Each output token is a weighted average of value vectors, with weights from quer
 
 <!-- .slide: id="review-2" -->
 
-## Review: The Full Transformer Picture
+## Review: From Attention to Models
 
-Three design decisions that define what a transformer can do:
+:::columns cols="2" gap="30px"
+**What Module 3 gave us**
 
-1. **Attention direction** &mdash; causal (autoregressive) or bidirectional (encoding)
-2. **Architecture family** &mdash; encoder-decoder, encoder-only, or decoder-only
-3. **Output objective** &mdash; next-token prediction, masked-token prediction, or sequence-to-sequence
+- Queries choose what each token is looking for
+- Keys describe what each token offers
+- Values carry the information to copy forward
+- A causal mask blocks attention to future tokens
++++
+**What is still missing**
 
-These choices determine whether the model generates, classifies, or translates. This module explores each family in depth.
+- Token IDs must become vectors
+- Attention must be wrapped in residuals, normalization, and feed-forward networks
+- Many blocks must stack before logits become text
+- Architecture choices determine what the model can do
+:::

@@ -9,7 +9,7 @@
 
 A forward pass gives a probability distribution over the vocabulary for the next token. Decoding chooses one token, appends it to the context, and repeats.
 
-$$p_i = \frac{\exp(z_i)}{\sum_j \exp(z_j)}$$
+$$p_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 
 where $z_i$ is the logit for vocabulary item $i$. The choice of how to sample from this distribution is the **decoding strategy**, and it shapes what you actually read.
 
@@ -33,7 +33,7 @@ Simple, deterministic, and fast. But it produces repetitive, flat text because i
 
 Scale the logits before softmax to control randomness:
 
-$$p_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}$$
+$$p_i = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
 
 - $T < 1$: sharpens the distribution. The model becomes more conservative, sticking to high-probability tokens.
 - $T = 1$: the original distribution.
@@ -67,7 +67,21 @@ In practice, temperature and top-p/top-k are used together: scale by temperature
 
 ## Beam Search
 
-Instead of committing to one token, keep the $b$ best partial sequences at every step. At each step, expand every beam with every possible next token, score the $b \times V$ candidates, and keep the top $b$.
+<div class="beam-diagram">
+  <div class="beam-node root">The</div>
+  <div class="beam-level">
+    <div class="beam-node kept">cat<br><span>0.42</span></div>
+    <div class="beam-node kept">dog<br><span>0.31</span></div>
+    <div class="beam-node dropped">car<br><span>0.08</span></div>
+  </div>
+  <div class="beam-level">
+    <div class="beam-node kept">cat sat<br><span>0.18</span></div>
+    <div class="beam-node kept">dog ran<br><span>0.15</span></div>
+    <div class="beam-node dropped">cat barked<br><span>0.03</span></div>
+  </div>
+</div>
+
+Instead of committing to one token, keep the $b$ best partial sequences at every step. Expand every beam, score the candidates, and keep the top $b$.
 
 Best for constrained sequence-to-sequence tasks like translation, where there is a single correct answer and exploration helps. Poor for open-ended generation: the most likely sequence under a language model is usually vacuous, repetitive, or otherwise undesirable.
 

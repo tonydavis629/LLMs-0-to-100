@@ -68,7 +68,7 @@ return self.token_embed(token_ids) + self.pos_embed(position)
         raise NotImplementedError("TODO: FFN forward pass")
 ```
 +++
-**Hint:** use `self.fc2(self.dropout(F.gelu(self.fc1(x))))`.
+**Hint:** compose the layers in order; the tensor should end at d_model, not d_ff.
 +++
 **Answer:**
 
@@ -87,7 +87,7 @@ return self.fc2(self.dropout(F.gelu(self.fc1(x))))
         raise NotImplementedError("TODO: transformer block forward pass")
 ```
 +++
-**Hint:** `x = x + self.attn(self.ln1(x))` then `x = x + self.ffn(self.ln2(x))`.
+**Hint:** use the same pattern twice: normalize, apply the sub-layer, then add the result back to x.
 +++
 **Answer:**
 
@@ -196,7 +196,7 @@ next_token = torch.argmax(next_logits, dim=-1, keepdim=True)
 
 ---
 
-:::step id="exercise-step7-code" title="Step 7: sample_with_temperature_topk()"
+:::step id="exercise-step7-code" title="Step 7: Temperature + Top-k Sampling"
 ```python
     def sample_with_temperature_topk(model, tokenizer, prompt, max_new=10,
                                      temperature=1.0, top_k=50):
@@ -205,23 +205,23 @@ next_token = torch.argmax(next_logits, dim=-1, keepdim=True)
             logits = model(token_ids)
             next_logits = logits[:, -1, :]
 
-            # TODO: Scale logits by temperature, then apply top-k filtering, then sample.
-            raise NotImplementedError("TODO: temperature scaling + top-k sampling")
+            # TODO: Scale logits by temperature before top-k filtering.
+            next_logits = None
+            if next_logits is None:
+                raise NotImplementedError("TODO: temperature scaling")
+
+            # Use the provided helper to filter to top-k and sample one token.
+            next_token = _sample_topk_token(next_logits, top_k)
+            token_ids = torch.cat([token_ids, next_token], dim=1)
         return tokenizer.decode(token_ids[0])
 ```
 +++
-**Hint:** divide by `temperature`, use `torch.topk` to zero out tokens below the k-th largest logit, then `F.softmax` and `torch.multinomial`.
+**Hint:** temperature is applied before filtering; divide the logits by `temperature`.
 +++
 **Answer:**
 
 ```python
 next_logits = next_logits / temperature
-topk_vals, _ = torch.topk(next_logits, top_k, dim=-1)
-threshold = topk_vals[:, -1].unsqueeze(-1)
-next_logits = next_logits.masked_fill(next_logits < threshold, float("-inf"))
-probs = F.softmax(next_logits, dim=-1)
-next_token = torch.multinomial(probs, num_samples=1)
-token_ids = torch.cat([token_ids, next_token], dim=1)
 ```
 :::
 

@@ -1243,7 +1243,654 @@
   color: var(--secondary-color);
 }
 
-/* Module 4 overrides — mostly uses shared styles.css */
+/* Module 4 overrides: diagrams and figure staging for architecture slides. */
+
+.notable-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notable-photo {
+  border-radius: var(--box-radius);
+  object-fit: cover;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.notable-photo-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-height: 520px;
+  max-width: 520px;
+}
+
+.notable-name-first {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  border: none !important;
+  padding: 0 !important;
+  color: var(--text-color);
+}
+
+.notable-reveal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 42px;
+  align-items: center;
+  width: 100%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.notable-reveal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.notable-photo-side {
+  width: 360px;
+  height: 500px;
+}
+
+.notable-copy h2 {
+  border: none !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 8px !important;
+}
+
+.notable-copy h3 {
+  color: var(--secondary-color);
+  font-size: 18pt;
+  margin: 0 0 16px 0;
+}
+
+.notable-copy li {
+  font-size: 18pt !important;
+}
+
+.rnn-flow,
+.gate-diagram,
+.embedding-visual,
+.position-visual,
+.attention-visual,
+.ffn-visual,
+.stack-visual,
+.softmax-visual,
+.norm-visual,
+.icl-diagram,
+.handoff-diagram,
+.encoder-decoder-layout,
+.moe-diagram,
+.beam-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: 28px 0;
+}
+
+.rnn-token,
+.rnn-cell,
+.gate-input,
+.gate-memory,
+.gate,
+.word-card,
+.matrix-card,
+.vector-pill,
+.ffn-layer,
+.stack-block,
+.router-box,
+.expert,
+.beam-node,
+.family-grid div,
+.vocab-tradeoff div,
+.token-case,
+.norm-lane {
+  background: rgba(74, 158, 255, 0.08);
+  border: 1px solid rgba(74, 158, 255, 0.28);
+  border-radius: var(--box-radius);
+  padding: 12px 16px;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.rnn-cell,
+.gate-memory,
+.matrix-card,
+.stack-block.accent,
+.expert.active,
+.beam-node.kept,
+.norm-lane .accent,
+.vector-pill.accent,
+.ffn-layer.accent,
+.matrix-card.accent {
+  border-color: rgba(245, 166, 35, 0.6);
+  background: rgba(245, 166, 35, 0.12);
+}
+
+.rnn-cell span,
+.gate span,
+.gate-memory span,
+.head-card span,
+.stack-block span,
+.router-box span,
+.expert span,
+.beam-node span,
+.family-grid span,
+.vocab-tradeoff span {
+  display: block;
+  color: var(--muted-color);
+  font-size: 12pt;
+  margin-top: 4px;
+}
+
+.rnn-arrow,
+.gate-arrow,
+.pipe-arrow,
+.byte-arrow {
+  color: var(--secondary-color);
+  font-size: 26pt;
+  font-family: var(--heading-font);
+}
+
+.formula-card {
+  max-width: 820px;
+  margin: 18px auto;
+  padding: 16px 22px;
+  text-align: center;
+  border-radius: var(--box-radius);
+  border: 1px solid rgba(245, 166, 35, 0.45);
+  background: rgba(245, 166, 35, 0.09);
+  color: var(--text-color);
+  font-size: 20pt;
+}
+
+.gate-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.gate.forget { border-color: rgba(231, 76, 60, 0.55); }
+.gate.input { border-color: rgba(63, 185, 80, 0.55); }
+.gate.output { border-color: rgba(74, 158, 255, 0.55); }
+
+.token-strip,
+.id-strip {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.token-strip span,
+.id-strip span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  background: rgba(74, 158, 255, 0.10);
+  color: var(--text-color);
+  font-size: 15pt;
+}
+
+.token-strip-accent span,
+.id-strip span {
+  border-color: rgba(245, 166, 35, 0.48);
+  background: rgba(245, 166, 35, 0.12);
+}
+
+.byte-bpe-diagram {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 18px auto;
+  max-width: 900px;
+}
+
+.byte-lane {
+  text-align: center;
+}
+
+.byte-lane h3,
+.token-case h3,
+.norm-lane h3 {
+  font-size: 18pt;
+  margin: 0 0 8px 0;
+  color: var(--secondary-color);
+}
+
+.byte-grid {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 6px;
+}
+
+.byte-grid span {
+  padding: 7px 0;
+  border: 1px solid rgba(136, 146, 164, 0.35);
+  border-radius: 5px;
+  font-size: 12pt;
+  color: var(--text-color);
+}
+
+.vocab-tradeoff,
+.token-practice-grid,
+.family-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.vocab-tradeoff {
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 14px;
+}
+
+.token-practice-grid {
+  grid-template-columns: repeat(3, 1fr);
+  margin: 28px 0;
+}
+
+.token-case p {
+  font-size: 14pt !important;
+  color: var(--muted-color) !important;
+  margin: 12px 0 0 0 !important;
+  line-height: 1.35 !important;
+}
+
+.handoff-diagram {
+  margin-top: 18px;
+}
+
+.decoder-flow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin: 18px 0 26px 0;
+}
+
+.flow-node {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 8px 10px;
+  border-radius: var(--box-radius);
+  border: 1px solid rgba(136, 146, 164, 0.30);
+  color: var(--muted-color);
+  font-size: 13pt;
+  line-height: 1.2;
+}
+
+.active-tokenization .tokenization,
+.active-embedding .embedding,
+.active-position .position,
+.active-attention .attention,
+.active-ffn .ffn,
+.active-repeat .repeat,
+.active-softmax .softmax {
+  border-color: rgba(245, 166, 35, 0.75);
+  background: rgba(245, 166, 35, 0.14);
+  color: var(--text-color);
+}
+
+.embedding-visual {
+  display: grid;
+  grid-template-columns: 1fr 44px 1.4fr 44px 1fr 44px 1.2fr;
+}
+
+.embedding-table {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 8px;
+  align-items: center;
+  color: var(--muted-color);
+  font-size: 12pt;
+}
+
+.vector-bar {
+  height: 18px;
+  border-radius: 5px;
+  background: var(--primary-color);
+}
+
+.vector-bar.wide { width: 100%; }
+.vector-bar.short { width: 54%; }
+
+.position-visual {
+  align-items: stretch;
+}
+
+.pos-column {
+  display: grid;
+  gap: 8px;
+}
+
+.pos-column h3 {
+  text-align: center;
+  font-size: 16pt;
+  margin: 0 0 4px 0;
+  color: var(--secondary-color);
+}
+
+.plus-column {
+  display: flex;
+  align-items: center;
+  color: var(--secondary-color);
+  font-size: 36pt;
+}
+
+.vector-pill.muted {
+  border-color: rgba(136, 146, 164, 0.35);
+  color: var(--muted-color);
+}
+
+.attention-visual {
+  gap: 42px;
+}
+
+.causal-matrix {
+  display: grid;
+  grid-template-columns: 82px repeat(4, 82px);
+  gap: 6px;
+  align-items: center;
+  text-align: center;
+  font-size: 11pt;
+  color: var(--muted-color);
+}
+
+.causal-matrix span {
+  width: 76px;
+  height: 42px;
+  border-radius: 5px;
+  border: 1px solid rgba(136, 146, 164, 0.25);
+  background: rgba(136, 146, 164, 0.08);
+}
+
+.causal-matrix span.on {
+  border-color: rgba(74, 158, 255, 0.55);
+  background: rgba(74, 158, 255, 0.22);
+}
+
+.head-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.head-card {
+  min-width: 180px;
+  border: 1px solid rgba(245, 166, 35, 0.45);
+  background: rgba(245, 166, 35, 0.10);
+  border-radius: var(--box-radius);
+  padding: 14px 18px;
+  text-align: center;
+  color: var(--text-color);
+}
+
+.ffn-visual {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: stretch;
+}
+
+.vector-column,
+.ffn-layers {
+  display: grid;
+  gap: 10px;
+}
+
+.ffn-layer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stack-visual {
+  flex-wrap: wrap;
+}
+
+.stack-ellipsis {
+  color: var(--muted-color);
+  font-size: 36pt;
+}
+
+.logit-bars {
+  display: flex;
+  align-items: end;
+  gap: 16px;
+  height: 180px;
+  padding: 14px 20px;
+  border: 1px solid rgba(74, 158, 255, 0.25);
+  border-radius: var(--box-radius);
+  background: rgba(74, 158, 255, 0.06);
+}
+
+.logit-bars div {
+  display: grid;
+  align-items: end;
+  gap: 8px;
+  justify-items: center;
+}
+
+.logit-bars b {
+  display: block;
+  width: 44px;
+  border-radius: 5px 5px 0 0;
+  background: var(--secondary-color);
+}
+
+.logit-bars span {
+  color: var(--text-color);
+  font-size: 12pt;
+}
+
+.norm-visual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+}
+
+.norm-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.norm-row span {
+  padding: 10px 12px;
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+}
+
+.norm-lane p {
+  font-size: 14pt !important;
+  color: var(--muted-color) !important;
+  margin: 0 !important;
+}
+
+.residual-visual {
+  position: relative;
+  min-height: 240px;
+  flex: 1;
+}
+
+.residual-line {
+  position: absolute;
+  left: 80px;
+  right: 80px;
+  top: 50%;
+  height: 4px;
+  background: var(--primary-color);
+}
+
+.residual-token,
+.residual-write {
+  position: absolute;
+  border-radius: var(--box-radius);
+  border: 1px solid rgba(245, 166, 35, 0.50);
+  background: rgba(245, 166, 35, 0.12);
+  padding: 10px 14px;
+  color: var(--text-color);
+  font-size: 14pt;
+}
+
+.residual-token.start { left: 20px; top: calc(50% - 24px); }
+.residual-token.end { right: 20px; top: calc(50% - 24px); }
+.residual-write.top { left: 270px; top: 26px; }
+.residual-write.bottom { left: 470px; bottom: 26px; }
+.residual-write.second { left: 680px; }
+
+.icl-diagram {
+  display: grid;
+  grid-template-columns: 1.2fr 44px 1fr 44px 0.7fr;
+}
+
+.icl-prompt {
+  display: grid;
+  gap: 10px;
+}
+
+.icl-prompt div {
+  padding: 12px 14px;
+  border: 1px solid rgba(74, 158, 255, 0.30);
+  border-radius: var(--box-radius);
+  background: rgba(74, 158, 255, 0.08);
+  color: var(--text-color);
+  font-size: 15pt;
+}
+
+.icl-prompt .accent {
+  border-color: rgba(245, 166, 35, 0.60);
+  background: rgba(245, 166, 35, 0.12);
+}
+
+.icl-pattern {
+  display: grid;
+  gap: 14px;
+  align-items: center;
+}
+
+.icl-pattern div {
+  padding: 12px 14px;
+  border: 1px solid rgba(74, 158, 255, 0.30);
+  border-radius: var(--box-radius);
+  background: rgba(74, 158, 255, 0.08);
+  color: var(--text-color);
+  font-size: 14pt;
+  text-align: center;
+}
+
+.icl-pattern .stream-line {
+  height: 4px;
+  padding: 0;
+  border: none;
+  background: var(--primary-color);
+  border-radius: 0;
+}
+
+.icl-pattern .accent {
+  border-color: rgba(245, 166, 35, 0.60);
+  background: rgba(245, 166, 35, 0.12);
+}
+
+.encoder-decoder-layout {
+  display: grid;
+  grid-template-columns: 410px 1fr;
+  gap: 34px;
+}
+
+.encoder-decoder-layout img {
+  max-height: 520px;
+  width: 100%;
+  object-fit: contain;
+  border-radius: var(--box-radius);
+  background: #ffffff;
+  padding: 8px;
+}
+
+.family-grid {
+  grid-template-columns: 1fr;
+}
+
+.family-grid div {
+  text-align: left;
+}
+
+.moe-diagram {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+}
+
+.expert-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.beam-diagram {
+  flex-direction: column;
+  gap: 16px;
+}
+
+.beam-level {
+  display: flex;
+  gap: 18px;
+}
+
+.beam-node.root {
+  min-width: 120px;
+}
+
+.beam-node.dropped {
+  opacity: 0.48;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 28px;
+  margin-top: 16px;
+}
+
+.resources-grid h3 {
+  font-size: 18pt;
+  margin: 0 0 8px 0;
+  color: var(--secondary-color);
+}
+
+.reveal ul.resource-list {
+  margin: 0;
+}
+
+.reveal ul.resource-list li {
+  font-size: 11.5pt;
+  line-height: 1.28;
+  margin-bottom: 6px;
+  padding-left: 18px;
+}
+
+.reveal ul.resource-list li::before {
+  width: 6px;
+  height: 6px;
+}
+
+#bpe-algorithm .video-container video {
+  max-height: 540px;
+}
 
   </style>
 </head>
@@ -1299,15 +1946,33 @@ Each output token is a weighted average of value vectors, with weights from quer
 
 <!-- .slide: id="review-2" -->
 
-## Review: The Full Transformer Picture
+## Review: From Attention to Models
 
-Three design decisions that define what a transformer can do:
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
-1. **Attention direction** &mdash; causal (autoregressive) or bidirectional (encoding)
-2. **Architecture family** &mdash; encoder-decoder, encoder-only, or decoder-only
-3. **Output objective** &mdash; next-token prediction, masked-token prediction, or sequence-to-sequence
+<div>
 
-These choices determine whether the model generates, classifies, or translates. This module explores each family in depth.
+**What Module 3 gave us**
+
+- Queries choose what each token is looking for
+- Keys describe what each token offers
+- Values carry the information to copy forward
+- A causal mask blocks attention to future tokens
+
+</div>
+
+<div>
+
+**What is still missing**
+
+- Token IDs must become vectors
+- Attention must be wrapped in residuals, normalization, and feed-forward networks
+- Many blocks must stack before logits become text
+- Architecture choices determine what the model can do
+
+</div>
+
+</div>
 
 ---
 
@@ -1324,13 +1989,23 @@ The recurrent era and its limitations
 
 ## Recurrent Neural Networks
 
-An RNN processes tokens one at a time, carrying a hidden state forward as a running summary of everything seen so far:
+<div class="rnn-flow">
+  <div class="rnn-token">the</div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-cell">RNN<br><span>state 1</span></div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-token">cat</div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-cell">same cell<br><span>state 2</span></div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-token">sat</div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-cell">same cell<br><span>state 3</span></div>
+</div>
 
-$$\mathbf{h}_t = f(\mathbf{h}_{t-1}, \mathbf{x}_t; W)$$
+<div class="formula-card">new hidden state = function(previous hidden state, current token)</div>
 
-At every step the old hidden state and the new token are combined to produce a new hidden state. The same weights are reused at every time step, so the network has a fixed parameter count regardless of sequence length.
-
-The hidden state is a fixed-size vector that must compress the entire history into a single point. Long sentences force that vector to carry information from dozens or hundreds of steps back.
+The same cell is reused at every time step. The hidden state is a fixed-size summary, so long sequences force more and more history into one vector.
 
 ---
 
@@ -1352,39 +2027,41 @@ Recurrent training is fundamentally hard for three reasons:
 
 ## LSTMs and GRUs: Gating Mechanisms
 
-The Long Short-Term Memory network (1997) added **gating** to the recurrent cell so information could flow across many time steps without vanishing:
+<div class="gate-diagram">
+  <div class="gate-input">previous state<br>+ current token</div>
+  <div class="gate-arrow">&rarr;</div>
+  <div class="gate-stack">
+    <div class="gate forget">forget gate<br><span>what to erase</span></div>
+    <div class="gate input">input gate<br><span>what to write</span></div>
+    <div class="gate output">output gate<br><span>what to expose</span></div>
+  </div>
+  <div class="gate-arrow">&rarr;</div>
+  <div class="gate-memory">cell state<br><span>longer memory path</span></div>
+</div>
 
-$$\mathbf{f}_t = \sigma(W_f \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(forget gate)}$$
-$$\mathbf{i}_t = \sigma(W_i \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(input gate)}$$
-$$\mathbf{o}_t = \sigma(W_o \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(output gate)}$$
-
-By selectively remembering and forgetting, LSTMs mitigated the gradient problem. GRUs (2014) simplified the gates to just two: update and reset.
+LSTMs added gates so information could be selectively remembered, overwritten, or hidden. GRUs simplified the same idea into update and reset gates.
 
 Both kept the **sequential and bottleneck limitations.** The cell was improved, but the architecture was still fundamentally serial.
 
 ---
 
-<div class="figure-card">
+<!-- .slide: id="figure-schmidhuber" class="notable-figure" -->
 
-![Sepp Hochreiter & Jürgen Schmidhuber](images/hochreiter_schmidhuber.jpg)
-
-<div class="figure-info">
-
-## Sepp Hochreiter & Jürgen Schmidhuber <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Introduced Long Short-Term Memory (1997)
-
-- Schmidhuber and Hochreiter's LSTM added forget, input, and output gates to recurrent cells
-- For the first time, gradients could propagate across hundreds of time steps without vanishing
-- LSTMs became the default choice for sequence modeling from 1997 until the transformer era
-- Hochreiter & Schmidhuber, "Long Short-Term Memory," *Neural Computation* (1997)
-
-</div>
-
-</div>
-
+<div class="notable-stage">
+  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/Schmidhuber.jpg" alt="Jürgen Schmidhuber">
+  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Jürgen Schmidhuber</h2>
+  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
+    <img class="notable-photo notable-photo-side" src="images/Schmidhuber.jpg" alt="Jürgen Schmidhuber">
+    <div class="notable-copy">
+      <h2>Jürgen Schmidhuber</h2>
+      <h3>Long Short-Term Memory (1997)</h3>
+      <ul>
+        <li>With Sepp Hochreiter, introduced gated recurrent cells for long-range dependencies</li>
+        <li>Made gradient flow through long sequences much more reliable</li>
+        <li>LSTMs became the default sequence model before transformers</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 ---
@@ -1404,34 +2081,51 @@ Bahdanau attention (Module 3) was invented specifically to fix this bottleneck, 
 
 ---
 
-<div class="figure-card">
+<!-- .slide: id="figure-sutskever" class="notable-figure" -->
 
-![Ilya Sutskever, Oriol Vinyals & Quoc Le](images/sutskever_vinyals_le.jpg)
-
-<div class="figure-info">
-
-## Ilya Sutskever, Oriol Vinyals & Quoc Le <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Sequence to Sequence Learning with Neural Networks (2014)
-
-- Sutskever, Vinyals, and Le introduced the encoder-decoder RNN framework for neural machine translation
-- The encoder compresses the entire input into one vector; the decoder generates from it
-- This fixed-vector bottleneck is exactly what Bahdanau attention was invented to fix
-- Sutskever et al., <https://arxiv.org/abs/1409.3215>
-
+<div class="notable-stage">
+  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/sutskever.jpg" alt="Ilya Sutskever">
+  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Ilya Sutskever</h2>
+  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
+    <img class="notable-photo notable-photo-side" src="images/sutskever.jpg" alt="Ilya Sutskever">
+    <div class="notable-copy">
+      <h2>Ilya Sutskever</h2>
+      <h3>Sequence to Sequence Learning (2014)</h3>
+      <ul>
+        <li>With Oriol Vinyals and Quoc Le, showed encoder-decoder RNNs could translate sequences</li>
+        <li>The encoder compressed the source sentence into one vector</li>
+        <li>That bottleneck motivated attention over encoder states</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
-</div>
+---
 
+<!-- .slide: id="figure-vaswani" class="notable-figure" -->
+
+<div class="notable-stage">
+  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/vaswani.webp" alt="Ashish Vaswani">
+  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Ashish Vaswani</h2>
+  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
+    <img class="notable-photo notable-photo-side" src="images/vaswani.webp" alt="Ashish Vaswani">
+    <div class="notable-copy">
+      <h2>Ashish Vaswani</h2>
+      <h3>Attention Is All You Need (2017)</h3>
+      <ul>
+        <li>Lead author on the original transformer paper</li>
+        <li>Helped replace recurrence with stacked attention and feed-forward blocks</li>
+        <li>The architecture became the foundation for modern LLMs</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 ---
 
 <!-- .slide: id="attention-is-all-you-need" -->
 
-## "Attention Is All You Need" (2017)
+## Attention Is All You Need (2017)
 
 Vaswani et al. removed recurrence entirely. In its place: stacked multi-head self-attention with position-wise feed-forward networks.
 
@@ -1492,71 +2186,12 @@ The compromise: frequent words stay whole, rare words split into reusable pieces
 
 ---
 
-<!-- .slide: id="bpe-algorithm" -->
-
-## Byte-Pair Encoding
-
-BPE starts from individual characters or bytes, then **repeatedly merges the most frequent adjacent pair** into a new token:
-
-1. Start with character vocabulary
-2. Count every adjacent pair in the training corpus
-3. Merge the most frequent pair; add the merged symbol to the vocabulary
-4. Repeat until the vocabulary reaches the desired size
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Example**
-
-Corpus: `low low lower lowest`
-
-Start: `l o w` (plus space, etc.)
-
-Most frequent pair: `lo` (appears 4 times)
-
-Merge: `lo w lo w lo wer lo west`
-
-Next: `low` (appears 4 times)
-
-Result: vocabulary contains `low`, `er`, `est`, and the individual characters.
-
-</div>
-
-<div>
-
-**What this means**
-
-"lower" becomes `["low", "er"]`. "lowest" becomes `["low", "est"]`. The shared prefix "low" is reused. Rare words are decomposed into familiar pieces; frequent words are kept intact. The model never sees an unrepresentable token.
-
-</div>
-
-</div>
-
----
-
-<div class="figure-card">
-
-![Rico Sennrich, Barry Haddow & Alexandra Birch](images/sennrich_haddow_birch.jpg)
-
-<div class="figure-info">
-
-## Rico Sennrich, Barry Haddow & Alexandra Birch <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Adapted BPE for Neural Machine Translation (2016)
-
-- Sennrich, Haddow, and Birch adapted Byte-Pair Encoding &mdash; originally a 1994 compression scheme by Philip Gage &mdash; into subword tokenization for NMT
-- The idea: let the data decide which character sequences deserve their own tokens
-- This became the dominant tokenization method for transformer models
-- Sennrich et al., <https://arxiv.org/abs/1508.07909>
-
-</div>
-
-</div>
-
-</div>
+<section id="bpe-algorithm">
+  <h2>Byte-Pair Encoding</h2>
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="bpe-training" preload="auto"></video>
+  </div>
+</section>
 
 ---
 
@@ -1564,16 +2199,34 @@ Result: vocabulary contains `low`, `er`, `est`, and the individual characters.
 
 ## Byte-Level BPE and the Vocabulary Table
 
-GPT-2 runs BPE over **raw bytes** instead of Unicode characters. Every possible string &mdash; including emoji, code, non-Latin scripts, and arbitrary whitespace &mdash; is representable with no true out-of-vocabulary tokens.
+<div class="byte-bpe-diagram">
+  <div class="byte-lane">
+    <h3>Text</h3>
+    <div class="token-strip">
+      <span>The</span><span>&nbsp;</span><span>model</span><span>&nbsp;</span><span>reads</span><span>&nbsp;</span><span>bytes</span>
+    </div>
+  </div>
+  <div class="byte-arrow">&darr;</div>
+  <div class="byte-lane">
+    <h3>Raw bytes</h3>
+    <div class="byte-grid">
+      <span>54</span><span>68</span><span>65</span><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span>
+    </div>
+  </div>
+  <div class="byte-arrow">&darr;</div>
+  <div class="byte-lane">
+    <h3>Learned token IDs</h3>
+    <div class="token-strip token-strip-accent">
+      <span>464</span><span>2746</span><span>1100</span><span>9048</span>
+    </div>
+  </div>
+</div>
 
-The vocabulary and the token-to-ID table are learned together during the merge process. Typical sizes:
-
-- GPT-2: about 50k tokens
-- Modern models: 100k&ndash;200k tokens
-
-A larger vocabulary means shorter sequences (fewer tokens per sentence) but a bigger embedding matrix and a larger output projection layer. This is a direct memory-parameter trade-off.
-
-Other schemes exist: **WordPiece** (BERT), **Unigram** and **SentencePiece** (T5, Llama). They differ in how the merge or segmentation objective is defined, but the core idea is the same: break rare words into reusable pieces.
+<div class="vocab-tradeoff">
+  <div><strong>Small vocabulary</strong><span>longer sequences</span></div>
+  <div><strong>Large vocabulary</strong><span>bigger embedding table</span></div>
+  <div><strong>Byte-level base</strong><span>no true out-of-vocabulary text</span></div>
+</div>
 
 ---
 
@@ -1581,152 +2234,311 @@ Other schemes exist: **WordPiece** (BERT), **Unigram** and **SentencePiece** (T5
 
 ## Why Tokenization Matters in Practice
 
-Token counts drive both context limits and API cost:
+<div class="token-practice-grid">
+  <div class="token-case">
+    <h3>English prose</h3>
+    <div class="token-strip"><span>the</span><span>&nbsp;cat</span><span>&nbsp;sat</span></div>
+    <p>Frequent pieces stay compact.</p>
+  </div>
+  <div class="token-case">
+    <h3>Less represented scripts</h3>
+    <div class="token-strip"><span>日</span><span>本</span><span>語</span><span>の</span><span>文</span><span>章</span></div>
+    <p>More pieces can mean higher cost for the same idea.</p>
+  </div>
+  <div class="token-case">
+    <h3>Strings and numbers</h3>
+    <div class="token-strip"><span>12345</span><span>&nbsp;reverse</span><span>&nbsp;me</span></div>
+    <p>The model sees token IDs, not guaranteed character access.</p>
+  </div>
+</div>
 
-- A model's "context window" is measured in tokens, not words. A 4K context holds roughly 3,000 English words but often fewer in other languages.
-
-- Non-English text frequently costs more tokens. The same sentence in Japanese or Arabic may require 1.5&ndash;2x more tokens than English. This is the **"token tax"** on multilingual use.
-
-- Tokenization explains why models struggle to count letters, reverse strings, or do digit arithmetic. The model never sees the string "12345"; it sees a token ID for the entire number "12345" and has no access to its individual digits.
-
-- A tokenizer and a model are trained separately. The model only ever sees token IDs. Glitch tokens &mdash; rare tokens that appear in the vocabulary but almost never in training data &mdash; can trigger bizarre behavior because the model learned no reliable representation for them.
-
-The handoff to the model is simple: each token ID indexes one row of the embedding matrix. That vector is the only thing the transformer ever sees.
+<div class="handoff-diagram">
+  <div class="token-strip"><span>token</span><span>ID</span><span>9048</span></div>
+  <div class="byte-arrow">&rarr;</div>
+  <div class="matrix-card">embedding row<br><strong>vector only</strong></div>
+  <div class="byte-arrow">&rarr;</div>
+  <div class="matrix-card">transformer<br><strong>never sees raw text</strong></div>
+</div>
 
 ---
 
 <!-- .slide: id="divider-block" class="section-divider" data-state="is-section-divider" -->
 
-# Anatomy of a Transformer Block
+# Putting It All Together
 
-How one layer transforms its input
+Following one prompt through a decoder-only transformer
 
 
 ---
 
 <!-- .slide: id="embedding-layer" -->
 
-## The Embedding Layer
+## Step 1: Words to Embeddings
 
-Each token ID indexes one row of a learned embedding matrix $W_E \in \mathbb{R}^{V \times d_{\text{model}}}$.
+<div class="decoder-flow active-tokenization active-embedding">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\mathbf{x}_i = W_E[t_i] + W_P[i]$$
+<div class="embedding-visual">
+  <div class="word-card">The capital of France</div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="token-strip"><span>The</span><span>&nbsp;capital</span><span>&nbsp;of</span><span>&nbsp;France</span></div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="id-strip"><span>464</span><span>3139</span><span>286</span><span>4881</span></div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="embedding-table">
+    <div>row 464</div><div class="vector-bar"></div>
+    <div>row 3139</div><div class="vector-bar wide"></div>
+    <div>row 286</div><div class="vector-bar short"></div>
+    <div>row 4881</div><div class="vector-bar"></div>
+  </div>
+</div>
 
-The positional embedding $W_P[i]$ adds position information. Without this addition, a bag of attention scores has no inherent notion of order: shuffling the input tokens would leave the output unchanged.
-
-The result is a sequence of vectors $\mathbf{x}_1, \dots, \mathbf{x}_n$ that flows into the first transformer block.
+Each token ID selects one learned row from the embedding matrix. From here on, the transformer sees vectors, not text.
 
 ---
 
-<!-- .slide: id="residual-stream" -->
+<!-- .slide: id="positional-encoding" -->
 
-## The Residual Stream
+## Step 2: Add Position
 
-Picture the transformer not as a pipeline but as a **running vector** that flows through the network:
+<div class="decoder-flow active-position">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\mathbf{x}_{\text{out}} = \mathbf{x}_{\text{in}} + \text{sub-layer}(\text{norm}(\mathbf{x}_{\text{in}}))$$
+<div class="position-visual">
+  <div class="pos-column">
+    <h3>Token vectors</h3>
+    <div class="vector-pill">The</div>
+    <div class="vector-pill">capital</div>
+    <div class="vector-pill">of</div>
+    <div class="vector-pill">France</div>
+  </div>
+  <div class="plus-column">+</div>
+  <div class="pos-column">
+    <h3>Position vectors</h3>
+    <div class="vector-pill muted">pos 0</div>
+    <div class="vector-pill muted">pos 1</div>
+    <div class="vector-pill muted">pos 2</div>
+    <div class="vector-pill muted">pos 3</div>
+  </div>
+  <div class="plus-column">=</div>
+  <div class="pos-column result">
+    <h3>Input to block 1</h3>
+    <div class="vector-pill accent">The @ 0</div>
+    <div class="vector-pill accent">capital @ 1</div>
+    <div class="vector-pill accent">of @ 2</div>
+    <div class="vector-pill accent">France @ 3</div>
+  </div>
+</div>
 
-Each sub-layer reads from the stream, computes its contribution, and writes it back. The stream is never replaced; it is only updated by addition. This means:
-
-- Every block can still "see" the original embedding signal
-- Gradients have a direct highway back to the input through the residual adds
-- The entire depth of the model relies on this highway to avoid vanishing gradients
+Without position information, attention is order-blind: the same tokens in a different order would look too similar.
 
 ---
 
 <!-- .slide: id="attention-sublayer" -->
 
-## Sub-layer 1: Multi-Head Self-Attention
+## Step 3: Multi-Head Attention
 
-Queries, keys, and values are projected from the normalized residual stream. Attention computes a weighted mixture of values, then the output is projected back to $d_{\text{model}}$ and added to the stream:
+<div class="decoder-flow active-attention">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\mathbf{x} = \mathbf{x} + \text{Attention}(\text{LayerNorm}(\mathbf{x}))$$
+<div class="attention-visual">
+  <div class="causal-matrix">
+    <div></div><div>The</div><div>capital</div><div>of</div><div>France</div>
+    <div>The</div><span class="on"></span><span></span><span></span><span></span>
+    <div>capital</div><span class="on"></span><span class="on"></span><span></span><span></span>
+    <div>of</div><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
+    <div>France</div><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+  </div>
+  <div class="head-stack">
+    <div class="head-card">head 1<br><span>syntax</span></div>
+    <div class="head-card">head 2<br><span>entities</span></div>
+    <div class="head-card">head 3<br><span>position</span></div>
+  </div>
+</div>
 
-Attention is where tokens communicate. It is the only operation where information moves between positions in the same layer. The FFN processes each position independently.
+Attention is the communication step. Each token reads from earlier tokens through the causal mask, and each head can learn a different kind of lookup.
 
 ---
 
 <!-- .slide: id="ffn-sublayer" -->
 
-## Sub-layer 2: The Feed-Forward Network
+## Step 4: Feed-Forward Network
 
-After attention, every position is processed by the same two-layer MLP:
+<div class="decoder-flow active-ffn">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\text{FFN}(\mathbf{x}) = W_2 \cdot \text{GELU}(W_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2$$
+<div class="ffn-visual">
+  <div class="vector-column">
+    <div class="vector-pill">The vector</div>
+    <div class="vector-pill">capital vector</div>
+    <div class="vector-pill">of vector</div>
+    <div class="vector-pill">France vector</div>
+  </div>
+  <div class="ffn-layers">
+    <div class="ffn-layer">linear up</div>
+    <div class="ffn-layer accent">GELU</div>
+    <div class="ffn-layer">linear down</div>
+  </div>
+  <div class="vector-column">
+    <div class="vector-pill accent">updated The</div>
+    <div class="vector-pill accent">updated capital</div>
+    <div class="vector-pill accent">updated of</div>
+    <div class="vector-pill accent">updated France</div>
+  </div>
+</div>
 
-The hidden dimension is typically about $4 \times d_{\text{model}}$ (3,072 for GPT-2 small). This is applied independently at every position, with no mixing between tokens.
-
-A large share of a model's parameters and stored **"knowledge"** live here. Each FFN neuron can be viewed as a key-value pair: when the input activates a neuron (via ReLU/GELU), it retrieves a stored output vector. The FFN is where facts like "Paris is the capital of France" are encoded.
-
----
-
-<!-- .slide: id="norm-and-residual" -->
-
-## Residual Connections and Normalization
-
-Residual connections are the gradient highway that makes deep stacks trainable. Without them, gradients would decay exponentially with depth.
-
-Normalization stabilizes the distribution of activations:
-
-$$\text{LayerNorm}(x) = \gamma \odot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta$$
-
-- **Post-norm** (original transformer): normalize after the sub-layer output
-- **Pre-norm** (modern default): normalize before the sub-layer input, then add the residual. More stable to train at depth.
-
-**RMSNorm** is the modern simplification: drop the mean-centering step and just divide by the root-mean-square.
+The FFN does not mix positions. It transforms each token vector independently, adding learned features and much of the model's stored knowledge.
 
 ---
 
 <!-- .slide: id="stacking-and-head" -->
 
-## Stacking Blocks and the Output Head
+## Step 5: Repeat the Block
 
-Identical blocks are stacked $N$ times to build depth:
+<div class="decoder-flow active-repeat">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\text{block}_N(\dots \text{block}_2(\text{block}_1(\mathbf{x}_{\text{embed}})) \dots) = \mathbf{x}_{\text{final}}$$
+<div class="stack-visual">
+  <div class="stack-block">block 1<br><span>attention + FFN</span></div>
+  <div class="stack-block">block 2<br><span>attention + FFN</span></div>
+  <div class="stack-block">block 3<br><span>attention + FFN</span></div>
+  <div class="stack-ellipsis">...</div>
+  <div class="stack-block accent">block N<br><span>attention + FFN</span></div>
+</div>
 
-After the last block, a final layer norm and the **language-modeling head** project back to vocabulary-sized logits:
-
-$$\text{logits} = W_{\text{head}} \cdot \text{LayerNorm}(\mathbf{x}_{\text{final}})$$
-
-**Weight tying** reuses the embedding matrix as the output projection: $W_{\text{head}} = W_E^T$. This saves parameters and enforces that input and output live in the same semantic space.
+Depth lets later blocks build on earlier features. GPT-2 small repeats this decoder block 12 times.
 
 ---
 
-<!-- .slide: id="forward-pass-and-params" -->
+<!-- .slide: id="softmax-output" -->
 
-## One Forward Pass: Tokens to Logits
+## Step 6: Logits to Probabilities
 
-Trace the full path:
+<div class="decoder-flow active-softmax">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-1. Token IDs $\rightarrow$ embedding lookup + position
-2. Pass through $N$ transformer blocks (attention + FFN, each with pre-norm and residual)
-3. Final layer norm
-4. Unembedding / LM head $\rightarrow$ logits
-5. Softmax $\rightarrow$ next-token probabilities
+<div class="softmax-visual">
+  <div class="matrix-card">last token vector<br><strong>France</strong></div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="logit-bars">
+    <div><span>Paris</span><b style="height: 120px;"></b></div>
+    <div><span>London</span><b style="height: 40px;"></b></div>
+    <div><span>city</span><b style="height: 64px;"></b></div>
+    <div><span>capital</span><b style="height: 52px;"></b></div>
+  </div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="matrix-card accent">sample or choose<br><strong>next token</strong></div>
+</div>
 
-Parameter counting for GPT-2 small ($d_{\text{model}}=768$, $N=12$, $V=50257$):
+The language-modeling head scores every vocabulary item. Softmax turns those scores into the next-token distribution.
 
-| Component | Parameters | Share |
-|-----------|-----------|-------|
-| Embeddings | $V \cdot d$ | ~38% |
-| Attention (all layers) | $N \cdot 4 d^2$ | ~29% |
-| FFN (all layers) | $N \cdot 8 d^2$ | ~29% |
-| Output head (tied) | 0 (shares embed) | 0% |
-| **Total** | **~124M** | **100%** |
+---
+
+<!-- .slide: id="norm-and-residual" -->
+
+## Normalization: Keep the Scale Stable
+
+<div class="norm-visual">
+  <div class="norm-lane">
+    <h3>Original transformer</h3>
+    <div class="norm-row"><span>stream</span><b>&rarr;</b><span>sub-layer</span><b>&rarr;</b><span class="accent">LayerNorm</span></div>
+    <p>Post-norm is simple, but deep stacks are harder to train.</p>
+  </div>
+  <div class="norm-lane">
+    <h3>Modern decoder blocks</h3>
+    <div class="norm-row"><span>stream</span><b>&rarr;</b><span class="accent">LayerNorm / RMSNorm</span><b>&rarr;</b><span>sub-layer</span></div>
+    <p>Pre-norm keeps the residual path cleaner at depth.</p>
+  </div>
+</div>
+
+LayerNorm rescales each token vector. RMSNorm keeps the stabilizing scale step and drops mean-centering for speed and simplicity.
+
+---
+
+<!-- .slide: id="residual-stream" -->
+
+## The Residual Stream View
+
+<div class="residual-visual">
+  <div class="residual-line"></div>
+  <div class="residual-token start">embedding</div>
+  <div class="residual-write top">attention writes a delta</div>
+  <div class="residual-write bottom">FFN writes a delta</div>
+  <div class="residual-write top second">next block writes again</div>
+  <div class="residual-token end">final vector</div>
+</div>
+
+The stream is not replaced. Each sub-layer reads the current vector, computes an update, and adds that update back.
+
+<div class="formula-card">output stream = input stream + sub-layer update</div>
+
+This is why information from the original prompt can remain available many layers later.
 
 ---
 
 <!-- .slide: id="side-quest-residual" -->
 
-## Side Quest: The Residual Stream and Induction Heads
+## Side Quest: In-Context Learning in the Stream
 
-Mechanistic interpretability reads the transformer as components reading from and writing to a shared residual stream. **Induction heads** (Olsson et al., 2022) implement a simple copy-and-continue pattern:
+<div class="icl-diagram">
+  <div class="icl-prompt">
+    <div>English: cat &rarr; French: chat</div>
+    <div>English: dog &rarr; French: chien</div>
+    <div class="accent">English: bird &rarr; French:</div>
+  </div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="icl-pattern">
+    <div>examples write task pattern</div>
+    <div class="stream-line"></div>
+    <div class="accent">current query reads that pattern</div>
+  </div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="matrix-card accent">oiseau</div>
+</div>
 
-- When the model sees a pattern like `[A] [B] ... [A]`, it predicts `[B]` as the next token
-- This is the mechanism behind in-context learning: the model copies a pattern it observed earlier in the context
-
-Induction heads are linked to the emergence of few-shot learning at scale. They make the residual-stream metaphor concrete: each head reads the stream, detects a previous occurrence of a token, and writes a prediction back.
+In-context learning is a runtime effect: the prompt examples shape the residual stream, and later tokens use that temporary pattern without changing model weights.
 
 ---
 
@@ -1743,29 +2555,18 @@ Encoder-decoder, encoder-only, and decoder-only
 
 ## Family 1: Encoder-Decoder
 
-The original transformer (Vaswani et al., 2017). The encoder builds bidirectional representations; the decoder generates while attending back through cross-attention.
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Encoder stack**
-
-Bidirectional self-attention (no causal mask). Each token can attend to every other token in the input. Produces a sequence of context vectors.
-
+<div class="encoder-decoder-layout">
+  <img src="images/transformer.webp" alt="Original transformer encoder-decoder architecture">
+  <div>
+    <p>The original transformer has two stacks: an encoder for the input and a decoder for the output.</p>
+    <div class="family-grid">
+      <div><strong>Encoder</strong><span>bidirectional self-attention over the source</span></div>
+      <div><strong>Decoder</strong><span>causal self-attention plus cross-attention to encoder states</span></div>
+      <div><strong>Best fit</strong><span>translation, summarization, and other input-output sequence tasks</span></div>
+      <div><strong>Examples</strong><span>T5 and BART keep separate input understanding and output generation</span></div>
+    </div>
+  </div>
 </div>
-
-<div>
-
-**Decoder stack**
-
-Causal self-attention (masked) plus cross-attention to the encoder output. Each generated token can attend to all encoder tokens and all previously generated tokens.
-
-</div>
-
-</div>
-
-Natural fit for sequence-to-sequence tasks: translation, summarization, where input and output are clearly distinct sequences. T5 and BART follow this design.
 
 ---
 
@@ -1780,31 +2581,6 @@ $$\text{output}_i = f(\mathbf{x}_1, \dots, \mathbf{x}_n) \quad \text{for all } i
 Use cases: classification, sentence embeddings, retrieval, named-entity recognition. The model produces representations, not generations.
 
 BERT (Devlin et al., 2018) made this architecture dominant for "understanding" tasks. RoBERTa improved the training recipe without changing the architecture.
-
----
-
-<div class="figure-card">
-
-![Jacob Devlin, Ming-Wei Chang, Kenton Lee & Kristina Toutanova](images/devlin_chang_lee_toutanova.jpg)
-
-<div class="figure-info">
-
-## Jacob Devlin, Ming-Wei Chang, Kenton Lee & Kristina Toutanova <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Introduced BERT (2018)
-
-- Devlin et al. introduced bidirectional pretraining with masked language modeling
-- Before BERT, language models were either left-to-right or shallowly bidirectional
-- BERT made encoder-only transformers the standard for understanding tasks
-- Devlin et al., <https://arxiv.org/abs/1810.04805>
-
-</div>
-
-</div>
-
-</div>
 
 ---
 
@@ -1828,27 +2604,23 @@ Why decoder-only won for LLMs:
 
 ---
 
-<div class="figure-card">
+<!-- .slide: id="figure-radford" class="notable-figure" -->
 
-![Alec Radford & OpenAI Team](images/radford_gpt.jpg)
-
-<div class="figure-info">
-
-## Alec Radford & OpenAI Team <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Introduced GPT and GPT-2 (2018-2019)
-
-- Radford et al. demonstrated that autoregressive pretraining on unlabeled text produces powerful general-purpose models
-- GPT-2 showed that scale alone (1.5B parameters) produces coherent multi-paragraph text
-- The decoder-only design became the dominant LLM paradigm
-- Radford et al., "Improving Language Understanding by Generative Pre-Training" (2018); "Language Models are Unsupervised Multitask Learners" (2019)
-
-</div>
-
-</div>
-
+<div class="notable-stage">
+  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/radford.jpeg" alt="Alec Radford">
+  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Alec Radford</h2>
+  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
+    <img class="notable-photo notable-photo-side" src="images/radford.jpeg" alt="Alec Radford">
+    <div class="notable-copy">
+      <h2>Alec Radford</h2>
+      <h3>GPT and GPT-2 (2018-2019)</h3>
+      <ul>
+        <li>Showed that autoregressive pretraining could produce general-purpose text models</li>
+        <li>GPT-2 demonstrated coherent long-form generation from scale and data</li>
+        <li>The decoder-only stack became the dominant LLM design</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 ---
@@ -1920,38 +2692,21 @@ These changes are mostly independent but together produce a more stable and more
 
 ## Mixture of Experts
 
-Replace the single FFN with **many expert FFNs** plus a router that activates only a few per token:
+<div class="moe-diagram">
+  <div class="router-box">router<br><span>top-k experts per token</span></div>
+  <div class="expert-grid">
+    <div class="expert active">expert 3<br><span>GPU active</span></div>
+    <div class="expert">expert 8<br><span>CPU or cold GPU</span></div>
+    <div class="expert active">expert 17<br><span>GPU active</span></div>
+    <div class="expert">expert 42<br><span>CPU or cold GPU</span></div>
+  </div>
+</div>
 
 $$\text{MoE}(\mathbf{x}) = \sum_{i=1}^{E} g(\mathbf{x})_i \cdot \text{FFN}_i(\mathbf{x})$$
 
 where $g(\mathbf{x})$ is the router output (a sparse gate) and only the top-$k$ experts receive nonzero weight.
 
-This buys far more parameters at roughly the same compute per token: a 176B-parameter MoE model may only activate 33B parameters on any given forward pass. The serving and memory implications come later (forward reference to Module 9).
-
----
-
-<div class="figure-card">
-
-![Noam Shazeer](images/shazeer.jpg)
-
-<div class="figure-info">
-
-## Noam Shazeer <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Co-Author of the Original Transformer; Lead on MoE
-
-- Shazeer co-authored "Attention Is All You Need" and led the sparsely-gated Mixture-of-Experts layer
-- He also introduced SwiGLU and other modern block improvements
-- Most of the transformer ecosystem traces back to his architectural innovations
-- Shazeer et al., <https://arxiv.org/abs/1701.06538>; Touvron et al., <https://arxiv.org/abs/2302.13971>
-
-</div>
-
-</div>
-
-</div>
+Sparse activation buys far more parameters at roughly the same compute per token. It also creates a memory-serving trade-off: inactive experts can be staged across CPU memory, GPU memory, or multiple devices, while the active experts for the current batch need fast access.
 
 ---
 
@@ -1986,7 +2741,7 @@ From logits to tokens: decoding strategies
 
 A forward pass gives a probability distribution over the vocabulary for the next token. Decoding chooses one token, appends it to the context, and repeats.
 
-$$p_i = \frac{\exp(z_i)}{\sum_j \exp(z_j)}$$
+$$p_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 
 where $z_i$ is the logit for vocabulary item $i$. The choice of how to sample from this distribution is the **decoding strategy**, and it shapes what you actually read.
 
@@ -2010,7 +2765,7 @@ Simple, deterministic, and fast. But it produces repetitive, flat text because i
 
 Scale the logits before softmax to control randomness:
 
-$$p_i = \frac{\exp(z_i / T)}{\sum_j \exp(z_j / T)}$$
+$$p_i = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
 
 - $T < 1$: sharpens the distribution. The model becomes more conservative, sticking to high-probability tokens.
 - $T = 1$: the original distribution.
@@ -2054,7 +2809,21 @@ In practice, temperature and top-p/top-k are used together: scale by temperature
 
 ## Beam Search
 
-Instead of committing to one token, keep the $b$ best partial sequences at every step. At each step, expand every beam with every possible next token, score the $b \times V$ candidates, and keep the top $b$.
+<div class="beam-diagram">
+  <div class="beam-node root">The</div>
+  <div class="beam-level">
+    <div class="beam-node kept">cat<br><span>0.42</span></div>
+    <div class="beam-node kept">dog<br><span>0.31</span></div>
+    <div class="beam-node dropped">car<br><span>0.08</span></div>
+  </div>
+  <div class="beam-level">
+    <div class="beam-node kept">cat sat<br><span>0.18</span></div>
+    <div class="beam-node kept">dog ran<br><span>0.15</span></div>
+    <div class="beam-node dropped">cat barked<br><span>0.03</span></div>
+  </div>
+</div>
+
+Instead of committing to one token, keep the $b$ best partial sequences at every step. Expand every beam, score the candidates, and keep the top $b$.
 
 Best for constrained sequence-to-sequence tasks like translation, where there is a single correct answer and exploration helps. Poor for open-ended generation: the most likely sequence under a language model is usually vacuous, repetitive, or otherwise undesirable.
 
@@ -2161,7 +2930,7 @@ return self.token_embed(token_ids) + self.pos_embed(position)
 
 <div class="fragment hint-box">
 
-**Hint:** use `self.fc2(self.dropout(F.gelu(self.fc1(x))))`.
+**Hint:** compose the layers in order; the tensor should end at d_model, not d_ff.
 
 </div>
 
@@ -2190,7 +2959,7 @@ return self.fc2(self.dropout(F.gelu(self.fc1(x))))
 
 <div class="fragment hint-box">
 
-**Hint:** `x = x + self.attn(self.ln1(x))` then `x = x + self.ffn(self.ln2(x))`.
+**Hint:** use the same pattern twice: normalize, apply the sub-layer, then add the result back to x.
 
 </div>
 
@@ -2317,7 +3086,7 @@ next_token = torch.argmax(next_logits, dim=-1, keepdim=True)
 
 <!-- .slide: id="exercise-step7-code" -->
 
-## Step 7: sample_with_temperature_topk()
+## Step 7: Temperature + Top-k Sampling
 
 ```python
     def sample_with_temperature_topk(model, tokenizer, prompt, max_new=10,
@@ -2327,14 +3096,20 @@ next_token = torch.argmax(next_logits, dim=-1, keepdim=True)
             logits = model(token_ids)
             next_logits = logits[:, -1, :]
 
-            # TODO: Scale logits by temperature, then apply top-k filtering, then sample.
-            raise NotImplementedError("TODO: temperature scaling + top-k sampling")
+            # TODO: Scale logits by temperature before top-k filtering.
+            next_logits = None
+            if next_logits is None:
+                raise NotImplementedError("TODO: temperature scaling")
+
+            # Use the provided helper to filter to top-k and sample one token.
+            next_token = _sample_topk_token(next_logits, top_k)
+            token_ids = torch.cat([token_ids, next_token], dim=1)
         return tokenizer.decode(token_ids[0])
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** divide by `temperature`, use `torch.topk` to zero out tokens below the k-th largest logit, then `F.softmax` and `torch.multinomial`.
+**Hint:** temperature is applied before filtering; divide the logits by `temperature`.
 
 </div>
 
@@ -2344,12 +3119,6 @@ next_token = torch.argmax(next_logits, dim=-1, keepdim=True)
 
 ```python
 next_logits = next_logits / temperature
-topk_vals, _ = torch.topk(next_logits, top_k, dim=-1)
-threshold = topk_vals[:, -1].unsqueeze(-1)
-next_logits = next_logits.masked_fill(next_logits < threshold, float("-inf"))
-probs = F.softmax(next_logits, dim=-1)
-next_token = torch.multinomial(probs, num_samples=1)
-token_ids = torch.cat([token_ids, next_token], dim=1)
 ```
 
 </div>
@@ -2396,11 +3165,11 @@ token_ids = torch.cat([token_ids, next_token], dim=1)
 
 <!-- .slide: id="quiz-ffn" -->
 
-## Why Does the FFN Matter?
+## Why Does the Feed-Forward Network Matter?
 
 <div class="quiz-prompt">
 
-The attention sub-layer mixes information between positions, but the FFN processes each position independently. Why is the FFN still crucial?
+The attention sub-layer mixes information between positions, but the feed-forward network (FFN) processes each position independently. Why is the FFN still crucial?
 
 </div>
 
@@ -2496,7 +3265,7 @@ Temperature $T$ scales logits before softmax. How does a very high temperature c
 
 <div class="fragment note quiz-answer">
 
-High temperature flattens the distribution, making unlikely tokens nearly as probable as likely ones. The output becomes random, ungrammatical, and thematically inconsistent. Conversely, very low temperature sharpens the peak, producing repetitive, deterministic text. The sweet spot is typically $T \approx 0.7\text{--}1.0$.
+High temperature flattens the distribution, making unlikely tokens nearly as probable as likely ones. The output becomes random, ungrammatical, and thematically inconsistent. Conversely, very low temperature sharpens the peak, producing repetitive, deterministic text. The sweet spot is typically $T \approx 0.7 \text{ to } 1.0$.
 
 </div>
 
@@ -2515,26 +3284,32 @@ Next: Module 5 &mdash; Pretraining and Fine-Tuning
 
 ## Resources
 
-### Papers and Books
-
-- Sutskever, Vinyals, and Le, "Sequence to Sequence Learning with Neural Networks," <https://arxiv.org/abs/1409.3215>
-- Hochreiter and Schmidhuber, "Long Short-Term Memory" (1997), *Neural Computation*
-- Sennrich, Haddow, and Birch, "Neural Machine Translation of Rare Words with Subword Units," <https://arxiv.org/abs/1508.07909>
-- Devlin et al., "BERT: Pre-training of Deep Bidirectional Transformers," <https://arxiv.org/abs/1810.04805>
-- Radford et al., "Improving Language Understanding by Generative Pre-Training" (2018) and "Language Models are Unsupervised Multitask Learners" (GPT-2, 2019)
-- Touvron et al., "LLaMA: Open and Efficient Foundation Language Models," <https://arxiv.org/abs/2302.13971>
-- Shazeer et al., "Outrageously Large Neural Networks: The Sparsely-Gated Mixture-of-Experts Layer," <https://arxiv.org/abs/1701.06538>
-- Gu and Dao, "Mamba: Linear-Time Sequence Modeling with Selective State Spaces," <https://arxiv.org/abs/2312.00752>
-
-### Tools and Explorables
-
-- <https://tiktokenizer.vercel.app> &mdash; interactive tokenizer playground
-- <https://github.com/karpathy/minbpe> &mdash; minimal BPE implementation
-- <https://github.com/karpathy/build-nanogpt> &mdash; build GPT-2 from scratch
-- <https://github.com/rasbt/LLMs-from-scratch> &mdash; full LLM implementation book (chapters 2&ndash;4 most relevant)
-- <https://nlp.seas.harvard.edu/annotated-transformer/> &mdash; annotated encoder-decoder implementation
-- <https://poloclub.github.io/transformer-explainer/> &mdash; interactive GPT-2 architecture walkthrough
-- <https://www.krupadave.com/articles/everything-about-transformers?x=v3> &mdash; comprehensive visual transformer guide
+<div class="resources-grid">
+  <div>
+    <h3>Papers</h3>
+    <ul class="resource-list">
+      <li>Sutskever, Vinyals, and Le, "Sequence to Sequence Learning with Neural Networks," <a href="https://arxiv.org/abs/1409.3215">arXiv:1409.3215</a></li>
+      <li>Hochreiter and Schmidhuber, "Long Short-Term Memory" (1997), <em>Neural Computation</em></li>
+      <li>Sennrich, Haddow, and Birch, "Neural Machine Translation of Rare Words with Subword Units," <a href="https://arxiv.org/abs/1508.07909">arXiv:1508.07909</a></li>
+      <li>Vaswani et al., "Attention Is All You Need," <a href="https://arxiv.org/abs/1706.03762">arXiv:1706.03762</a></li>
+      <li>Radford et al., GPT and GPT-2 reports (2018-2019)</li>
+      <li>Shazeer et al., "Sparsely-Gated Mixture-of-Experts," <a href="https://arxiv.org/abs/1701.06538">arXiv:1701.06538</a></li>
+      <li>Gu and Dao, "Mamba," <a href="https://arxiv.org/abs/2312.00752">arXiv:2312.00752</a></li>
+    </ul>
+  </div>
+  <div>
+    <h3>Tools and Visual References</h3>
+    <ul class="resource-list">
+      <li><a href="https://tiktokenizer.vercel.app">tiktokenizer.vercel.app</a></li>
+      <li><a href="https://github.com/karpathy/minbpe">github.com/karpathy/minbpe</a></li>
+      <li><a href="https://github.com/karpathy/build-nanogpt">github.com/karpathy/build-nanogpt</a></li>
+      <li><a href="https://github.com/rasbt/LLMs-from-scratch">github.com/rasbt/LLMs-from-scratch</a></li>
+      <li><a href="https://nlp.seas.harvard.edu/annotated-transformer/">Annotated Transformer</a></li>
+      <li><a href="https://poloclub.github.io/transformer-explainer/">Transformer Explainer</a></li>
+      <li><a href="https://www.krupadave.com/articles/everything-about-transformers?x=v3">Visual transformer guide</a></li>
+    </ul>
+  </div>
+</div>
         </textarea>
       </section>
     </div>
@@ -2550,7 +3325,15 @@ Next: Module 5 &mdash; Pretraining and Fine-Tuning
   // Module 4 config — minimal; most visuals are SVG diagrams inline in slides.
   window.MODULE_CONFIG = {
     title: 'LLMs 0 to 100 - Module 4',
-    manimSections: {},
+    manimSections: {
+      'bpe-training': [
+        'BPETrainingScene_0000_start.mp4',
+        'BPETrainingScene_0001_count_pairs.mp4',
+        'BPETrainingScene_0002_merge_lo.mp4',
+        'BPETrainingScene_0003_merge_low.mp4',
+        'BPETrainingScene_0004_result.mp4'
+      ]
+    },
     widgets: {}
   };
 }());

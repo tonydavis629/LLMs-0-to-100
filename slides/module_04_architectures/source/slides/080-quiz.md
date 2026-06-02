@@ -3,8 +3,8 @@
 
 ---
 
-:::quiz id="quiz-ffn" title="Why Does the FFN Matter?"
-The attention sub-layer mixes information between positions, but the FFN processes each position independently. Why is the FFN still crucial?
+:::quiz id="quiz-ffn" title="Why Does the Feed-Forward Network Matter?"
+The attention sub-layer mixes information between positions, but the feed-forward network (FFN) processes each position independently. Why is the FFN still crucial?
 +++
 The FFN is where most of the model's parameters and stored "knowledge" live. Each neuron acts like a key-value pair: when its input activates it, the neuron retrieves a learned output vector. Without the FFN, the model would only mix existing embeddings and would have no way to store or recall facts.
 :::
@@ -46,5 +46,5 @@ The router selects only a small subset of experts (e.g., top-2 out of 64) for ea
 :::quiz id="quiz-temperature" title="The Effect of Temperature on Sampling"
 Temperature $T$ scales logits before softmax. How does a very high temperature change the sample distribution, and why might that be undesirable?
 +++
-High temperature flattens the distribution, making unlikely tokens nearly as probable as likely ones. The output becomes random, ungrammatical, and thematically inconsistent. Conversely, very low temperature sharpens the peak, producing repetitive, deterministic text. The sweet spot is typically $T \approx 0.7\text{--}1.0$.
+High temperature flattens the distribution, making unlikely tokens nearly as probable as likely ones. The output becomes random, ungrammatical, and thematically inconsistent. Conversely, very low temperature sharpens the peak, producing repetitive, deterministic text. The sweet spot is typically $T \approx 0.7 \text{ to } 1.0$.
 :::

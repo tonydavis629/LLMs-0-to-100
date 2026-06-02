@@ -7,13 +7,23 @@
 
 ## Recurrent Neural Networks
 
-An RNN processes tokens one at a time, carrying a hidden state forward as a running summary of everything seen so far:
+<div class="rnn-flow">
+  <div class="rnn-token">the</div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-cell">RNN<br><span>state 1</span></div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-token">cat</div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-cell">same cell<br><span>state 2</span></div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-token">sat</div>
+  <div class="rnn-arrow">&rarr;</div>
+  <div class="rnn-cell">same cell<br><span>state 3</span></div>
+</div>
 
-$$\mathbf{h}_t = f(\mathbf{h}_{t-1}, \mathbf{x}_t; W)$$
+<div class="formula-card">new hidden state = function(previous hidden state, current token)</div>
 
-At every step the old hidden state and the new token are combined to produce a new hidden state. The same weights are reused at every time step, so the network has a fixed parameter count regardless of sequence length.
-
-The hidden state is a fixed-size vector that must compress the entire history into a single point. Long sentences force that vector to carry information from dozens or hundreds of steps back.
+The same cell is reused at every time step. The hidden state is a fixed-size summary, so long sequences force more and more history into one vector.
 
 ---
 
@@ -35,24 +45,42 @@ Recurrent training is fundamentally hard for three reasons:
 
 ## LSTMs and GRUs: Gating Mechanisms
 
-The Long Short-Term Memory network (1997) added **gating** to the recurrent cell so information could flow across many time steps without vanishing:
+<div class="gate-diagram">
+  <div class="gate-input">previous state<br>+ current token</div>
+  <div class="gate-arrow">&rarr;</div>
+  <div class="gate-stack">
+    <div class="gate forget">forget gate<br><span>what to erase</span></div>
+    <div class="gate input">input gate<br><span>what to write</span></div>
+    <div class="gate output">output gate<br><span>what to expose</span></div>
+  </div>
+  <div class="gate-arrow">&rarr;</div>
+  <div class="gate-memory">cell state<br><span>longer memory path</span></div>
+</div>
 
-$$\mathbf{f}_t = \sigma(W_f \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(forget gate)}$$
-$$\mathbf{i}_t = \sigma(W_i \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(input gate)}$$
-$$\mathbf{o}_t = \sigma(W_o \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]) \quad \text{(output gate)}$$
-
-By selectively remembering and forgetting, LSTMs mitigated the gradient problem. GRUs (2014) simplified the gates to just two: update and reset.
+LSTMs added gates so information could be selectively remembered, overwritten, or hidden. GRUs simplified the same idea into update and reset gates.
 
 Both kept the **sequential and bottleneck limitations.** The cell was improved, but the architecture was still fundamentally serial.
 
 ---
 
-:::figure img="images/hochreiter_schmidhuber.jpg" name="Sepp Hochreiter & Jürgen Schmidhuber" kicker="Introduced Long Short-Term Memory (1997)"
-- Schmidhuber and Hochreiter's LSTM added forget, input, and output gates to recurrent cells
-- For the first time, gradients could propagate across hundreds of time steps without vanishing
-- LSTMs became the default choice for sequence modeling from 1997 until the transformer era
-- Hochreiter & Schmidhuber, "Long Short-Term Memory," *Neural Computation* (1997)
-:::
+<!-- .slide: id="figure-schmidhuber" class="notable-figure" -->
+
+<div class="notable-stage">
+  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/Schmidhuber.jpg" alt="Jürgen Schmidhuber">
+  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Jürgen Schmidhuber</h2>
+  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
+    <img class="notable-photo notable-photo-side" src="images/Schmidhuber.jpg" alt="Jürgen Schmidhuber">
+    <div class="notable-copy">
+      <h2>Jürgen Schmidhuber</h2>
+      <h3>Long Short-Term Memory (1997)</h3>
+      <ul>
+        <li>With Sepp Hochreiter, introduced gated recurrent cells for long-range dependencies</li>
+        <li>Made gradient flow through long sequences much more reliable</li>
+        <li>LSTMs became the default sequence model before transformers</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 ---
 
@@ -71,18 +99,51 @@ Bahdanau attention (Module 3) was invented specifically to fix this bottleneck, 
 
 ---
 
-:::figure img="images/sutskever_vinyals_le.jpg" name="Ilya Sutskever, Oriol Vinyals & Quoc Le" kicker="Sequence to Sequence Learning with Neural Networks (2014)"
-- Sutskever, Vinyals, and Le introduced the encoder-decoder RNN framework for neural machine translation
-- The encoder compresses the entire input into one vector; the decoder generates from it
-- This fixed-vector bottleneck is exactly what Bahdanau attention was invented to fix
-- Sutskever et al., <https://arxiv.org/abs/1409.3215>
-:::
+<!-- .slide: id="figure-sutskever" class="notable-figure" -->
+
+<div class="notable-stage">
+  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/sutskever.jpg" alt="Ilya Sutskever">
+  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Ilya Sutskever</h2>
+  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
+    <img class="notable-photo notable-photo-side" src="images/sutskever.jpg" alt="Ilya Sutskever">
+    <div class="notable-copy">
+      <h2>Ilya Sutskever</h2>
+      <h3>Sequence to Sequence Learning (2014)</h3>
+      <ul>
+        <li>With Oriol Vinyals and Quoc Le, showed encoder-decoder RNNs could translate sequences</li>
+        <li>The encoder compressed the source sentence into one vector</li>
+        <li>That bottleneck motivated attention over encoder states</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+---
+
+<!-- .slide: id="figure-vaswani" class="notable-figure" -->
+
+<div class="notable-stage">
+  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/vaswani.webp" alt="Ashish Vaswani">
+  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Ashish Vaswani</h2>
+  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
+    <img class="notable-photo notable-photo-side" src="images/vaswani.webp" alt="Ashish Vaswani">
+    <div class="notable-copy">
+      <h2>Ashish Vaswani</h2>
+      <h3>Attention Is All You Need (2017)</h3>
+      <ul>
+        <li>Lead author on the original transformer paper</li>
+        <li>Helped replace recurrence with stacked attention and feed-forward blocks</li>
+        <li>The architecture became the foundation for modern LLMs</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 ---
 
 <!-- .slide: id="attention-is-all-you-need" -->
 
-## "Attention Is All You Need" (2017)
+## Attention Is All You Need (2017)
 
 Vaswani et al. removed recurrence entirely. In its place: stacked multi-head self-attention with position-wise feed-forward networks.
 

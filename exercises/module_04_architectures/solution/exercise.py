@@ -226,6 +226,15 @@ def greedy_decode(model: GPT2Model, tokenizer, prompt: str, max_new: int = 10) -
 # ---------------------------------------------------------------------------
 
 
+def _sample_topk_token(next_logits: torch.Tensor, top_k: int) -> torch.Tensor:
+    """Sample one token from the top-k logits."""
+    topk_vals, _ = torch.topk(next_logits, top_k, dim=-1)
+    threshold = topk_vals[:, -1].unsqueeze(-1)
+    next_logits = next_logits.masked_fill(next_logits < threshold, float("-inf"))
+    probs = F.softmax(next_logits, dim=-1)
+    return torch.multinomial(probs, num_samples=1)
+
+
 def sample_with_temperature_topk(
     model: GPT2Model,
     tokenizer,
@@ -243,17 +252,10 @@ def sample_with_temperature_topk(
             logits = model(token_ids)
             next_logits = logits[:, -1, :]
 
-            # Scale by temperature
+            # Scale logits by temperature before top-k filtering.
             next_logits = next_logits / temperature
 
-            # Top-k filtering: zero out everything except the top k logits
-            topk_vals, _ = torch.topk(next_logits, top_k, dim=-1)
-            threshold = topk_vals[:, -1].unsqueeze(-1)
-            next_logits = next_logits.masked_fill(next_logits < threshold, float("-inf"))
-
-            # Sample from the filtered distribution
-            probs = F.softmax(next_logits, dim=-1)
-            next_token = torch.multinomial(probs, num_samples=1)
+            next_token = _sample_topk_token(next_logits, top_k)
             token_ids = torch.cat([token_ids, next_token], dim=1)
 
     return tokenizer.decode(token_ids[0])

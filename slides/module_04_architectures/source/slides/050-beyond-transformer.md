@@ -35,22 +35,21 @@ These changes are mostly independent but together produce a more stable and more
 
 ## Mixture of Experts
 
-Replace the single FFN with **many expert FFNs** plus a router that activates only a few per token:
+<div class="moe-diagram">
+  <div class="router-box">router<br><span>top-k experts per token</span></div>
+  <div class="expert-grid">
+    <div class="expert active">expert 3<br><span>GPU active</span></div>
+    <div class="expert">expert 8<br><span>CPU or cold GPU</span></div>
+    <div class="expert active">expert 17<br><span>GPU active</span></div>
+    <div class="expert">expert 42<br><span>CPU or cold GPU</span></div>
+  </div>
+</div>
 
 $$\text{MoE}(\mathbf{x}) = \sum_{i=1}^{E} g(\mathbf{x})_i \cdot \text{FFN}_i(\mathbf{x})$$
 
 where $g(\mathbf{x})$ is the router output (a sparse gate) and only the top-$k$ experts receive nonzero weight.
 
-This buys far more parameters at roughly the same compute per token: a 176B-parameter MoE model may only activate 33B parameters on any given forward pass. The serving and memory implications come later (forward reference to Module 9).
-
----
-
-:::figure img="images/shazeer.jpg" name="Noam Shazeer" kicker="Co-Author of the Original Transformer; Lead on MoE"
-- Shazeer co-authored "Attention Is All You Need" and led the sparsely-gated Mixture-of-Experts layer
-- He also introduced SwiGLU and other modern block improvements
-- Most of the transformer ecosystem traces back to his architectural innovations
-- Shazeer et al., <https://arxiv.org/abs/1701.06538>; Touvron et al., <https://arxiv.org/abs/2302.13971>
-:::
+Sparse activation buys far more parameters at roughly the same compute per token. It also creates a memory-serving trade-off: inactive experts can be staged across CPU memory, GPU memory, or multiple devices, while the active experts for the current batch need fast access.
 
 ---
 

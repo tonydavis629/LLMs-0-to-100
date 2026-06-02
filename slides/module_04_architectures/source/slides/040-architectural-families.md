@@ -7,19 +7,18 @@
 
 ## Family 1: Encoder-Decoder
 
-The original transformer (Vaswani et al., 2017). The encoder builds bidirectional representations; the decoder generates while attending back through cross-attention.
-
-:::columns cols="2" gap="30px"
-**Encoder stack**
-
-Bidirectional self-attention (no causal mask). Each token can attend to every other token in the input. Produces a sequence of context vectors.
-+++
-**Decoder stack**
-
-Causal self-attention (masked) plus cross-attention to the encoder output. Each generated token can attend to all encoder tokens and all previously generated tokens.
-:::
-
-Natural fit for sequence-to-sequence tasks: translation, summarization, where input and output are clearly distinct sequences. T5 and BART follow this design.
+<div class="encoder-decoder-layout">
+  <img src="images/transformer.webp" alt="Original transformer encoder-decoder architecture">
+  <div>
+    <p>The original transformer has two stacks: an encoder for the input and a decoder for the output.</p>
+    <div class="family-grid">
+      <div><strong>Encoder</strong><span>bidirectional self-attention over the source</span></div>
+      <div><strong>Decoder</strong><span>causal self-attention plus cross-attention to encoder states</span></div>
+      <div><strong>Best fit</strong><span>translation, summarization, and other input-output sequence tasks</span></div>
+      <div><strong>Examples</strong><span>T5 and BART keep separate input understanding and output generation</span></div>
+    </div>
+  </div>
+</div>
 
 ---
 
@@ -34,15 +33,6 @@ $$\text{output}_i = f(\mathbf{x}_1, \dots, \mathbf{x}_n) \quad \text{for all } i
 Use cases: classification, sentence embeddings, retrieval, named-entity recognition. The model produces representations, not generations.
 
 BERT (Devlin et al., 2018) made this architecture dominant for "understanding" tasks. RoBERTa improved the training recipe without changing the architecture.
-
----
-
-:::figure img="images/devlin_chang_lee_toutanova.jpg" name="Jacob Devlin, Ming-Wei Chang, Kenton Lee & Kristina Toutanova" kicker="Introduced BERT (2018)"
-- Devlin et al. introduced bidirectional pretraining with masked language modeling
-- Before BERT, language models were either left-to-right or shallowly bidirectional
-- BERT made encoder-only transformers the standard for understanding tasks
-- Devlin et al., <https://arxiv.org/abs/1810.04805>
-:::
 
 ---
 
@@ -66,12 +56,24 @@ Why decoder-only won for LLMs:
 
 ---
 
-:::figure img="images/radford_gpt.jpg" name="Alec Radford & OpenAI Team" kicker="Introduced GPT and GPT-2 (2018-2019)"
-- Radford et al. demonstrated that autoregressive pretraining on unlabeled text produces powerful general-purpose models
-- GPT-2 showed that scale alone (1.5B parameters) produces coherent multi-paragraph text
-- The decoder-only design became the dominant LLM paradigm
-- Radford et al., "Improving Language Understanding by Generative Pre-Training" (2018); "Language Models are Unsupervised Multitask Learners" (2019)
-:::
+<!-- .slide: id="figure-radford" class="notable-figure" -->
+
+<div class="notable-stage">
+  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/radford.jpeg" alt="Alec Radford">
+  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Alec Radford</h2>
+  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
+    <img class="notable-photo notable-photo-side" src="images/radford.jpeg" alt="Alec Radford">
+    <div class="notable-copy">
+      <h2>Alec Radford</h2>
+      <h3>GPT and GPT-2 (2018-2019)</h3>
+      <ul>
+        <li>Showed that autoregressive pretraining could produce general-purpose text models</li>
+        <li>GPT-2 demonstrated coherent long-form generation from scale and data</li>
+        <li>The decoder-only stack became the dominant LLM design</li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 ---
 

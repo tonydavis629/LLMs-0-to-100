@@ -29,6 +29,7 @@ Citations, math, and explanations for every claim in the presentation.
 - Vaswani et al. (2017) removed recurrence entirely, replacing it with multi-head self-attention.
 - Full parallelism: all positions are processed simultaneously during training.
 - Constant path length: any two tokens interact directly in one attention layer, not through $O(n)$ recurrent steps.
+- The Vaswani figure slide is placed immediately before the transformer introduction to connect the historical figure to the architectural transition.
 
 ## Tokenization
 
@@ -40,6 +41,7 @@ Citations, math, and explanations for every claim in the presentation.
 ### Byte-Pair Encoding
 - BPE starts from characters and iteratively merges the most frequent adjacent pair.
 - The learned list of merges defines the vocabulary. Every input can be decomposed into vocabulary tokens.
+- The BPE animation uses the toy corpus "low low lower lowest." It first counts adjacent pairs, then merges `lo`, then merges `low`, showing how "lower" and "lowest" reuse the frequent `low` prefix.
 - GPT-2 uses byte-level BPE: the merge process runs over raw bytes, so every Unicode string is representable.
 - GPT-2 vocabulary: ~50k tokens. Modern models use 100k&ndash;200k.
 
@@ -49,19 +51,20 @@ Citations, math, and explanations for every claim in the presentation.
 - Models struggle with letter counting, string reversal, and digit arithmetic because these operations are not natural at the token level.
 - Tokenizers and models are trained separately. Glitch tokens (rare tokens with near-zero training frequency) can cause unpredictable behavior.
 
-## Anatomy of a Transformer Block
+## Putting It All Together
 
-### The Embedding Layer
+### Words to Embeddings
 - Token ID $t_i$ indexes row $W_E[t_i]$ of the embedding matrix.
-- Positional embedding $W_P[i]$ adds position information: $\mathbf{x}_i = W_E[t_i] + W_P[i]$.
+- The slide now includes the full handoff from words to subword tokens, token IDs, and embedding rows. The transformer receives vectors, not raw text.
 
-### The Residual Stream
-- Each sub-layer reads from the stream, computes its contribution, and writes it back: $\mathbf{x} = \mathbf{x} + \text{sub-layer}(\text{norm}(\mathbf{x}))$.
-- Residual connections create a gradient highway that makes deep stacks trainable.
+### Positional Encoding
+- Positional embedding $W_P[i]$ adds order information: $\mathbf{x}_i = W_E[t_i] + W_P[i]$.
+- Without a position signal, self-attention is permutation-equivariant: the same token vectors in a different order would not carry enough ordering information.
 
 ### Multi-Head Self-Attention
 - The only sub-layer where information moves between positions in the same layer.
 - Wrapped in a residual connection and normalization.
+- In a decoder-only model, the causal mask restricts token $t$ to positions $\leq t$.
 
 ### Position-Wise Feed-Forward Network
 - Two linear layers with a nonlinearity, applied independently at every position.
@@ -75,9 +78,15 @@ Citations, math, and explanations for every claim in the presentation.
 - Pre-norm: normalize before sub-layer input (modern default, more stable).
 - RMSNorm: drop mean centering, divide by root-mean-square.
 
-### Output Head and Weight Tying
+### Output Head and Softmax
 - Final layer norm, then $W_{\text{head}}$ projects to vocabulary-sized logits.
 - Weight tying: $W_{\text{head}} = W_E^T$. Saves parameters and ties input/output semantics.
+- Softmax converts logits to next-token probabilities.
+
+### The Residual Stream
+- Each sub-layer reads from the stream, computes its contribution, and writes it back: $\mathbf{x} = \mathbf{x} + \text{sub-layer}(\text{norm}(\mathbf{x}))$.
+- Residual connections create a gradient highway that makes deep stacks trainable.
+- The in-context learning side quest frames prompting as a runtime pattern written into and read from the residual stream, without changing model weights.
 
 ### Parameter Counting (GPT-2 small)
 - $d = 768$, $N = 12$, $V = 50257$.
@@ -118,6 +127,7 @@ Citations, math, and explanations for every claim in the presentation.
 - Replace FFN with many expert FFNs + router.
 - Router selects top-$k$ experts per token.
 - Far more parameters, roughly same compute per token.
+- Sparse activation also changes memory serving: inactive experts may be staged across CPU memory, GPU memory, or devices, while active experts for the current batch need low-latency access.
 - Mixtral, DeepSeek.
 
 ### Sub-Quadratic Alternatives
@@ -133,7 +143,7 @@ Citations, math, and explanations for every claim in the presentation.
 - Deterministic but produces repetitive, flat text.
 
 ### Temperature
-- Scale logits by $T$ before softmax: $p_i \propto \exp(z_i / T)$.
+- Scale logits by $T$ before softmax: $p_i \propto e^{z_i / T}$.
 - $T < 1$: sharper, more conservative.
 - $T > 1$: flatter, more random.
 

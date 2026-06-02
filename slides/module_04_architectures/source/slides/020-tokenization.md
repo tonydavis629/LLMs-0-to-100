@@ -25,44 +25,7 @@ The compromise: frequent words stay whole, rare words split into reusable pieces
 
 ---
 
-<!-- .slide: id="bpe-algorithm" -->
-
-## Byte-Pair Encoding
-
-BPE starts from individual characters or bytes, then **repeatedly merges the most frequent adjacent pair** into a new token:
-
-1. Start with character vocabulary
-2. Count every adjacent pair in the training corpus
-3. Merge the most frequent pair; add the merged symbol to the vocabulary
-4. Repeat until the vocabulary reaches the desired size
-
-:::columns cols="2" gap="30px"
-**Example**
-
-Corpus: `low low lower lowest`
-
-Start: `l o w` (plus space, etc.)
-
-Most frequent pair: `lo` (appears 4 times)
-
-Merge: `lo w lo w lo wer lo west`
-
-Next: `low` (appears 4 times)
-
-Result: vocabulary contains `low`, `er`, `est`, and the individual characters.
-+++
-**What this means**
-
-"lower" becomes `["low", "er"]`. "lowest" becomes `["low", "est"]`. The shared prefix "low" is reused. Rare words are decomposed into familiar pieces; frequent words are kept intact. The model never sees an unrepresentable token.
-:::
-
----
-
-:::figure img="images/sennrich_haddow_birch.jpg" name="Rico Sennrich, Barry Haddow & Alexandra Birch" kicker="Adapted BPE for Neural Machine Translation (2016)"
-- Sennrich, Haddow, and Birch adapted Byte-Pair Encoding &mdash; originally a 1994 compression scheme by Philip Gage &mdash; into subword tokenization for NMT
-- The idea: let the data decide which character sequences deserve their own tokens
-- This became the dominant tokenization method for transformer models
-- Sennrich et al., <https://arxiv.org/abs/1508.07909>
+:::manim id="bpe-algorithm" scene="bpe-training" title="Byte-Pair Encoding"
 :::
 
 ---
@@ -71,16 +34,34 @@ Result: vocabulary contains `low`, `er`, `est`, and the individual characters.
 
 ## Byte-Level BPE and the Vocabulary Table
 
-GPT-2 runs BPE over **raw bytes** instead of Unicode characters. Every possible string &mdash; including emoji, code, non-Latin scripts, and arbitrary whitespace &mdash; is representable with no true out-of-vocabulary tokens.
+<div class="byte-bpe-diagram">
+  <div class="byte-lane">
+    <h3>Text</h3>
+    <div class="token-strip">
+      <span>The</span><span>&nbsp;</span><span>model</span><span>&nbsp;</span><span>reads</span><span>&nbsp;</span><span>bytes</span>
+    </div>
+  </div>
+  <div class="byte-arrow">&darr;</div>
+  <div class="byte-lane">
+    <h3>Raw bytes</h3>
+    <div class="byte-grid">
+      <span>54</span><span>68</span><span>65</span><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span>
+    </div>
+  </div>
+  <div class="byte-arrow">&darr;</div>
+  <div class="byte-lane">
+    <h3>Learned token IDs</h3>
+    <div class="token-strip token-strip-accent">
+      <span>464</span><span>2746</span><span>1100</span><span>9048</span>
+    </div>
+  </div>
+</div>
 
-The vocabulary and the token-to-ID table are learned together during the merge process. Typical sizes:
-
-- GPT-2: about 50k tokens
-- Modern models: 100k&ndash;200k tokens
-
-A larger vocabulary means shorter sequences (fewer tokens per sentence) but a bigger embedding matrix and a larger output projection layer. This is a direct memory-parameter trade-off.
-
-Other schemes exist: **WordPiece** (BERT), **Unigram** and **SentencePiece** (T5, Llama). They differ in how the merge or segmentation objective is defined, but the core idea is the same: break rare words into reusable pieces.
+<div class="vocab-tradeoff">
+  <div><strong>Small vocabulary</strong><span>longer sequences</span></div>
+  <div><strong>Large vocabulary</strong><span>bigger embedding table</span></div>
+  <div><strong>Byte-level base</strong><span>no true out-of-vocabulary text</span></div>
+</div>
 
 ---
 
@@ -88,14 +69,28 @@ Other schemes exist: **WordPiece** (BERT), **Unigram** and **SentencePiece** (T5
 
 ## Why Tokenization Matters in Practice
 
-Token counts drive both context limits and API cost:
+<div class="token-practice-grid">
+  <div class="token-case">
+    <h3>English prose</h3>
+    <div class="token-strip"><span>the</span><span>&nbsp;cat</span><span>&nbsp;sat</span></div>
+    <p>Frequent pieces stay compact.</p>
+  </div>
+  <div class="token-case">
+    <h3>Less represented scripts</h3>
+    <div class="token-strip"><span>日</span><span>本</span><span>語</span><span>の</span><span>文</span><span>章</span></div>
+    <p>More pieces can mean higher cost for the same idea.</p>
+  </div>
+  <div class="token-case">
+    <h3>Strings and numbers</h3>
+    <div class="token-strip"><span>12345</span><span>&nbsp;reverse</span><span>&nbsp;me</span></div>
+    <p>The model sees token IDs, not guaranteed character access.</p>
+  </div>
+</div>
 
-- A model's "context window" is measured in tokens, not words. A 4K context holds roughly 3,000 English words but often fewer in other languages.
-
-- Non-English text frequently costs more tokens. The same sentence in Japanese or Arabic may require 1.5&ndash;2x more tokens than English. This is the **"token tax"** on multilingual use.
-
-- Tokenization explains why models struggle to count letters, reverse strings, or do digit arithmetic. The model never sees the string "12345"; it sees a token ID for the entire number "12345" and has no access to its individual digits.
-
-- A tokenizer and a model are trained separately. The model only ever sees token IDs. Glitch tokens &mdash; rare tokens that appear in the vocabulary but almost never in training data &mdash; can trigger bizarre behavior because the model learned no reliable representation for them.
-
-The handoff to the model is simple: each token ID indexes one row of the embedding matrix. That vector is the only thing the transformer ever sees.
+<div class="handoff-diagram">
+  <div class="token-strip"><span>token</span><span>ID</span><span>9048</span></div>
+  <div class="byte-arrow">&rarr;</div>
+  <div class="matrix-card">embedding row<br><strong>vector only</strong></div>
+  <div class="byte-arrow">&rarr;</div>
+  <div class="matrix-card">transformer<br><strong>never sees raw text</strong></div>
+</div>

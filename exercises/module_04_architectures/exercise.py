@@ -125,7 +125,7 @@ class FeedForward(nn.Module):
             Output tensor, shape (batch_size, seq_len, d_model).
         """
         # TODO: Apply fc1, then F.gelu(...), then fc2, then dropout.
-        # HINT: return self.fc2(self.dropout(F.gelu(self.fc1(x))))
+        # HINT: compose the layers in order; the tensor should end at d_model, not d_ff.
         raise NotImplementedError("TODO: FFN forward pass")
 
 
@@ -154,10 +154,7 @@ class TransformerBlock(nn.Module):
             Output tensor, shape (batch_size, seq_len, d_model).
         """
         # TODO: Pre-norm attention with residual, then pre-norm FFN with residual.
-        # HINT:
-        #   x = x + self.attn(self.ln1(x))
-        #   x = x + self.ffn(self.ln2(x))
-        #   return x
+        # HINT: use the same pattern twice: normalize, apply the sub-layer, then add the result back to x.
         raise NotImplementedError("TODO: transformer block forward pass")
 
 
@@ -315,6 +312,20 @@ def greedy_decode(model: GPT2Model, tokenizer, prompt: str, max_new: int = 10) -
 # ---------------------------------------------------------------------------
 
 
+def _sample_topk_token(next_logits: torch.Tensor, top_k: int) -> torch.Tensor:
+    """Sample one token from the top-k logits."""
+    # Find the k largest logits for each batch item.
+    topk_vals, _ = torch.topk(next_logits, top_k, dim=-1)
+    # The last value in topk_vals is the cutoff for staying in the top k.
+    threshold = topk_vals[:, -1].unsqueeze(-1)
+    # Set all logits below the cutoff to -infinity, so softmax gives them 0 probability.
+    next_logits = next_logits.masked_fill(next_logits < threshold, float("-inf"))
+    # Convert the filtered logits to probabilities.
+    probs = F.softmax(next_logits, dim=-1)
+    # Draw one token ID from that probability distribution.
+    return torch.multinomial(probs, num_samples=1)
+
+
 def sample_with_temperature_topk(
     model: GPT2Model,
     tokenizer,
@@ -345,13 +356,14 @@ def sample_with_temperature_topk(
             logits = model(token_ids)
             next_logits = logits[:, -1, :]
 
-            # TODO: Scale logits by temperature, then apply top-k filtering.
-            # HINT:
-            #   1. Scale: next_logits = next_logits / temperature
-            #   2. Top-k: zero out everything except the k largest values.
-            #      Use torch.topk to find the threshold, then masked_fill.
-            #   3. Sample: probs = F.softmax(filtered, dim=-1)
-            #      next_token = torch.multinomial(probs, num_samples=1)
-            raise NotImplementedError("TODO: temperature scaling + top-k sampling")
+            # TODO: Scale logits by temperature before top-k filtering.
+            # HINT: temperature is applied before filtering; divide the logits by temperature.
+            next_logits = None
+            if next_logits is None:
+                raise NotImplementedError("TODO: temperature scaling")
+
+            # Use the provided helper to filter to top-k and sample one token.
+            next_token = _sample_topk_token(next_logits, top_k)
+            token_ids = torch.cat([token_ids, next_token], dim=1)
 
     return tokenizer.decode(token_ids[0])

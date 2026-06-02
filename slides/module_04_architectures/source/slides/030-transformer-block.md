@@ -1,128 +1,273 @@
-:::divider id="divider-block" title="Anatomy of a Transformer Block" sub="How one layer transforms its input"
+:::divider id="divider-block" title="Putting It All Together" sub="Following one prompt through a decoder-only transformer"
 :::
 
 ---
 
 <!-- .slide: id="embedding-layer" -->
 
-## The Embedding Layer
+## Step 1: Words to Embeddings
 
-Each token ID indexes one row of a learned embedding matrix $W_E \in \mathbb{R}^{V \times d_{\text{model}}}$.
+<div class="decoder-flow active-tokenization active-embedding">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\mathbf{x}_i = W_E[t_i] + W_P[i]$$
+<div class="embedding-visual">
+  <div class="word-card">The capital of France</div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="token-strip"><span>The</span><span>&nbsp;capital</span><span>&nbsp;of</span><span>&nbsp;France</span></div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="id-strip"><span>464</span><span>3139</span><span>286</span><span>4881</span></div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="embedding-table">
+    <div>row 464</div><div class="vector-bar"></div>
+    <div>row 3139</div><div class="vector-bar wide"></div>
+    <div>row 286</div><div class="vector-bar short"></div>
+    <div>row 4881</div><div class="vector-bar"></div>
+  </div>
+</div>
 
-The positional embedding $W_P[i]$ adds position information. Without this addition, a bag of attention scores has no inherent notion of order: shuffling the input tokens would leave the output unchanged.
-
-The result is a sequence of vectors $\mathbf{x}_1, \dots, \mathbf{x}_n$ that flows into the first transformer block.
+Each token ID selects one learned row from the embedding matrix. From here on, the transformer sees vectors, not text.
 
 ---
 
-<!-- .slide: id="residual-stream" -->
+<!-- .slide: id="positional-encoding" -->
 
-## The Residual Stream
+## Step 2: Add Position
 
-Picture the transformer not as a pipeline but as a **running vector** that flows through the network:
+<div class="decoder-flow active-position">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\mathbf{x}_{\text{out}} = \mathbf{x}_{\text{in}} + \text{sub-layer}(\text{norm}(\mathbf{x}_{\text{in}}))$$
+<div class="position-visual">
+  <div class="pos-column">
+    <h3>Token vectors</h3>
+    <div class="vector-pill">The</div>
+    <div class="vector-pill">capital</div>
+    <div class="vector-pill">of</div>
+    <div class="vector-pill">France</div>
+  </div>
+  <div class="plus-column">+</div>
+  <div class="pos-column">
+    <h3>Position vectors</h3>
+    <div class="vector-pill muted">pos 0</div>
+    <div class="vector-pill muted">pos 1</div>
+    <div class="vector-pill muted">pos 2</div>
+    <div class="vector-pill muted">pos 3</div>
+  </div>
+  <div class="plus-column">=</div>
+  <div class="pos-column result">
+    <h3>Input to block 1</h3>
+    <div class="vector-pill accent">The @ 0</div>
+    <div class="vector-pill accent">capital @ 1</div>
+    <div class="vector-pill accent">of @ 2</div>
+    <div class="vector-pill accent">France @ 3</div>
+  </div>
+</div>
 
-Each sub-layer reads from the stream, computes its contribution, and writes it back. The stream is never replaced; it is only updated by addition. This means:
-
-- Every block can still "see" the original embedding signal
-- Gradients have a direct highway back to the input through the residual adds
-- The entire depth of the model relies on this highway to avoid vanishing gradients
+Without position information, attention is order-blind: the same tokens in a different order would look too similar.
 
 ---
 
 <!-- .slide: id="attention-sublayer" -->
 
-## Sub-layer 1: Multi-Head Self-Attention
+## Step 3: Multi-Head Attention
 
-Queries, keys, and values are projected from the normalized residual stream. Attention computes a weighted mixture of values, then the output is projected back to $d_{\text{model}}$ and added to the stream:
+<div class="decoder-flow active-attention">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\mathbf{x} = \mathbf{x} + \text{Attention}(\text{LayerNorm}(\mathbf{x}))$$
+<div class="attention-visual">
+  <div class="causal-matrix">
+    <div></div><div>The</div><div>capital</div><div>of</div><div>France</div>
+    <div>The</div><span class="on"></span><span></span><span></span><span></span>
+    <div>capital</div><span class="on"></span><span class="on"></span><span></span><span></span>
+    <div>of</div><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
+    <div>France</div><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+  </div>
+  <div class="head-stack">
+    <div class="head-card">head 1<br><span>syntax</span></div>
+    <div class="head-card">head 2<br><span>entities</span></div>
+    <div class="head-card">head 3<br><span>position</span></div>
+  </div>
+</div>
 
-Attention is where tokens communicate. It is the only operation where information moves between positions in the same layer. The FFN processes each position independently.
+Attention is the communication step. Each token reads from earlier tokens through the causal mask, and each head can learn a different kind of lookup.
 
 ---
 
 <!-- .slide: id="ffn-sublayer" -->
 
-## Sub-layer 2: The Feed-Forward Network
+## Step 4: Feed-Forward Network
 
-After attention, every position is processed by the same two-layer MLP:
+<div class="decoder-flow active-ffn">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\text{FFN}(\mathbf{x}) = W_2 \cdot \text{GELU}(W_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2$$
+<div class="ffn-visual">
+  <div class="vector-column">
+    <div class="vector-pill">The vector</div>
+    <div class="vector-pill">capital vector</div>
+    <div class="vector-pill">of vector</div>
+    <div class="vector-pill">France vector</div>
+  </div>
+  <div class="ffn-layers">
+    <div class="ffn-layer">linear up</div>
+    <div class="ffn-layer accent">GELU</div>
+    <div class="ffn-layer">linear down</div>
+  </div>
+  <div class="vector-column">
+    <div class="vector-pill accent">updated The</div>
+    <div class="vector-pill accent">updated capital</div>
+    <div class="vector-pill accent">updated of</div>
+    <div class="vector-pill accent">updated France</div>
+  </div>
+</div>
 
-The hidden dimension is typically about $4 \times d_{\text{model}}$ (3,072 for GPT-2 small). This is applied independently at every position, with no mixing between tokens.
-
-A large share of a model's parameters and stored **"knowledge"** live here. Each FFN neuron can be viewed as a key-value pair: when the input activates a neuron (via ReLU/GELU), it retrieves a stored output vector. The FFN is where facts like "Paris is the capital of France" are encoded.
-
----
-
-<!-- .slide: id="norm-and-residual" -->
-
-## Residual Connections and Normalization
-
-Residual connections are the gradient highway that makes deep stacks trainable. Without them, gradients would decay exponentially with depth.
-
-Normalization stabilizes the distribution of activations:
-
-$$\text{LayerNorm}(x) = \gamma \odot \frac{x - \mu}{\sqrt{\sigma^2 + \epsilon}} + \beta$$
-
-- **Post-norm** (original transformer): normalize after the sub-layer output
-- **Pre-norm** (modern default): normalize before the sub-layer input, then add the residual. More stable to train at depth.
-
-**RMSNorm** is the modern simplification: drop the mean-centering step and just divide by the root-mean-square.
+The FFN does not mix positions. It transforms each token vector independently, adding learned features and much of the model's stored knowledge.
 
 ---
 
 <!-- .slide: id="stacking-and-head" -->
 
-## Stacking Blocks and the Output Head
+## Step 5: Repeat the Block
 
-Identical blocks are stacked $N$ times to build depth:
+<div class="decoder-flow active-repeat">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-$$\text{block}_N(\dots \text{block}_2(\text{block}_1(\mathbf{x}_{\text{embed}})) \dots) = \mathbf{x}_{\text{final}}$$
+<div class="stack-visual">
+  <div class="stack-block">block 1<br><span>attention + FFN</span></div>
+  <div class="stack-block">block 2<br><span>attention + FFN</span></div>
+  <div class="stack-block">block 3<br><span>attention + FFN</span></div>
+  <div class="stack-ellipsis">...</div>
+  <div class="stack-block accent">block N<br><span>attention + FFN</span></div>
+</div>
 
-After the last block, a final layer norm and the **language-modeling head** project back to vocabulary-sized logits:
-
-$$\text{logits} = W_{\text{head}} \cdot \text{LayerNorm}(\mathbf{x}_{\text{final}})$$
-
-**Weight tying** reuses the embedding matrix as the output projection: $W_{\text{head}} = W_E^T$. This saves parameters and enforces that input and output live in the same semantic space.
+Depth lets later blocks build on earlier features. GPT-2 small repeats this decoder block 12 times.
 
 ---
 
-<!-- .slide: id="forward-pass-and-params" -->
+<!-- .slide: id="softmax-output" -->
 
-## One Forward Pass: Tokens to Logits
+## Step 6: Logits to Probabilities
 
-Trace the full path:
+<div class="decoder-flow active-softmax">
+  <div class="flow-node tokenization">word &rarr; tokens</div>
+  <div class="flow-node embedding">token IDs &rarr; vectors</div>
+  <div class="flow-node position">add position</div>
+  <div class="flow-node attention">multi-head attention</div>
+  <div class="flow-node ffn">feed-forward network</div>
+  <div class="flow-node repeat">repeat blocks</div>
+  <div class="flow-node softmax">softmax</div>
+</div>
 
-1. Token IDs $\rightarrow$ embedding lookup + position
-2. Pass through $N$ transformer blocks (attention + FFN, each with pre-norm and residual)
-3. Final layer norm
-4. Unembedding / LM head $\rightarrow$ logits
-5. Softmax $\rightarrow$ next-token probabilities
+<div class="softmax-visual">
+  <div class="matrix-card">last token vector<br><strong>France</strong></div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="logit-bars">
+    <div><span>Paris</span><b style="height: 120px;"></b></div>
+    <div><span>London</span><b style="height: 40px;"></b></div>
+    <div><span>city</span><b style="height: 64px;"></b></div>
+    <div><span>capital</span><b style="height: 52px;"></b></div>
+  </div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="matrix-card accent">sample or choose<br><strong>next token</strong></div>
+</div>
 
-Parameter counting for GPT-2 small ($d_{\text{model}}=768$, $N=12$, $V=50257$):
+The language-modeling head scores every vocabulary item. Softmax turns those scores into the next-token distribution.
 
-| Component | Parameters | Share |
-|-----------|-----------|-------|
-| Embeddings | $V \cdot d$ | ~38% |
-| Attention (all layers) | $N \cdot 4 d^2$ | ~29% |
-| FFN (all layers) | $N \cdot 8 d^2$ | ~29% |
-| Output head (tied) | 0 (shares embed) | 0% |
-| **Total** | **~124M** | **100%** |
+---
+
+<!-- .slide: id="norm-and-residual" -->
+
+## Normalization: Keep the Scale Stable
+
+<div class="norm-visual">
+  <div class="norm-lane">
+    <h3>Original transformer</h3>
+    <div class="norm-row"><span>stream</span><b>&rarr;</b><span>sub-layer</span><b>&rarr;</b><span class="accent">LayerNorm</span></div>
+    <p>Post-norm is simple, but deep stacks are harder to train.</p>
+  </div>
+  <div class="norm-lane">
+    <h3>Modern decoder blocks</h3>
+    <div class="norm-row"><span>stream</span><b>&rarr;</b><span class="accent">LayerNorm / RMSNorm</span><b>&rarr;</b><span>sub-layer</span></div>
+    <p>Pre-norm keeps the residual path cleaner at depth.</p>
+  </div>
+</div>
+
+LayerNorm rescales each token vector. RMSNorm keeps the stabilizing scale step and drops mean-centering for speed and simplicity.
+
+---
+
+<!-- .slide: id="residual-stream" -->
+
+## The Residual Stream View
+
+<div class="residual-visual">
+  <div class="residual-line"></div>
+  <div class="residual-token start">embedding</div>
+  <div class="residual-write top">attention writes a delta</div>
+  <div class="residual-write bottom">FFN writes a delta</div>
+  <div class="residual-write top second">next block writes again</div>
+  <div class="residual-token end">final vector</div>
+</div>
+
+The stream is not replaced. Each sub-layer reads the current vector, computes an update, and adds that update back.
+
+<div class="formula-card">output stream = input stream + sub-layer update</div>
+
+This is why information from the original prompt can remain available many layers later.
 
 ---
 
 <!-- .slide: id="side-quest-residual" -->
 
-## Side Quest: The Residual Stream and Induction Heads
+## Side Quest: In-Context Learning in the Stream
 
-Mechanistic interpretability reads the transformer as components reading from and writing to a shared residual stream. **Induction heads** (Olsson et al., 2022) implement a simple copy-and-continue pattern:
+<div class="icl-diagram">
+  <div class="icl-prompt">
+    <div>English: cat &rarr; French: chat</div>
+    <div>English: dog &rarr; French: chien</div>
+    <div class="accent">English: bird &rarr; French:</div>
+  </div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="icl-pattern">
+    <div>examples write task pattern</div>
+    <div class="stream-line"></div>
+    <div class="accent">current query reads that pattern</div>
+  </div>
+  <div class="pipe-arrow">&rarr;</div>
+  <div class="matrix-card accent">oiseau</div>
+</div>
 
-- When the model sees a pattern like `[A] [B] ... [A]`, it predicts `[B]` as the next token
-- This is the mechanism behind in-context learning: the model copies a pattern it observed earlier in the context
-
-Induction heads are linked to the emergence of few-shot learning at scale. They make the residual-stream metaphor concrete: each head reads the stream, detects a previous occurrence of a token, and writes a prediction back.
+In-context learning is a runtime effect: the prompt examples shape the residual stream, and later tokens use that temporary pattern without changing model weights.
