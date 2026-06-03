@@ -1,77 +1,7 @@
-/* Module 4 overrides: diagrams and figure staging for architecture slides. */
-
-.notable-stage {
-  position: relative;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.notable-photo {
-  border-radius: var(--box-radius);
-  object-fit: cover;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
-}
-
-.notable-photo-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-height: 520px;
-  max-width: 520px;
-}
-
-.notable-name-first {
-  position: absolute;
-  bottom: 18px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  border: none !important;
-  padding: 0 !important;
-  color: var(--text-color);
-}
-
-.notable-reveal {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: 360px 1fr;
-  gap: 42px;
-  align-items: center;
-  width: 100%;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.notable-reveal.visible {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.notable-photo-side {
-  width: 360px;
-  height: 500px;
-}
-
-.notable-copy h2 {
-  border: none !important;
-  padding-bottom: 0 !important;
-  margin-bottom: 8px !important;
-}
-
-.notable-copy h3 {
-  color: var(--secondary-color);
-  font-size: 18pt;
-  margin: 0 0 16px 0;
-}
-
-.notable-copy li {
-  font-size: 18pt !important;
-}
+/* Module 4 overrides: diagrams for architecture slides.
+   Notable-figure slides use the shared :::figure fence (see slides/source),
+   matching the other modules: the portrait is fixed on the left and the name
+   and details reveal as fragments, with no center-then-slide animation. */
 
 .rnn-flow,
 .gate-diagram,
@@ -156,6 +86,7 @@
   color: var(--secondary-color);
   font-size: 26pt;
   font-family: var(--heading-font);
+  text-align: center;
 }
 
 .formula-card {
@@ -264,13 +195,91 @@
   line-height: 1.35 !important;
 }
 
+.glitch-token-map {
+  display: grid;
+  grid-template-columns: 1fr 44px 1fr 44px 1fr;
+  gap: 18px;
+  align-items: stretch;
+  margin: 28px 0;
+}
+
+.glitch-card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 14px;
+  min-height: 250px;
+  padding: 16px 18px;
+  border-radius: var(--box-radius);
+  border: 1px solid rgba(74, 158, 255, 0.28);
+  background: rgba(74, 158, 255, 0.08);
+  text-align: center;
+}
+
+.glitch-card.accent {
+  border-color: rgba(245, 166, 35, 0.6);
+  background: rgba(245, 166, 35, 0.12);
+}
+
+.glitch-card h3 {
+  font-size: 17pt;
+  margin: 0;
+  color: var(--secondary-color);
+}
+
+.glitch-card p {
+  font-size: 13pt !important;
+  line-height: 1.32 !important;
+  margin: 0 !important;
+  color: var(--muted-color) !important;
+}
+
+.glitch-card .token-strip,
+.glitch-card .matrix-card,
+.glitch-bars {
+  align-self: center;
+}
+
+.glitch-token span {
+  border-color: rgba(245, 166, 35, 0.55);
+  background: rgba(245, 166, 35, 0.14);
+  font-size: 14pt;
+}
+
+.glitch-bars {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.glitch-bar {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 6px;
+  color: var(--text-color);
+  font-size: 12pt;
+  text-align: left;
+}
+
+.glitch-bar.common {
+  width: 100%;
+  background: rgba(74, 158, 255, 0.34);
+}
+
+.glitch-bar.rare {
+  width: 38%;
+  min-width: 118px;
+  background: rgba(245, 166, 35, 0.38);
+}
+
 .handoff-diagram {
   margin-top: 18px;
 }
 
 .decoder-flow {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 8px;
   margin: 18px 0 26px 0;
 }
@@ -289,13 +298,12 @@
   line-height: 1.2;
 }
 
-.active-tokenization .tokenization,
 .active-embedding .embedding,
 .active-position .position,
 .active-attention .attention,
 .active-ffn .ffn,
 .active-repeat .repeat,
-.active-softmax .softmax {
+.active-sampling .sampling {
   border-color: rgba(245, 166, 35, 0.75);
   background: rgba(245, 166, 35, 0.14);
   color: var(--text-color);
@@ -307,22 +315,53 @@
 }
 
 .embedding-table {
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  gap: 8px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
   color: var(--muted-color);
+  font-size: 11pt;
+}
+
+.et-title {
+  text-align: center;
+  color: var(--secondary-color);
   font-size: 12pt;
+  margin-bottom: 4px;
 }
 
-.vector-bar {
-  height: 18px;
-  border-radius: 5px;
-  background: var(--primary-color);
+.et-title span {
+  display: block;
+  color: var(--muted-color);
+  font-size: 10pt;
+  margin-top: 2px;
 }
 
-.vector-bar.wide { width: 100%; }
-.vector-bar.short { width: 54%; }
+.et-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.et-id {
+  min-width: 56px;
+  text-align: right;
+  font-size: 10pt;
+}
+
+.et-vec {
+  display: flex;
+  gap: 3px;
+}
+
+.et-vec i {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  background: rgba(74, 158, 255, 0.55);
+}
+
+.et-row.accent .et-id { color: var(--secondary-color); }
+.et-row.accent .et-vec i { background: var(--secondary-color); }
 
 .position-visual {
   align-items: stretch;
@@ -392,6 +431,24 @@
   padding: 14px 18px;
   text-align: center;
   color: var(--text-color);
+}
+
+.attention-detail {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 40px;
+  align-items: center;
+  margin: 18px 0 14px 0;
+}
+
+.attention-steps ul {
+  margin: 0;
+}
+
+.attention-steps li {
+  font-size: 15pt !important;
+  line-height: 1.35 !important;
+  margin-bottom: 8px;
 }
 
 .ffn-visual {
@@ -562,6 +619,43 @@
   background: rgba(245, 166, 35, 0.12);
 }
 
+.transformer-figure {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 40px;
+  align-items: center;
+  margin: 18px 0;
+}
+
+.transformer-figure img {
+  max-height: 500px;
+  width: 100%;
+  object-fit: contain;
+  border-radius: var(--box-radius);
+  background: #ffffff;
+  padding: 10px;
+}
+
+.transformer-callouts {
+  display: grid;
+  gap: 14px;
+}
+
+.transformer-callouts div {
+  background: rgba(74, 158, 255, 0.08);
+  border: 1px solid rgba(74, 158, 255, 0.28);
+  border-radius: var(--box-radius);
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.transformer-callouts span {
+  display: block;
+  color: var(--text-color);
+  font-size: 13pt;
+  margin-top: 4px;
+}
+
 .encoder-decoder-layout {
   display: grid;
   grid-template-columns: 410px 1fr;
@@ -645,4 +739,121 @@
 
 #bpe-algorithm .video-container video {
   max-height: 540px;
+}
+
+/* Decoder-only architecture stack (architecture-only slide). Kept compact so
+   the whole stack fits one slide without overflowing. */
+.decoder-arch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: 440px;
+  margin: 6px auto 0;
+}
+
+.da-node {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 14px;
+  border-radius: var(--box-radius);
+  border: 1px solid rgba(74, 158, 255, 0.40);
+  background: rgba(74, 158, 255, 0.10);
+  color: var(--text-color);
+  text-align: center;
+  font-size: 13.5pt;
+  line-height: 1.15;
+}
+
+.da-node.io {
+  border-color: rgba(245, 166, 35, 0.55);
+  background: rgba(245, 166, 35, 0.12);
+}
+
+.da-node.sub {
+  border-color: rgba(136, 146, 164, 0.45);
+  background: rgba(136, 146, 164, 0.10);
+  font-size: 12.5pt;
+}
+
+.da-arrow {
+  color: var(--secondary-color);
+  font-size: 13pt;
+  line-height: 1;
+  margin: 0;
+}
+
+.da-block {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px 10px;
+  border: 1px dashed rgba(74, 158, 255, 0.55);
+  border-radius: var(--box-radius);
+  background: rgba(74, 158, 255, 0.04);
+}
+
+.da-block-label {
+  position: absolute;
+  top: 50%;
+  right: -52px;
+  transform: translateY(-50%);
+  color: var(--secondary-color);
+  font-size: 16pt;
+  font-weight: 600;
+}
+
+/* Glitch-token example exchange */
+.glitch-example {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 720px;
+  margin: 22px auto;
+}
+
+.glitch-turn {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: var(--box-radius);
+  border: 1px solid rgba(136, 146, 164, 0.30);
+  background: rgba(136, 146, 164, 0.08);
+  color: var(--text-color);
+  font-size: 16pt;
+  text-align: left;
+}
+
+.glitch-turn span {
+  flex: 0 0 86px;
+  color: var(--muted-color);
+  font-size: 11pt;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.glitch-turn.model {
+  border-color: rgba(245, 166, 35, 0.55);
+  background: rgba(245, 166, 35, 0.10);
+}
+
+.glitch-turn.model span { color: var(--secondary-color); }
+
+/* Beam-search sideways tree */
+.beam-tree {
+  display: flex;
+  justify-content: center;
+  margin: 22px 0 10px;
+}
+
+.beam-tree svg {
+  width: 100%;
+  max-width: 880px;
+  height: auto;
 }

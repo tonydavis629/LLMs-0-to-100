@@ -97,7 +97,7 @@ class EmbeddingLayer(nn.Module):
         position = position.unsqueeze(0).expand(b, t)
 
         # TODO: Look up token embeddings and position embeddings, then add them.
-        # HINT: use self.token_embed(token_ids) + self.pos_embed(position)
+        # HINT: there are two embedding tables on self (one for tokens, one for positions); call each on its index tensor and add the two results.
         raise NotImplementedError("TODO: token embedding lookup + positional embedding")
 
 

@@ -56,24 +56,11 @@ Why decoder-only won for LLMs:
 
 ---
 
-<!-- .slide: id="figure-radford" class="notable-figure" -->
-
-<div class="notable-stage">
-  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/radford.jpeg" alt="Alec Radford">
-  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Alec Radford</h2>
-  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
-    <img class="notable-photo notable-photo-side" src="images/radford.jpeg" alt="Alec Radford">
-    <div class="notable-copy">
-      <h2>Alec Radford</h2>
-      <h3>GPT and GPT-2 (2018-2019)</h3>
-      <ul>
-        <li>Showed that autoregressive pretraining could produce general-purpose text models</li>
-        <li>GPT-2 demonstrated coherent long-form generation from scale and data</li>
-        <li>The decoder-only stack became the dominant LLM design</li>
-      </ul>
-    </div>
-  </div>
-</div>
+:::figure img="images/radford.jpg" name="Alec Radford" kicker="GPT and GPT-2 (2018-2019)"
+- Showed that autoregressive pretraining could produce general-purpose text models
+- GPT-2 demonstrated coherent long-form generation from scale and data
+- The decoder-only stack became the dominant LLM design
+:::
 
 ---
 

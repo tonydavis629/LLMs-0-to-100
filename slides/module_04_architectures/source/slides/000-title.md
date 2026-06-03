@@ -13,7 +13,7 @@ From the Transformer to GPT-2
 
 Compare every token (query) against every other token (key), normalize with softmax, and retrieve a weighted sum of values:
 
-$$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
 
 Each output token is a weighted average of value vectors, with weights from query-key compatibility.
 +++

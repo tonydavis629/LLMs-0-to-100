@@ -87,10 +87,23 @@ The compromise: frequent words stay whole, rare words split into reusable pieces
   </div>
 </div>
 
-<div class="handoff-diagram">
-  <div class="token-strip"><span>token</span><span>ID</span><span>9048</span></div>
-  <div class="byte-arrow">&rarr;</div>
-  <div class="matrix-card">embedding row<br><strong>vector only</strong></div>
-  <div class="byte-arrow">&rarr;</div>
-  <div class="matrix-card">transformer<br><strong>never sees raw text</strong></div>
+Once text is tokenized, it is just a list of integer IDs. Each ID selects one row of the embedding table, and from that point on the transformer only ever sees vectors &mdash; it has no direct access to the original characters. This is why reversing a string or counting the letters in a word is surprisingly hard for an LLM: it never sees the letters, only the tokens they were grouped into.
+
+---
+
+<!-- .slide: id="side-quest-glitch-tokens" -->
+
+## Side Quest: Glitch Tokens
+
+The tokenizer and the model are trained **separately**, and that seam can crack. A rare string may appear often enough in the tokenizer's training data to earn its own vocabulary entry, yet show up almost never in the model's training data. Its embedding row then receives little or no gradient signal and stays close to its random initialization.
+
+The classic example is the token <code>&nbsp;SolidGoldMagikarp</code> (originally a Reddit username). Prompts asking early GPT models to repeat or define it produced refusals, unrelated word substitutions, or garbled output &mdash; the model had simply never learned what that vector means.
+
+<div class="glitch-example">
+  <div class="glitch-turn user"><span>Prompt</span>Please repeat the string "SolidGoldMagikarp" back to me.</div>
+  <div class="glitch-turn model"><span>Early GPT</span>"distribute"</div>
 </div>
+
+A real exchange: the glitch token is silently swapped for an unrelated word, because its embedding row never received a meaningful training signal.
+
+These **under-trained tokens** (Land and Bartolo, 2024) make the abstraction boundary concrete: the model never sees the characters `S-o-l-i-d-...`. It receives a single **token ID**, looks up one **embedding vector**, and reasons only from there.

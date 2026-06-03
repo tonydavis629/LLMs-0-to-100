@@ -14,6 +14,75 @@ from manim import *
 import numpy as np
 
 
+# ---------------------------------------------------------------------------
+# High-quality H.264 encoding patch.
+#
+# Manim 0.20.1 hardcodes the partial-movie encode at CRF 23 (see
+# SceneFileWriter.open_partial_movie_stream). CRF 23 is tuned for natural video;
+# on our flat dark backgrounds with sharp text it leaves "mosquito" ringing
+# around glyph edges, which reads as fuzzy / unevenly-spaced letters once the
+# clip is scaled up in the deck. Section videos are stream-COPIED from these
+# partial files (combine_files uses add_stream_from_template, no re-encode), so
+# improving the partial encode is enough to fix every section.
+#
+# We drop CRF to 15 (near-transparent for this kind of content) and use the
+# "slow" preset so the lower CRF does not balloon file size. We deliberately
+# keep yuv420p: yuv444p H.264 does not decode reliably in browsers (Safari in
+# particular), and our text is light-on-dark, so the full-resolution luma plane
+# carries the edges regardless of chroma subsampling. Only the default mp4/x264
+# path is touched; the webm and transparent branches are preserved verbatim.
+# Re-render with --disable_caching or Manim reuses the old CRF-23 partial files.
+from manim.scene import scene_file_writer as _sfw
+
+
+def _hq_open_partial_movie_stream(self, file_path=None):
+    if file_path is None:
+        file_path = self.partial_movie_files[self.renderer.num_plays]
+    self.partial_movie_file_path = file_path
+
+    fps = _sfw.to_av_frame_rate(_sfw.config.frame_rate)
+
+    partial_movie_file_codec = "libx264"
+    partial_movie_file_pix_fmt = "yuv420p"
+    av_options = {
+        "an": "1",  # ffmpeg: -an, no audio
+        "crf": "23",
+    }
+
+    if _sfw.config.movie_file_extension == ".webm":
+        partial_movie_file_codec = "libvpx-vp9"
+        av_options["-auto-alt-ref"] = "1"
+        if _sfw.config.transparent:
+            partial_movie_file_pix_fmt = "yuva420p"
+    elif _sfw.config.transparent:
+        partial_movie_file_codec = "qtrle"
+        partial_movie_file_pix_fmt = "argb"
+    else:
+        # Default mp4/H.264 path: crank quality for crisp text edges.
+        av_options["crf"] = "15"
+        av_options["preset"] = "slow"
+
+    video_container = _sfw.av.open(file_path, mode="w")
+    stream = video_container.add_stream(
+        partial_movie_file_codec,
+        rate=fps,
+        options=av_options,
+    )
+    stream.pix_fmt = partial_movie_file_pix_fmt
+    stream.width = _sfw.config.pixel_width
+    stream.height = _sfw.config.pixel_height
+
+    self.video_container = video_container
+    self.video_stream = stream
+
+    self.queue = _sfw.Queue()
+    self.writer_thread = _sfw.Thread(target=self.listen_and_write, args=())
+    self.writer_thread.start()
+
+
+_sfw.SceneFileWriter.open_partial_movie_stream = _hq_open_partial_movie_stream
+
+
 # Theme colors matching slides
 BG = "#0a0e1a"
 TEXT = "#e8eaf0"
@@ -26,6 +95,30 @@ LINE_C = "#2a3450"
 
 HEADING_FONT = "Helvetica Neue"
 BODY_FONT = "Helvetica Neue"
+
+
+# ---------------------------------------------------------------------------
+# Crisp-kerning Text.
+#
+# Manim renders a Text mobject's glyphs at a pixel size tied to `font_size`; at
+# small sizes the inter-glyph advances get coarsely rounded, so text drawn at a
+# small font_size and then shown near full slide width looks loosely and
+# unevenly spaced ("bad kerning"). Rendering at a large reference size and
+# scaling the VECTOR result down yields accurate, tight kerning at any display
+# size. We shadow Text so every call benefits without touching call sites;
+# layout code reads `.width`/`.height` after the scale, so it keeps working.
+# ---------------------------------------------------------------------------
+_BaseText = Text
+_KERN_REF = 96.0
+
+
+class Text(_BaseText):  # noqa: F811 - intentional shadow of manim.Text
+    def __init__(self, text, *args, font_size=48, **kwargs):
+        if font_size < _KERN_REF:
+            super().__init__(text, *args, font_size=_KERN_REF, **kwargs)
+            self.scale(font_size / _KERN_REF)
+        else:
+            super().__init__(text, *args, font_size=font_size, **kwargs)
 
 
 class LinearSeparabilityScene(Scene):

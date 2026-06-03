@@ -63,24 +63,11 @@ Both kept the **sequential and bottleneck limitations.** The cell was improved, 
 
 ---
 
-<!-- .slide: id="figure-schmidhuber" class="notable-figure" -->
-
-<div class="notable-stage">
-  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/Schmidhuber.jpg" alt="Jürgen Schmidhuber">
-  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Jürgen Schmidhuber</h2>
-  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
-    <img class="notable-photo notable-photo-side" src="images/Schmidhuber.jpg" alt="Jürgen Schmidhuber">
-    <div class="notable-copy">
-      <h2>Jürgen Schmidhuber</h2>
-      <h3>Long Short-Term Memory (1997)</h3>
-      <ul>
-        <li>With Sepp Hochreiter, introduced gated recurrent cells for long-range dependencies</li>
-        <li>Made gradient flow through long sequences much more reliable</li>
-        <li>LSTMs became the default sequence model before transformers</li>
-      </ul>
-    </div>
-  </div>
-</div>
+:::figure img="images/Schmidhuber.jpg" name="Jürgen Schmidhuber" kicker="Long Short-Term Memory (1997)"
+- With Sepp Hochreiter, introduced gated recurrent cells for long-range dependencies
+- Made gradient flow through long sequences much more reliable
+- LSTMs became the default sequence model before transformers
+:::
 
 ---
 
@@ -99,45 +86,19 @@ Bahdanau attention (Module 3) was invented specifically to fix this bottleneck, 
 
 ---
 
-<!-- .slide: id="figure-sutskever" class="notable-figure" -->
-
-<div class="notable-stage">
-  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/sutskever.jpg" alt="Ilya Sutskever">
-  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Ilya Sutskever</h2>
-  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
-    <img class="notable-photo notable-photo-side" src="images/sutskever.jpg" alt="Ilya Sutskever">
-    <div class="notable-copy">
-      <h2>Ilya Sutskever</h2>
-      <h3>Sequence to Sequence Learning (2014)</h3>
-      <ul>
-        <li>With Oriol Vinyals and Quoc Le, showed encoder-decoder RNNs could translate sequences</li>
-        <li>The encoder compressed the source sentence into one vector</li>
-        <li>That bottleneck motivated attention over encoder states</li>
-      </ul>
-    </div>
-  </div>
-</div>
+:::figure img="images/sutskever.jpg" name="Ilya Sutskever" kicker="Sequence to Sequence Learning (2014)"
+- With Oriol Vinyals and Quoc Le, showed encoder-decoder RNNs could translate sequences
+- The encoder compressed the source sentence into one vector
+- That bottleneck motivated attention over encoder states
+:::
 
 ---
 
-<!-- .slide: id="figure-vaswani" class="notable-figure" -->
-
-<div class="notable-stage">
-  <img class="notable-photo notable-photo-center fragment fade-out" data-fragment-index="2" src="images/vaswani.webp" alt="Ashish Vaswani">
-  <h2 class="notable-name-first fragment fade-in-then-out" data-fragment-index="1">Ashish Vaswani</h2>
-  <div class="notable-reveal fragment fade-in" data-fragment-index="2">
-    <img class="notable-photo notable-photo-side" src="images/vaswani.webp" alt="Ashish Vaswani">
-    <div class="notable-copy">
-      <h2>Ashish Vaswani</h2>
-      <h3>Attention Is All You Need (2017)</h3>
-      <ul>
-        <li>Lead author on the original transformer paper</li>
-        <li>Helped replace recurrence with stacked attention and feed-forward blocks</li>
-        <li>The architecture became the foundation for modern LLMs</li>
-      </ul>
-    </div>
-  </div>
-</div>
+:::figure img="images/vaswani.jpg" name="Ashish Vaswani" kicker="Attention Is All You Need (2017)"
+- Lead author on the original transformer paper
+- Helped replace recurrence with stacked attention and feed-forward blocks
+- The architecture became the foundation for modern LLMs
+:::
 
 ---
 
@@ -156,3 +117,26 @@ Why this mattered:
 - **No fixed-size bottleneck.** Each layer accesses the full sequence through attention; nothing is compressed into a single vector.
 
 The transformer is best understood as a direct response to RNN limitations. Every design choice trades sequential recurrence for parallel computation.
+
+---
+
+:::manim id="recurrence-anim" scene="recurrence-vs-attention"
+:::
+
+---
+
+<!-- .slide: id="transformer-architecture" -->
+
+## The Transformer Architecture
+
+<div class="transformer-figure">
+  <img src="images/transformer.webp" alt="The transformer architecture from Attention Is All You Need">
+  <div class="transformer-callouts">
+    <div><strong>Encoder (left)</strong><span>stacked self-attention and feed-forward layers, fully bidirectional</span></div>
+    <div><strong>Decoder (right)</strong><span>masked self-attention, cross-attention to the encoder, feed-forward</span></div>
+    <div><strong>Every block</strong><span>attention to mix positions, a feed-forward network to transform them, with a residual connection and normalization around each</span></div>
+    <div><strong>This module</strong><span>follows the decoder-only variant that powers modern LLMs</span></div>
+  </div>
+</div>
+
+The original paper used the full encoder-decoder. The building blocks &mdash; attention, feed-forward, residual connections, normalization &mdash; are exactly the ones we will follow through a single decoder stack.
