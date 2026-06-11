@@ -1243,721 +1243,49 @@
   color: var(--secondary-color);
 }
 
-/* Module 4 overrides: diagrams for architecture slides.
-   Notable-figure slides use the shared :::figure fence (see slides/source),
-   matching the other modules: the portrait is fixed on the left and the name
-   and details reveal as fragments, with no center-then-slide animation. */
+/* Module 5 overrides: pretraining diagrams.
+   Notable-figure slides use the shared :::figure fence; the manim animations
+   carry the dynamic processes, so this file only styles the few inline-SVG
+   diagrams, the loss-curve image, and the resources grid. */
 
-.rnn-flow,
-.gate-diagram,
-.embedding-visual,
-.position-visual,
-.attention-visual,
-.ffn-visual,
-.stack-visual,
-.softmax-visual,
-.norm-visual,
-.icl-diagram,
-.handoff-diagram,
-.encoder-decoder-layout,
-.moe-diagram,
-.beam-diagram {
+/* Inline-SVG diagram wrappers (self-styled via fill=; just center and size). */
+.stage-flow,
+.pipeline-flow {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 18px;
-  margin: 28px 0;
+  margin: 22px 0 10px;
 }
 
-.rnn-token,
-.rnn-cell,
-.gate-input,
-.gate-memory,
-.gate,
-.word-card,
-.matrix-card,
-.vector-pill,
-.ffn-layer,
-.stack-block,
-.router-box,
-.expert,
-.beam-node,
-.family-grid div,
-.vocab-tradeoff div,
-.token-case,
-.norm-lane {
-  background: rgba(74, 158, 255, 0.08);
-  border: 1px solid rgba(74, 158, 255, 0.28);
-  border-radius: var(--box-radius);
-  padding: 12px 16px;
-  color: var(--text-color);
-  text-align: center;
-}
-
-.rnn-cell,
-.gate-memory,
-.matrix-card,
-.stack-block.accent,
-.expert.active,
-.beam-node.kept,
-.norm-lane .accent,
-.vector-pill.accent,
-.ffn-layer.accent,
-.matrix-card.accent {
-  border-color: rgba(245, 166, 35, 0.6);
-  background: rgba(245, 166, 35, 0.12);
-}
-
-.rnn-cell span,
-.gate span,
-.gate-memory span,
-.head-card span,
-.stack-block span,
-.router-box span,
-.expert span,
-.beam-node span,
-.family-grid span,
-.vocab-tradeoff span {
-  display: block;
-  color: var(--muted-color);
-  font-size: 12pt;
-  margin-top: 4px;
-}
-
-.rnn-arrow,
-.gate-arrow,
-.pipe-arrow,
-.byte-arrow {
-  color: var(--secondary-color);
-  font-size: 26pt;
-  font-family: var(--heading-font);
-  text-align: center;
-}
-
-.formula-card {
+.stage-flow svg {
+  width: 100%;
   max-width: 820px;
-  margin: 18px auto;
-  padding: 16px 22px;
-  text-align: center;
-  border-radius: var(--box-radius);
-  border: 1px solid rgba(245, 166, 35, 0.45);
-  background: rgba(245, 166, 35, 0.09);
-  color: var(--text-color);
-  font-size: 20pt;
+  height: auto;
 }
 
-.gate-stack {
-  display: grid;
-  gap: 10px;
-}
-
-.gate.forget { border-color: rgba(231, 76, 60, 0.55); }
-.gate.input { border-color: rgba(63, 185, 80, 0.55); }
-.gate.output { border-color: rgba(74, 158, 255, 0.55); }
-
-.token-strip,
-.id-strip {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.token-strip span,
-.id-strip span {
-  display: inline-flex;
-  align-items: center;
-  min-height: 38px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(74, 158, 255, 0.35);
-  background: rgba(74, 158, 255, 0.10);
-  color: var(--text-color);
-  font-size: 15pt;
-}
-
-.token-strip-accent span,
-.id-strip span {
-  border-color: rgba(245, 166, 35, 0.48);
-  background: rgba(245, 166, 35, 0.12);
-}
-
-.byte-bpe-diagram {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  margin: 18px auto;
-  max-width: 900px;
-}
-
-.byte-lane {
-  text-align: center;
-}
-
-.byte-lane h3,
-.token-case h3,
-.norm-lane h3 {
-  font-size: 18pt;
-  margin: 0 0 8px 0;
-  color: var(--secondary-color);
-}
-
-.byte-grid {
-  display: grid;
-  grid-template-columns: repeat(15, 1fr);
-  gap: 6px;
-}
-
-.byte-grid span {
-  padding: 7px 0;
-  border: 1px solid rgba(136, 146, 164, 0.35);
-  border-radius: 5px;
-  font-size: 12pt;
-  color: var(--text-color);
-}
-
-.vocab-tradeoff,
-.token-practice-grid,
-.family-grid {
-  display: grid;
-  gap: 14px;
-}
-
-.vocab-tradeoff {
-  grid-template-columns: repeat(3, 1fr);
-  margin-top: 14px;
-}
-
-.token-practice-grid {
-  grid-template-columns: repeat(3, 1fr);
-  margin: 28px 0;
-}
-
-.token-case p {
-  font-size: 14pt !important;
-  color: var(--muted-color) !important;
-  margin: 12px 0 0 0 !important;
-  line-height: 1.35 !important;
-}
-
-.glitch-token-map {
-  display: grid;
-  grid-template-columns: 1fr 44px 1fr 44px 1fr;
-  gap: 18px;
-  align-items: stretch;
-  margin: 28px 0;
-}
-
-.glitch-card {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 14px;
-  min-height: 250px;
-  padding: 16px 18px;
-  border-radius: var(--box-radius);
-  border: 1px solid rgba(74, 158, 255, 0.28);
-  background: rgba(74, 158, 255, 0.08);
-  text-align: center;
-}
-
-.glitch-card.accent {
-  border-color: rgba(245, 166, 35, 0.6);
-  background: rgba(245, 166, 35, 0.12);
-}
-
-.glitch-card h3 {
-  font-size: 17pt;
-  margin: 0;
-  color: var(--secondary-color);
-}
-
-.glitch-card p {
-  font-size: 13pt !important;
-  line-height: 1.32 !important;
-  margin: 0 !important;
-  color: var(--muted-color) !important;
-}
-
-.glitch-card .token-strip,
-.glitch-card .matrix-card,
-.glitch-bars {
-  align-self: center;
-}
-
-.glitch-token span {
-  border-color: rgba(245, 166, 35, 0.55);
-  background: rgba(245, 166, 35, 0.14);
-  font-size: 14pt;
-}
-
-.glitch-bars {
-  display: grid;
-  gap: 12px;
+.pipeline-flow svg {
   width: 100%;
+  max-width: 960px;
+  height: auto;
 }
 
-.glitch-bar {
+/* The real loss-curve image produced by the exercise. */
+.loss-figure {
   display: flex;
-  align-items: center;
-  min-height: 40px;
-  padding: 0 12px;
-  border-radius: 6px;
-  color: var(--text-color);
-  font-size: 12pt;
-  text-align: left;
-}
-
-.glitch-bar.common {
-  width: 100%;
-  background: rgba(74, 158, 255, 0.34);
-}
-
-.glitch-bar.rare {
-  width: 38%;
-  min-width: 118px;
-  background: rgba(245, 166, 35, 0.38);
-}
-
-.handoff-diagram {
-  margin-top: 18px;
-}
-
-.decoder-flow {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 8px;
-  margin: 18px 0 26px 0;
-}
-
-.flow-node {
-  min-height: 58px;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  text-align: center;
-  padding: 8px 10px;
+  margin: 10px 0 14px;
+}
+
+.loss-figure img {
+  max-height: 400px;
+  width: auto;
   border-radius: var(--box-radius);
-  border: 1px solid rgba(136, 146, 164, 0.30);
-  color: var(--muted-color);
-  font-size: 13pt;
-  line-height: 1.2;
-}
-
-.active-embedding .embedding,
-.active-position .position,
-.active-attention .attention,
-.active-ffn .ffn,
-.active-repeat .repeat,
-.active-sampling .sampling {
-  border-color: rgba(245, 166, 35, 0.75);
-  background: rgba(245, 166, 35, 0.14);
-  color: var(--text-color);
-}
-
-.embedding-visual {
-  display: grid;
-  grid-template-columns: 1fr 44px 1.4fr 44px 1fr 44px 1.2fr;
-}
-
-.embedding-table {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  color: var(--muted-color);
-  font-size: 11pt;
-}
-
-.et-title {
-  text-align: center;
-  color: var(--secondary-color);
-  font-size: 12pt;
-  margin-bottom: 4px;
-}
-
-.et-title span {
-  display: block;
-  color: var(--muted-color);
-  font-size: 10pt;
-  margin-top: 2px;
-}
-
-.et-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.et-id {
-  min-width: 56px;
-  text-align: right;
-  font-size: 10pt;
-  white-space: nowrap;
-}
-
-.et-vec {
-  font-family: "SF Mono", "Roboto Mono", Menlo, Consolas, monospace;
-  font-size: 10.5pt;
-  color: var(--primary-color);
-  white-space: nowrap;
-}
-
-.et-row.accent .et-id { color: var(--secondary-color); }
-.et-row.accent .et-vec { color: var(--secondary-color); }
-
-.position-visual {
-  align-items: stretch;
-}
-
-.pos-column {
-  display: grid;
-  gap: 8px;
-}
-
-.pos-column h3 {
-  text-align: center;
-  font-size: 16pt;
-  margin: 0 0 4px 0;
-  color: var(--secondary-color);
-}
-
-.plus-column {
-  display: flex;
-  align-items: center;
-  color: var(--secondary-color);
-  font-size: 36pt;
-}
-
-.vector-pill.muted {
-  border-color: rgba(136, 146, 164, 0.35);
-  color: var(--muted-color);
-}
-
-.attention-visual {
-  gap: 42px;
-}
-
-.causal-matrix {
-  display: grid;
-  grid-template-columns: 82px repeat(4, 82px);
-  gap: 6px;
-  align-items: center;
-  text-align: center;
-  font-size: 11pt;
-  color: var(--muted-color);
-}
-
-.causal-matrix span {
-  width: 76px;
-  height: 42px;
-  border-radius: 5px;
-  border: 1px solid rgba(136, 146, 164, 0.25);
-  background: rgba(136, 146, 164, 0.08);
-}
-
-.causal-matrix span.on {
-  border-color: rgba(74, 158, 255, 0.55);
-  background: rgba(74, 158, 255, 0.22);
-}
-
-.head-stack {
-  display: grid;
-  gap: 12px;
-}
-
-.head-card {
-  min-width: 180px;
-  border: 1px solid rgba(245, 166, 35, 0.45);
-  background: rgba(245, 166, 35, 0.10);
-  border-radius: var(--box-radius);
-  padding: 14px 18px;
-  text-align: center;
-  color: var(--text-color);
-}
-
-.attention-detail {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 40px;
-  align-items: center;
-  margin: 18px 0 14px 0;
-}
-
-.attention-steps ul {
-  margin: 0;
-}
-
-.attention-steps li {
-  font-size: 15pt !important;
-  line-height: 1.35 !important;
-  margin-bottom: 8px;
-}
-
-.ffn-visual {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  align-items: stretch;
-}
-
-.vector-column,
-.ffn-layers {
-  display: grid;
-  gap: 10px;
-}
-
-.ffn-layer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.stack-visual {
-  flex-wrap: wrap;
-}
-
-.stack-ellipsis {
-  color: var(--muted-color);
-  font-size: 36pt;
-}
-
-.logit-bars {
-  display: flex;
-  align-items: end;
-  gap: 16px;
-  height: 180px;
-  padding: 14px 20px;
   border: 1px solid rgba(74, 158, 255, 0.25);
-  border-radius: var(--box-radius);
-  background: rgba(74, 158, 255, 0.06);
 }
 
-.logit-bars div {
-  display: grid;
-  align-items: end;
-  gap: 8px;
-  justify-items: center;
-}
-
-.logit-bars b {
-  display: block;
-  width: 44px;
-  border-radius: 5px 5px 0 0;
-  background: var(--secondary-color);
-}
-
-.logit-bars span {
-  color: var(--text-color);
-  font-size: 12pt;
-}
-
-.norm-visual {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: stretch;
-}
-
-.norm-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin: 18px 0;
-}
-
-.norm-row span {
-  padding: 10px 12px;
-  border: 1px solid rgba(74, 158, 255, 0.35);
-  border-radius: 6px;
-}
-
-.norm-lane p {
-  font-size: 14pt !important;
-  color: var(--muted-color) !important;
-  margin: 0 !important;
-}
-
-.residual-visual {
-  position: relative;
-  min-height: 240px;
-  flex: 1;
-}
-
-.residual-line {
-  position: absolute;
-  left: 80px;
-  right: 80px;
-  top: 50%;
-  height: 4px;
-  background: var(--primary-color);
-}
-
-.residual-token,
-.residual-write {
-  position: absolute;
-  border-radius: var(--box-radius);
-  border: 1px solid rgba(245, 166, 35, 0.50);
-  background: rgba(245, 166, 35, 0.12);
-  padding: 10px 14px;
-  color: var(--text-color);
-  font-size: 14pt;
-}
-
-.residual-token.start { left: 20px; top: calc(50% - 24px); }
-.residual-token.end { right: 20px; top: calc(50% - 24px); }
-.residual-write.top { left: 270px; top: 26px; }
-.residual-write.bottom { left: 470px; bottom: 26px; }
-.residual-write.second { left: 680px; }
-
-.icl-diagram {
-  display: grid;
-  grid-template-columns: 1.2fr 44px 1fr 44px 0.7fr;
-}
-
-.icl-prompt {
-  display: grid;
-  gap: 10px;
-}
-
-.icl-prompt div {
-  padding: 12px 14px;
-  border: 1px solid rgba(74, 158, 255, 0.30);
-  border-radius: var(--box-radius);
-  background: rgba(74, 158, 255, 0.08);
-  color: var(--text-color);
-  font-size: 15pt;
-}
-
-.icl-prompt .accent {
-  border-color: rgba(245, 166, 35, 0.60);
-  background: rgba(245, 166, 35, 0.12);
-}
-
-.icl-pattern {
-  display: grid;
-  gap: 14px;
-  align-items: center;
-}
-
-.icl-pattern div {
-  padding: 12px 14px;
-  border: 1px solid rgba(74, 158, 255, 0.30);
-  border-radius: var(--box-radius);
-  background: rgba(74, 158, 255, 0.08);
-  color: var(--text-color);
-  font-size: 14pt;
-  text-align: center;
-}
-
-.icl-pattern .stream-line {
-  height: 4px;
-  padding: 0;
-  border: none;
-  background: var(--primary-color);
-  border-radius: 0;
-}
-
-.icl-pattern .accent {
-  border-color: rgba(245, 166, 35, 0.60);
-  background: rgba(245, 166, 35, 0.12);
-}
-
-.transformer-figure {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  gap: 36px;
-  align-items: center;
-  margin: 12px 0;
-}
-
-.transformer-figure img {
-  max-height: 420px;
-  width: 100%;
-  object-fit: contain;
-  border-radius: var(--box-radius);
-  background: #ffffff;
-  padding: 10px;
-}
-
-.transformer-callouts {
-  display: grid;
-  gap: 12px;
-}
-
-.transformer-callouts div {
-  background: rgba(74, 158, 255, 0.08);
-  border: 1px solid rgba(74, 158, 255, 0.28);
-  border-radius: var(--box-radius);
-  padding: 10px 16px;
-  text-align: left;
-  color: var(--text-color);
-}
-
-.transformer-callouts div strong {
-  color: var(--text-color);
-  font-size: 17pt;
-}
-
-.transformer-callouts span {
-  display: block;
-  color: var(--muted-color);
-  font-size: 13pt;
-  margin-top: 4px;
-}
-
-.encoder-decoder-layout {
-  display: grid;
-  grid-template-columns: 410px 1fr;
-  gap: 34px;
-}
-
-.encoder-decoder-layout img {
-  max-height: 520px;
-  width: 100%;
-  object-fit: contain;
-  border-radius: var(--box-radius);
-  background: #ffffff;
-  padding: 8px;
-}
-
-.family-grid {
-  grid-template-columns: 1fr;
-}
-
-.family-grid div {
-  text-align: left;
-}
-
-.moe-diagram {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-}
-
-.expert-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.beam-diagram {
-  flex-direction: column;
-  gap: 16px;
-}
-
-.beam-level {
-  display: flex;
-  gap: 18px;
-}
-
-.beam-node.root {
-  min-width: 120px;
-}
-
-.beam-node.dropped {
-  opacity: 0.48;
-}
-
+/* Resources grid (module-local, matching the other modules' closing slide). */
 .resources-grid {
   display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
+  grid-template-columns: 1fr 1fr;
   gap: 28px;
   margin-top: 16px;
 }
@@ -1974,7 +1302,7 @@
 
 .reveal ul.resource-list li {
   font-size: 11.5pt;
-  line-height: 1.28;
+  line-height: 1.3;
   margin-bottom: 6px;
   padding-left: 18px;
 }
@@ -1982,277 +1310,6 @@
 .reveal ul.resource-list li::before {
   width: 6px;
   height: 6px;
-}
-
-#bpe-algorithm .video-container video {
-  max-height: 540px;
-}
-
-/* Decoder-only architecture stack (architecture-only slide). Kept compact so
-   the whole stack fits one slide without overflowing. */
-.decoder-arch {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  max-width: 440px;
-  margin: 6px auto 0;
-}
-
-.da-node {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 6px 14px;
-  border-radius: var(--box-radius);
-  border: 1px solid rgba(74, 158, 255, 0.40);
-  background: rgba(74, 158, 255, 0.10);
-  color: var(--text-color);
-  text-align: center;
-  font-size: 13.5pt;
-  line-height: 1.15;
-}
-
-.da-node.io {
-  border-color: rgba(245, 166, 35, 0.55);
-  background: rgba(245, 166, 35, 0.12);
-}
-
-.da-node.sub {
-  border-color: rgba(136, 146, 164, 0.45);
-  background: rgba(136, 146, 164, 0.10);
-  font-size: 12.5pt;
-}
-
-.da-arrow {
-  color: var(--secondary-color);
-  font-size: 13pt;
-  line-height: 1;
-  margin: 0;
-}
-
-.da-block {
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px 10px;
-  border: 1px dashed rgba(74, 158, 255, 0.55);
-  border-radius: var(--box-radius);
-  background: rgba(74, 158, 255, 0.04);
-}
-
-.da-block-label {
-  position: absolute;
-  top: 50%;
-  right: -52px;
-  transform: translateY(-50%);
-  color: var(--secondary-color);
-  font-size: 16pt;
-  font-weight: 600;
-}
-
-/* Glitch-token example exchange */
-.glitch-example {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 720px;
-  margin: 22px auto;
-}
-
-.glitch-turn {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  padding: 12px 16px;
-  border-radius: var(--box-radius);
-  border: 1px solid rgba(136, 146, 164, 0.30);
-  background: rgba(136, 146, 164, 0.08);
-  color: var(--text-color);
-  font-size: 16pt;
-  text-align: left;
-}
-
-.glitch-turn span {
-  flex: 0 0 86px;
-  color: var(--muted-color);
-  font-size: 11pt;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  white-space: nowrap;
-}
-
-.glitch-turn.model {
-  border-color: rgba(245, 166, 35, 0.55);
-  background: rgba(245, 166, 35, 0.10);
-}
-
-.glitch-turn.model span { color: var(--secondary-color); }
-
-/* Beam-search sideways tree */
-.beam-tree {
-  display: flex;
-  justify-content: center;
-  margin: 18px 0 8px;
-}
-
-.beam-tree svg {
-  width: 100%;
-  max-width: 820px;
-  max-height: 250px;
-  height: auto;
-}
-
-/* Single rolled RNN cell and the LSTM memory-belt diagram */
-.rnn-rolled,
-.lstm-belt {
-  display: flex;
-  justify-content: center;
-  margin: 18px 0 8px;
-}
-
-.rnn-rolled svg {
-  width: 100%;
-  max-width: 740px;
-  height: auto;
-}
-
-.lstm-belt svg {
-  width: 100%;
-  max-width: 920px;
-  height: auto;
-}
-
-/* Decoder-only architecture, drawn as one vertical SVG so residual
-   connections and the full input pipeline fit on a single slide. */
-.decoder-svg {
-  display: flex;
-  justify-content: center;
-  margin: 2px 0 0;
-}
-
-.decoder-svg svg {
-  height: 500px;
-  width: auto;
-}
-
-/* logits-to-text: i is one highlighted token, j is the whole vocabulary */
-.logit-index-visual {
-  display: grid;
-  justify-items: center;
-  gap: 12px;
-  margin: 22px auto 0;
-}
-
-.vocab-stack {
-  display: grid;
-  gap: 6px;
-}
-
-.vocab-row {
-  display: flex;
-  gap: 10px;
-  align-items: stretch;
-}
-
-.vtok {
-  display: grid;
-  gap: 3px;
-  align-content: center;
-  min-width: 84px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(74, 158, 255, 0.35);
-  background: rgba(74, 158, 255, 0.08);
-  color: var(--text-color);
-  font-size: 15pt;
-  text-align: center;
-}
-
-.vtok small {
-  color: var(--muted-color);
-  font-size: 10.5pt;
-}
-
-.vtok.i {
-  border-color: rgba(245, 166, 35, 0.7);
-  background: rgba(245, 166, 35, 0.14);
-}
-
-.vtok.more {
-  border: none;
-  background: none;
-  align-self: center;
-  min-width: 0;
-  color: var(--muted-color);
-}
-
-.vocab-bracket {
-  width: 100%;
-  height: 12px;
-  border: 1.5px solid var(--primary-color);
-  border-top: none;
-  border-radius: 0 0 10px 10px;
-}
-
-.lv-num,
-.lv-den {
-  font-size: 14pt;
-  color: var(--text-color);
-}
-
-.lv-num b { color: var(--secondary-color); }
-.lv-den b { color: var(--primary-color); }
-
-.eq-caption {
-  text-align: center;
-  margin: -6px 0 4px;
-  color: var(--muted-color);
-  font-size: 14pt;
-}
-
-.eq-caption b { color: var(--secondary-color); }
-
-/* temperature regimes, styled as a card list like the logits-to-text row */
-.temp-regimes {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  max-width: 980px;
-  margin: 24px auto 10px;
-}
-
-.temp-card {
-  border: 1px solid rgba(74, 158, 255, 0.35);
-  background: rgba(74, 158, 255, 0.08);
-  border-radius: var(--box-radius);
-  padding: 14px 16px;
-  text-align: center;
-}
-
-.temp-card b {
-  display: block;
-  color: var(--secondary-color);
-  font-size: 20pt;
-}
-
-.temp-card span {
-  display: block;
-  margin: 2px 0 8px;
-  color: var(--muted-color);
-  font-size: 12pt;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.temp-card p {
-  margin: 0 !important;
-  color: var(--text-color) !important;
-  font-size: 13.5pt !important;
-  line-height: 1.35 !important;
 }
 
   </style>
@@ -2269,37 +1326,37 @@
 
 # LLMs 0 to 100
 
-Module 4: LLM Architectures
+Module 5: Pretraining
 
-From the Transformer to GPT-2
+How random weights become useful weights
 
 ---
 
 <!-- .slide: id="review-1" -->
 
-## Review: Module 3
+## Review: From Module 4
 
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
 <div>
 
-**Self-Attention as a Learned Lookup**
+**The machinery we built**
 
-Compare every token (query) against every other token (key), normalize with softmax, and retrieve a weighted sum of values:
+- Text is tokenized, embedded, and run through a stack of decoder blocks
+- The model outputs **logits**: one score per vocabulary token, at every position
+- A decoding strategy (greedy, temperature, top-k, top-p) turns logits into the next token
 
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
-
-Each output token is a weighted average of value vectors, with weights from query-key compatibility.
+Architecture is the **shape** of the computation. It does not yet say anything about the **weights**.
 
 </div>
 
 <div>
 
-**The Missing Pieces**
+**The question this module answers**
 
-- A single attention layer is not a model; it needs embeddings, depth (stacked blocks), and an output head
-- Positional embeddings inject order into a bag of attention scores
-- Causal masking ensures autoregressive generation: each token only attends to itself and previous tokens
+A freshly built transformer has random weights, so its output is noise.
+
+**Pretraining** is the process that turns those random weights into ones that capture the statistical structure of language &mdash; using nothing but raw text.
 
 </div>
 
@@ -2309,940 +1366,252 @@ Each output token is a weighted average of value vectors, with weights from quer
 
 <!-- .slide: id="review-2" -->
 
-## Review: From Attention to Models
+## Review: Two Ideas We Reuse
 
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**What Module 3 gave us**
-
-- Queries choose what each token is looking for
-- Keys describe what each token offers
-- Values carry the information to copy forward
-- A causal mask blocks attention to future tokens
-
-</div>
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
 <div>
 
-**What is still missing**
+**Causal masking (Module 3 and 4)**
 
-- Token IDs must become vectors
-- Attention must be wrapped in residuals, normalization, and feed-forward networks
-- Many blocks must stack before logits become text
-- Architecture choices determine what the model can do
+Each position may attend only to itself and earlier positions.
 
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="divider-rnn" class="section-divider" data-state="is-section-divider" -->
-
-# Before Transformers
-
-The recurrent era and its limitations
-
-
----
-
-<!-- .slide: id="rnn-idea" -->
-
-## Recurrent Neural Networks
-
-<div class="rnn-rolled">
-<svg viewBox="0 0 820 330" role="img" aria-label="A sequence of words processed step by step; the current word enters a shared RNN cell at the bottom, which outputs a hidden state vector that is fed back in for the next word"><defs><marker id="ra" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="rb" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4a9eff"></path></marker><marker id="rm" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#8892a4"></path></marker></defs><text x="410" y="14" text-anchor="middle" font-size="13" fill="#8892a4">the input sequence &#8212; one word per step</text><rect x="60" y="26" width="100" height="44" rx="9" fill="rgba(74,158,255,0.12)" stroke="rgba(74,158,255,0.55)" stroke-width="1.4"></rect><text x="110" y="54" text-anchor="middle" font-size="17" fill="#e8eaf0">The</text><rect x="210" y="26" width="100" height="44" rx="9" fill="rgba(74,158,255,0.12)" stroke="rgba(74,158,255,0.55)" stroke-width="1.4"></rect><text x="260" y="54" text-anchor="middle" font-size="17" fill="#e8eaf0">cat</text><rect x="360" y="26" width="100" height="44" rx="9" fill="rgba(74,158,255,0.25)" stroke="#4a9eff" stroke-width="2"></rect><text x="410" y="54" text-anchor="middle" font-size="17" fill="#e8eaf0">sat</text><rect x="510" y="26" width="100" height="44" rx="9" fill="rgba(74,158,255,0.12)" stroke="rgba(74,158,255,0.55)" stroke-width="1.4"></rect><text x="560" y="54" text-anchor="middle" font-size="17" fill="#e8eaf0">on</text><rect x="660" y="26" width="100" height="44" rx="9" fill="rgba(74,158,255,0.12)" stroke="rgba(74,158,255,0.55)" stroke-width="1.4"></rect><text x="710" y="54" text-anchor="middle" font-size="17" fill="#e8eaf0">mat</text><line x1="164" y1="48" x2="204" y2="48" stroke="#8892a4" stroke-width="2" marker-end="url(#rm)"></line><line x1="314" y1="48" x2="354" y2="48" stroke="#8892a4" stroke-width="2" marker-end="url(#rm)"></line><line x1="464" y1="48" x2="504" y2="48" stroke="#8892a4" stroke-width="2" marker-end="url(#rm)"></line><line x1="614" y1="48" x2="654" y2="48" stroke="#8892a4" stroke-width="2" marker-end="url(#rm)"></line><line x1="410" y1="74" x2="410" y2="118" stroke="#4a9eff" stroke-width="2.5" marker-end="url(#rb)"></line><text x="424" y="100" text-anchor="start" font-size="13" fill="#4a9eff">current word</text><rect x="290" y="124" width="240" height="84" rx="14" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.6"></rect><text x="410" y="160" text-anchor="middle" font-size="24" fill="#e8eaf0">RNN cell</text><text x="410" y="186" text-anchor="middle" font-size="13" fill="#8892a4">one shared cell, reused every step</text><line x1="410" y1="212" x2="410" y2="248" stroke="#f5a623" stroke-width="2.5" marker-end="url(#ra)"></line><text x="424" y="234" text-anchor="start" font-size="13" fill="#f5a623">new hidden state</text><rect x="262" y="254" width="46" height="36" rx="6" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.4"></rect><text x="285" y="277" text-anchor="middle" font-size="14" fill="#e8eaf0">0.2</text><rect x="312" y="254" width="46" height="36" rx="6" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.4"></rect><text x="335" y="277" text-anchor="middle" font-size="14" fill="#e8eaf0">-0.7</text><rect x="362" y="254" width="46" height="36" rx="6" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.4"></rect><text x="385" y="277" text-anchor="middle" font-size="14" fill="#e8eaf0">0.5</text><rect x="412" y="254" width="46" height="36" rx="6" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.4"></rect><text x="435" y="277" text-anchor="middle" font-size="14" fill="#e8eaf0">0.1</text><rect x="462" y="254" width="46" height="36" rx="6" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.4"></rect><text x="485" y="277" text-anchor="middle" font-size="14" fill="#e8eaf0">-0.4</text><rect x="512" y="254" width="46" height="36" rx="6" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.4"></rect><text x="535" y="277" text-anchor="middle" font-size="14" fill="#e8eaf0">0.9</text><text x="410" y="316" text-anchor="middle" font-size="13" fill="#8892a4">a fixed-size vector, no matter how long the sequence</text><path d="M562 272 C690 272 690 166 536 166" fill="none" stroke="#f5a623" stroke-width="2.5" marker-end="url(#ra)"></path><text x="722" y="210" text-anchor="middle" font-size="13" fill="#f5a623">fed back in with</text><text x="722" y="228" text-anchor="middle" font-size="13" fill="#f5a623">the next word</text></svg>
-</div>
-
-<div class="formula-card">new hidden state = function(previous hidden state, current token)</div>
-
-There is only **one** cell. At each step it takes the current token plus the hidden state from the previous step, and its new hidden state is fed straight back in for the next token &mdash; the loop in the diagram. That hidden state is a fixed-size vector, so a long sequence must cram more and more history into the same space.
-
----
-
-<!-- .slide: id="rnn-problems" -->
-
-## The Problems with Recurrence
-
-Recurrent training is fundamentally hard for three reasons:
-
-- **Vanishing and exploding gradients.** Gradients must survive repeated matrix multiplications as they travel backward through time. Over long sequences the product of many weight matrices either shrinks to near zero (vanishing) or blows up (exploding). This is the same backprop multiplication rule from Module 2, amplified across many recurrent steps.
-
-- **Sequential dependency.** Token $t$ cannot be processed until tokens $1$ through $t-1$ are done. This makes training impossible to parallelize across the sequence: for a batch of $n$ tokens, the RNN takes $n$ serial steps instead of one parallel step.
-
-- **Fixed-size bottleneck.** The hidden state has a fixed dimension. No matter how long the input, all context must be squeezed through one vector of the same size.
-
----
-
-<!-- .slide: id="lstm-gru" -->
-
-## LSTMs and GRUs: Gating Mechanisms
-
-<div class="lstm-belt">
-<svg viewBox="0 0 940 340" role="img" aria-label="LSTM cell state drawn as a memory line with forget, input, and output gates acting as valves"><defs><marker id="ga" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f5a623"/></marker></defs><text x="470" y="84" text-anchor="middle" font-size="15" fill="#8892a4">cell state &#8212; the long-term memory that flows across steps</text><rect x="140" y="104" width="660" height="32" rx="16" fill="rgba(245,166,35,0.10)" stroke="rgba(245,166,35,0.55)" stroke-width="1.5"/><text x="128" y="126" text-anchor="end" font-size="15" fill="#e8eaf0">C&#8348;&#8331;&#8321;</text><line x1="800" y1="120" x2="836" y2="120" stroke="#f5a623" stroke-width="2.5" marker-end="url(#ga)"/><text x="846" y="126" text-anchor="start" font-size="15" fill="#e8eaf0">C&#8348;</text><circle cx="300" cy="120" r="19" fill="rgba(245,166,35,0.20)" stroke="#f5a623" stroke-width="1.5"/><text x="300" y="129" text-anchor="middle" font-size="22" fill="#f5a623">&#215;</text><circle cx="540" cy="120" r="19" fill="rgba(63,185,80,0.18)" stroke="#3fb950" stroke-width="1.5"/><text x="540" y="130" text-anchor="middle" font-size="26" fill="#3fb950">+</text><rect x="232" y="196" width="136" height="58" rx="10" fill="rgba(231,76,60,0.08)" stroke="rgba(231,76,60,0.6)" stroke-width="1.4"/><text x="300" y="222" text-anchor="middle" font-size="16" fill="#e8eaf0">forget gate</text><text x="300" y="243" text-anchor="middle" font-size="12" fill="#8892a4">what to erase</text><rect x="472" y="196" width="136" height="58" rx="10" fill="rgba(63,185,80,0.08)" stroke="rgba(63,185,80,0.6)" stroke-width="1.4"/><text x="540" y="222" text-anchor="middle" font-size="16" fill="#e8eaf0">input gate</text><text x="540" y="243" text-anchor="middle" font-size="12" fill="#8892a4">what to write</text><rect x="652" y="196" width="136" height="58" rx="10" fill="rgba(74,158,255,0.08)" stroke="rgba(74,158,255,0.6)" stroke-width="1.4"/><text x="720" y="222" text-anchor="middle" font-size="16" fill="#e8eaf0">output gate</text><text x="720" y="243" text-anchor="middle" font-size="12" fill="#8892a4">what to reveal</text><line x1="300" y1="194" x2="300" y2="142" stroke="#f5a623" stroke-width="2" marker-end="url(#ga)"/><line x1="540" y1="194" x2="540" y2="142" stroke="#f5a623" stroke-width="2" marker-end="url(#ga)"/><line x1="720" y1="137" x2="720" y2="194" stroke="#f5a623" stroke-width="2" marker-end="url(#ga)"/><line x1="720" y1="256" x2="720" y2="300" stroke="#f5a623" stroke-width="2" marker-end="url(#ga)"/><text x="720" y="320" text-anchor="middle" font-size="14" fill="#e8eaf0">h&#8348; &#8212; hidden state out</text><text x="140" y="298" text-anchor="start" font-size="13" fill="#8892a4">Each gate is a sigmoid valve:</text><text x="140" y="318" text-anchor="start" font-size="13" fill="#8892a4">0 blocks a value, 1 lets it through.</text></svg>
-</div>
-
-The cell state is a memory line that runs straight through every step. Three **gates** control it: the **forget gate** erases part of the old memory, the **input gate** writes new information, and the **output gate** chooses what to reveal as the hidden state. Each gate is just a sigmoid that outputs a value between 0 and 1 for every dimension, then multiplies elementwise &mdash; 0 blocks a value, 1 lets it through.
-
-GRUs simplify this into two gates (update and reset). Both fixed the vanishing-gradient problem but kept the **sequential and bottleneck limitations** &mdash; the cell was smarter, yet the architecture was still fundamentally serial.
-
----
-
-<div class="figure-card">
-
-![Jürgen Schmidhuber](images/Schmidhuber.jpg)
-
-<div class="figure-info">
-
-## Jürgen Schmidhuber <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Long Short-Term Memory (1997)
-
-- With Sepp Hochreiter, introduced gated recurrent cells for long-range dependencies
-- Made gradient flow through long sequences much more reliable
-- LSTMs became the default sequence model before transformers
-
-</div>
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="seq2seq" -->
-
-## Sequence-to-Sequence Learning
-
-Encoder-decoder RNNs (Sutskever et al., 2014) split the problem into two recurrent networks:
-
-- **Encoder:** reads the input sequence and compresses it into a single fixed-size context vector
-- **Decoder:** generates the output sequence, conditioned on that vector
-
-This was the dominant architecture for machine translation. But the fixed-vector bottleneck is severe: a long source sentence must be compressed into the same-size vector as a short one.
-
-Bahdanau attention (Module 3) was invented specifically to fix this bottleneck, letting the decoder attend directly to encoder states instead of relying on a single compressed vector.
-
----
-
-<div class="figure-card">
-
-![Ilya Sutskever](images/sutskever.jpg)
-
-<div class="figure-info">
-
-## Ilya Sutskever <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Sequence to Sequence Learning (2014)
-
-- With Oriol Vinyals and Quoc Le, showed encoder-decoder RNNs could translate sequences
-- The encoder compressed the source sentence into one vector
-- That bottleneck motivated attention over encoder states
-
-</div>
-
-</div>
-
-</div>
-
----
-
-<div class="figure-card">
-
-![Ashish Vaswani](images/vaswani.jpg)
-
-<div class="figure-info">
-
-## Ashish Vaswani <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Attention Is All You Need (2017)
-
-- Lead author on the original transformer paper
-- Helped replace recurrence with stacked attention and feed-forward blocks
-- The architecture became the foundation for modern LLMs
-
-</div>
-
-</div>
-
-</div>
-
----
-
-<!-- .slide: id="attention-is-all-you-need" -->
-
-## Attention Is All You Need (2017)
-
-Vaswani et al. removed recurrence entirely. In its place: stacked multi-head self-attention with position-wise feed-forward networks.
-
-Why this mattered:
-
-- **Full parallelism across positions.** Every token can be processed at the same time during training; only the causal mask enforces order at inference time.
-
-- **Constant path length.** In an RNN, information from token 1 must travel through every intermediate hidden state to reach token $n$. In a transformer, token 1 and token $n$ interact directly through one attention layer. The longest signal path is $O(1)$ layers, not $O(n)$ recurrent steps.
-
-- **No fixed-size bottleneck.** Each layer accesses the full sequence through attention; nothing is compressed into a single vector.
-
-The transformer is best understood as a direct response to RNN limitations. Every design choice trades sequential recurrence for parallel computation.
-
----
-
-<section id="recurrence-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="recurrence-vs-attention" preload="auto"></video>
-  </div>
-</section>
-
----
-
-<!-- .slide: id="transformer-architecture" -->
-
-## The Transformer Architecture
-
-<div class="transformer-figure">
-  <img src="images/transformer.webp" alt="The transformer architecture from Attention Is All You Need">
-  <div class="transformer-callouts">
-    <div><strong>Encoder (left)</strong><span>stacked self-attention and feed-forward layers, fully bidirectional</span></div>
-    <div><strong>Decoder (right)</strong><span>masked self-attention, cross-attention to the encoder, feed-forward</span></div>
-    <div><strong>Every block</strong><span>attention to mix positions, a feed-forward network to transform them, with a residual connection and normalization around each</span></div>
-    <div><strong>This module</strong><span>follows the decoder-only variant that powers modern LLMs</span></div>
-  </div>
-</div>
-
-The original paper used the full encoder-decoder. The building blocks &mdash; attention, feed-forward, residual connections, normalization &mdash; are exactly the ones we will follow through a single decoder stack.
-
----
-
-<!-- .slide: id="divider-tokenization" class="section-divider" data-state="is-section-divider" -->
-
-# Tokenization
-
-What is the atomic unit of a language model?
-
-
----
-
-<!-- .slide: id="unit-problem" -->
-
-## The Unit Problem
-
-What should a language model read? Three natural choices, each with a fatal flaw:
-
-<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 25px;">
-
-<div>
-
-**Characters**
-
-Tiny vocabulary (maybe 256 bytes), but sequences become very long. The model wastes capacity relearning spelling and morphology. Each token carries almost no meaning.
+So at every position the model can be asked to predict the **next** token without ever seeing the answer. One sequence becomes many prediction problems at once.
 
 </div>
 
 <div>
 
-**Words**
+**Cross-entropy (Module 2)**
 
-Meaningful units, but the vocabulary explodes to hundreds of thousands. Any unseen word is out-of-vocabulary with no way to represent it. Misspellings, typos, and brand-new words break the model.
+The training signal is the same loss we used to train a classifier:
 
-</div>
+$$\mathcal{L} = -\log p_\theta(\text{true next token})$$
 
-<div>
-
-**Subwords**
-
-The compromise: frequent words stay whole, rare words split into reusable pieces. "tokenization" becomes "token" + "ization". Morphology, typos, and new coinages are all representable.
+Assign **high probability to the token that actually comes next**. Averaged over a whole corpus, minimizing this is the entire objective.
 
 </div>
 
 </div>
-
----
-
-<section id="bpe-algorithm">
-  <h2>Byte-Pair Encoding</h2>
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="bpe-training" preload="auto"></video>
-  </div>
-</section>
-
----
-
-<!-- .slide: id="byte-level-bpe" -->
-
-## Byte-Level BPE and the Vocabulary Table
-
-<div class="byte-bpe-diagram">
-  <div class="byte-lane">
-    <h3>Text</h3>
-    <div class="token-strip">
-      <span>The</span><span>&nbsp;</span><span>model</span><span>&nbsp;</span><span>reads</span><span>&nbsp;</span><span>bytes</span>
-    </div>
-  </div>
-  <div class="byte-arrow">&darr;</div>
-  <div class="byte-lane">
-    <h3>Raw bytes</h3>
-    <div class="byte-grid">
-      <span>54</span><span>68</span><span>65</span><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span>
-    </div>
-  </div>
-  <div class="byte-arrow">&darr;</div>
-  <div class="byte-lane">
-    <h3>Learned token IDs</h3>
-    <div class="token-strip token-strip-accent">
-      <span>464</span><span>2746</span><span>1100</span><span>9048</span>
-    </div>
-  </div>
-</div>
-
-<div class="vocab-tradeoff">
-  <div><strong>Small vocabulary</strong><span>longer sequences</span></div>
-  <div><strong>Large vocabulary</strong><span>bigger embedding table</span></div>
-  <div><strong>Byte-level base</strong><span>no true out-of-vocabulary text</span></div>
-</div>
-
----
-
-<!-- .slide: id="tokenization-practice" -->
-
-## Why Tokenization Matters in Practice
-
-<div class="token-practice-grid">
-  <div class="token-case">
-    <h3>English prose</h3>
-    <div class="token-strip"><span>the</span><span>&nbsp;cat</span><span>&nbsp;sat</span></div>
-    <p>Frequent pieces stay compact.</p>
-  </div>
-  <div class="token-case">
-    <h3>Less represented scripts</h3>
-    <div class="token-strip"><span>日</span><span>本</span><span>語</span><span>の</span><span>文</span><span>章</span></div>
-    <p>More pieces can mean higher cost for the same idea.</p>
-  </div>
-  <div class="token-case">
-    <h3>Strings and numbers</h3>
-    <div class="token-strip"><span>12345</span><span>&nbsp;reverse</span><span>&nbsp;me</span></div>
-    <p>The model sees token IDs, not guaranteed character access.</p>
-  </div>
-</div>
-
-Once text is tokenized, it is just a list of integer IDs. Each ID selects one row of the embedding table, and from that point on the transformer only ever sees vectors &mdash; it has no direct access to the original characters. This is why reversing a string or counting the letters in a word is surprisingly hard for an LLM: it never sees the letters, only the tokens they were grouped into.
-
----
-
-<!-- .slide: id="side-quest-glitch-tokens" -->
-
-## Side Quest: Glitch Tokens
-
-The tokenizer and the model are trained **separately**, and that seam can crack. A rare string may appear often enough in the tokenizer's training data to earn its own vocabulary entry, yet show up almost never in the model's training data. Its embedding row then receives little or no gradient signal and stays close to its random initialization.
-
-The classic example is the token <code>&nbsp;SolidGoldMagikarp</code> (originally a Reddit username). Prompts asking early GPT models to repeat or define it produced refusals, unrelated word substitutions, or garbled output &mdash; the model had simply never learned what that vector means.
-
-<div class="glitch-example">
-  <div class="glitch-turn user"><span>Prompt</span>Please repeat the string "SolidGoldMagikarp" back to me.</div>
-  <div class="glitch-turn model"><span>Early GPT</span>"distribute"</div>
-</div>
-
-A real exchange: the glitch token is silently swapped for an unrelated word, because its embedding row never received a meaningful training signal.
-
-These **under-trained tokens** (Land and Bartolo, 2024) make the abstraction boundary concrete: the model never sees the characters `S-o-l-i-d-...`. It receives a single **token ID**, looks up one **embedding vector**, and reasons only from there.
-
----
-
-<!-- .slide: id="divider-sampling" class="section-divider" data-state="is-section-divider" -->
-
-# Generating Text
-
-From logits to tokens: decoding strategies
-
-
----
-
-<!-- .slide: id="logits-to-text" -->
-
-## From Logits to Text
-
-A forward pass produces a raw score (a **logit** $z$) for every token in the vocabulary. The **softmax function** turns those scores into probabilities that sum to one:
-
-$$p_{\textcolor{#f5a623}{i}} = \frac{e^{z_{\textcolor{#f5a623}{i}}}}{\sum_{\textcolor{#4a9eff}{j}} e^{z_{\textcolor{#4a9eff}{j}}}}$$
-
-<div class="eq-caption">&uarr;&ensp;this is the <b>softmax</b> function</div>
-
-<div class="logit-index-visual">
-  <div class="lv-num"><b>i</b> &mdash; the one token whose probability we are computing (numerator)</div>
-  <div class="vocab-stack">
-    <div class="vocab-row">
-      <span class="vtok i">Paris<small>z = 8.2</small></span>
-      <span class="vtok">London<small>5.1</small></span>
-      <span class="vtok">Lyon<small>4.7</small></span>
-      <span class="vtok">city<small>4.0</small></span>
-      <span class="vtok">the<small>3.2</small></span>
-      <span class="vtok">of<small>2.5</small></span>
-      <span class="vtok more">&hellip;</span>
-    </div>
-    <div class="vocab-bracket"></div>
-  </div>
-  <div class="lv-den"><b>j</b> &mdash; runs over <strong>every</strong> token in the vocabulary; the sum normalizes (denominator)</div>
-</div>
-
----
-
-<!-- .slide: id="greedy-decoding" -->
-
-## Greedy Decoding
-
-Always pick the token with the highest probability:
-
-$$\text{token}_t = \arg\max_i p_i$$
-
-Simple, deterministic, and fast. But it produces repetitive, flat text because it never explores lower-probability but more interesting continuations. Once the model enters a loop ("the the the"), greediness keeps it there.
-
----
-
-<!-- .slide: id="temperature" -->
-
-## Temperature
-
-Scale the logits by $\textcolor{#f5a623}{T}$ before softmax to control randomness:
-
-$$p_i = \frac{e^{z_i / \textcolor{#f5a623}{T}}}{\sum_j e^{z_j / \textcolor{#f5a623}{T}}}$$
-
-<div class="temp-regimes">
-  <div class="temp-card"><b>T &lt; 1</b><span>sharper</span><p>conservative; sticks to the highest-probability tokens</p></div>
-  <div class="temp-card"><b>T = 1</b><span>original</span><p>the model's raw distribution, unchanged</p></div>
-  <div class="temp-card"><b>T &gt; 1</b><span>flatter</span><p>more random and creative; unlikely tokens gain probability</p></div>
-</div>
-
-Temperature is the simplest way to tune the exploration-exploitation trade-off at inference time.
-
----
-
-<!-- .slide: id="topk-topp" -->
-
-## Top-k and Top-p (Nucleus) Sampling
-
-Temperature alone can still sample implausible tokens. Two truncation methods fix this:
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Top-k**
-
-Keep only the $k$ most likely tokens, zero out the rest, renormalize, and sample. Fixed $k = 50$ is common. Simple, but can be too restrictive for peaked distributions or too permissive for flat ones.
-
-</div>
-
-<div>
-
-**Top-p (nucleus)**
-
-Keep the smallest set of tokens whose cumulative probability exceeds $p$. For a peaked distribution, this may be only 5 tokens. For a flat distribution, it may be 200. Adapts dynamically to the distribution shape.
-
-</div>
-
-</div>
-
-In practice, temperature and top-p/top-k are used together: scale by temperature first, then truncate, then sample.
-
----
-
-<section id="sampling-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="sampling-demo" preload="auto"></video>
-  </div>
-</section>
-
----
-
-<!-- .slide: id="beam-search" -->
-
-## Beam Search
-
-<div class="beam-tree">
-<svg viewBox="0 0 880 320" role="img" aria-label="Beam search drawn as a left-to-right tree with beam width 2">
-<path d="M130 165 C215 165 215 85 300 85" fill="none" stroke="#f5a623" stroke-width="2.5"/>
-<path d="M130 165 C215 165 215 175 300 175" fill="none" stroke="#f5a623" stroke-width="2.5"/>
-<path d="M130 165 C215 165 215 265 300 265" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
-<path d="M430 85 C510 85 510 55 590 55" fill="none" stroke="#f5a623" stroke-width="2.5"/>
-<path d="M430 85 C510 85 510 120 590 120" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
-<path d="M430 175 C510 175 510 210 590 210" fill="none" stroke="#f5a623" stroke-width="2.5"/>
-<path d="M430 175 C510 175 510 275 590 275" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
-<rect x="20" y="145" width="110" height="40" rx="8" fill="rgba(74,158,255,0.12)" stroke="rgba(74,158,255,0.6)" stroke-width="1.5"/>
-<text x="75" y="170" text-anchor="middle" font-size="16" fill="#e8eaf0">The</text>
-<rect x="300" y="65" width="130" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
-<text x="365" y="90" text-anchor="middle" font-size="15" fill="#e8eaf0">cat&#160;&#160;0.42</text>
-<rect x="300" y="155" width="130" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
-<text x="365" y="180" text-anchor="middle" font-size="15" fill="#e8eaf0">dog&#160;&#160;0.31</text>
-<rect x="300" y="245" width="130" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
-<text x="365" y="270" text-anchor="middle" font-size="15" fill="#8892a4">car&#160;&#160;0.08</text>
-<rect x="590" y="35" width="150" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
-<text x="665" y="60" text-anchor="middle" font-size="15" fill="#e8eaf0">cat sat&#160;&#160;0.18</text>
-<rect x="590" y="100" width="150" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
-<text x="665" y="125" text-anchor="middle" font-size="15" fill="#8892a4">cat ran&#160;&#160;0.05</text>
-<rect x="590" y="190" width="150" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
-<text x="665" y="215" text-anchor="middle" font-size="15" fill="#e8eaf0">dog ran&#160;&#160;0.15</text>
-<rect x="590" y="255" width="150" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
-<text x="665" y="280" text-anchor="middle" font-size="15" fill="#8892a4">dog the&#160;&#160;0.04</text>
-<text x="752" y="60" text-anchor="start" font-size="13" fill="#f5a623">beam 1</text>
-<text x="752" y="215" text-anchor="start" font-size="13" fill="#f5a623">beam 2</text>
-<text x="75" y="225" text-anchor="middle" font-size="12" fill="#8892a4">start</text>
-<text x="365" y="35" text-anchor="middle" font-size="12" fill="#8892a4">step 1</text>
-<text x="665" y="22" text-anchor="middle" font-size="12" fill="#8892a4">step 2</text>
-</svg>
-</div>
-
-The two solid orange paths are the surviving **beams**; the dashed branches were scored and pruned. Instead of committing to one token, keep the $b$ best partial sequences at every step ($b = 2$ here). Expand every beam, score the candidates, and keep the top $b$.
-
-Best for constrained sequence-to-sequence tasks like translation, where there is a single correct answer and exploration helps. Poor for open-ended generation: the most likely sequence under a language model is usually vacuous, repetitive, or otherwise undesirable.
-
-The decoding strategy shapes what you actually read. Next, we follow a full prompt through the stack that produces these distributions.
-
----
-
-<!-- .slide: id="divider-block" class="section-divider" data-state="is-section-divider" -->
-
-# Putting It All Together
-
-Following one prompt through a decoder-only transformer
-
-
----
-
-<!-- .slide: id="decoder-only-arch" -->
-
-## The Decoder-Only Architecture
-
-<div class="decoder-svg">
-<svg viewBox="0 0 560 463" role="img" aria-label="Decoder-only transformer stack from raw text up to next-token probabilities, with residual connections around each sub-layer"><rect x="98" y="141" width="304" height="181" rx="10" fill="rgba(74,158,255,0.03)" stroke="rgba(74,158,255,0.5)" stroke-width="1.2" stroke-dasharray="5 4"></rect><defs><marker id="da" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="da2" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4a9eff"></path></marker></defs><rect x="120" y="12" width="260" height="28" rx="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" stroke-width="1.3"></rect><text x="250" y="30" text-anchor="middle" font-size="14" fill="#e8eaf0">Next-token probabilities</text><line x1="250" y1="55" x2="250" y2="41" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="55" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="73" text-anchor="middle" font-size="14" fill="#e8eaf0">Softmax</text><line x1="250" y1="98" x2="250" y2="84" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="98" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="110" text-anchor="middle" font-size="14" fill="#e8eaf0">Unembedding</text><text x="250" y="124" text-anchor="middle" font-size="10" fill="#8892a4">linear: model dim &#8594; vocabulary</text><line x1="250" y1="141" x2="250" y2="127" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="153" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="171" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Add &amp; Norm</text><line x1="250" y1="196" x2="250" y2="182" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="196" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="214" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Feed-Forward Network</text><line x1="250" y1="239" x2="250" y2="225" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="239" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="257" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Add &amp; Norm</text><line x1="250" y1="282" x2="250" y2="268" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="282" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="300" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Masked Multi-Head Self-Attention</text><text x="406" y="231.5" text-anchor="start" font-size="15" fill="#f5a623">N&#215;</text><path d="M250 317 L104 317 L104 253 L119 253" fill="none" stroke="#4a9eff" stroke-width="1.6" marker-end="url(#da2)"></path><path d="M250 231 L104 231 L104 167 L119 167" fill="none" stroke="#4a9eff" stroke-width="1.6" marker-end="url(#da2)"></path><text x="100" y="285.5" text-anchor="end" font-size="10" fill="#4a9eff">residual</text><line x1="250" y1="337" x2="250" y2="323" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="337" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="355" text-anchor="middle" font-size="14" fill="#e8eaf0">Positional encoding</text><line x1="250" y1="380" x2="250" y2="366" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="380" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="392" text-anchor="middle" font-size="14" fill="#e8eaf0">Tokenize</text><text x="250" y="406" text-anchor="middle" font-size="10" fill="#8892a4">text &#8594; token vectors</text><line x1="250" y1="423" x2="250" y2="409" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="423" width="260" height="28" rx="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" stroke-width="1.3"></rect><text x="250" y="441" text-anchor="middle" font-size="14" fill="#e8eaf0">The capital of France</text></svg>
-</div>
-
-Bottom to top: text is tokenized and embedded as vectors, position is added, $N$ identical blocks refine them &mdash; each sub-layer wrapped in a **residual connection** (blue) &mdash; and the **unembedding** maps the final vector back to a score for every token.
-
----
-
-<!-- .slide: id="embedding-layer" -->
-
-## Step 1: Words to Vectors
-
-<div class="decoder-flow active-embedding">
-  <div class="flow-node embedding">word &rarr; vector</div>
-  <div class="flow-node position">add position</div>
-  <div class="flow-node attention">multi-head attention</div>
-  <div class="flow-node ffn">feed-forward network</div>
-  <div class="flow-node repeat">repeat blocks</div>
-  <div class="flow-node sampling">sampling</div>
-</div>
-
-<div class="embedding-visual">
-  <div class="word-card">The capital of France</div>
-  <div class="pipe-arrow">&rarr;</div>
-  <div class="token-strip"><span>The</span><span>&nbsp;capital</span><span>&nbsp;of</span><span>&nbsp;France</span></div>
-  <div class="pipe-arrow">&rarr;</div>
-  <div class="id-strip"><span>464</span><span>3139</span><span>286</span><span>4881</span></div>
-  <div class="pipe-arrow">&rarr;</div>
-  <div class="embedding-table">
-    <div class="et-title">embedding matrix<br><span>one learned vector per row</span></div>
-    <div class="et-row"><span class="et-id">row 464</span><span class="et-vec">[ 0.14 -0.22 0.05 0.61 &#8230; ]</span></div>
-    <div class="et-row"><span class="et-id">row 3139</span><span class="et-vec">[ -0.31 0.47 0.18 -0.09 &#8230; ]</span></div>
-    <div class="et-row"><span class="et-id">row 286</span><span class="et-vec">[ 0.02 0.33 -0.27 0.40 &#8230; ]</span></div>
-    <div class="et-row accent"><span class="et-id">row 4881</span><span class="et-vec">[ 0.55 -0.12 0.29 -0.63 &#8230; ]</span></div>
-  </div>
-</div>
-
-Tokenization and the embedding lookup together turn each word into a learned vector. From here on, the transformer sees vectors, not text.
 
 <div class="note">
 
-Each token ID is just an index into the **embedding matrix**: row $k$ holds the learned vector for token $k$. "Looking up" a token is pure indexing, with no computation, and these vectors are *learned* during training. Here the id 4881 ("France") selects its row, and that row **is** the token's vector.
+Causal masking plus cross-entropy is the whole idea of this module. Everything else &mdash; data pipelines, learning-rate schedules, scaling laws, distributed training &mdash; is engineering that makes this objective work at scale.
 
 </div>
 
 ---
 
-<section id="embedding-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="embedding-lookup" preload="auto"></video>
-  </div>
-</section>
+<!-- .slide: id="divider-what" class="section-divider" data-state="is-section-divider" -->
+
+# What Pretraining Is
+
+Learning the structure of language from raw text
+
 
 ---
 
-<!-- .slide: id="positional-encoding" -->
+<!-- .slide: id="self-supervised" -->
 
-## Step 2: Add Position
+## Self-Supervised Learning
 
-<div class="decoder-flow active-position">
-  <div class="flow-node embedding">word &rarr; vector</div>
-  <div class="flow-node position">add position</div>
-  <div class="flow-node attention">multi-head attention</div>
-  <div class="flow-node ffn">feed-forward network</div>
-  <div class="flow-node repeat">repeat blocks</div>
-  <div class="flow-node sampling">sampling</div>
+Pretraining means learning from broad raw text **before** specializing the model for any particular task. The trick is where the labels come from.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Supervised learning**
+
+Needs humans to label data: each image tagged "cat", each review tagged "positive". Labels are expensive and scarce.
+
 </div>
 
-<div class="position-visual">
-  <div class="pos-column">
-    <h3>Token vectors</h3>
-    <div class="vector-pill">The</div>
-    <div class="vector-pill">capital</div>
-    <div class="vector-pill">of</div>
-    <div class="vector-pill">France</div>
-  </div>
-  <div class="plus-column">+</div>
-  <div class="pos-column">
-    <h3>Position vectors</h3>
-    <div class="vector-pill muted">pos 0</div>
-    <div class="vector-pill muted">pos 1</div>
-    <div class="vector-pill muted">pos 2</div>
-    <div class="vector-pill muted">pos 3</div>
-  </div>
-  <div class="plus-column">=</div>
-  <div class="pos-column result">
-    <h3>Input to block 1</h3>
-    <div class="vector-pill accent">The @ 0</div>
-    <div class="vector-pill accent">capital @ 1</div>
-    <div class="vector-pill accent">of @ 2</div>
-    <div class="vector-pill accent">France @ 3</div>
-  </div>
+<div>
+
+**Self-supervised learning**
+
+The label is already in the text: it is just the **next token**. No human annotation. Every sequence of length $T$ yields $T$ training examples &mdash; each prefix predicts the token that follows it.
+
 </div>
 
-Without position information, attention is order-blind: the same tokens in a different order would look identical.
-
----
-
-<!-- .slide: id="attention-sublayer" -->
-
-## Step 3: Multi-Head Attention
-
-<div class="decoder-flow active-attention">
-  <div class="flow-node embedding">word &rarr; vector</div>
-  <div class="flow-node position">add position</div>
-  <div class="flow-node attention">multi-head attention</div>
-  <div class="flow-node ffn">feed-forward network</div>
-  <div class="flow-node repeat">repeat blocks</div>
-  <div class="flow-node sampling">sampling</div>
 </div>
 
-$$\text{Attention}(Q,K,V) = \text{softmax}\left(\frac{QK^{\top}}{\sqrt{d_k}}\right)V$$
+This is why pretraining can consume trillions of tokens: the supervision is free, generated by the data itself.
 
-<div class="attention-detail">
-  <div class="causal-matrix">
-    <div></div><div>The</div><div>capital</div><div>of</div><div>France</div>
-    <div>The</div><span class="on"></span><span></span><span></span><span></span>
-    <div>capital</div><span class="on"></span><span class="on"></span><span></span><span></span>
-    <div>of</div><span class="on"></span><span class="on"></span><span class="on"></span><span></span>
-    <div>France</div><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
-  </div>
-  <div class="attention-steps">
-    <ul>
-      <li>Each token is projected into a <strong>query</strong>, a <strong>key</strong>, and a <strong>value</strong></li>
-      <li>Score every query against every key, then scale by the square root of the head dimension</li>
-      <li>The <strong>causal mask</strong> keeps only the lower triangle, so a token never reads from the future</li>
-      <li>Softmax the scores into weights, then output the <strong>weighted sum of values</strong></li>
-      <li>Several <strong>heads</strong> run in parallel, each learning a different kind of lookup</li>
-    </ul>
-  </div>
+---
+
+<!-- .slide: id="base-model" -->
+
+## The Result Is a Base Model
+
+<div class="stage-flow">
+<svg viewBox="0 0 900 150" role="img" aria-label="Pipeline from raw text through pretraining to a base model, then finetuning to an assistant"><defs><marker id="sf" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5a623"></path></marker></defs><rect x="14" y="50" width="150" height="56" rx="10" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.5)" stroke-width="1.4"></rect><text x="89" y="76" text-anchor="middle" font-size="16" fill="#e8eaf0">raw text</text><text x="89" y="95" text-anchor="middle" font-size="12" fill="#8892a4">web, books, code</text><line x1="170" y1="78" x2="214" y2="78" stroke="#f5a623" stroke-width="2.5" marker-end="url(#sf)"></line><rect x="220" y="50" width="150" height="56" rx="10" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.6"></rect><text x="295" y="76" text-anchor="middle" font-size="16" fill="#e8eaf0">pretraining</text><text x="295" y="95" text-anchor="middle" font-size="12" fill="#8892a4">next-token, at scale</text><line x1="376" y1="78" x2="420" y2="78" stroke="#f5a623" stroke-width="2.5" marker-end="url(#sf)"></line><rect x="426" y="50" width="150" height="56" rx="10" fill="rgba(63,185,80,0.12)" stroke="rgba(63,185,80,0.6)" stroke-width="1.6"></rect><text x="501" y="76" text-anchor="middle" font-size="16" fill="#e8eaf0">base model</text><text x="501" y="95" text-anchor="middle" font-size="12" fill="#8892a4">this module</text><line x1="582" y1="78" x2="626" y2="78" stroke="#8892a4" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#sf)"></line><rect x="632" y="50" width="150" height="56" rx="10" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.4"></rect><text x="707" y="76" text-anchor="middle" font-size="16" fill="#8892a4">assistant</text><text x="707" y="95" text-anchor="middle" font-size="12" fill="#8892a4">Module 6</text><text x="707" y="34" text-anchor="middle" font-size="12" fill="#8892a4">finetuning</text></svg>
 </div>
 
-Attention is the only sub-layer where information moves between positions.
+A pretrained model is usually called a **base model**. It has absorbed the statistical structure of text &mdash; grammar, facts, style, code patterns &mdash; but it has **not** been taught to behave like a helpful assistant. That alignment step is Module 6.
 
 ---
 
-<!-- .slide: id="ffn-sublayer" -->
+<!-- .slide: id="why-enough" -->
 
-## Step 4: Feed-Forward Network
+## "Just" Predicting the Next Token
 
-<div class="decoder-flow active-ffn">
-  <div class="flow-node embedding">word &rarr; vector</div>
-  <div class="flow-node position">add position</div>
-  <div class="flow-node attention">multi-head attention</div>
-  <div class="flow-node ffn">feed-forward network</div>
-  <div class="flow-node repeat">repeat blocks</div>
-  <div class="flow-node sampling">sampling</div>
-</div>
-
-$$\text{FFN}(x) = W_2 \operatorname{ReLU}(W_1 x), \qquad d \rightarrow 4d \rightarrow d$$
-
-Applied to **each token independently**, the feed-forward network projects the vector up into a much wider space (typically four times the model dimension), applies a **ReLU** nonlinearity, and projects it back down. Unlike attention, it never mixes positions. It adds learned features and holds much of the model's stored knowledge. (GPT-2 uses GELU, a smooth version of the same idea.)
-
----
-
-<section id="ffn-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="ffn-expand" preload="auto"></video>
-  </div>
-</section>
-
----
-
-<!-- .slide: id="stacking-and-head" -->
-
-## Step 5: Repeat the Block
-
-<div class="decoder-flow active-repeat">
-  <div class="flow-node embedding">word &rarr; vector</div>
-  <div class="flow-node position">add position</div>
-  <div class="flow-node attention">multi-head attention</div>
-  <div class="flow-node ffn">feed-forward network</div>
-  <div class="flow-node repeat">repeat blocks</div>
-  <div class="flow-node sampling">sampling</div>
-</div>
-
-<div class="stack-visual">
-  <div class="stack-block">block 1<br><span>attention + FFN</span></div>
-  <div class="stack-block">block 2<br><span>attention + FFN</span></div>
-  <div class="stack-block">block 3<br><span>attention + FFN</span></div>
-  <div class="stack-ellipsis">...</div>
-  <div class="stack-block accent">block N<br><span>attention + FFN</span></div>
-</div>
-
-Depth lets later blocks build on earlier features. GPT-2 small repeats this decoder block 12 times. Each block reuses the same shape but learns its own weights.
-
----
-
-<!-- .slide: id="norm-and-residual" -->
-
-## Normalization: Keep the Scale Stable
-
-Normalization rescales each token vector to a stable range so its values neither blow up nor vanish as it passes through many layers. This is what keeps a deep stack trainable.
-
-<div class="norm-visual">
-  <div class="norm-lane">
-    <h3>LayerNorm</h3>
-    <p>Recenters (subtract the mean) <strong>and</strong> rescales (divide by the standard deviation), then applies a learned gain and bias.</p>
-  </div>
-  <div class="norm-lane">
-    <h3>RMSNorm</h3>
-    <p>Drops the recentering and keeps only the rescaling (divide by the root-mean-square). Cheaper, and works just as well in practice.</p>
-  </div>
-</div>
-
-Placement matters too: the original transformer normalized **after** each sub-layer (post-norm), while modern decoders normalize **before** each sub-layer (pre-norm), which trains more stably at depth.
-
----
-
-<section id="norm-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="norm-demo" preload="auto"></video>
-  </div>
-</section>
-
----
-
-<!-- .slide: id="sampling-step" -->
-
-## Step 6: Sampling
-
-<div class="decoder-flow active-sampling">
-  <div class="flow-node embedding">word &rarr; vector</div>
-  <div class="flow-node position">add position</div>
-  <div class="flow-node attention">multi-head attention</div>
-  <div class="flow-node ffn">feed-forward network</div>
-  <div class="flow-node repeat">repeat blocks</div>
-  <div class="flow-node sampling">sampling</div>
-</div>
-
-<div class="softmax-visual">
-  <div class="matrix-card">last token vector<br><strong>France</strong></div>
-  <div class="pipe-arrow">&rarr;</div>
-  <div class="logit-bars">
-    <div><span>Paris</span><b style="height: 120px;"></b></div>
-    <div><span>London</span><b style="height: 40px;"></b></div>
-    <div><span>city</span><b style="height: 64px;"></b></div>
-    <div><span>capital</span><b style="height: 52px;"></b></div>
-  </div>
-  <div class="pipe-arrow">&rarr;</div>
-  <div class="matrix-card accent">sample<br><strong>next token</strong></div>
-</div>
-
-The **unembedding** layer (also called the language-modeling head) is a linear map from the model's hidden dimension to one score per vocabulary token &mdash; the mirror image of the embedding lookup at the very start. Where the embedding turned a token id into a vector, the unembedding turns the final vector back into a score for every possible next token. Softmax turns those scores into the next-token distribution, and the decoding strategy we saw earlier &mdash; greedy, temperature, top-k, or top-p &mdash; chooses the token, which is appended and fed back in.
-
----
-
-<!-- .slide: id="residual-stream" -->
-
-## The Residual Stream View
-
-Every sub-layer is wrapped in a **residual connection**: it reads the current vector, computes an update, and adds that update back to the running vector.
-
-<div class="formula-card">output = input + sub-layer(norm(input))</div>
-
-Because each block only ever **adds** to this running vector, the original embedding is never overwritten. Information from the prompt stays available many layers later, and gradients flow back through the addition without decaying. This "residual stream" is the central object in mechanistic interpretability.
-
----
-
-<section id="residual-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="residual-stream" preload="auto"></video>
-  </div>
-</section>
-
----
-
-<!-- .slide: id="side-quest-induction-heads" -->
-
-## Side Quest: Induction Heads
-
-**Induction heads** (Olsson et al., 2022) are attention heads that implement a simple copy-and-continue pattern:
-
-- When the model sees a pattern like `[A] [B] ... [A]`, it predicts `[B]` as the next token
-- This is a core mechanism behind in-context learning: the model copies a pattern it observed earlier in the same prompt
-
-Induction heads are linked to the emergence of few-shot (in-context) learning at scale. Each head detects an earlier occurrence of the current token and predicts whatever followed it last time &mdash; no weight updates required.
-
----
-
-<!-- .slide: id="divider-beyond" class="section-divider" data-state="is-section-divider" -->
-
-# Beyond the Vanilla Transformer
-
-Modern blocks, MoE, and sub-quadratic alternatives
-
-
----
-
-<!-- .slide: id="modern-block" -->
-
-## The Modern Block: 2017 vs Llama-Style
-
-The vanilla transformer block has been refined in nearly every component:
+Next-token prediction looks almost trivially simple. At scale, it is not: to push the loss lower, the model is **forced** to learn the structure that makes text predictable.
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**Original Transformer (2017)**
+To reliably continue text, a model must absorb:
 
-- LayerNorm
-- ReLU activation in FFN
-- Sinusoidal positional embeddings
-- Post-norm (normalize after sub-layer)
-- Bias terms in all linear layers
+- **Grammar and syntax** &mdash; to keep sentences well-formed
+- **Facts about the world** &mdash; "the capital of France is ___"
+- **Style and register** &mdash; legal text, poetry, code comments
 
 </div>
 
 <div>
 
-**Modern Llama-Style**
-
-- RMSNorm (simpler, faster)
-- SwiGLU activation (smoother, better gradients)
-- RoPE (rotary positional embeddings, callback to Module 3)
-- Pre-norm (normalize before sub-layer)
-- **Dropped bias terms** in linear layers (saves parameters)
+- **Code structure** &mdash; balanced brackets, valid identifiers
+- **Task formats** &mdash; question/answer, translation, summaries
+- **Implicit reasoning** &mdash; arithmetic, deduction, multi-step chains
 
 </div>
 
 </div>
 
-These changes are mostly independent but together produce a more stable and more efficient training run.
+The compression pressure of one simple objective, applied to enormous and diverse data, is what produces broad capability.
 
 ---
 
-<!-- .slide: id="moe" -->
+<!-- .slide: id="few-shot" -->
 
-## Mixture of Experts
+## A Striking Side Effect: In-Context Learning
 
-<div class="moe-diagram">
-  <div class="router-box">router<br><span>top-k experts per token</span></div>
-  <div class="expert-grid">
-    <div class="expert active">expert 3<br><span>GPU active</span></div>
-    <div class="expert">expert 8<br><span>CPU or cold GPU</span></div>
-    <div class="expert active">expert 17<br><span>GPU active</span></div>
-    <div class="expert">expert 42<br><span>CPU or cold GPU</span></div>
+A large enough base model can infer a task from **examples in the prompt**, even though it was never trained on that task format:
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
+<div>
+
+```text
+sea -> mer
+sky -> ciel
+cat -> chat
+dog ->
+```
+
+</div>
+
+<div>
+
+The model was trained only to continue text. Yet shown a few `english -> french` pairs, it continues the **pattern** and answers `chien`.
+
+This is **few-shot / in-context learning**: an emergent behavior of large-scale pretraining, not an explicitly trained capability.
+
+</div>
+
+</div>
+
+<div class="note">
+
+We return to in-context learning and prompting in Module 10. For now, note that it appears for free as a consequence of scale &mdash; nobody designed a "few-shot mode" into the training objective.
+
+</div>
+
+---
+
+<!-- .slide: id="divider-objective" class="section-divider" data-state="is-section-divider" -->
+
+# The Training Objective
+
+Causal language modeling, and the alternatives
+
+
+---
+
+<!-- .slide: id="causal-lm" -->
+
+## Causal Language Modeling
+
+The GPT-style objective, and the focus of this module: predict token $x_t$ using only the tokens before it.
+
+The training pair is the **same sequence, shifted by one**:
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
+<div>
+
+**input** $x$
+
+$$x_0,\ x_1,\ \ldots,\ x_{T-1}$$
+
+</div>
+
+<div>
+
+**target** $y$
+
+$$x_1,\ x_2,\ \ldots,\ x_{T}$$
+
+</div>
+
+</div>
+
+The model outputs one vocabulary-sized logit vector at **every** position, so a single sequence of length $T$ produces $T$ predictions and $T$ loss terms at once. Constructing the labels is free: just shift.
+
+---
+
+<section id="next-token-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="next-token" preload="auto"></video>
   </div>
+</section>
+
+---
+
+<!-- .slide: id="objective-equation" -->
+
+## The Objective, Precisely
+
+Minimize the average negative log-probability of the true next token over the sequence:
+
+$$\mathcal{L} = -\frac{1}{T}\sum_{t=1}^{T}\log p_\theta\left(x_t \mid x_{<t}\right)$$
+
+This is exactly **cross-entropy** between the model's predicted distribution and the one-hot true next token, averaged over every position.
+
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+<div>
+
+**loss** (nats)
+
+the raw objective above
+
 </div>
 
-$$\text{MoE}(\mathbf{x}) = \sum_{i=1}^{E} g(\mathbf{x})_i \cdot \text{FFN}_i(\mathbf{x})$$
+<div>
 
-where $g(\mathbf{x})$ is the router output (a sparse gate) and only the top-$k$ experts receive nonzero weight.
+**perplexity**
 
-Sparse activation buys far more parameters at roughly the same compute per token. It also creates a memory-serving trade-off: inactive experts can be staged across CPU memory, GPU memory, or multiple devices, while the active experts for the current batch need fast access.
+$$\exp(\mathcal{L})$$
+the effective number of choices
 
----
-
-<!-- .slide: id="sub-quadratic" -->
-
-## Sub-Quadratic Alternatives
-
-Attention is $O(n^2)$ in sequence length. For very long contexts, this is the bottleneck. Active research explores alternatives:
-
-- **State-space models** (Mamba): a recurrent update with input-dependent gates. Linear in sequence length, but the state is a fixed-size compression.
-- **Linear attention:** kernelize the softmax to avoid the $n \times n$ matrix entirely. Exact in some variants, approximate in others.
-- **RWKV:** combines a recurrent update with linear attention-like weights, aiming to get the best of both worlds.
-
-Hybrids like **Jamba** mix attention layers with Mamba layers: attention for short-range precision, state-space for long-range compression.
-
-These are clearly labeled active research. The transformer remains the dominant architecture, but the $O(n^2)$ cost ensures that alternatives will continue to be explored.
-
----
-
-<!-- .slide: id="divider-families" class="section-divider" data-state="is-section-divider" -->
-
-# Three Architectural Families
-
-Encoder-decoder, encoder-only, and decoder-only
-
-
----
-
-<!-- .slide: id="encoder-decoder" -->
-
-## Family 1: Encoder-Decoder
-
-<div class="encoder-decoder-layout">
-  <img src="images/transformer.webp" alt="Original transformer encoder-decoder architecture">
-  <div>
-    <p>The original transformer has two stacks: an encoder for the input and a decoder for the output.</p>
-    <div class="family-grid">
-      <div><strong>Encoder</strong><span>bidirectional self-attention over the source</span></div>
-      <div><strong>Decoder</strong><span>causal self-attention plus cross-attention to encoder states</span></div>
-      <div><strong>Best fit</strong><span>translation, summarization, and other input-output sequence tasks</span></div>
-      <div><strong>Examples</strong><span>T5 and BART keep separate input understanding and output generation</span></div>
-    </div>
-  </div>
 </div>
 
----
+<div>
 
-<!-- .slide: id="encoder-only" -->
+**bits per token**
 
-## Family 2: Encoder-Only
+$$\mathcal{L} / \ln 2$$
+Shannon's units (Module 1)
 
-Bidirectional attention, no causal mask, no decoder. Trained with **masked language modeling** (forward reference to Module 5): some input tokens are hidden, and the model must predict them from their context on both sides.
+</div>
 
-$$\text{output}_i = f(\mathbf{x}_1, \dots, \mathbf{x}_n) \quad \text{for all } i$$
+</div>
 
-Use cases: classification, sentence embeddings, retrieval, named-entity recognition. The model produces representations, not generations.
-
-BERT (Devlin et al., 2018) made this architecture dominant for "understanding" tasks. RoBERTa improved the training recipe without changing the architecture.
-
----
-
-<!-- .slide: id="decoder-only" -->
-
-## Family 3: Decoder-Only
-
-Causal masking, autoregressive next-token prediction. Each token attends only to itself and previous tokens.
-
-$$\text{output}_t = f(\mathbf{x}_1, \dots, \mathbf{x}_t)$$
-
-Built for generation, but capable of nearly everything through prompting. GPT (Radford et al., 2018), GPT-2 (2019), GPT-3 (2020), and the Llama lineage all share this design.
-
-Why decoder-only won for LLMs:
-
-- A single stack is simpler and scales cleanly
-- The next-token objective gives a dense training signal at every position
-- The generative objective subsumes "understanding" tasks: you can phrase classification as a completion prompt
-- No task-specific heads are needed; everything becomes text generation
-- In-context and few-shot learning emerge at scale
+We will read these three numbers in detail in a few slides. They are the same quantity in different units.
 
 ---
 
@@ -3256,11 +1625,11 @@ Why decoder-only won for LLMs:
 
 <div class="fragment fade-in">
 
-### GPT and GPT-2 (2018-2019)
+### Improving Language Understanding by Generative Pre-Training (2018)
 
-- Showed that autoregressive pretraining could produce general-purpose text models
-- GPT-2 demonstrated coherent long-form generation from scale and data
-- The decoder-only stack became the dominant LLM design
+- Led the GPT line of generative pretraining at OpenAI
+- Showed that a single decoder trained only to predict the next token transfers to many tasks
+- GPT-2 (2019) made large-scale causal language modeling the dominant recipe
 
 </div>
 
@@ -3270,19 +1639,997 @@ Why decoder-only won for LLMs:
 
 ---
 
-<!-- .slide: id="honest-tradeoffs" -->
+<!-- .slide: id="other-objectives" -->
 
-## The Honest Trade-offs
+## Other Pretraining Objectives
 
-Decoder-only did **not** win on every axis. It won on generality and scaling:
+Causal LM is not the only way to learn from raw text. Two important alternatives change **which tokens are predicted from which context**:
 
-- **Encoder-only** is still more efficient for fixed-vector embeddings, retrieval, and classification. If you only need a sentence representation, BERT-style models are faster.
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
-- **Encoder-decoder** remains strong where input and output are clearly distinct, as in machine translation. The input can be processed bidirectionally while the output is generated autoregressively.
+<div>
 
-- **Decoder-only** excels when the task is open-ended or when you want a single model to handle many tasks through prompting. The price is that every task must be phrased as text completion.
+**Masked language modeling (BERT)**
 
-The choice depends on the problem, not on decoder-only being universally superior.
+Hide ~15% of tokens and predict them using context on **both sides**. Bidirectional, so it builds rich representations &mdash; but it is not a natural text generator, and only the masked fraction produces a training signal.
+
+</div>
+
+<div>
+
+**Denoising / span corruption (T5)**
+
+Corrupt a passage (drop or shuffle spans) and train an encoder-decoder to **reconstruct** the original. A flexible "text-to-text" bridge, but it needs the heavier encoder-decoder machinery.
+
+</div>
+
+</div>
+
+---
+
+<div class="figure-card">
+
+![Devlin, Chang, Lee, and Toutanova](images/devlin.jpg)
+
+<div class="figure-info">
+
+## Devlin, Chang, Lee, and Toutanova <!-- .element: class="fragment fade-in" -->
+
+<div class="fragment fade-in">
+
+### BERT: Pre-training of Deep Bidirectional Transformers (2018)
+
+- Introduced masked language modeling as the reference point for bidirectional pretraining
+- Each masked position is predicted from left and right context at once
+- Excellent for understanding tasks; not designed for open-ended generation
+
+</div>
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="why-causal-won" -->
+
+## Why Decoder-Only Causal LM Won
+
+For building general-purpose generative models, the causal objective has decisive practical advantages:
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
+<div>
+
+- **Dense signal.** Every position is a prediction, so one sequence trains $T$ examples. MLM only learns from the ~15% it masks.
+- **Trivial data construction.** Inputs and targets are the same stream, shifted by one. No pairing, no corruption scheme.
+
+</div>
+
+<div>
+
+- **Natural generation.** The training objective *is* generation: sample the next token, append, repeat.
+- **Prompt compatibility.** "Understanding" tasks become text completion, so the same model handles classification, translation, and Q&A through prompting.
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="side-quest-compression" -->
+
+## Side Quest: Compression Is Prediction
+
+A model that predicts text well is, literally, a good **compressor**. To encode the next token you need about $-\log_2 p(\text{token})$ bits; a model that assigns high probability to what actually comes next needs fewer bits to store the text.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
+<div>
+
+- This is the Shannon through-line from Module 1: **cross-entropy, perplexity, and bits per token** are not decorative metrics &mdash; they measure compression.
+- Lower pretraining loss = fewer bits per token = a tighter description of the data.
+
+</div>
+
+<div>
+
+- Ilya Sutskever has framed next-token prediction as compression; the **Hutter Prize** rewards compressing Wikipedia; DeepMind's **"Language Modeling Is Compression"** (2023) makes the equivalence precise.
+- Minimizing loss and maximizing compression are the **same objective**.
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="divider-pipeline" class="section-divider" data-state="is-section-divider" -->
+
+# The Pretraining Pipeline
+
+From a pile of text to a stream of training batches
+
+
+---
+
+<!-- .slide: id="pipeline-overview" -->
+
+## The Pipeline End to End
+
+<div class="pipeline-flow">
+<svg viewBox="0 0 940 130" role="img" aria-label="Pretraining pipeline: collect, filter, tokenize, pack, split, train and evaluate"><defs><marker id="pf" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5a623"></path></marker></defs><rect x="8" y="44" width="128" height="50" rx="9" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.5)" stroke-width="1.4"></rect><text x="72" y="66" text-anchor="middle" font-size="15" fill="#e8eaf0">collect</text><text x="72" y="83" text-anchor="middle" font-size="11" fill="#8892a4">web, books, code</text><line x1="140" y1="69" x2="166" y2="69" stroke="#f5a623" stroke-width="2.5" marker-end="url(#pf)"></line><rect x="170" y="44" width="128" height="50" rx="9" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.5)" stroke-width="1.4"></rect><text x="234" y="66" text-anchor="middle" font-size="15" fill="#e8eaf0">filter</text><text x="234" y="83" text-anchor="middle" font-size="11" fill="#8892a4">clean, dedup</text><line x1="302" y1="69" x2="328" y2="69" stroke="#f5a623" stroke-width="2.5" marker-end="url(#pf)"></line><rect x="332" y="44" width="128" height="50" rx="9" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.5)" stroke-width="1.4"></rect><text x="396" y="66" text-anchor="middle" font-size="15" fill="#e8eaf0">tokenize</text><text x="396" y="83" text-anchor="middle" font-size="11" fill="#8892a4">text to IDs</text><line x1="464" y1="69" x2="490" y2="69" stroke="#f5a623" stroke-width="2.5" marker-end="url(#pf)"></line><rect x="494" y="44" width="128" height="50" rx="9" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.5)" stroke-width="1.4"></rect><text x="558" y="66" text-anchor="middle" font-size="15" fill="#e8eaf0">pack</text><text x="558" y="83" text-anchor="middle" font-size="11" fill="#8892a4">fixed blocks</text><line x1="626" y1="69" x2="652" y2="69" stroke="#f5a623" stroke-width="2.5" marker-end="url(#pf)"></line><rect x="656" y="44" width="128" height="50" rx="9" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.5)" stroke-width="1.4"></rect><text x="720" y="66" text-anchor="middle" font-size="15" fill="#e8eaf0">split</text><text x="720" y="83" text-anchor="middle" font-size="11" fill="#8892a4">train / val</text><line x1="788" y1="69" x2="814" y2="69" stroke="#f5a623" stroke-width="2.5" marker-end="url(#pf)"></line><rect x="818" y="44" width="116" height="50" rx="9" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.6"></rect><text x="876" y="66" text-anchor="middle" font-size="15" fill="#e8eaf0">train</text><text x="876" y="83" text-anchor="middle" font-size="11" fill="#8892a4">and evaluate</text></svg>
+</div>
+
+Most of the work in a real pretraining run happens **before** the optimizer ever runs. Data decisions shape the model as much as the architecture does.
+
+---
+
+<!-- .slide: id="collect-filter" -->
+
+## Collect, Then Filter
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Collect**
+
+Web pages, books, code, papers, forums, and documentation &mdash; the exact mixture depends on the model's goals and on legal and ethical constraints.
+
+</div>
+
+<div>
+
+**Filter**
+
+Raw text is mostly junk. Filtering removes:
+
+- Boilerplate and low-quality pages
+- Near-duplicate documents (deduplication)
+- Unsafe content categories and private information
+- Obvious benchmark leakage, where it can be found
+
+</div>
+
+</div>
+
+Quality and deduplication matter more than raw volume &mdash; a point we return to in the data-quality section.
+
+---
+
+<!-- .slide: id="tokenize-pack" -->
+
+## Tokenize and Pack
+
+The tokenizer from Module 4 converts strings into token IDs. Then those IDs are **packed** into fixed-length blocks so every batch is a regular tensor shape.
+
+- Documents have all different lengths, but the GPU wants uniform `(batch, block)` tensors
+- Concatenate documents into one long stream, then chop it into equal blocks
+- Insert an **end-of-text** token at each document boundary so the model can see where one document ends and the next begins
+
+The animation on the next slide shows this packing step in motion.
+
+---
+
+<section id="packing-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="sequence-packing" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<!-- .slide: id="split-train-eval" -->
+
+## Split, Train, Evaluate
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Hold out a validation set**
+
+Split the token stream into train and validation **before** reporting any metrics, so validation loss measures generalization rather than memorized batches.
+
+</div>
+
+<div>
+
+**Train in batches**
+
+Each step is the same four moves:
+
+1. Forward pass on a batch
+2. Shifted-target cross-entropy loss
+3. Backpropagation
+4. Optimizer update
+
+</div>
+
+</div>
+
+Periodically measure validation loss on held-out blocks to check whether the model is learning patterns that generalize beyond the exact batches it just saw.
+
+---
+
+<!-- .slide: id="divider-recipe" class="section-divider" data-state="is-section-divider" -->
+
+# The Training Recipe
+
+The engineering that keeps a long run stable
+
+
+---
+
+<!-- .slide: id="recipe-intro" -->
+
+## One Loop, Repeated
+
+Module 2 already gave us the core: SGD, Adam, mini-batches, and learning rates. Real pretraining wraps the same loop in a small set of standard choices that make **long, large** runs stable and efficient.
+
+The loop itself never changes: forward, loss, backward, update &mdash; millions of times.
+
+---
+
+<section id="training-loop-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="training-loop" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<!-- .slide: id="adamw" -->
+
+## AdamW: The Standard Optimizer
+
+Pretraining almost always uses **AdamW**: Adam's per-parameter adaptive step sizes, plus **decoupled weight decay**.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Adam part**
+
+Keeps running averages of the gradient and its square, so each parameter gets its own effective learning rate. Robust to the wildly different gradient scales across a deep model.
+
+</div>
+
+<div>
+
+**Weight-decay part**
+
+Gently pulls weights toward zero each step &mdash; the regularization idea from Module 2i. "Decoupled" means the decay is applied directly to the weights, separately from the adaptive gradient term, which works better in practice.
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="lr-schedule" -->
+
+## Learning-Rate Schedule: Warmup, Then Cosine Decay
+
+A constant learning rate is rarely best. The standard schedule has two phases:
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Warmup**
+
+Start near zero and ramp up over the first few hundred steps. Early on the weights are random and gradients are large; a small step size avoids an immediate blow-up.
+
+</div>
+
+<div>
+
+**Cosine decay**
+
+After the peak, lower the learning rate smoothly along a cosine curve down to a small floor. Big steps early to explore, small steps late to settle into a good minimum.
+
+</div>
+
+</div>
+
+---
+
+<section id="lr-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="lr-schedule" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<!-- .slide: id="stability-tricks" -->
+
+## Stability and Scale
+
+Three more standard ingredients, each solving a concrete problem:
+
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+<div>
+
+**Gradient clipping**
+
+Cap the global gradient norm. A single bad batch can produce a huge gradient that wrecks the weights; clipping bounds the damage and prevents loss spikes.
+
+</div>
+
+<div>
+
+**Gradient accumulation**
+
+Sum gradients over several small device batches before stepping. This simulates a much larger **effective** batch size than one GPU could hold at once.
+
+</div>
+
+<div>
+
+**Mixed precision**
+
+Do most math in `bf16` instead of `fp32`. Fewer bits per number means faster compute and larger models in memory. (More in Module 9.)
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="overfit-check" -->
+
+## Sanity Check: Overfit One Batch
+
+Before launching a long run, train repeatedly on a **single batch** until the loss gets very low.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Why it works**
+
+A model with enough capacity should be able to memorize one tiny batch and drive its loss toward zero. There is nothing to generalize to &mdash; it is pure memorization.
+
+</div>
+
+<div>
+
+**What it catches**
+
+If the loss does **not** crater, the training loop is broken: a detached gradient, a wrong target shift, a frozen parameter, a bad learning rate. Cheap to run, and it fails loudly.
+
+</div>
+
+</div>
+
+You will run exactly this check in the exercise.
+
+---
+
+<!-- .slide: id="divider-loss" class="section-divider" data-state="is-section-divider" -->
+
+# Reading the Loss
+
+Loss, perplexity, and what progress looks like
+
+
+---
+
+<!-- .slide: id="loss-intro" -->
+
+## Cross-Entropy Measures Surprise
+
+The loss is the model's average **surprise** at the true next token. Lower loss means the model assigned more probability to what actually came next &mdash; it is less surprised by held-out text.
+
+The same number wears three hats, which the animation makes concrete:
+
+- **loss** in nats, the raw objective
+- **perplexity** $= \exp(\text{loss})$, the effective number of next-token choices
+- **bits per token** $= \text{loss} / \ln 2$, the compression view from Module 1
+
+---
+
+<section id="perplexity-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="perplexity" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<!-- .slide: id="progress-curves" -->
+
+## What Progress Looks Like
+
+<div class="loss-figure">
+  <img src="images/loss_curve.png" alt="Training and validation loss falling over 2000 steps">
+</div>
+
+Training loss should fall; validation loss should fall too. A **widening gap** between them is the warning sign &mdash; the model is starting to memorize the training set instead of learning reusable patterns. (This curve is the actual output of the Module 5 exercise.)
+
+---
+
+<!-- .slide: id="runs-are-messy" -->
+
+## Real Runs Are Messy
+
+Loss does not always glide down smoothly:
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Spikes and divergence**
+
+A long run can spike or diverge outright when the recipe is unstable. Usual suspects: learning rate too high, weak gradient clipping, batch size, or a bad shard of data.
+
+</div>
+
+<div>
+
+**Loss is not the whole story**
+
+Lower next-token loss does not perfectly predict every capability. Real runs also track **downstream benchmarks** at checkpoints. Generated samples are useful for intuition but are not a reliable metric on their own.
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="before-after-demo" -->
+
+## The Demo: Before vs After
+
+The clearest way to feel pretraining work: sample from the **same** model before and after training. Both samples below are real output from the exercise's tiny character-level model.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
+<div>
+
+**Before** (random weights, loss 4.18)
+
+```text
+-pzlYaS ;czdeCpwEiT,YzrzlG3-aYeNB
+ijbo
+Lzzj$KUKS-A.U FisdJ'G HTobPPW;,Ue$
+```
+
+</div>
+
+<div>
+
+**After** (2000 steps, val loss 1.64)
+
+```text
+FRIAR LAURENCE:
+What do tongue the cLARENCE:
+Your felsed hath you seed heart of me.
+```
+
+</div>
+
+</div>
+
+It is still nonsense up close &mdash; but it learned the **shape** of the data: character names in caps, colons, line breaks, plausible letter sequences. Perplexity fell from ~65 to ~5; bits per token from ~6.0 to ~2.4.
+
+---
+
+<!-- .slide: id="divider-data" class="section-divider" data-state="is-section-divider" -->
+
+# Data Quality, Contamination, Memorization
+
+Pretraining data is a design decision, not neutral infrastructure
+
+
+---
+
+<!-- .slide: id="more-not-better" -->
+
+## More Data Is Not Automatically Better
+
+Beyond a point, **what** you train on matters more than how much:
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+- **Quality** &mdash; a smaller corpus of clean text can beat a larger pile of boilerplate and spam
+- **Diversity** &mdash; many domains and styles generalize better than one repeated genre
+
+</div>
+
+<div>
+
+- **Deduplication** &mdash; removing near-duplicates improves generalization, even though it removes tokens
+- **Domain balance** &mdash; the ratio of code, prose, and academic text shapes what the model is good at
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="side-quest-memorization" -->
+
+## Side Quest: Memorization vs Generalization
+
+Put one passage in a tiny dataset many times, and the model will spend its capacity **memorizing that exact string** instead of learning a reusable pattern.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Memorization**
+
+"The model learned this exact sequence of characters." Verbatim recall of training text &mdash; a privacy and copyright liability, and not a transferable skill.
+
+</div>
+
+<div>
+
+**Generalization**
+
+"The model learned a pattern it can reuse." The goal of pretraining. This is exactly why we **deduplicate** data and why we watch **validation loss**, which only rewards patterns that transfer.
+
+</div>
+
+</div>
+
+Duplicated text is the bridge between the two: it quietly turns generalization back into memorization.
+
+---
+
+<!-- .slide: id="contamination" -->
+
+## Benchmark Contamination
+
+If evaluation examples leak into the pretraining data, the model can score well by **recall** rather than ability.
+
+- The model may have literally seen the test questions and answers during pretraining
+- Its benchmark numbers then overstate its real capability
+- This is why deduplication and decontamination try to remove known benchmark text &mdash; and why a suspiciously high score deserves scrutiny
+
+Contamination is easy to introduce by accident (benchmarks are published on the web that gets scraped) and hard to fully rule out.
+
+---
+
+<!-- .slide: id="data-mixture" -->
+
+## Data Mixture Shapes Behavior
+
+The blend of sources is one of the most consequential design choices in a pretraining run:
+
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+<div>
+
+**Code-heavy**
+
+More source code improves coding ability &mdash; and, intriguingly, some kinds of structured reasoning.
+
+</div>
+
+<div>
+
+**Academic text**
+
+Papers and textbooks shift style and broaden factual knowledge.
+
+</div>
+
+<div>
+
+**Conversational text**
+
+Forums and dialogue change how the model handles turns and informal language.
+
+</div>
+
+</div>
+
+<div class="note">
+
+Open datasets made this concrete and reproducible. Gao, Biderman, and collaborators at EleutherAI built **The Pile**, an 800GB curated mixture of 22 diverse sources, which became a standard reference corpus for open language-model pretraining.
+
+</div>
+
+---
+
+<!-- .slide: id="side-quest-data-wall" -->
+
+## Side Quest: The Data Wall
+
+What happens when high-quality **human** text, not model size, becomes the scarce resource?
+
+- The best public text is finite; the largest models already train on much of it
+- Responses include aggressive **curation and deduplication**, careful **domain balance**, and increasingly **synthetic data** generated by other models
+- This reframes the frontier: not just "can we afford a bigger model?" but "is there enough good data to feed it?"
+
+The data wall is a recurring theme in later modules, and a reason the simple "just scale up" story is incomplete.
+
+---
+
+<!-- .slide: id="divider-scaling" class="section-divider" data-state="is-section-divider" -->
+
+# Scaling Laws
+
+Predicting performance before spending the compute
+
+
+---
+
+<!-- .slide: id="scaling-predictable" -->
+
+## Loss Improves Predictably
+
+Kaplan, McCandlish, and collaborators (2020) found that language-model loss falls as a smooth **power law** in three quantities, each spanning many orders of magnitude:
+
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+
+<div>
+
+**Parameters** $N$
+
+a bigger model
+
+</div>
+
+<div>
+
+**Data** $D$
+
+more training tokens
+
+</div>
+
+<div>
+
+**Compute** $C$
+
+more total FLOPs
+
+</div>
+
+</div>
+
+On log-log axes the loss-versus-compute curve is nearly a straight line. That predictability is powerful: you can estimate a large model's loss from small-scale runs, **before** committing the budget.
+
+---
+
+<section id="scaling-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="scaling-laws" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<!-- .slide: id="compute-6nd" -->
+
+## A Computable Handle: C &approx; 6ND
+
+For a dense transformer, total pretraining compute is well approximated by
+
+$$C \approx 6 N D$$
+
+where $N$ is the parameter count and $D$ is the number of training tokens.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Where the 6 comes from**
+
+Roughly 2 FLOPs per parameter per token for the forward pass, and about twice that for the backward pass &mdash; about 6 in total.
+
+</div>
+
+<div>
+
+**Why it is useful**
+
+It turns "how big, how long?" into arithmetic. Fix a compute budget $C$, and $N$ and $D$ trade off directly against each other.
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="chinchilla" -->
+
+## Chinchilla: Compute-Optimal Balance
+
+The original scaling story encouraged ever-**larger** models. Hoffmann and the Chinchilla team (2022) refined it: for a **fixed compute budget**, many earlier models were too large for the number of tokens they were trained on.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**The lesson**
+
+Parameters and tokens should grow **together**. A smaller model trained on more tokens can beat a larger model starved of data &mdash; the valley in the animation.
+
+</div>
+
+<div>
+
+**The rule of thumb**
+
+About **20 training tokens per parameter** is compute-optimal. A 1B-parameter model wants roughly 20B tokens.
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="serving-optimal" -->
+
+## Compute-Optimal Is Not Serving-Optimal
+
+Chinchilla optimizes the **training** budget. But a model is trained once and then served billions of times.
+
+- A model you will run constantly should be **cheap at inference**, which means **smaller**
+- So Llama-style models deliberately train **smaller models on far more tokens** than Chinchilla suggests &mdash; spending extra training compute to save much more inference compute later
+- Compute-optimal training balances parameters, training tokens, **and** deployment cost &mdash; not parameter count alone
+
+<div class="note">
+
+This is why pretraining is an engineering problem as much as a modeling one: model size, data size, batch size, sequence length, hardware, and wall-clock time all interact. Brown and the GPT-3 team (2020) had already shown the payoff of scale &mdash; large-scale autoregressive pretraining producing strong **few-shot** behavior through prompting.
+
+</div>
+
+---
+
+<!-- .slide: id="side-quest-emergence" -->
+
+## Side Quest: Emergent Abilities, Real or Mirage?
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Sharp emergence (Wei et al., 2022)**
+
+Some capabilities appear to switch on **suddenly** past a scale threshold &mdash; near-zero performance, then a jump.
+
+</div>
+
+<div>
+
+**A measurement artifact? (Schaeffer et al., 2023)**
+
+The jump can be an artifact of a **thresholded or nonlinear metric**. Under a smoother metric, the same capability often improves gradually.
+
+</div>
+
+</div>
+
+The critical-thinking takeaway: a curve that looks discontinuous may say more about how you measured it than about the model. Always ask what the metric is doing.
+
+---
+
+<!-- .slide: id="side-quest-double-descent" -->
+
+## Side Quest: Double Descent
+
+Classical statistics says bigger models eventually **overfit**: test error should rise once capacity exceeds the data. Modern deep learning breaks that story.
+
+- As model size grows, test error falls, then **rises** near the interpolation point (where the model just fits the data), then **falls again**
+- The second descent puts the very largest, overparameterized models back in the best regime
+- It is a caution against the simple Module 2 overfitting intuition: "bigger" interacts with data, optimization, and measurement in non-obvious ways
+
+---
+
+<!-- .slide: id="divider-distributed" class="section-divider" data-state="is-section-divider" -->
+
+# Training at Scale
+
+When the model, batch, or run no longer fits on one device
+
+
+---
+
+<!-- .slide: id="distributed-intro" -->
+
+## Pretraining Becomes a Systems Problem
+
+A frontier run does not fit on one GPU &mdash; not the batch, often not even the model. So pretraining turns into a **distributed-systems** problem, and throughput becomes as important as the loss curve.
+
+The first and most common tool is **data parallelism**: replicate the model across GPUs, split the batch, and synchronize the gradients. The animation shows the idea.
+
+---
+
+<section id="data-parallel-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="data-parallel" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<!-- .slide: id="parallelism-kinds" -->
+
+## Two Ways to Split the Work
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Data parallelism**
+
+Every GPU holds a **full copy** of the model and processes a different slice of the batch. After the backward pass, an **all-reduce** averages the gradients so all replicas stay identical. Scales the batch.
+
+</div>
+
+<div>
+
+**Model / tensor / pipeline parallelism**
+
+Split the **model itself** when its parameters, activations, or layers do not fit on one GPU:
+
+- **Tensor**: split individual weight matrices across GPUs
+- **Pipeline**: put different layers on different GPUs
+
+</div>
+
+</div>
+
+Real frontier runs combine all of these at once.
+
+---
+
+<!-- .slide: id="scale-realities" -->
+
+## The Realities of Scale
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Thousands of GPUs, for months**
+
+At this scale, **networking, storage, and scheduling** become first-order concerns. Moving gradients between GPUs can cost as much time as computing them.
+
+</div>
+
+<div>
+
+**Failures are expected**
+
+Over a months-long run on thousands of machines, hardware **will** fail. **Checkpoint and resume** is mandatory: periodically save the full training state so a crash costs hours, not weeks.
+
+</div>
+
+</div>
+
+<div class="note">
+
+The goal here is to make the scale concrete and explain why pretraining is an engineering problem. The implementation details of distributed training are the subject of Module 9.
+
+</div>
+
+---
+
+<!-- .slide: id="divider-assistant" class="section-divider" data-state="is-section-divider" -->
+
+# From Base Model to Assistant
+
+Why impressive pretraining is not yet a product
+
+
+---
+
+<!-- .slide: id="base-continues" -->
+
+## A Base Model Continues Text
+
+Pretraining produces a model that **continues text**, not one that reliably **follows your intent**. A base model is a pattern-matcher over its training distribution, so it will happily:
+
+- Complete a chat transcript by inventing **both** sides of the conversation
+- Continue a document, write code, or imitate a style
+- Carry on harmful text, because that too is a pattern in the data
+
+It is not refusing to help and it is not trying to help &mdash; it is just predicting the next token.
+
+---
+
+<!-- .slide: id="side-quest-base-vs-assistant" -->
+
+## Side Quest: Same Prompt, Two Models
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
+<div>
+
+**Base model** sees a document to continue
+
+```text
+What is the capital of France?
+What is the capital of Italy?
+What is the largest ocean?
+```
+It continues the **pattern** &mdash; more quiz questions &mdash; instead of answering.
+
+</div>
+
+<div>
+
+**Assistant model** infers your intent
+
+```text
+What is the capital of France?
+
+The capital of France is Paris.
+```
+It treats the text as a **request** and satisfies it.
+
+</div>
+
+</div>
+
+Same weights' worth of knowledge; completely different behavior. The difference is what comes after pretraining.
+
+---
+
+<!-- .slide: id="aligning-behavior" -->
+
+## Shaping Behavior
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Instruction finetuning**
+
+Continue training on a new data distribution: **prompts paired with desired responses**. This teaches the model that a prompt is something to satisfy, not merely continue.
+
+</div>
+
+<div>
+
+**Preference optimization and RL**
+
+Further shape behavior toward **helpfulness, honesty, appropriate refusal, and tool use**, using human or model preferences as the signal.
+
+</div>
+
+</div>
+
+The optimization machinery is familiar &mdash; gradients, batches, a loss. What changes is the **data** and the **behavioral target**.
+
+---
+
+<!-- .slide: id="handoff" -->
+
+## The Handoff to Module 6
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**What pretraining gave us**
+
+A base model that has absorbed the structure of language: grammar, facts, style, code, and latent skills &mdash; a powerful but unaligned foundation.
+
+</div>
+
+<div>
+
+**What comes next**
+
+**Finetuning and alignment** turn that foundation into an assistant. Same optimizer, same backprop &mdash; new data, new target.
+
+</div>
+
+</div>
+
+Pretraining built the engine. Module 6 teaches it to drive.
 
 ---
 
@@ -3290,7 +2637,7 @@ The choice depends on the problem, not on decoder-only being universally superio
 
 # Exercise
 
-Assemble GPT-2 and Generate Text
+Pretraining NanoGPT
 
 
 ---
@@ -3299,39 +2646,42 @@ Assemble GPT-2 and Generate Text
 
 ## Running the Exercise
 
-Open `module_04_architectures/exercise.py` and fill in the `NotImplementedError` lines. Run after each step &mdash; unfinished functions are skipped automatically. <!-- .element: class="text-lg" -->
+Open `module_05_pretraining/exercise.py` and fill in the `NotImplementedError` lines. The model is provided &mdash; you write the training loop. Run after each step; unfinished steps are skipped automatically. <!-- .element: class="text-lg" -->
 
 ```bash
-# Run the exercise (skips any not yet implemented)
+# Train the tiny model on the bundled Shakespeare corpus
 cd exercises
-uv run python module_04_architectures/src/main.py
+uv run python module_05_pretraining/src/main.py
+
+# Single-batch sanity check: the loss should crater toward zero
+uv run python module_05_pretraining/src/main.py --overfit
 ```
 
-The exercise wires attention into a complete decoder-only model, loads real GPT-2 weights, and generates text. Check the `output/` directory for plots after each run. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+The runner prints the model and dataset size, a sample before training, the loss at each checkpoint, the final perplexity and bits per token, a sample after training, and saves a loss-curve image. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
 <!-- .slide: id="exercise-overview" -->
 
-## Exercise: Assemble GPT-2
+## Exercise: Pretraining NanoGPT
 
-Build the full decoder-only transformer from scratch, load pretrained weights, and generate text with different decoding strategies. <!-- .element: class="text-lg" -->
+The architecture is fixed (it is the Module 4 model, scaled down). Everything you implement is the **pretraining loop**. <!-- .element: class="text-lg" -->
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
 <div>
 
-**Model assembly (steps 1&ndash;5)**
+**The loop (steps 1&ndash;8)**
 
-Implement embeddings, the FFN, a transformer block, the full stack, and the weight-loading bridge to HuggingFace.
+Encode text, split train/validation, build **shifted** batches, compute cross-entropy, step the optimizer under a warmup + cosine schedule, then read the loss as perplexity and bits per token.
 
 </div>
 
 <div>
 
-**Generation (steps 6&ndash;7)**
+**Generation (step 10)**
 
-Implement greedy decoding, temperature scaling, and top-k sampling. Observe how decoding strategy shapes the output.
+Sample one token at a time and watch the output go from random characters to text-like Shakespeare.
 
 </div>
 
@@ -3339,24 +2689,19 @@ Implement greedy decoding, temperature scaling, and top-k sampling. Observe how 
 
 ---
 
-<!-- .slide: id="exercise-step1-code" -->
+<!-- .slide: id="exercise-step1" -->
 
-## Step 1: EmbeddingLayer.forward()
+## Step 1: encode()
 
 ```python
-    def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
-        """Look up token and positional embeddings and add them."""
-        b, t = token_ids.size()
-        position = torch.arange(t, dtype=torch.long, device=token_ids.device)
-        position = position.unsqueeze(0).expand(b, t)
-
-        # TODO: Look up token embeddings and position embeddings, then add them.
-        raise NotImplementedError("TODO: token embedding lookup + positional embedding")
+def encode(text, stoi):
+    # TODO: Return a 1-D LongTensor with one integer ID per character in `text`.
+    raise NotImplementedError("TODO: encode text into a LongTensor of token IDs")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** there are two embedding tables on `self` (one for tokens, one for positions); call each on its index tensor and add the two results.
+**Hint:** look up each character in `stoi`, then wrap the list with `torch.tensor(..., dtype=torch.long)`.
 
 </div>
 
@@ -3365,27 +2710,27 @@ Implement greedy decoding, temperature scaling, and top-k sampling. Observe how 
 **Answer:**
 
 ```python
-return self.token_embed(token_ids) + self.pos_embed(position)
+return torch.tensor([stoi[c] for c in text], dtype=torch.long)
 ```
 
 </div>
 
 ---
 
-<!-- .slide: id="exercise-step2-code" -->
+<!-- .slide: id="exercise-step2" -->
 
-## Step 2: FeedForward.forward()
+## Step 2: train_val_split()
 
 ```python
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Apply the two-layer FFN with GELU nonlinearity."""
-        # TODO: Apply fc1, then F.gelu(...), then fc2, then dropout.
-        raise NotImplementedError("TODO: FFN forward pass")
+def train_val_split(data, val_fraction=0.1):
+    # TODO: Return (train_data, val_data): the first (1 - val_fraction) of the
+    #       tokens for training, and the remaining tail for validation.
+    raise NotImplementedError("TODO: split the token stream into train and validation")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** compose the layers in order; the tensor should end at d_model, not d_ff.
+**Hint:** compute `n_train = int(len(data) * (1 - val_fraction))`, then slice `data[:n_train]` and `data[n_train:]`.
 
 </div>
 
@@ -3394,136 +2739,117 @@ return self.token_embed(token_ids) + self.pos_embed(position)
 **Answer:**
 
 ```python
-return self.fc2(self.dropout(F.gelu(self.fc1(x))))
+n_train = int(len(data) * (1.0 - val_fraction))
+return data[:n_train], data[n_train:]
 ```
 
 </div>
 
 ---
 
-<!-- .slide: id="exercise-step3-code" -->
-
-## Step 3: TransformerBlock.forward()
-
-```python
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Pre-norm transformer block with residual connections."""
-        # TODO: Pre-norm attention with residual, then pre-norm FFN with residual.
-        raise NotImplementedError("TODO: transformer block forward pass")
-```
-
-<div class="fragment hint-box">
-
-**Hint:** use the same pattern twice: normalize, apply the sub-layer, then add the result back to x.
-
-</div>
-
-<div class="fragment note">
-
-**Answer:**
-
-```python
-x = x + self.attn(self.ln1(x))
-x = x + self.ffn(self.ln2(x))
-return x
-```
-
-</div>
-
----
-
-<!-- .slide: id="exercise-step4-code" -->
-
-## Step 4: GPT2Model.forward()
-
-```python
-    def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
-        """Run a full forward pass from token IDs to logits."""
-        # TODO: embed -> run every block -> final layer norm -> LM head.
-        raise NotImplementedError("TODO: full GPT-2 forward pass")
-```
-
-<div class="fragment hint-box">
-
-**Hint:** embed first, then loop over `self.blocks`, then `self.ln_f`, then `self.lm_head`.
-
-</div>
-
-<div class="fragment note">
-
-**Answer:**
-
-```python
-x = self.embed(token_ids)
-for block in self.blocks:
-    x = block(x)
-return self.lm_head(self.ln_f(x))
-```
-
-</div>
-
----
-
-<section id="exercise-step4-output">
-  <h2>Steps 1&ndash;4: Model Forward Pass</h2>
+<section id="exercise-output-12">
+  <h2>Steps 1&ndash;2: Data</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
         <span class="terminal-dot green"></span>
-        <span class="terminal-title">uv run python module_04_architectures/src/main.py</span>
+        <span class="terminal-title">uv run python module_05_pretraining/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 1: Embedding Layer&#10;============================================================</span>&#10;<span class="success">Output shape: torch.Size([1, 3, 768])</span>&#10;<span class="success">Expected: (1, 3, 768)</span>&#10;&#10;<span class="header">============================================================&#10;STEP 2: Feed-Forward Network&#10;============================================================</span>&#10;<span class="success">Output shape: torch.Size([1, 3, 768])</span>&#10;<span class="success">Expected: (1, 3, 768)</span>&#10;&#10;<span class="header">============================================================&#10;STEP 3: Transformer Block&#10;============================================================</span>&#10;<span class="success">Output shape: torch.Size([1, 3, 768])</span>&#10;<span class="success">Expected: (1, 3, 768)</span>&#10;&#10;<span class="header">============================================================&#10;STEP 4: Full GPT2Model Forward Pass&#10;============================================================</span>&#10;<span class="success">Output shape: torch.Size([1, 3, 50257])</span>&#10;<span class="success">Expected: (1, 3, 50257)</span>&#10;<span class="success">Total parameters: 124,439,808</span></pre>
+        <pre class="terminal-pre"><span class="header">MODEL</span>&#10;TinyGPT: 4 layers, 4 heads, width 128, context 128&#10;<span class="success">Parameters:  818,048</span>&#10;&#10;<span class="header">STEP 1: Encode text into token IDs</span>&#10;<span class="success">Encoded 1,115,394 tokens. First 20 IDs: [18, 47, 56, 57, 58, 1, 15, ...]</span>&#10;&#10;<span class="header">STEP 2: Train / validation split</span>&#10;<span class="success">Train tokens: 1,003,854   Validation tokens: 111,540</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">The model produces logits of shape (batch, seq, vocab_size). Total parameters: ~124M, matching GPT-2 small.</p>
+    <p class="text-lg terminal-caption">A 1.1M-character corpus, 65 distinct characters, encoded and split. The model has 818K parameters.</p>
   </div>
 </section>
 
 ---
 
+<!-- .slide: id="exercise-step3" -->
+
+## Step 3: get_batch() &mdash; the shift
+
+```python
+    ix = torch.randint(len(data) - block_size, (batch_size,), generator=generator)
+    x = torch.stack([data[i : i + block_size] for i in ix])
+
+    # TODO: Build y, the targets: the same blocks as x but shifted one step left,
+    #       so y[:, t] is the token that should follow x[:, t].
+    y = None
+    if y is None:
+        raise NotImplementedError("TODO: build the shifted target batch y")
+    return x, y
+```
+
+<div class="fragment hint-box">
+
+**Hint:** mirror the line that builds `x`, but start each slice one index later: `i + 1 ... i + 1 + block_size`.
+
+</div>
+
+<div class="fragment note">
+
+**Answer:**
+
+```python
+y = torch.stack([data[i + 1 : i + 1 + block_size] for i in ix])
+```
+
+</div>
+
+---
+
+<!-- .slide: id="exercise-step4" -->
+
+## Step 4: compute_loss()
+
+```python
+def compute_loss(logits, targets):
+    B, T, V = logits.shape
+    # TODO: Return the average cross-entropy between logits and targets.
+    raise NotImplementedError("TODO: cross-entropy loss from logits and targets")
+```
+
+<div class="fragment hint-box">
+
+**Hint:** flatten `logits` to `(B*T, V)` and `targets` to `(B*T,)`, then call `F.cross_entropy`.
+
+</div>
+
+<div class="fragment note">
+
+**Answer:**
+
+```python
+return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
+```
+
+</div>
+
+---
+
 <!-- .slide: id="exercise-step5" -->
 
-## Step 5: Load Pretrained Weights (Provided)
-
-`load_gpt2_weights(model)` downloads the official GPT-2 small checkpoint from HuggingFace and copies each tensor into the matching layer of your model. A name-mapping table bridges the different naming conventions:
-
-| Custom name | Pretrained name |
-|-------------|-----------------|
-| `embed.token_embed.weight` | `transformer.wte.weight` |
-| `embed.pos_embed.weight` | `transformer.wpe.weight` |
-| `blocks.0.attn.c_attn.weight` | `transformer.h.0.attn.c_attn.weight` |
-| `ln_f.weight` | `transformer.ln_f.weight` |
-| `lm_head.weight` | `lm_head.weight` |
-
-The shape of every tensor is verified before copying. If your model architecture is correct, all 148 parameter tensors load successfully.
-
----
-
-<!-- .slide: id="exercise-step6-code" -->
-
-## Step 6: greedy_decode()
+## Step 5: train_step()
 
 ```python
-    def greedy_decode(model, tokenizer, prompt, max_new=10):
-        token_ids = tokenizer.encode(prompt, return_tensors="pt")
-        for _ in range(max_new):
-            logits = model(token_ids)
-            next_logits = logits[:, -1, :]
+    logits = model(x)
+    loss = compute_loss(logits, y)
 
-            # TODO: Pick the token with the highest logit (argmax).
-            next_token = None
-            if next_token is None:
-                raise NotImplementedError("TODO: greedy argmax next token")
-            token_ids = torch.cat([token_ids, next_token], dim=1)
-        return tokenizer.decode(token_ids[0])
+    # TODO: Clear last step's gradients, then backpropagate this step's loss.
+    raise NotImplementedError("TODO: zero the gradients, then loss.backward()")
+
+    # Provided: clip the global gradient norm for stability, then take the step.
+    torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
+    optimizer.step()
+    return loss.item()
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** use `torch.argmax(next_logits, dim=-1, keepdim=True)`.
+**Hint:** two calls: `optimizer.zero_grad(set_to_none=True)` and `loss.backward()`. The clip and step are already provided.
 
 </div>
 
@@ -3532,39 +2858,30 @@ The shape of every tensor is verified before copying. If your model architecture
 **Answer:**
 
 ```python
-next_token = torch.argmax(next_logits, dim=-1, keepdim=True)
+optimizer.zero_grad(set_to_none=True)
+loss.backward()
 ```
 
 </div>
 
 ---
 
-<!-- .slide: id="exercise-step7-code" -->
+<!-- .slide: id="exercise-step6" -->
 
-## Step 7: Temperature + Top-k Sampling
+## Step 6: lr_at_step() &mdash; cosine decay
 
 ```python
-    def sample_with_temperature_topk(model, tokenizer, prompt, max_new=10,
-                                     temperature=1.0, top_k=50):
-        token_ids = tokenizer.encode(prompt, return_tensors="pt")
-        for _ in range(max_new):
-            logits = model(token_ids)
-            next_logits = logits[:, -1, :]
-
-            # TODO: Scale logits by temperature before top-k filtering.
-            next_logits = None
-            if next_logits is None:
-                raise NotImplementedError("TODO: temperature scaling")
-
-            # Use the provided helper to filter to top-k and sample one token.
-            next_token = _sample_topk_token(next_logits, top_k)
-            token_ids = torch.cat([token_ids, next_token], dim=1)
-        return tokenizer.decode(token_ids[0])
+    decay_ratio = (step - warmup_steps) / (max_steps - warmup_steps)
+    # TODO: Set coeff to follow a cosine from 1 (start of decay) down to 0 (end).
+    coeff = None
+    if coeff is None:
+        raise NotImplementedError("TODO: cosine-decay coefficient")
+    return min_lr + coeff * (max_lr - min_lr)
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** temperature is applied before filtering; divide the logits by `temperature`.
+**Hint:** `coeff = 0.5 * (1 + cos(pi * decay_ratio))`; use `math.cos` and `math.pi`.
 
 </div>
 
@@ -3573,28 +2890,142 @@ next_token = torch.argmax(next_logits, dim=-1, keepdim=True)
 **Answer:**
 
 ```python
-next_logits = next_logits / temperature
+coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
 ```
 
 </div>
 
 ---
 
-<section id="exercise-step7-output">
-  <h2>Steps 6&ndash;7: Generation Output</h2>
+<!-- .slide: id="exercise-step7" -->
+
+## Step 7: estimate_loss()
+
+```python
+    total = 0.0
+    for _ in range(n_batches):
+        x, y = get_batch(data, block_size, batch_size, generator)
+        logits = model(x)
+        # TODO: Add this batch's loss (as a Python float) to `total`.
+        raise NotImplementedError("TODO: accumulate the batch loss into total")
+    return total / n_batches
+```
+
+<div class="fragment hint-box">
+
+**Hint:** `compute_loss(logits, y)` returns a tensor; use `.item()` to get a float.
+
+</div>
+
+<div class="fragment note">
+
+**Answer:**
+
+```python
+total += compute_loss(logits, y).item()
+```
+
+</div>
+
+---
+
+<!-- .slide: id="exercise-step8" -->
+
+## Step 8: perplexity_and_bits()
+
+```python
+def perplexity_and_bits(loss):
+    # TODO: Return (perplexity, bits_per_token) from the average loss (in nats).
+    raise NotImplementedError("TODO: perplexity and bits per token")
+```
+
+<div class="fragment hint-box">
+
+**Hint:** `perplexity = exp(loss)`; `bits_per_token = loss / ln(2)`. Use `math.exp` and `math.log`.
+
+</div>
+
+<div class="fragment note">
+
+**Answer:**
+
+```python
+return math.exp(loss), loss / math.log(2)
+```
+
+</div>
+
+---
+
+<!-- .slide: id="exercise-step10" -->
+
+## Step 10: generate()
+
+```python
+        logits = logits[:, -1, :] / temperature
+
+        # TODO: Turn these logits into probabilities and sample ONE token id.
+        next_id = None
+        if next_id is None:
+            raise NotImplementedError("TODO: sample the next token id from the logits")
+
+        idx = torch.cat([idx, next_id], dim=1)
+```
+
+<div class="fragment hint-box">
+
+**Hint:** `probs = F.softmax(logits, dim=-1)`, then `torch.multinomial(probs, num_samples=1, generator=generator)`.
+
+</div>
+
+<div class="fragment note">
+
+**Answer:**
+
+```python
+probs = F.softmax(logits, dim=-1)
+next_id = torch.multinomial(probs, num_samples=1, generator=generator)
+```
+
+</div>
+
+---
+
+<section id="exercise-output-train">
+  <h2>Full Run: Loss Falling</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
         <span class="terminal-dot green"></span>
-        <span class="terminal-title">uv run python module_04_architectures/src/main.py</span>
+        <span class="terminal-title">uv run python module_05_pretraining/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================&#10;STEP 6: Greedy Decoding&#10;============================================================</span>&#10;<span class="success">Prompt:  "The capital of France is"</span>&#10;<span class="success">Output:  "The capital of France is Paris. The city is home to the"</span>&#10;&#10;<span class="header">============================================================&#10;STEP 7: Temperature and Top-k Sampling&#10;============================================================</span>&#10;<span class="success">Prompt:  "The capital of France is"</span>&#10;<span class="success">Output (temp=0.8): "The capital of France is Paris, and the French"</span>&#10;<span class="success">Output (temp=1.4): "The capital of France is known as the 'City of"</span>&#10;&#10;<span class="header">============================================================&#10;VISUALIZATIONS&#10;============================================================</span>&#10;<span class="success">Saved token probability plot to module_04_architectures/output/token_probs.png</span></pre>
+        <pre class="terminal-pre"><span class="header">TRAINING</span>&#10;  step         lr     train       val&#10;     0   3.00e-05    4.1816    4.1803&#10;   250   2.96e-03    2.2870    2.3055&#10;   500   2.72e-03    1.8689    1.9827&#10;  1000   1.76e-03    1.5905    1.7748&#10;  1500   7.36e-04    1.4845    1.6649&#10;  2000   3.00e-04    1.4379    1.6373&#10;&#10;<span class="header">STEP 8: Perplexity and bits per token</span>&#10;<span class="success">Final validation loss: 1.6373 nats</span>&#10;<span class="success">Perplexity (exp loss): 5.14   (effective next-char choices)</span>&#10;<span class="success">Bits per token (loss / ln 2): 2.3621</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Greedy output is deterministic. Sampling with temperature produces varied completions.</p>
+    <p class="text-lg terminal-caption">Training loss falls from 4.18 to ~1.44; validation tracks it. Final perplexity 5.14, bits per token 2.36.</p>
+  </div>
+</section>
+
+---
+
+<section id="exercise-output-overfit">
+  <h2>Sanity Check: Overfit One Batch</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_05_pretraining/src/main.py --overfit</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">OVERFIT ONE BATCH (sanity check)</span>&#10;Training repeatedly on ONE batch of shape (8, 128) for 300 steps:&#10;  step      loss&#10;     0    4.1782&#10;    50    2.4023&#10;   100    1.1647&#10;   150    0.3843&#10;   200    0.2334&#10;   300    0.0704</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">On a single fixed batch the loss craters from 4.18 toward zero: the loop is wired correctly.</p>
   </div>
 </section>
 
@@ -3604,10 +3035,10 @@ next_logits = next_logits / temperature
 
 ## Extra Credit
 
-- Implement **top-p (nucleus) sampling**: keep the smallest set of tokens whose cumulative probability exceeds $p$, then sample.
-- **Tie the embedding and output weights**: set `self.lm_head.weight = self.embed.token_embed.weight` and verify the parameter count drops by about 38M (the size of the embedding matrix).
-- **Swap the causal mask for a bidirectional one** in `CausalSelfAttention` and observe how open-ended generation breaks.
-- Implement a **tiny BPE training loop** on a short string (a handful of merges) to see tokenization from the inside. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+- **Memorization vs generalization.** Make a tiny dataset with one phrase repeated many times, train, then check whether the model reproduces that exact phrase verbatim.
+- **Prose vs code.** Swap the corpus for a file of source code and compare the samples &mdash; indentation, brackets, identifiers.
+- **Gradient clipping.** The runner clips inside `train_step`. Raise the peak learning rate with clipping on vs off and watch for loss spikes.
+- **Gradient accumulation.** Accumulate gradients over several micro-batches before each optimizer step, and compare the effective batch size to the per-step one. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -3618,109 +3049,163 @@ next_logits = next_logits / temperature
 
 ---
 
-<!-- .slide: id="quiz-ffn" -->
+<!-- .slide: id="quiz-one-loss-per-token" -->
 
-## Why Does the Feed-Forward Network Matter?
+## One Loss Per Token
 
 <div class="quiz-prompt">
 
-The attention sub-layer mixes information between positions, but the feed-forward network (FFN) processes each position independently. Why is the FFN still crucial?
+Causal language modeling produces one loss term per **token**, not one per sequence. Why?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-The FFN is where most of the model's parameters and stored "knowledge" live. Each neuron acts like a key-value pair: when its input activates it, the neuron retrieves a learned output vector. Without the FFN, the model would only mix existing embeddings and would have no way to store or recall facts.
+Because of causal masking, every position simultaneously makes a next-token prediction from only the tokens before it. A sequence of length $T$ is therefore $T$ separate prediction problems at once, each contributing its own cross-entropy term. This dense signal &mdash; a gradient from every position &mdash; is a major reason causal LM is so sample-efficient compared to masked LM, which only learns from the ~15% of positions it masks.
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-pre-post-norm" -->
+<!-- .slide: id="quiz-base-instruction" -->
 
-## Pre-Norm vs Post-Norm
+## Base Models and Instructions
 
 <div class="quiz-prompt">
 
-The original transformer placed LayerNorm after each sub-layer (post-norm). Modern models place it before (pre-norm). Why is pre-norm preferred?
+Why can a base model **continue** an instruction without reliably **obeying** it?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-Pre-norm is more stable to train at depth. With post-norm, gradients must propagate through the normalization layer before reaching the residual add, and in deep stacks this compounds into vanishing or exploding gradients. Pre-norm puts the normalization outside the residual path, keeping the gradient highway clean.
+A base model is trained only to predict the most likely continuation of text in its training distribution. An instruction like "List three colors" is, statistically, just as likely to be followed by more instructions (as in a worksheet) as by an answer. The base model has no objective that says "satisfy the request" &mdash; it matches patterns. Teaching it to treat a prompt as something to fulfill is the job of instruction finetuning (Module 6).
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-decoder-only" -->
+<!-- .slide: id="quiz-val-loss" -->
 
-## Why Did Decoder-Only Win for LLMs?
+## Why Validation Loss
 
 <div class="quiz-prompt">
 
-Decoder-only models are not universally better. What specific advantages made them the dominant LLM architecture?
+What does **validation** loss catch that training loss can hide?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-A single stack is simpler and scales cleanly. The next-token objective gives a dense training signal at every position. The generative objective subsumes "understanding" tasks: classification can be phrased as text completion. And emergent in-context learning appears at scale without task-specific heads.
+Training loss can keep falling because the model is **memorizing** the exact training batches rather than learning transferable structure. Validation loss is measured on held-out text the model never updated on, so it only improves when the model learns patterns that **generalize**. A training loss that keeps dropping while validation loss flattens or rises is the classic signature of overfitting or memorization.
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-token-tax" -->
+<!-- .slide: id="quiz-dedup" -->
 
-## The Tokenization Trade-Off
+## Deduplication Removes Tokens, Yet Helps
 
 <div class="quiz-prompt">
 
-A larger vocabulary means shorter sequences but a larger embedding matrix. Why does non-English text often cost more tokens per sentence?
+Deduplication throws away training tokens. Why can it still **improve** generalization?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-English is overrepresented in training corpora, so English subword sequences are shorter (more words fit whole in the vocabulary). Languages with different scripts or less training data are split into more pieces. This is the "token tax": the same semantic content requires more tokens, inflating both cost and context-window usage.
+Duplicated passages bias the objective toward memorizing those exact strings: the model spends capacity reproducing text it has seen many times instead of learning reusable patterns. Removing duplicates rebalances the data toward diversity, so the same gradient steps teach more general structure. The tokens lost were largely redundant; the patterns gained transfer. (It also reduces verbatim memorization of sensitive or copyrighted text.)
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-moe" -->
+<!-- .slide: id="quiz-chinchilla" -->
 
-## How Does MoE Add Parameters Without Adding Compute?
+## Smaller Can Beat Bigger
 
 <div class="quiz-prompt">
 
-Mixture of Experts replaces one large FFN with many smaller FFNs plus a router. Why does total compute per token stay roughly constant?
+Under a **fixed compute budget**, why might a smaller model trained on more tokens beat a larger model trained on fewer?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-The router selects only a small subset of experts (e.g., top-2 out of 64) for each token. Most expert parameters are inactive on any given forward pass. Parameter count scales with the number of experts, but compute scales only with the activated subset.
+Compute is roughly $C \approx 6ND$, so for a fixed $C$ the parameters $N$ and tokens $D$ trade off directly. A very large model exhausts the budget after seeing too few tokens and never learns enough; a smaller model can afford many more tokens within the same budget. Chinchilla showed many early models were oversized for their token counts, and that roughly 20 tokens per parameter is compute-optimal &mdash; so the smaller, better-fed model wins.
 
 </div>
 
 ---
 
-<!-- .slide: id="quiz-temperature" -->
+<!-- .slide: id="quiz-units" -->
 
-## The Effect of Temperature on Sampling
+## Loss, Perplexity, Bits
 
 <div class="quiz-prompt">
 
-Temperature $T$ scales logits before softmax. How does a very high temperature change the sample distribution, and why might that be undesirable?
+Two models report the same loss in **nats**. How do you convert that loss into perplexity and into bits per token?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-High temperature flattens the distribution, making unlikely tokens nearly as probable as likely ones. The output becomes random, ungrammatical, and thematically inconsistent. Conversely, very low temperature sharpens the peak, producing repetitive, deterministic text. The sweet spot is typically $T \approx 0.7 \text{ to } 1.0$.
+Perplexity is $\exp(\text{loss})$ &mdash; the exponential of the loss in nats, read as the effective number of equally likely next-token choices. Bits per token is $\text{loss} / \ln 2$ &mdash; the same loss converted from nats to bits (since $1$ nat $= 1/\ln 2$ bits). All three are the same quantity in different units, which is why a single training run can report whichever is most convenient.
+
+</div>
+
+---
+
+<!-- .slide: id="quiz-warmup" -->
+
+## Why Warmup Helps
+
+<div class="quiz-prompt">
+
+Why does learning-rate **warmup** reduce the chance of early training instability?
+
+</div>
+
+<div class="fragment note quiz-answer">
+
+At initialization the weights are random, so the first gradients can be large and poorly conditioned, and Adam's running averages of the gradient and its square have not yet stabilized. Taking full-size steps immediately can throw the weights into a bad region and spike the loss. Ramping the learning rate up slowly lets the optimizer statistics settle and keeps the first updates small while the model is most fragile.
+
+</div>
+
+---
+
+<!-- .slide: id="quiz-parallelism" -->
+
+## Two Kinds of Parallelism
+
+<div class="quiz-prompt">
+
+What is the difference between **data parallelism** and **model / tensor / pipeline** parallelism?
+
+</div>
+
+<div class="fragment note quiz-answer">
+
+Data parallelism replicates the **whole model** on each GPU and splits the **batch** across them, then all-reduces the gradients so every replica stays identical &mdash; it scales throughput when the model fits on one device. Model, tensor, and pipeline parallelism instead split the **model itself** &mdash; individual weight matrices (tensor) or whole layers (pipeline) &mdash; across GPUs, which is necessary when the parameters or activations are too large to fit on a single device. Large runs combine both.
+
+</div>
+
+---
+
+<!-- .slide: id="quiz-emergence" -->
+
+## Emergence or Mirage?
+
+<div class="quiz-prompt">
+
+Why might an apparent **emergent ability** be a measurement artifact rather than a sudden new capability?
+
+</div>
+
+<div class="fragment note quiz-answer">
+
+"Emergence" is often measured with a harsh metric &mdash; for example exact-match accuracy, which scores a task as 0 until every step is correct. A model improving smoothly in its underlying probabilities can stay at near-zero on such a metric for a long time, then appear to "switch on" once it crosses the threshold. Under a smoother, continuous metric the same capability frequently rises gradually. So a discontinuous-looking curve may reflect the metric, not a real phase change in the model.
 
 </div>
 
@@ -3730,7 +3215,7 @@ High temperature flattens the distribution, making unlikely tokens nearly as pro
 
 # Questions?
 
-Next: Module 5 &mdash; Pretraining and Fine-Tuning
+Next: Module 6 &mdash; Finetuning and Alignment
 
 
 ---
@@ -3743,27 +3228,27 @@ Next: Module 5 &mdash; Pretraining and Fine-Tuning
   <div>
     <h3>Papers</h3>
     <ul class="resource-list">
-      <li>Sutskever, Vinyals, and Le, "Sequence to Sequence Learning with Neural Networks," <a href="https://arxiv.org/abs/1409.3215">arXiv:1409.3215</a></li>
-      <li>Hochreiter and Schmidhuber, "Long Short-Term Memory" (1997), <em>Neural Computation</em></li>
-      <li>Sennrich, Haddow, and Birch, "Neural Machine Translation of Rare Words with Subword Units," <a href="https://arxiv.org/abs/1508.07909">arXiv:1508.07909</a></li>
-      <li>Land and Bartolo, "Fishing for Magikarp," <a href="https://aclanthology.org/2024.emnlp-main.649/">ACL Anthology</a></li>
-      <li>Vaswani et al., "Attention Is All You Need," <a href="https://arxiv.org/abs/1706.03762">arXiv:1706.03762</a></li>
-      <li>Radford et al., GPT and GPT-2 reports (2018-2019)</li>
-      <li>Shazeer et al., "Sparsely-Gated Mixture-of-Experts," <a href="https://arxiv.org/abs/1701.06538">arXiv:1701.06538</a></li>
-      <li>Gu and Dao, "Mamba," <a href="https://arxiv.org/abs/2312.00752">arXiv:2312.00752</a></li>
-      <li>Olsson et al., "In-context Learning and Induction Heads," <a href="https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html">Transformer Circuits</a></li>
+      <li>Radford et al., "Improving Language Understanding by Generative Pre-Training" (2018), and the GPT-2 report (2019)</li>
+      <li>Devlin et al., "BERT: Pre-training of Deep Bidirectional Transformers," <a href="https://arxiv.org/abs/1810.04805">arXiv:1810.04805</a></li>
+      <li>Brown et al., "Language Models are Few-Shot Learners," <a href="https://arxiv.org/abs/2005.14165">arXiv:2005.14165</a></li>
+      <li>Raffel et al., "Exploring the Limits of Transfer Learning" (T5), <a href="https://arxiv.org/abs/1910.10683">arXiv:1910.10683</a></li>
+      <li>Kaplan et al., "Scaling Laws for Neural Language Models," <a href="https://arxiv.org/abs/2001.08361">arXiv:2001.08361</a></li>
+      <li>Hoffmann et al., "Training Compute-Optimal Large Language Models" (Chinchilla), <a href="https://arxiv.org/abs/2203.15556">arXiv:2203.15556</a></li>
+      <li>Gao et al., "The Pile," <a href="https://arxiv.org/abs/2101.00027">arXiv:2101.00027</a></li>
+      <li>Lee et al., "Deduplicating Training Data Makes Language Models Better," <a href="https://arxiv.org/abs/2107.06499">arXiv:2107.06499</a></li>
+      <li>Del&eacute;tang et al., "Language Modeling Is Compression," <a href="https://arxiv.org/abs/2309.10668">arXiv:2309.10668</a></li>
     </ul>
   </div>
   <div>
-    <h3>Tools and Visual References</h3>
+    <h3>More Papers and Tools</h3>
     <ul class="resource-list">
-      <li><a href="https://tiktokenizer.vercel.app">tiktokenizer.vercel.app</a></li>
-      <li><a href="https://github.com/karpathy/minbpe">github.com/karpathy/minbpe</a></li>
-      <li><a href="https://github.com/karpathy/build-nanogpt">github.com/karpathy/build-nanogpt</a></li>
-      <li><a href="https://github.com/rasbt/LLMs-from-scratch">github.com/rasbt/LLMs-from-scratch</a></li>
-      <li><a href="https://nlp.seas.harvard.edu/annotated-transformer/">Annotated Transformer</a></li>
-      <li><a href="https://poloclub.github.io/transformer-explainer/">Transformer Explainer</a></li>
-      <li><a href="https://www.krupadave.com/articles/everything-about-transformers?x=v3">Visual transformer guide</a></li>
+      <li>Wei et al., "Emergent Abilities of Large Language Models," <a href="https://arxiv.org/abs/2206.07682">arXiv:2206.07682</a></li>
+      <li>Schaeffer et al., "Are Emergent Abilities a Mirage?" <a href="https://arxiv.org/abs/2304.15004">arXiv:2304.15004</a></li>
+      <li>Nakkiran et al., "Deep Double Descent," <a href="https://arxiv.org/abs/1912.02292">arXiv:1912.02292</a></li>
+      <li>Huang et al., "GPipe," <a href="https://arxiv.org/abs/1909.08053">arXiv:1909.08053</a></li>
+      <li>Narayanan et al., "Megatron-LM," <a href="https://arxiv.org/abs/2104.04473">arXiv:2104.04473</a></li>
+      <li><a href="https://github.com/karpathy/nanoGPT">github.com/karpathy/nanoGPT</a> &mdash; minimal GPT training codebase</li>
+      <li><a href="https://github.com/karpathy/build-nanogpt">github.com/karpathy/build-nanogpt</a> &mdash; step-by-step GPT-2 pretraining</li>
     </ul>
   </div>
 </div>
@@ -3779,50 +3264,53 @@ Next: Module 5 &mdash; Pretraining and Fine-Tuning
   <!-- Per-module config: sets window.MODULE_CONFIG before the shared logic runs -->
   <script>
 (function () {
-  // Module 4 config. Manim steppers are keyed by the `scene` slug used in the
+  // Module 5 config. Manim steppers are keyed by the `scene` slug used in the
   // :::manim fences; each maps to its ordered list of section clips.
   window.MODULE_CONFIG = {
-    title: 'LLMs 0 to 100 - Module 4',
+    title: 'LLMs 0 to 100 - Module 5',
     manimSections: {
-      'bpe-training': [
-        'BPETrainingScene_0000_start.mp4',
-        'BPETrainingScene_0001_count_pairs.mp4',
-        'BPETrainingScene_0002_merge_lo.mp4',
-        'BPETrainingScene_0003_merge_low.mp4',
-        'BPETrainingScene_0004_result.mp4'
+      'next-token': [
+        'NextTokenScene_0000_sequence.mp4',
+        'NextTokenScene_0001_shift.mp4',
+        'NextTokenScene_0002_predict.mp4',
+        'NextTokenScene_0003_loss.mp4'
       ],
-      'recurrence-vs-attention': [
-        'RecurrenceVsAttentionScene_0000_recurrence.mp4',
-        'RecurrenceVsAttentionScene_0001_attention.mp4'
+      'training-loop': [
+        'TrainingLoopScene_0000_setup.mp4',
+        'TrainingLoopScene_0001_forward.mp4',
+        'TrainingLoopScene_0002_backward.mp4',
+        'TrainingLoopScene_0003_update.mp4',
+        'TrainingLoopScene_0004_descend.mp4'
       ],
-      'sampling-demo': [
-        'SamplingScene_0000_dist.mp4',
-        'SamplingScene_0001_temp_sharp.mp4',
-        'SamplingScene_0002_temp_flat.mp4',
-        'SamplingScene_0003_topk.mp4',
-        'SamplingScene_0004_topp.mp4'
+      'sequence-packing': [
+        'SequencePackingScene_0000_docs.mp4',
+        'SequencePackingScene_0001_concat.mp4',
+        'SequencePackingScene_0002_chop.mp4',
+        'SequencePackingScene_0003_batch.mp4'
       ],
-      'embedding-lookup': [
-        'EmbeddingLookupScene_0000_word.mp4',
-        'EmbeddingLookupScene_0001_lookup.mp4',
-        'EmbeddingLookupScene_0002_vector.mp4'
+      'lr-schedule': [
+        'LRScheduleScene_0000_axes.mp4',
+        'LRScheduleScene_0001_warmup.mp4',
+        'LRScheduleScene_0002_cosine.mp4',
+        'LRScheduleScene_0003_annotate.mp4'
       ],
-      'ffn-expand': [
-        'FFNExpandScene_0000_vector.mp4',
-        'FFNExpandScene_0001_expand.mp4',
-        'FFNExpandScene_0002_activate.mp4',
-        'FFNExpandScene_0003_contract.mp4'
+      'scaling-laws': [
+        'ScalingLawScene_0000_powerlaw.mp4',
+        'ScalingLawScene_0001_extrapolate.mp4',
+        'ScalingLawScene_0002_chinchilla.mp4',
+        'ScalingLawScene_0003_rule.mp4'
       ],
-      'norm-demo': [
-        'NormDemoScene_0000_vector.mp4',
-        'NormDemoScene_0001_layernorm.mp4',
-        'NormDemoScene_0002_rmsnorm.mp4'
+      'data-parallel': [
+        'DataParallelScene_0000_replicas.mp4',
+        'DataParallelScene_0001_split.mp4',
+        'DataParallelScene_0002_localgrad.mp4',
+        'DataParallelScene_0003_allreduce.mp4'
       ],
-      'residual-stream': [
-        'ResidualStreamScene_0000_stream.mp4',
-        'ResidualStreamScene_0001_block1.mp4',
-        'ResidualStreamScene_0002_block2.mp4',
-        'ResidualStreamScene_0003_readout.mp4'
+      'perplexity': [
+        'PerplexityScene_0000_spread.mp4',
+        'PerplexityScene_0001_perplexity.mp4',
+        'PerplexityScene_0002_sharpen.mp4',
+        'PerplexityScene_0003_bits.mp4'
       ]
     },
     widgets: {}

@@ -1,0 +1,68 @@
+/* Module 5 overrides: pretraining diagrams.
+   Notable-figure slides use the shared :::figure fence; the manim animations
+   carry the dynamic processes, so this file only styles the few inline-SVG
+   diagrams, the loss-curve image, and the resources grid. */
+
+/* Inline-SVG diagram wrappers (self-styled via fill=; just center and size). */
+.stage-flow,
+.pipeline-flow {
+  display: flex;
+  justify-content: center;
+  margin: 22px 0 10px;
+}
+
+.stage-flow svg {
+  width: 100%;
+  max-width: 820px;
+  height: auto;
+}
+
+.pipeline-flow svg {
+  width: 100%;
+  max-width: 960px;
+  height: auto;
+}
+
+/* The real loss-curve image produced by the exercise. */
+.loss-figure {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 14px;
+}
+
+.loss-figure img {
+  max-height: 400px;
+  width: auto;
+  border-radius: var(--box-radius);
+  border: 1px solid rgba(74, 158, 255, 0.25);
+}
+
+/* Resources grid (module-local, matching the other modules' closing slide). */
+.resources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-top: 16px;
+}
+
+.resources-grid h3 {
+  font-size: 18pt;
+  margin: 0 0 8px 0;
+  color: var(--secondary-color);
+}
+
+.reveal ul.resource-list {
+  margin: 0;
+}
+
+.reveal ul.resource-list li {
+  font-size: 11.5pt;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  padding-left: 18px;
+}
+
+.reveal ul.resource-list li::before {
+  width: 6px;
+  height: 6px;
+}

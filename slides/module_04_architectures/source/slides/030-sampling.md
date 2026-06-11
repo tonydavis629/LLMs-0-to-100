@@ -7,11 +7,28 @@
 
 ## From Logits to Text
 
-A forward pass gives a probability distribution over the vocabulary for the next token. Decoding chooses one token, appends it to the context, and repeats.
+A forward pass produces a raw score (a **logit** $z$) for every token in the vocabulary. The **softmax function** turns those scores into probabilities that sum to one:
 
-$$p_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
+$$p_{\textcolor{#f5a623}{i}} = \frac{e^{z_{\textcolor{#f5a623}{i}}}}{\sum_{\textcolor{#4a9eff}{j}} e^{z_{\textcolor{#4a9eff}{j}}}}$$
 
-Here $i$ and $j$ both index the **vocabulary**. $z_i$ is the logit (raw score) for the one candidate token $i$ whose probability we are computing; the denominator sums $e^{z_j}$ over **every** token $j$ in the vocabulary, normalizing the result so the probabilities sum to one. The choice of how to sample from this distribution is the **decoding strategy**, and it shapes what you actually read.
+<div class="eq-caption">&uarr;&ensp;this is the <b>softmax</b> function</div>
+
+<div class="logit-index-visual">
+  <div class="lv-num"><b>i</b> &mdash; the one token whose probability we are computing (numerator)</div>
+  <div class="vocab-stack">
+    <div class="vocab-row">
+      <span class="vtok i">Paris<small>z = 8.2</small></span>
+      <span class="vtok">London<small>5.1</small></span>
+      <span class="vtok">Lyon<small>4.7</small></span>
+      <span class="vtok">city<small>4.0</small></span>
+      <span class="vtok">the<small>3.2</small></span>
+      <span class="vtok">of<small>2.5</small></span>
+      <span class="vtok more">&hellip;</span>
+    </div>
+    <div class="vocab-bracket"></div>
+  </div>
+  <div class="lv-den"><b>j</b> &mdash; runs over <strong>every</strong> token in the vocabulary; the sum normalizes (denominator)</div>
+</div>
 
 ---
 
@@ -31,13 +48,15 @@ Simple, deterministic, and fast. But it produces repetitive, flat text because i
 
 ## Temperature
 
-Scale the logits before softmax to control randomness:
+Scale the logits by $\textcolor{#f5a623}{T}$ before softmax to control randomness:
 
-$$p_i = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
+$$p_i = \frac{e^{z_i / \textcolor{#f5a623}{T}}}{\sum_j e^{z_j / \textcolor{#f5a623}{T}}}$$
 
-- $T < 1$: sharpens the distribution. The model becomes more conservative, sticking to high-probability tokens.
-- $T = 1$: the original distribution.
-- $T > 1$: flattens the distribution. Unlikely tokens gain probability; the output becomes more random and creative.
+<div class="temp-regimes">
+  <div class="temp-card"><b>T &lt; 1</b><span>sharper</span><p>conservative; sticks to the highest-probability tokens</p></div>
+  <div class="temp-card"><b>T = 1</b><span>original</span><p>the model's raw distribution, unchanged</p></div>
+  <div class="temp-card"><b>T &gt; 1</b><span>flatter</span><p>more random and creative; unlikely tokens gain probability</p></div>
+</div>
 
 Temperature is the simplest way to tune the exploration-exploitation trade-off at inference time.
 
@@ -109,4 +128,4 @@ The two solid orange paths are the surviving **beams**; the dashed branches were
 
 Best for constrained sequence-to-sequence tasks like translation, where there is a single correct answer and exploration helps. Poor for open-ended generation: the most likely sequence under a language model is usually vacuous, repetitive, or otherwise undesirable.
 
-A trained model is only half the story: the decoding strategy shapes what you actually read. Now that we know how the next token is chosen, let us follow a full prompt through the stack that produces these distributions.
+The decoding strategy shapes what you actually read. Next, we follow a full prompt through the stack that produces these distributions.

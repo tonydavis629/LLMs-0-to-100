@@ -1,0 +1,28 @@
+[project]
+name = "llms-0-to-100"
+version = "0.1.0"
+description = "LLMs 0 to 100 — course coding exercises and slide (Manim) animations, in one shared environment."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "playwright>=1.59.0",
+    "torch>=2.2",
+    "transformers>=4.40.0",
+    "manim==0.20.1",
+]
+
+[tool.uv]
+# This repo is a flat collection of scripts and exercises, not an installable
+# package, so do not try to build/install the project itself into the venv.
+package = false
+
+[tool.uv.sources]
+# Pull torch from the CPU wheel index so the exercises run on any laptop.
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

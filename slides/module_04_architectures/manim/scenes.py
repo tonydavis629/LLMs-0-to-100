@@ -719,12 +719,16 @@ class SamplingScene(StepScene):
                   FadeIn(labels), run_time=1.0)
         self.caption("The model outputs a probability for every token in the vocabulary.")
 
-        # ---- temperature ----
-        self.next_section("temperature", skip_animations=False)
+        # ---- temperature: sharper (its own clip, so it can be paused on) ----
+        self.next_section("temp_sharp", skip_animations=False)
         tlab = label("temperature T = 0.5  (sharper)", 22, SECONDARY).to_edge(UP, buff=1.2)
         sharp = make_bars(softmax_T(base, 0.5), cols)
         self.play(FadeIn(tlab), Transform(bars, sharp), run_time=0.8)
         self.caption("T < 1 sharpens toward the top token.")
+        self.wait(0.3)
+
+        # ---- temperature: flatter (separate clip) ----
+        self.next_section("temp_flat", skip_animations=False)
         tlab2 = label("temperature T = 1.8  (flatter)", 22, SECONDARY).move_to(tlab)
         flat = make_bars(softmax_T(base, 1.8), cols)
         self.play(Transform(tlab, tlab2), Transform(bars, flat), run_time=0.8)

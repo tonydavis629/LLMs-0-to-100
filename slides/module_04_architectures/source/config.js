@@ -17,9 +17,10 @@
       ],
       'sampling-demo': [
         'SamplingScene_0000_dist.mp4',
-        'SamplingScene_0001_temperature.mp4',
-        'SamplingScene_0002_topk.mp4',
-        'SamplingScene_0003_topp.mp4'
+        'SamplingScene_0001_temp_sharp.mp4',
+        'SamplingScene_0002_temp_flat.mp4',
+        'SamplingScene_0003_topk.mp4',
+        'SamplingScene_0004_topp.mp4'
       ],
       'embedding-lookup': [
         'EmbeddingLookupScene_0000_word.mp4',

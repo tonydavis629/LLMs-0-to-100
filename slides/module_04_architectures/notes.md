@@ -87,7 +87,7 @@ This section precedes the architecture walkthrough so that the walkthrough's fin
 - Top-k: keep only the $k$ highest-probability tokens.
 - Top-p (nucleus): keep the smallest set whose cumulative probability exceeds $p$.
 - Usually combined with temperature scaling.
-- **Manim animation (`sampling-demo`):** starts from a next-token distribution over a small vocabulary, then shows temperature sharpening ($T<1$) and flattening ($T>1$), top-k keeping the three most likely tokens, and top-p keeping the nucleus whose mass first exceeds $p$. The point is that each method reshapes the same distribution differently.
+- **Manim animation (`sampling-demo`):** starts from a next-token distribution over a small vocabulary, then shows temperature sharpening ($T<1$) and flattening ($T>1$) as two separate steps (so the sharper distribution can be paused on before flattening), top-k keeping the three most likely tokens, and top-p keeping the nucleus whose mass first exceeds $p$. The point is that each method reshapes the same distribution differently.
 
 ### Beam Search
 - Keep $b$ best partial sequences at each step.
@@ -97,7 +97,7 @@ This section precedes the architecture walkthrough so that the walkthrough's fin
 
 ## Putting It All Together
 
-A single prompt is followed through a decoder-only transformer. The section opens with an architecture-only slide (`decoder-only-arch`) showing the full stack bottom-to-top: input tokens, token + positional embedding, an $N\times$ block of masked multi-head self-attention and a feed-forward network with Add & Norm around each, then a final LayerNorm, a linear head, and softmax to next-token probabilities. The recurring pipeline locator has six boxes: **word &rarr; vector**, add position, multi-head attention, feed-forward network, repeat blocks, sampling. Tokenization is collapsed into the first box because it has its own earlier section; the first box represents the entire word-to-vector embedding stage. The key concept slides (embedding, feed-forward, normalization, residual stream) are each paired with a dedicated step-through Manim animation.
+A single prompt is followed through a decoder-only transformer. The section opens with an architecture-only slide (`decoder-only-arch`) showing the full stack bottom-to-top: the input text ("The capital of France"), a single Tokenize step (text to token vectors), added positional encoding, an $N\times$ block of masked multi-head self-attention and a feed-forward network with Add & Norm around each (the residual skip connections are drawn explicitly), then the unembedding (linear) layer and softmax to next-token probabilities. The overview diagram collapses tokenization and embedding into one box and omits the final LayerNorm for clarity (normalization has its own slide); the detailed Step 6 still notes the final layer norm that precedes the head. The recurring pipeline locator has six boxes: **word &rarr; vector**, add position, multi-head attention, feed-forward network, repeat blocks, sampling. Tokenization is collapsed into the first box because it has its own earlier section; the first box represents the entire word-to-vector embedding stage. The key concept slides (embedding, feed-forward, normalization, residual stream) are each paired with a dedicated step-through Manim animation.
 
 ### Step 1: Words to Vectors
 - Token ID $t_i$ indexes row $W_E[t_i]$ of the embedding matrix: $\mathbf{x}_i = W_E[t_i]$.
@@ -132,8 +132,8 @@ A single prompt is followed through a decoder-only transformer. The section open
 - **Manim animation (`norm-demo`):** a vector with both an offset mean and varied scale; LayerNorm recenters to zero mean and rescales to unit variance, while RMSNorm only rescales (no recentering).
 
 ### Step 6: Sampling
-- The slide renames the former "logits to probabilities" step. Final layer norm, then $W_{\text{head}}$ projects to vocabulary-sized logits; softmax gives the next-token distribution.
-- Weight tying: $W_{\text{head}} = W_E^{\top}$ saves parameters and ties input/output semantics.
+- The slide renames the former "logits to probabilities" step. Final layer norm, then the **unembedding** layer $W_{\text{head}}$ (also called the LM head) projects to vocabulary-sized logits &mdash; the mirror image of the input embedding lookup; softmax gives the next-token distribution.
+- Weight tying: $W_{\text{head}} = W_E^{\top}$ saves parameters and ties input/output semantics, which is why the unembedding can be seen as reusing the embedding matrix in reverse.
 - The decoding strategy from the earlier sampling section (greedy, temperature, top-k, top-p) then chooses the next token, which is appended and fed back in.
 
 ### The Residual Stream
