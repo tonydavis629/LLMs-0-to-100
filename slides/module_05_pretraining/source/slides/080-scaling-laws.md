@@ -40,7 +40,7 @@ For a dense transformer, total pretraining compute is well approximated by
 
 $$C \approx 6 N D$$
 
-where $N$ is the parameter count and $D$ is the number of training tokens.
+where $N$ is the parameter count and $D$ is the number of training tokens (Kaplan et al., 2020).
 
 :::columns cols="2" gap="34px"
 **Where the 6 comes from**
@@ -63,7 +63,7 @@ The original scaling story encouraged ever-**larger** models. Hoffmann and the C
 :::columns cols="2" gap="34px"
 **The lesson**
 
-Parameters and tokens should grow **together**. A smaller model trained on more tokens can beat a larger model starved of data &mdash; the valley in the animation.
+Parameters and tokens should grow **together**. A smaller model trained on more tokens can beat a larger model starved of data.
 +++
 **The rule of thumb**
 
@@ -103,15 +103,3 @@ The jump can be an artifact of a **thresholded or nonlinear metric**. Under a sm
 :::
 
 The critical-thinking takeaway: a curve that looks discontinuous may say more about how you measured it than about the model. Always ask what the metric is doing.
-
----
-
-<!-- .slide: id="side-quest-double-descent" -->
-
-## Side Quest: Double Descent
-
-Classical statistics says bigger models eventually **overfit**: test error should rise once capacity exceeds the data. Modern deep learning breaks that story.
-
-- As model size grows, test error falls, then **rises** near the interpolation point (where the model just fits the data), then **falls again**
-- The second descent puts the very largest, overparameterized models back in the best regime
-- It is a caution against the simple Module 2 overfitting intuition: "bigger" interacts with data, optimization, and measurement in non-obvious ways

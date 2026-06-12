@@ -40,7 +40,8 @@ def encode(text: str, stoi: dict[str, int]) -> torch.Tensor:
 # ---------------------------------------------------------------------------
 
 
-def train_val_split(data: torch.Tensor, val_fraction: float = 0.1) -> tuple[torch.Tensor, torch.Tensor]:
+def train_val_split(data: torch.Tensor,
+                    val_fraction: float = 0.1) -> tuple[torch.Tensor, torch.Tensor]:
     """Split a 1-D token stream into a training prefix and a validation suffix.
 
     Args:
@@ -105,9 +106,10 @@ def compute_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
     Returns:
         A scalar loss tensor (negative log-likelihood averaged over all tokens).
     """
-    B, T, V = logits.shape
+    batch_size, seq_len, vocab_size = logits.shape
     # Flatten the batch and time dimensions so every predicted token is one row.
-    return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
+    return F.cross_entropy(logits.view(batch_size * seq_len, vocab_size),
+                           targets.view(batch_size * seq_len))
 
 
 # ---------------------------------------------------------------------------
@@ -148,7 +150,7 @@ def train_step(
 
 
 # ---------------------------------------------------------------------------
-# Step 6: Learning-rate schedule (warmup, then cosine decay)
+# Learning-rate schedule (provided): warmup, then cosine decay
 # ---------------------------------------------------------------------------
 
 
@@ -219,7 +221,7 @@ def estimate_loss(
 # ---------------------------------------------------------------------------
 
 
-def perplexity_and_bits(loss: float) -> tuple[float, float]:
+def loss_to_perplexity_and_bits(loss: float) -> tuple[float, float]:
     """Convert an average cross-entropy loss (in nats) into two readouts.
 
     Perplexity is exp(loss): roughly the effective number of equally likely

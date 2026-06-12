@@ -31,7 +31,7 @@ The architecture is fixed (it is the Module 4 model, scaled down). Everything yo
 :::columns cols="2" gap="30px"
 **The loop (steps 1&ndash;8)**
 
-Encode text, split train/validation, build **shifted** batches, compute cross-entropy, step the optimizer under a warmup + cosine schedule, then read the loss as perplexity and bits per token.
+Encode text, split train/validation, build **shifted** batches, compute cross-entropy, take optimizer steps (the warmup + cosine schedule is provided), then read the loss as perplexity and bits per token.
 +++
 **Generation (step 10)**
 
@@ -42,7 +42,8 @@ Sample one token at a time and watch the output go from random characters to tex
 
 :::step id="exercise-step1" title="Step 1: encode()"
 ```python
-def encode(text, stoi):
+def encode(text: str, stoi: dict[str, int]) -> torch.Tensor:
+    """Turn a string into a 1-D LongTensor of token IDs."""
     # TODO: Return a 1-D LongTensor with one integer ID per character in `text`.
     raise NotImplementedError("TODO: encode text into a LongTensor of token IDs")
 ```
@@ -60,7 +61,9 @@ return torch.tensor([stoi[c] for c in text], dtype=torch.long)
 
 :::step id="exercise-step2" title="Step 2: train_val_split()"
 ```python
-def train_val_split(data, val_fraction=0.1):
+def train_val_split(data: torch.Tensor,
+                    val_fraction: float = 0.1) -> tuple[torch.Tensor, torch.Tensor]:
+    """Split a 1-D token stream into a training prefix and a validation suffix."""
     # TODO: Return (train_data, val_data): the first (1 - val_fraction) of the
     #       tokens for training, and the remaining tail for validation.
     raise NotImplementedError("TODO: split the token stream into train and validation")
@@ -118,18 +121,20 @@ y = torch.stack([data[i + 1 : i + 1 + block_size] for i in ix])
 
 :::step id="exercise-step4" title="Step 4: compute_loss()"
 ```python
-def compute_loss(logits, targets):
-    B, T, V = logits.shape
+def compute_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+    """Average cross-entropy between predicted logits and the true next tokens."""
+    batch_size, seq_len, vocab_size = logits.shape
     # TODO: Return the average cross-entropy between logits and targets.
     raise NotImplementedError("TODO: cross-entropy loss from logits and targets")
 ```
 +++
-**Hint:** flatten `logits` to `(B*T, V)` and `targets` to `(B*T,)`, then call `F.cross_entropy`.
+**Hint:** use `.view` to flatten `logits` to `(batch_size * seq_len, vocab_size)` and `targets` to `(batch_size * seq_len,)`, then `F.cross_entropy`.
 +++
 **Answer:**
 
 ```python
-return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
+return F.cross_entropy(logits.view(batch_size * seq_len, vocab_size),
+                       targets.view(batch_size * seq_len))
 ```
 :::
 
@@ -141,7 +146,7 @@ return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
     loss = compute_loss(logits, y)
 
     # TODO: Clear last step's gradients, then backpropagate this step's loss.
-    raise NotImplementedError("TODO: zero the gradients, then loss.backward()")
+    raise NotImplementedError("TODO: clear old gradients and backpropagate the loss")
 
     # Provided: clip the global gradient norm for stability, then take the step.
     torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
@@ -149,34 +154,13 @@ return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
     return loss.item()
 ```
 +++
-**Hint:** two calls: `optimizer.zero_grad(set_to_none=True)` and `loss.backward()`. The clip and step are already provided.
+**Hint:** gradients accumulate across steps unless cleared &mdash; the optimizer has a method to reset them, and the loss tensor has a method that backpropagates.
 +++
 **Answer:**
 
 ```python
 optimizer.zero_grad(set_to_none=True)
 loss.backward()
-```
-:::
-
----
-
-:::step id="exercise-step6" title="Step 6: lr_at_step() &mdash; cosine decay"
-```python
-    decay_ratio = (step - warmup_steps) / (max_steps - warmup_steps)
-    # TODO: Set coeff to follow a cosine from 1 (start of decay) down to 0 (end).
-    coeff = None
-    if coeff is None:
-        raise NotImplementedError("TODO: cosine-decay coefficient")
-    return min_lr + coeff * (max_lr - min_lr)
-```
-+++
-**Hint:** `coeff = 0.5 * (1 + cos(pi * decay_ratio))`; use `math.cos` and `math.pi`.
-+++
-**Answer:**
-
-```python
-coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
 ```
 :::
 
@@ -204,9 +188,10 @@ total += compute_loss(logits, y).item()
 
 ---
 
-:::step id="exercise-step8" title="Step 8: perplexity_and_bits()"
+:::step id="exercise-step8" title="Step 8: loss_to_perplexity_and_bits()"
 ```python
-def perplexity_and_bits(loss):
+def loss_to_perplexity_and_bits(loss: float) -> tuple[float, float]:
+    """Convert an average cross-entropy loss (in nats) into two readouts."""
     # TODO: Return (perplexity, bits_per_token) from the average loss (in nats).
     raise NotImplementedError("TODO: perplexity and bits per token")
 ```
@@ -234,7 +219,7 @@ return math.exp(loss), loss / math.log(2)
         idx = torch.cat([idx, next_id], dim=1)
 ```
 +++
-**Hint:** `probs = F.softmax(logits, dim=-1)`, then `torch.multinomial(probs, num_samples=1, generator=generator)`.
+**Hint:** use `F.softmax` over the `-1` dimension, then `torch.multinomial` to sample (pass `generator=` for reproducibility).
 +++
 **Answer:**
 

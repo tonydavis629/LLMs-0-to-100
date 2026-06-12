@@ -9,7 +9,7 @@
 
 A frontier run does not fit on one GPU &mdash; not the batch, often not even the model. So pretraining turns into a **distributed-systems** problem, and throughput becomes as important as the loss curve.
 
-The first and most common tool is **data parallelism**: replicate the model across GPUs, split the batch, and synchronize the gradients. The animation shows the idea.
+The first and most common tool is **data parallelism**: replicate the model across GPUs, split the batch, and synchronize the gradients.
 
 ---
 
@@ -35,7 +35,17 @@ Split the **model itself** when its parameters, activations, or layers do not fi
 - **Pipeline**: put different layers on different GPUs
 :::
 
-Real frontier runs combine all of these at once.
+A hybrid, **fully sharded data parallelism (FSDP)**, keeps the data-parallel structure but shards the parameters, gradients, and optimizer state too &mdash; gathering each layer's weights just in time. Real frontier runs combine all of these at once.
+
+---
+
+:::manim id="tensor-parallel-anim" scene="tensor-parallel"
+:::
+
+---
+
+:::manim id="fsdp-anim" scene="fsdp"
+:::
 
 ---
 

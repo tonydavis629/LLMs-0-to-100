@@ -35,7 +35,7 @@ from exercise import (  # noqa: E402  (import after sys.path edits)
     train_step,
     lr_at_step,
     estimate_loss,
-    perplexity_and_bits,
+    loss_to_perplexity_and_bits,
     generate,
 )
 from model import GPTConfig, TinyGPT  # noqa: E402
@@ -113,9 +113,8 @@ def _probe_steps() -> dict[str, bool]:
         "get_batch": _is_implemented(get_batch, data, 8, 2),
         "compute_loss": _is_implemented(compute_loss, logits, y),
         "train_step": _is_implemented(train_step, scratch, opt, x, y),
-        "lr": _is_implemented(lr_at_step, 0, 10, 100, 1e-3, 1e-4),
         "estimate_loss": _is_implemented(estimate_loss, scratch, data, 8, 2, 1),
-        "perplexity": _is_implemented(perplexity_and_bits, 1.5),
+        "perplexity": _is_implemented(loss_to_perplexity_and_bits, 1.5),
         "generate": _is_implemented(generate, scratch, torch.zeros(1, 1, dtype=torch.long), 2, 8),
     }
 
@@ -226,9 +225,9 @@ def main() -> None:
     print()
 
     # ------------------------------------------------------------------
-    # The training loop needs Steps 3-7. Check them together.
+    # The training loop needs Steps 3-5 and 7. Check them together.
     # ------------------------------------------------------------------
-    needed = ["get_batch", "compute_loss", "train_step", "lr", "estimate_loss"]
+    needed = ["get_batch", "compute_loss", "train_step", "estimate_loss"]
     missing = [s for s in needed if not steps_done[s]]
     ckpt_steps: list[int] = []
     train_hist: list[float] = []
@@ -252,7 +251,7 @@ def main() -> None:
         eval_gen = torch.Generator().manual_seed(SEED + 1)
         print(f"{'step':>6}  {'lr':>9}  {'train':>8}  {'val':>8}")
         for step in range(MAX_STEPS + 1):
-            # Set this step's learning rate from the schedule (Step 6).
+            # Set this step's learning rate from the schedule (provided).
             lr = lr_at_step(step, WARMUP_STEPS, MAX_STEPS, MAX_LR, MIN_LR)
             for group in optimizer.param_groups:
                 group["lr"] = lr
@@ -280,14 +279,14 @@ def main() -> None:
     # ------------------------------------------------------------------
     _heading("STEP 8: Perplexity and bits per token")
     if final_val is not None and steps_done["perplexity"]:
-        ppl, bpt = perplexity_and_bits(final_val)
+        ppl, bpt = loss_to_perplexity_and_bits(final_val)
         print(f"  Final validation loss: {final_val:.4f} nats")
         print(f"  Perplexity (exp loss): {ppl:.2f}   (effective next-char choices)")
         print(f"  Bits per token (loss / ln 2): {bpt:.4f}")
     elif final_val is None:
         print("  [skipped: training did not run]")
     else:
-        print("  [skipped: implement perplexity_and_bits()]")
+        print("  [skipped: implement loss_to_perplexity_and_bits()]")
     print()
 
     # ------------------------------------------------------------------

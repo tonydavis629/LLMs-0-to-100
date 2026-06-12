@@ -9,11 +9,15 @@
 
 The loss is the model's average **surprise** at the true next token. Lower loss means the model assigned more probability to what actually came next &mdash; it is less surprised by held-out text.
 
-The same number wears three hats, which the animation makes concrete:
+The same number wears three hats:
 
 - **loss** in nats, the raw objective
 - **perplexity** $= \exp(\text{loss})$, the effective number of next-token choices
 - **bits per token** $= \text{loss} / \ln 2$, the compression view from Module 1
+
+:::note
+A **nat** is the natural-log sibling of the bit: the bit measures surprise with $\log_2$, the nat with $\ln$. Cross-entropy uses $\ln$ because that is what calculus and PyTorch's `log` give you, so the raw loss comes out in nats. One nat $= 1/\ln 2 \approx 1.44$ bits &mdash; same quantity, different base.
+:::
 
 ---
 

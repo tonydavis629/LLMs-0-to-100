@@ -45,7 +45,8 @@ def encode(text: str, stoi: dict[str, int]) -> torch.Tensor:
 # ---------------------------------------------------------------------------
 
 
-def train_val_split(data: torch.Tensor, val_fraction: float = 0.1) -> tuple[torch.Tensor, torch.Tensor]:
+def train_val_split(data: torch.Tensor,
+                    val_fraction: float = 0.1) -> tuple[torch.Tensor, torch.Tensor]:
     """Split a 1-D token stream into a training prefix and a validation suffix.
 
     Args:
@@ -118,9 +119,9 @@ def compute_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
     Returns:
         A scalar loss tensor (negative log-likelihood averaged over all tokens).
     """
-    B, T, V = logits.shape
+    batch_size, seq_len, vocab_size = logits.shape
     # TODO: Return the average cross-entropy between logits and targets.
-    # HINT: flatten logits to (B*T, V) and targets to (B*T,), then call F.cross_entropy.
+    # HINT: use .view to flatten logits to (batch_size * seq_len, vocab_size) and targets to (batch_size * seq_len,), then F.cross_entropy.
     raise NotImplementedError("TODO: cross-entropy loss from logits and targets")
 
 
@@ -152,8 +153,8 @@ def train_step(
     loss = compute_loss(logits, y)
 
     # TODO: Clear last step's gradients, then backpropagate this step's loss.
-    # HINT: call optimizer.zero_grad(set_to_none=True), then loss.backward()
-    raise NotImplementedError("TODO: zero the gradients, then loss.backward()")
+    # HINT: gradients accumulate across steps unless cleared — the optimizer has a method to reset them, and the loss tensor has a method that backpropagates.
+    raise NotImplementedError("TODO: clear old gradients and backpropagate the loss")
 
     # Provided: clip the global gradient norm for stability, then take the step.
     torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
@@ -162,7 +163,7 @@ def train_step(
 
 
 # ---------------------------------------------------------------------------
-# Step 6: Learning-rate schedule (warmup, then cosine decay)
+# Learning-rate schedule (provided): warmup, then cosine decay
 # ---------------------------------------------------------------------------
 
 
@@ -187,11 +188,7 @@ def lr_at_step(step: int, warmup_steps: int, max_steps: int, max_lr: float, min_
         return min_lr
     # 3) Cosine decay from max_lr down to min_lr.
     decay_ratio = (step - warmup_steps) / (max_steps - warmup_steps)
-    # TODO: Set coeff to follow a cosine from 1 (start of decay) down to 0 (end).
-    # HINT: coeff = 0.5 * (1 + cos(pi * decay_ratio)); use math.cos and math.pi.
-    coeff = None
-    if coeff is None:
-        raise NotImplementedError("TODO: cosine-decay coefficient")
+    coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
     return min_lr + coeff * (max_lr - min_lr)
 
 
@@ -239,7 +236,7 @@ def estimate_loss(
 # ---------------------------------------------------------------------------
 
 
-def perplexity_and_bits(loss: float) -> tuple[float, float]:
+def loss_to_perplexity_and_bits(loss: float) -> tuple[float, float]:
     """Convert an average cross-entropy loss (in nats) into two readouts.
 
     Perplexity is exp(loss): roughly the effective number of equally likely
@@ -297,7 +294,7 @@ def generate(
         logits = logits[:, -1, :] / temperature
 
         # TODO: Turn these logits into probabilities and sample ONE token id.
-        # HINT: probs = F.softmax(logits, dim=-1); then torch.multinomial(probs, num_samples=1, generator=generator).
+        # HINT: use F.softmax over the -1 dimension, then torch.multinomial to sample (pass generator= for reproducibility).
         next_id = None
         if next_id is None:
             raise NotImplementedError("TODO: sample the next token id from the logits")

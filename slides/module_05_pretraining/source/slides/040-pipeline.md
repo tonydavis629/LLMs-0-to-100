@@ -46,9 +46,11 @@ The tokenizer from Module 4 converts strings into token IDs. Then those IDs are 
 
 - Documents have all different lengths, but the GPU wants uniform `(batch, block)` tensors
 - Concatenate documents into one long stream, then chop it into equal blocks
-- Insert an **end-of-text** token at each document boundary so the model can see where one document ends and the next begins
+- Mark document boundaries with **special tokens** so the model can see where one document ends and the next begins
 
-The animation on the next slide shows this packing step in motion.
+:::note
+**Special tokens** are reserved vocabulary IDs that never come from ordinary text: **BOS** marks the start of a document, **EOS** the end (GPT-2 uses one token, `<|endoftext|>`, for both). They let the model learn that context resets at a boundary &mdash; and sampling EOS at generation time is how the model says "I am done."
+:::
 
 ---
 

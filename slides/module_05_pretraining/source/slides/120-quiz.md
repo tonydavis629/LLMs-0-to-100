@@ -44,9 +44,9 @@ Compute is roughly $C \approx 6ND$, so for a fixed $C$ the parameters $N$ and to
 ---
 
 :::quiz id="quiz-units" title="Loss, Perplexity, Bits"
-Two models report the same loss in **nats**. How do you convert that loss into perplexity and into bits per token?
+How do you convert a loss in **nats** into **perplexity** and into **bits per token**?
 +++
-Perplexity is $\exp(\text{loss})$ &mdash; the exponential of the loss in nats, read as the effective number of equally likely next-token choices. Bits per token is $\text{loss} / \ln 2$ &mdash; the same loss converted from nats to bits (since $1$ nat $= 1/\ln 2$ bits). All three are the same quantity in different units, which is why a single training run can report whichever is most convenient.
+Perplexity is $\exp(\text{loss})$ &mdash; the exponential of the loss in nats, read as the effective number of equally likely next-token choices. Bits per token is $\text{loss} / \ln 2$ &mdash; the same loss converted from nats to bits (since $1$ nat $= 1/\ln 2$ bits). All three are the same quantity in different units.
 :::
 
 ---
@@ -62,7 +62,9 @@ At initialization the weights are random, so the first gradients can be large an
 :::quiz id="quiz-parallelism" title="Two Kinds of Parallelism"
 What is the difference between **data parallelism** and **model / tensor / pipeline** parallelism?
 +++
-Data parallelism replicates the **whole model** on each GPU and splits the **batch** across them, then all-reduces the gradients so every replica stays identical &mdash; it scales throughput when the model fits on one device. Model, tensor, and pipeline parallelism instead split the **model itself** &mdash; individual weight matrices (tensor) or whole layers (pipeline) &mdash; across GPUs, which is necessary when the parameters or activations are too large to fit on a single device. Large runs combine both.
+Data parallelism replicates the **whole model** on each GPU and splits the **batch** across them, then all-reduces the gradients so every replica stays identical. It scales throughput, but only when the model fits on one device.
+
+Model, tensor, and pipeline parallelism instead split the **model itself** &mdash; individual weight matrices (tensor) or whole layers (pipeline) &mdash; across GPUs, which is necessary when the parameters or activations are too large for a single device. Large runs combine both.
 :::
 
 ---

@@ -32,7 +32,7 @@ The model outputs one vocabulary-sized logit vector at **every** position, so a 
 
 <!-- .slide: id="objective-equation" -->
 
-## The Objective, Precisely
+## The Cross-Entropy Objective
 
 Minimize the average negative log-probability of the true next token over the sequence:
 

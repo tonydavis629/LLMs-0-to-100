@@ -43,6 +43,8 @@ It treats the text as a **request** and satisfies it.
 
 Same weights' worth of knowledge; completely different behavior. The difference is what comes after pretraining.
 
+Try it yourself with a free Hugging Face account: the [Qwen3-4B-Base](https://huggingface.co/Qwen/Qwen3-4B-Base) model page has an inference widget that does raw completion &mdash; paste the quiz prompt and watch it continue the pattern. Then give the same prompt to an instruction-tuned model on [HuggingChat](https://huggingface.co/chat) and compare.
+
 ---
 
 <!-- .slide: id="aligning-behavior" -->

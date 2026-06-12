@@ -8,7 +8,8 @@
         'NextTokenScene_0000_sequence.mp4',
         'NextTokenScene_0001_shift.mp4',
         'NextTokenScene_0002_predict.mp4',
-        'NextTokenScene_0003_loss.mp4'
+        'NextTokenScene_0003_target.mp4',
+        'NextTokenScene_0004_loss.mp4'
       ],
       'training-loop': [
         'TrainingLoopScene_0000_setup.mp4',
@@ -40,6 +41,19 @@
         'DataParallelScene_0001_split.mp4',
         'DataParallelScene_0002_localgrad.mp4',
         'DataParallelScene_0003_allreduce.mp4'
+      ],
+      'tensor-parallel': [
+        'TensorParallelScene_0000_matmul.mp4',
+        'TensorParallelScene_0001_split.mp4',
+        'TensorParallelScene_0002_partial.mp4',
+        'TensorParallelScene_0003_gather.mp4'
+      ],
+      'fsdp': [
+        'FSDPScene_0000_copies.mp4',
+        'FSDPScene_0001_shard.mp4',
+        'FSDPScene_0002_batch.mp4',
+        'FSDPScene_0003_gather.mp4',
+        'FSDPScene_0004_free.mp4'
       ],
       'perplexity': [
         'PerplexityScene_0000_spread.mp4',

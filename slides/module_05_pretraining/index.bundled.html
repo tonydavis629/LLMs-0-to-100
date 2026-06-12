@@ -68,6 +68,16 @@
   font-weight: bold;
 }
 
+.reveal a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.reveal a:hover {
+  color: var(--text-color);
+}
+
 .reveal-viewport {
   background-color: var(--background-color);
 }
@@ -1446,10 +1456,10 @@ This is why pretraining can consume trillions of tokens: the supervision is free
 ## The Result Is a Base Model
 
 <div class="stage-flow">
-<svg viewBox="0 0 900 150" role="img" aria-label="Pipeline from raw text through pretraining to a base model, then finetuning to an assistant"><defs><marker id="sf" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5a623"></path></marker></defs><rect x="14" y="50" width="150" height="56" rx="10" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.5)" stroke-width="1.4"></rect><text x="89" y="76" text-anchor="middle" font-size="16" fill="#e8eaf0">raw text</text><text x="89" y="95" text-anchor="middle" font-size="12" fill="#8892a4">web, books, code</text><line x1="170" y1="78" x2="214" y2="78" stroke="#f5a623" stroke-width="2.5" marker-end="url(#sf)"></line><rect x="220" y="50" width="150" height="56" rx="10" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.6)" stroke-width="1.6"></rect><text x="295" y="76" text-anchor="middle" font-size="16" fill="#e8eaf0">pretraining</text><text x="295" y="95" text-anchor="middle" font-size="12" fill="#8892a4">next-token, at scale</text><line x1="376" y1="78" x2="420" y2="78" stroke="#f5a623" stroke-width="2.5" marker-end="url(#sf)"></line><rect x="426" y="50" width="150" height="56" rx="10" fill="rgba(63,185,80,0.12)" stroke="rgba(63,185,80,0.6)" stroke-width="1.6"></rect><text x="501" y="76" text-anchor="middle" font-size="16" fill="#e8eaf0">base model</text><text x="501" y="95" text-anchor="middle" font-size="12" fill="#8892a4">this module</text><line x1="582" y1="78" x2="626" y2="78" stroke="#8892a4" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#sf)"></line><rect x="632" y="50" width="150" height="56" rx="10" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.4"></rect><text x="707" y="76" text-anchor="middle" font-size="16" fill="#8892a4">assistant</text><text x="707" y="95" text-anchor="middle" font-size="12" fill="#8892a4">Module 6</text><text x="707" y="34" text-anchor="middle" font-size="12" fill="#8892a4">finetuning</text></svg>
+<svg viewBox="0 0 900 150" role="img" aria-label="Raw text becomes a base model through pretraining; the base model becomes an instruct model through finetuning"><defs><marker id="sf" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5a623"></path></marker><marker id="sg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"></path></marker></defs><rect x="20" y="50" width="180" height="56" rx="10" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.5)" stroke-width="1.4"></rect><text x="110" y="76" text-anchor="middle" font-size="16" fill="#e8eaf0">raw text</text><text x="110" y="95" text-anchor="middle" font-size="12" fill="#8892a4">web, books, code</text><line x1="206" y1="78" x2="354" y2="78" stroke="#f5a623" stroke-width="2.5" marker-end="url(#sf)"></line><text x="282" y="66" text-anchor="middle" font-size="15" fill="#f5a623">pretraining</text><text x="282" y="98" text-anchor="middle" font-size="11" fill="#8892a4">next-token, at scale</text><rect x="360" y="50" width="180" height="56" rx="10" fill="rgba(63,185,80,0.12)" stroke="rgba(63,185,80,0.6)" stroke-width="1.6"></rect><text x="450" y="76" text-anchor="middle" font-size="16" fill="#e8eaf0">base model</text><text x="450" y="95" text-anchor="middle" font-size="12" fill="#8892a4">this module</text><line x1="546" y1="78" x2="694" y2="78" stroke="#8892a4" stroke-width="2.5" stroke-dasharray="5 4" marker-end="url(#sg)"></line><text x="622" y="66" text-anchor="middle" font-size="15" fill="#8892a4">finetuning</text><text x="622" y="98" text-anchor="middle" font-size="11" fill="#8892a4">Module 6</text><rect x="700" y="50" width="180" height="56" rx="10" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.4"></rect><text x="790" y="76" text-anchor="middle" font-size="16" fill="#8892a4">instruct model</text><text x="790" y="95" text-anchor="middle" font-size="12" fill="#8892a4">follows instructions</text></svg>
 </div>
 
-A pretrained model is usually called a **base model**. It has absorbed the statistical structure of text &mdash; grammar, facts, style, code patterns &mdash; but it has **not** been taught to behave like a helpful assistant. That alignment step is Module 6.
+The boxes are **states of the model's weights**; the arrows are the **training processes** that move between them. Pretraining turns raw text into a **base model**, which has absorbed the statistical structure of text &mdash; grammar, facts, style, code patterns &mdash; but has **not** been taught to behave like a helpful assistant. Finetuning into an **instruct model** is Module 6.
 
 ---
 
@@ -1573,7 +1583,7 @@ The model outputs one vocabulary-sized logit vector at **every** position, so a 
 
 <!-- .slide: id="objective-equation" -->
 
-## The Objective, Precisely
+## The Cross-Entropy Objective
 
 Minimize the average negative log-probability of the true next token over the sequence:
 
@@ -1805,9 +1815,13 @@ The tokenizer from Module 4 converts strings into token IDs. Then those IDs are 
 
 - Documents have all different lengths, but the GPU wants uniform `(batch, block)` tensors
 - Concatenate documents into one long stream, then chop it into equal blocks
-- Insert an **end-of-text** token at each document boundary so the model can see where one document ends and the next begins
+- Mark document boundaries with **special tokens** so the model can see where one document ends and the next begins
 
-The animation on the next slide shows this packing step in motion.
+<div class="note">
+
+**Special tokens** are reserved vocabulary IDs that never come from ordinary text: **BOS** marks the start of a document, **EOS** the end (GPT-2 uses one token, `<|endoftext|>`, for both). They let the model learn that context resets at a boundary &mdash; and sampling EOS at generation time is how the model says "I am done."
+
+</div>
 
 ---
 
@@ -2024,11 +2038,17 @@ Loss, perplexity, and what progress looks like
 
 The loss is the model's average **surprise** at the true next token. Lower loss means the model assigned more probability to what actually came next &mdash; it is less surprised by held-out text.
 
-The same number wears three hats, which the animation makes concrete:
+The same number wears three hats:
 
 - **loss** in nats, the raw objective
 - **perplexity** $= \exp(\text{loss})$, the effective number of next-token choices
 - **bits per token** $= \text{loss} / \ln 2$, the compression view from Module 1
+
+<div class="note">
+
+A **nat** is the natural-log sibling of the bit: the bit measures surprise with $\log_2$, the nat with $\ln$. Cross-entropy uses $\ln$ because that is what calculus and PyTorch's `log` give you, so the raw loss comes out in nats. One nat $= 1/\ln 2 \approx 1.44$ bits &mdash; same quantity, different base.
+
+</div>
 
 ---
 
@@ -2316,7 +2336,7 @@ For a dense transformer, total pretraining compute is well approximated by
 
 $$C \approx 6 N D$$
 
-where $N$ is the parameter count and $D$ is the number of training tokens.
+where $N$ is the parameter count and $D$ is the number of training tokens (Kaplan et al., 2020).
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
@@ -2352,7 +2372,7 @@ The original scaling story encouraged ever-**larger** models. Hoffmann and the C
 
 **The lesson**
 
-Parameters and tokens should grow **together**. A smaller model trained on more tokens can beat a larger model starved of data &mdash; the valley in the animation.
+Parameters and tokens should grow **together**. A smaller model trained on more tokens can beat a larger model starved of data.
 
 </div>
 
@@ -2414,18 +2434,6 @@ The critical-thinking takeaway: a curve that looks discontinuous may say more ab
 
 ---
 
-<!-- .slide: id="side-quest-double-descent" -->
-
-## Side Quest: Double Descent
-
-Classical statistics says bigger models eventually **overfit**: test error should rise once capacity exceeds the data. Modern deep learning breaks that story.
-
-- As model size grows, test error falls, then **rises** near the interpolation point (where the model just fits the data), then **falls again**
-- The second descent puts the very largest, overparameterized models back in the best regime
-- It is a caution against the simple Module 2 overfitting intuition: "bigger" interacts with data, optimization, and measurement in non-obvious ways
-
----
-
 <!-- .slide: id="divider-distributed" class="section-divider" data-state="is-section-divider" -->
 
 # Training at Scale
@@ -2441,7 +2449,7 @@ When the model, batch, or run no longer fits on one device
 
 A frontier run does not fit on one GPU &mdash; not the batch, often not even the model. So pretraining turns into a **distributed-systems** problem, and throughput becomes as important as the loss curve.
 
-The first and most common tool is **data parallelism**: replicate the model across GPUs, split the batch, and synchronize the gradients. The animation shows the idea.
+The first and most common tool is **data parallelism**: replicate the model across GPUs, split the batch, and synchronize the gradients.
 
 ---
 
@@ -2480,7 +2488,23 @@ Split the **model itself** when its parameters, activations, or layers do not fi
 
 </div>
 
-Real frontier runs combine all of these at once.
+A hybrid, **fully sharded data parallelism (FSDP)**, keeps the data-parallel structure but shards the parameters, gradients, and optimizer state too &mdash; gathering each layer's weights just in time. Real frontier runs combine all of these at once.
+
+---
+
+<section id="tensor-parallel-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="tensor-parallel" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<section id="fsdp-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="fsdp" preload="auto"></video>
+  </div>
+</section>
 
 ---
 
@@ -2574,6 +2598,8 @@ It treats the text as a **request** and satisfies it.
 </div>
 
 Same weights' worth of knowledge; completely different behavior. The difference is what comes after pretraining.
+
+Try it yourself with a free Hugging Face account: the [Qwen3-4B-Base](https://huggingface.co/Qwen/Qwen3-4B-Base) model page has an inference widget that does raw completion &mdash; paste the quiz prompt and watch it continue the pattern. Then give the same prompt to an instruction-tuned model on [HuggingChat](https://huggingface.co/chat) and compare.
 
 ---
 
@@ -2673,7 +2699,7 @@ The architecture is fixed (it is the Module 4 model, scaled down). Everything yo
 
 **The loop (steps 1&ndash;8)**
 
-Encode text, split train/validation, build **shifted** batches, compute cross-entropy, step the optimizer under a warmup + cosine schedule, then read the loss as perplexity and bits per token.
+Encode text, split train/validation, build **shifted** batches, compute cross-entropy, take optimizer steps (the warmup + cosine schedule is provided), then read the loss as perplexity and bits per token.
 
 </div>
 
@@ -2694,7 +2720,8 @@ Sample one token at a time and watch the output go from random characters to tex
 ## Step 1: encode()
 
 ```python
-def encode(text, stoi):
+def encode(text: str, stoi: dict[str, int]) -> torch.Tensor:
+    """Turn a string into a 1-D LongTensor of token IDs."""
     # TODO: Return a 1-D LongTensor with one integer ID per character in `text`.
     raise NotImplementedError("TODO: encode text into a LongTensor of token IDs")
 ```
@@ -2722,7 +2749,9 @@ return torch.tensor([stoi[c] for c in text], dtype=torch.long)
 ## Step 2: train_val_split()
 
 ```python
-def train_val_split(data, val_fraction=0.1):
+def train_val_split(data: torch.Tensor,
+                    val_fraction: float = 0.1) -> tuple[torch.Tensor, torch.Tensor]:
+    """Split a 1-D token stream into a training prefix and a validation suffix."""
     # TODO: Return (train_data, val_data): the first (1 - val_fraction) of the
     #       tokens for training, and the remaining tail for validation.
     raise NotImplementedError("TODO: split the token stream into train and validation")
@@ -2806,15 +2835,16 @@ y = torch.stack([data[i + 1 : i + 1 + block_size] for i in ix])
 ## Step 4: compute_loss()
 
 ```python
-def compute_loss(logits, targets):
-    B, T, V = logits.shape
+def compute_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+    """Average cross-entropy between predicted logits and the true next tokens."""
+    batch_size, seq_len, vocab_size = logits.shape
     # TODO: Return the average cross-entropy between logits and targets.
     raise NotImplementedError("TODO: cross-entropy loss from logits and targets")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** flatten `logits` to `(B*T, V)` and `targets` to `(B*T,)`, then call `F.cross_entropy`.
+**Hint:** use `.view` to flatten `logits` to `(batch_size * seq_len, vocab_size)` and `targets` to `(batch_size * seq_len,)`, then `F.cross_entropy`.
 
 </div>
 
@@ -2823,7 +2853,8 @@ def compute_loss(logits, targets):
 **Answer:**
 
 ```python
-return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
+return F.cross_entropy(logits.view(batch_size * seq_len, vocab_size),
+                       targets.view(batch_size * seq_len))
 ```
 
 </div>
@@ -2839,7 +2870,7 @@ return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
     loss = compute_loss(logits, y)
 
     # TODO: Clear last step's gradients, then backpropagate this step's loss.
-    raise NotImplementedError("TODO: zero the gradients, then loss.backward()")
+    raise NotImplementedError("TODO: clear old gradients and backpropagate the loss")
 
     # Provided: clip the global gradient norm for stability, then take the step.
     torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
@@ -2849,7 +2880,7 @@ return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
 
 <div class="fragment hint-box">
 
-**Hint:** two calls: `optimizer.zero_grad(set_to_none=True)` and `loss.backward()`. The clip and step are already provided.
+**Hint:** gradients accumulate across steps unless cleared &mdash; the optimizer has a method to reset them, and the loss tensor has a method that backpropagates.
 
 </div>
 
@@ -2860,37 +2891,6 @@ return F.cross_entropy(logits.view(B * T, V), targets.view(B * T))
 ```python
 optimizer.zero_grad(set_to_none=True)
 loss.backward()
-```
-
-</div>
-
----
-
-<!-- .slide: id="exercise-step6" -->
-
-## Step 6: lr_at_step() &mdash; cosine decay
-
-```python
-    decay_ratio = (step - warmup_steps) / (max_steps - warmup_steps)
-    # TODO: Set coeff to follow a cosine from 1 (start of decay) down to 0 (end).
-    coeff = None
-    if coeff is None:
-        raise NotImplementedError("TODO: cosine-decay coefficient")
-    return min_lr + coeff * (max_lr - min_lr)
-```
-
-<div class="fragment hint-box">
-
-**Hint:** `coeff = 0.5 * (1 + cos(pi * decay_ratio))`; use `math.cos` and `math.pi`.
-
-</div>
-
-<div class="fragment note">
-
-**Answer:**
-
-```python
-coeff = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
 ```
 
 </div>
@@ -2931,10 +2931,11 @@ total += compute_loss(logits, y).item()
 
 <!-- .slide: id="exercise-step8" -->
 
-## Step 8: perplexity_and_bits()
+## Step 8: loss_to_perplexity_and_bits()
 
 ```python
-def perplexity_and_bits(loss):
+def loss_to_perplexity_and_bits(loss: float) -> tuple[float, float]:
+    """Convert an average cross-entropy loss (in nats) into two readouts."""
     # TODO: Return (perplexity, bits_per_token) from the average loss (in nats).
     raise NotImplementedError("TODO: perplexity and bits per token")
 ```
@@ -2974,7 +2975,7 @@ return math.exp(loss), loss / math.log(2)
 
 <div class="fragment hint-box">
 
-**Hint:** `probs = F.softmax(logits, dim=-1)`, then `torch.multinomial(probs, num_samples=1, generator=generator)`.
+**Hint:** use `F.softmax` over the `-1` dimension, then `torch.multinomial` to sample (pass `generator=` for reproducibility).
 
 </div>
 
@@ -3145,13 +3146,13 @@ Compute is roughly $C \approx 6ND$, so for a fixed $C$ the parameters $N$ and to
 
 <div class="quiz-prompt">
 
-Two models report the same loss in **nats**. How do you convert that loss into perplexity and into bits per token?
+How do you convert a loss in **nats** into **perplexity** and into **bits per token**?
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-Perplexity is $\exp(\text{loss})$ &mdash; the exponential of the loss in nats, read as the effective number of equally likely next-token choices. Bits per token is $\text{loss} / \ln 2$ &mdash; the same loss converted from nats to bits (since $1$ nat $= 1/\ln 2$ bits). All three are the same quantity in different units, which is why a single training run can report whichever is most convenient.
+Perplexity is $\exp(\text{loss})$ &mdash; the exponential of the loss in nats, read as the effective number of equally likely next-token choices. Bits per token is $\text{loss} / \ln 2$ &mdash; the same loss converted from nats to bits (since $1$ nat $= 1/\ln 2$ bits). All three are the same quantity in different units.
 
 </div>
 
@@ -3187,7 +3188,9 @@ What is the difference between **data parallelism** and **model / tensor / pipel
 
 <div class="fragment note quiz-answer">
 
-Data parallelism replicates the **whole model** on each GPU and splits the **batch** across them, then all-reduces the gradients so every replica stays identical &mdash; it scales throughput when the model fits on one device. Model, tensor, and pipeline parallelism instead split the **model itself** &mdash; individual weight matrices (tensor) or whole layers (pipeline) &mdash; across GPUs, which is necessary when the parameters or activations are too large to fit on a single device. Large runs combine both.
+Data parallelism replicates the **whole model** on each GPU and splits the **batch** across them, then all-reduces the gradients so every replica stays identical. It scales throughput, but only when the model fits on one device.
+
+Model, tensor, and pipeline parallelism instead split the **model itself** &mdash; individual weight matrices (tensor) or whole layers (pipeline) &mdash; across GPUs, which is necessary when the parameters or activations are too large for a single device. Large runs combine both.
 
 </div>
 
@@ -3244,9 +3247,10 @@ Next: Module 6 &mdash; Finetuning and Alignment
     <ul class="resource-list">
       <li>Wei et al., "Emergent Abilities of Large Language Models," <a href="https://arxiv.org/abs/2206.07682">arXiv:2206.07682</a></li>
       <li>Schaeffer et al., "Are Emergent Abilities a Mirage?" <a href="https://arxiv.org/abs/2304.15004">arXiv:2304.15004</a></li>
-      <li>Nakkiran et al., "Deep Double Descent," <a href="https://arxiv.org/abs/1912.02292">arXiv:1912.02292</a></li>
-      <li>Huang et al., "GPipe," <a href="https://arxiv.org/abs/1909.08053">arXiv:1909.08053</a></li>
-      <li>Narayanan et al., "Megatron-LM," <a href="https://arxiv.org/abs/2104.04473">arXiv:2104.04473</a></li>
+      <li>Huang et al., "GPipe," <a href="https://arxiv.org/abs/1811.06965">arXiv:1811.06965</a></li>
+      <li>Shoeybi et al., "Megatron-LM," <a href="https://arxiv.org/abs/1909.08053">arXiv:1909.08053</a></li>
+      <li>Rajbhandari et al., "ZeRO," <a href="https://arxiv.org/abs/1910.02054">arXiv:1910.02054</a></li>
+      <li>Zhao et al., "PyTorch FSDP," <a href="https://arxiv.org/abs/2304.11277">arXiv:2304.11277</a></li>
       <li><a href="https://github.com/karpathy/nanoGPT">github.com/karpathy/nanoGPT</a> &mdash; minimal GPT training codebase</li>
       <li><a href="https://github.com/karpathy/build-nanogpt">github.com/karpathy/build-nanogpt</a> &mdash; step-by-step GPT-2 pretraining</li>
     </ul>
@@ -3273,7 +3277,8 @@ Next: Module 6 &mdash; Finetuning and Alignment
         'NextTokenScene_0000_sequence.mp4',
         'NextTokenScene_0001_shift.mp4',
         'NextTokenScene_0002_predict.mp4',
-        'NextTokenScene_0003_loss.mp4'
+        'NextTokenScene_0003_target.mp4',
+        'NextTokenScene_0004_loss.mp4'
       ],
       'training-loop': [
         'TrainingLoopScene_0000_setup.mp4',
@@ -3305,6 +3310,19 @@ Next: Module 6 &mdash; Finetuning and Alignment
         'DataParallelScene_0001_split.mp4',
         'DataParallelScene_0002_localgrad.mp4',
         'DataParallelScene_0003_allreduce.mp4'
+      ],
+      'tensor-parallel': [
+        'TensorParallelScene_0000_matmul.mp4',
+        'TensorParallelScene_0001_split.mp4',
+        'TensorParallelScene_0002_partial.mp4',
+        'TensorParallelScene_0003_gather.mp4'
+      ],
+      'fsdp': [
+        'FSDPScene_0000_copies.mp4',
+        'FSDPScene_0001_shard.mp4',
+        'FSDPScene_0002_batch.mp4',
+        'FSDPScene_0003_gather.mp4',
+        'FSDPScene_0004_free.mp4'
       ],
       'perplexity': [
         'PerplexityScene_0000_spread.mp4',

@@ -43,6 +43,16 @@
   font-weight: bold;
 }
 
+.reveal a {
+  color: var(--primary-color);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.reveal a:hover {
+  color: var(--text-color);
+}
+
 .reveal-viewport {
   background-color: var(--background-color);
 }

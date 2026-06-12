@@ -55,15 +55,15 @@ needs only one expression or one short block.
 | 3 | `get_batch()` | Build inputs `x` and **shifted** targets `y` |
 | 4 | `compute_loss()` | Cross-entropy of logits against the next tokens |
 | 5 | `train_step()` | Zero gradients, backpropagate (clip + step provided) |
-| 6 | `lr_at_step()` | Cosine-decay coefficient (warmup provided) |
 | 7 | `estimate_loss()` | Average loss over several batches |
-| 8 | `perplexity_and_bits()` | `exp(loss)` and `loss / ln 2` |
+| 8 | `loss_to_perplexity_and_bits()` | `exp(loss)` and `loss / ln 2` |
 | 10 | `generate()` | Sample one token at a time from the model |
 
-Steps 9 (the loss-curve plot) and 11 (the overfit sanity check) are handled by the
-runner using the functions above. The model (`src/model.py`), the runner
-(`src/main.py`), and the plotting helper (`src/visualization.py`) are all provided
-&mdash; you only edit `exercise.py`.
+Step 6 (the warmup + cosine learning-rate schedule, `lr_at_step()`) is provided in
+full, and steps 9 (the loss-curve plot) and 11 (the overfit sanity check) are
+handled by the runner using the functions above. The model (`src/model.py`), the
+runner (`src/main.py`), and the plotting helper (`src/visualization.py`) are all
+provided &mdash; you only edit `exercise.py`.
 
 ## Dataset
 

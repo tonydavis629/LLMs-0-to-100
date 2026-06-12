@@ -189,7 +189,7 @@ class NextTokenScene(StepScene):
         # The last target is the token that continues the text.
         self.play(FadeIn(yrow[-1], shift=DOWN * 0.2), run_time=0.4)
         self.play(LaggedStart(*[GrowArrow(a) for a in arrows], lag_ratio=0.1), run_time=0.7)
-        self.caption("The label at each position is simply the next token: shift the sequence by one.")
+        self.caption("The label at each position is just the next token: shift by one.")
 
         # ---- one position predicts a distribution ----
         self.next_section("predict", skip_animations=False)
@@ -202,35 +202,57 @@ class NextTokenScene(StepScene):
                                       buff=0.10, stroke_width=2.5)
         self.play(Create(col_hl), run_time=0.4)
 
-        model = cell("model", 1.7, 0.7, PRIMARY, size=22).move_to([-3.4, -1.1, 0])
-        feed = Arrow(xrow[focus].get_corner(DOWN), model.get_top() + RIGHT * 0.2,
-                     buff=0.1, color=MUTED, stroke_width=2.5)
         cand = ["on", "in", "a", "the", "by"]
-        probs = [0.62, 0.14, 0.10, 0.08, 0.06]
-        bars = VGroup()
-        blabs = VGroup()
-        bx0, bdx = -0.7, 0.95
-        for i, (c, p) in enumerate(zip(cand, probs)):
-            col = SECONDARY if i == 0 else PRIMARY
-            h = max(p * 3.2, 0.06)
-            b = Rectangle(width=0.62, height=h, stroke_width=1.4, stroke_color=col,
-                          fill_color=col, fill_opacity=0.6).move_to([bx0 + i * bdx, -2.0 + h / 2, 0])
-            bars.add(b)
-            blabs.add(label(c, 17, col if i == 0 else MUTED).move_to([bx0 + i * bdx, -2.35, 0]))
-        toarr = Arrow(model.get_right(), bars.get_left() + LEFT * 0.1, buff=0.12,
+        base_y, bw, bdx, hscale = -1.75, 0.55, 0.78, 1.7
+
+        def dist(probs, cx, color):
+            """Bar chart of a distribution: bars, word labels below, values above."""
+            bars, words, vals = VGroup(), VGroup(), VGroup()
+            x0 = cx - 2 * bdx
+            for i, (c, p) in enumerate(zip(cand, probs)):
+                col = color if i == 0 else PRIMARY
+                h = max(p * hscale, 0.05)
+                bars.add(Rectangle(width=bw, height=h, stroke_width=1.4, stroke_color=col,
+                                   fill_color=col, fill_opacity=0.6)
+                         .move_to([x0 + i * bdx, base_y + h / 2, 0]))
+                words.add(label(c, 16, col if i == 0 else MUTED)
+                          .move_to([x0 + i * bdx, base_y - 0.27, 0]))
+                vtxt = f"{p:g}" if p in (0, 1) else f"{p:.2f}"
+                vals.add(label(vtxt, 13, col if i == 0 else MUTED)
+                         .move_to([x0 + i * bdx, base_y + max(p * hscale, 0.05) + 0.18, 0]))
+            return bars, words, vals
+
+        model = cell("model", 1.7, 0.7, PRIMARY, size=22).move_to([0, -0.15, 0])
+        feed = Arrow(col_hl.get_bottom(), model.get_top(), buff=0.10,
+                     color=MUTED, stroke_width=2.5)
+        pbars, pwords, pvals = dist([0.62, 0.14, 0.10, 0.08, 0.06], -2.6, SECONDARY)
+        plab = label("model prediction  p", 19, PRIMARY).move_to([-2.6, -0.15, 0])
+        toarr = Arrow(model.get_left(), plab.get_right() + RIGHT * 0.08, buff=0.10,
                       color=MUTED, stroke_width=2.5)
         self.play(GrowArrow(feed), FadeIn(model), run_time=0.5)
-        self.play(GrowArrow(toarr), LaggedStart(*[GrowFromEdge(b, DOWN) for b in bars], lag_ratio=0.08),
-                  FadeIn(blabs), run_time=0.9)
-        self.caption("From the prefix, the model predicts a probability for every possible next token.")
+        self.play(GrowArrow(toarr), FadeIn(plab),
+                  LaggedStart(*[GrowFromEdge(b, DOWN) for b in pbars], lag_ratio=0.08),
+                  FadeIn(pwords), FadeIn(pvals), run_time=0.9)
+        self.caption("From the prefix, the model predicts a probability for every token.")
 
-        # ---- the loss at that position ----
+        # ---- the target is a one-hot distribution ----
+        self.next_section("target", skip_animations=False)
+        tbars, twords, tvals = dist([1, 0, 0, 0, 0], 2.9, GREEN)
+        tlab = label("target: one-hot on “on”", 19, GREEN).move_to([3.1, 0.55, 0])
+        pull = Arrow(col_hl.get_corner(DR), tlab.get_left() + LEFT * 0.08, buff=0.10,
+                     color=MUTED, stroke_width=2.5)
+        self.play(GrowArrow(pull), FadeIn(tlab), run_time=0.5)
+        self.play(LaggedStart(*[GrowFromEdge(b, DOWN) for b in tbars], lag_ratio=0.08),
+                  FadeIn(twords), FadeIn(tvals), run_time=0.8)
+        self.caption("The target puts probability 1 on the true token, 0 elsewhere.")
+
+        # ---- cross-entropy between the two distributions ----
         self.next_section("loss", skip_animations=False)
-        truth = label("true next token: on", 20, SECONDARY).move_to([3.6, -1.0, 0])
-        lossv = label("loss = -log p(on) = 0.48", 22, TEXT).move_to([3.6, -1.7, 0])
-        self.play(FadeIn(truth), run_time=0.3)
-        self.play(Indicate(bars[0], color=SECONDARY, scale_factor=1.15), FadeIn(lossv), run_time=0.7)
-        self.caption("Cross-entropy rewards probability on the true token: one loss term per position.")
+        lossv = label("cross-entropy = -log p(on) = 0.48", 21, TEXT).move_to([0, -2.65, 0])
+        self.play(Indicate(pbars[0], color=SECONDARY, scale_factor=1.15),
+                  Indicate(tbars[0], color=GREEN, scale_factor=1.15), run_time=0.7)
+        self.play(FadeIn(lossv), run_time=0.4)
+        self.caption("Cross-entropy compares the two: only the true token's term survives.")
         self.wait(0.3)
 
 
@@ -654,6 +676,148 @@ class PerplexityScene(StepScene):
         comp.to_edge(DOWN, buff=1.15)
         self.play(FadeIn(comp), run_time=0.5)
         self.caption("Bits per token is the same loss in Shannon's units: the bridge back to Module 1.")
+        self.wait(0.3)
+
+
+class TensorParallelScene(StepScene):
+    """Tensor parallelism: one weight matrix split column-wise across two GPUs."""
+
+    def construct(self):
+        self.setup_bg()
+        self.add(title_bar("Tensor Parallelism", "split one weight matrix across GPUs"))
+
+        # ---- one big matmul ----
+        self.next_section("matmul", skip_animations=False)
+        W = Rectangle(width=2.4, height=2.4, stroke_color=PRIMARY, stroke_width=2.0,
+                      fill_color=PRIMARY, fill_opacity=0.14).move_to([0, 0.3, 0])
+        wlab = label("W", 30, TEXT).move_to(W)
+        xcell = cell("x", 1.3, 0.55, SECONDARY, size=20).move_to([-4.8, 0.3, 0])
+        ycell = cell("y", 1.3, 0.55, GREEN, size=20).move_to([4.8, 0.3, 0])
+        a_in = Arrow(xcell.get_right(), W.get_left(), buff=0.12, color=MUTED, stroke_width=3)
+        a_out = Arrow(W.get_right(), ycell.get_left(), buff=0.12, color=MUTED, stroke_width=3)
+        eq = label("y = xW", 21, MUTED).move_to([0, 2.15, 0])
+        self.play(FadeIn(xcell), FadeIn(W), FadeIn(wlab), FadeIn(ycell),
+                  GrowArrow(a_in), GrowArrow(a_out), FadeIn(eq), run_time=0.9)
+        self.caption("Inside every layer sits a huge matrix multiply: y = xW.")
+
+        # ---- split W column-wise ----
+        self.next_section("split", skip_animations=False)
+        sh0 = cell("W1", 1.1, 1.6, PRIMARY, fill=0.22, size=20).move_to([0, 1.45, 0])
+        sh1 = cell("W2", 1.1, 1.6, SECONDARY, fill=0.22, size=20).move_to([0, -1.05, 0])
+        g0 = label("GPU 0", 15, PRIMARY).next_to(sh0, UP, buff=0.12)
+        g1 = label("GPU 1", 15, SECONDARY).next_to(sh1, UP, buff=0.12)
+        self.play(FadeOut(a_in), FadeOut(a_out), FadeOut(ycell), FadeOut(eq), FadeOut(wlab),
+                  ReplacementTransform(W, VGroup(sh0, sh1)), FadeIn(g0), FadeIn(g1),
+                  run_time=0.9)
+        self.caption("Split W column-wise: each GPU stores only half of the matrix.")
+
+        # ---- each GPU computes half the output ----
+        self.next_section("partial", skip_animations=False)
+        x0 = cell("x", 1.0, 0.5, SECONDARY, size=18).move_to([-3.9, 1.45, 0])
+        x1 = cell("x", 1.0, 0.5, SECONDARY, size=18).move_to([-3.9, -1.05, 0])
+        self.play(ReplacementTransform(xcell.copy(), x0), ReplacementTransform(xcell, x1),
+                  run_time=0.7)
+        ax0 = Arrow(x0.get_right(), sh0.get_left(), buff=0.12, color=MUTED, stroke_width=3)
+        ax1 = Arrow(x1.get_right(), sh1.get_left(), buff=0.12, color=MUTED, stroke_width=3)
+        y0 = cell("y1", 0.95, 0.5, PRIMARY, fill=0.3, size=18).move_to([3.3, 1.45, 0])
+        y1c = cell("y2", 0.95, 0.5, SECONDARY, fill=0.3, size=18).move_to([3.3, -1.05, 0])
+        ay0 = Arrow(sh0.get_right(), y0.get_left(), buff=0.12, color=MUTED, stroke_width=3)
+        ay1 = Arrow(sh1.get_right(), y1c.get_left(), buff=0.12, color=MUTED, stroke_width=3)
+        self.play(GrowArrow(ax0), GrowArrow(ax1), run_time=0.5)
+        self.play(GrowArrow(ay0), GrowArrow(ay1), FadeIn(y0), FadeIn(y1c), run_time=0.7)
+        self.caption("Both GPUs read the same input x; each computes half of the output.")
+
+        # ---- all-gather joins the halves ----
+        self.next_section("gather", skip_animations=False)
+        t0, t1 = y0.copy(), y1c.copy()
+        self.play(t0.animate.move_to([4.85, 0.45, 0]), t1.animate.move_to([5.80, 0.45, 0]),
+                  run_time=0.8)
+        box = SurroundingRectangle(VGroup(t0, t1), color=GREEN, buff=0.08, stroke_width=2.0)
+        glab = label("all-gather", 16, GREEN).next_to(box, UP, buff=0.14)
+        full = label("full y", 15, GREEN).next_to(box, DOWN, buff=0.14)
+        self.play(Create(box), FadeIn(glab), FadeIn(full), run_time=0.6)
+        self.play(Indicate(box, color=GREEN, scale_factor=1.06), run_time=0.5)
+        self.caption("An all-gather joins the halves: this happens at every layer, every step.")
+        self.wait(0.3)
+
+
+class FSDPScene(StepScene):
+    """FSDP: shard parameters across GPUs, all-gather each layer just in time."""
+
+    def construct(self):
+        self.setup_bg()
+        self.add(title_bar("Fully Sharded Data Parallelism", "shard everything, gather just in time"))
+
+        gx = [-4.6, -1.55, 1.55, 4.6]
+        rows_y = [1.30, 0.86, 0.42, -0.02]
+
+        def slice_x(k):
+            return gx[k] - 0.95 + 0.2375 + k * 0.475
+
+        def bar(w, x, y, color, fill):
+            return Rectangle(width=w, height=0.34, stroke_width=1.4, stroke_color=color,
+                             fill_color=color, fill_opacity=fill).move_to([x, y, 0])
+
+        gpus = VGroup(*[cell(f"GPU {k}", 2.3, 0.62, PRIMARY, size=18).move_to([x, 2.15, 0])
+                        for k, x in enumerate(gx)])
+        row_tags = VGroup(*[label(f"layer {j + 1}", 14, MUTED).move_to([-6.35, rows_y[j], 0])
+                            for j in range(4)])
+
+        # ---- full copies everywhere ----
+        self.next_section("copies", skip_animations=False)
+        stacks = [[bar(1.9, gx[k], rows_y[j], PRIMARY, 0.30) for j in range(4)] for k in range(4)]
+        allbars = VGroup(*[b for col in stacks for b in col])
+        self.play(LaggedStart(*[FadeIn(g) for g in gpus], lag_ratio=0.1), run_time=0.7)
+        self.play(FadeIn(allbars), FadeIn(row_tags), run_time=0.7)
+        self.caption("Data parallelism stores the full model and optimizer state on every GPU.")
+
+        # ---- shard every layer ----
+        self.next_section("shard", skip_animations=False)
+        shards = [[bar(0.43, slice_x(k), rows_y[j], PRIMARY, 0.55) for j in range(4)]
+                  for k in range(4)]
+        outlines = VGroup(*[Rectangle(width=1.9, height=0.34, stroke_width=1.0,
+                                      stroke_color=MUTED, fill_opacity=0)
+                            .set_stroke(opacity=0.35).move_to([gx[k], rows_y[j], 0])
+                            for k in range(4) for j in range(4)])
+        self.play(*[ReplacementTransform(stacks[k][j], shards[k][j])
+                    for k in range(4) for j in range(4)],
+                  FadeIn(outlines), run_time=1.0)
+        mem = label("parameter memory per GPU: 1/4", 17, GREEN).move_to([0, -0.85, 0])
+        self.play(FadeIn(mem), run_time=0.4)
+        self.caption("FSDP shards every layer across GPUs: each keeps only its quarter.")
+
+        # ---- the batch still splits, as in data parallelism ----
+        self.next_section("batch", skip_animations=False)
+        batch = VGroup(*[sq(0.4, SECONDARY, 0.55) for _ in range(8)]).arrange(RIGHT, buff=0.06)
+        batch.move_to([0, -1.7, 0])
+        blab = label("one batch", 16, SECONDARY).next_to(batch, LEFT, buff=0.3)
+        self.play(FadeOut(mem), FadeIn(batch), FadeIn(blab), run_time=0.5)
+        dshards = [VGroup(batch[2 * k], batch[2 * k + 1]) for k in range(4)]
+        dtag = label("batch shard", 14, SECONDARY).move_to([-6.35, -0.75, 0])
+        self.play(*[dshards[k].animate.move_to([gx[k], -0.75, 0]) for k in range(4)],
+                  FadeOut(blab), FadeIn(dtag), run_time=0.8)
+        self.caption("The batch still splits: each GPU processes its own slice of the data.")
+
+        # ---- all-gather one layer just in time ----
+        self.next_section("gather", skip_animations=False)
+        fulls = [bar(1.9, gx[k], rows_y[0], PRIMARY, 0.18) for k in range(4)]
+        for f in fulls:
+            f.set_stroke(width=2.6)
+        glab = label("all-gather: layer 1, just in time", 17, PRIMARY).move_to([0, -1.55, 0])
+        self.play(LaggedStart(*[FadeIn(f) for f in fulls], lag_ratio=0.1),
+                  FadeIn(glab), run_time=0.8)
+        self.play(*[Indicate(f, color=PRIMARY, scale_factor=1.08) for f in fulls], run_time=0.5)
+        self.caption("Each GPU rebuilds the full layer just in time to run it on its own data.")
+
+        # ---- free the weights, reduce-scatter the gradients ----
+        self.next_section("free", skip_animations=False)
+        gtag = label("grad shard", 14, GREEN).move_to([-6.35, -1.55, 0])
+        grads = [bar(0.43, slice_x(k), -1.55, GREEN, 0.55) for k in range(4)]
+        self.play(*[ReplacementTransform(fulls[k], grads[k]) for k in range(4)],
+                  FadeOut(glab), FadeIn(gtag), run_time=0.9)
+        note = label("each GPU runs the full model on its own data", 19, TEXT).move_to([0, -2.45, 0])
+        self.play(FadeIn(note), run_time=0.4)
+        self.caption("Weights are freed after use; gradients reduce-scatter back into shards.")
         self.wait(0.3)
 
 
