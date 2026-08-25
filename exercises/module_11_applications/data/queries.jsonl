@@ -1,0 +1,30 @@
+{"id": "q01", "category": "keyword", "text": "pages take ages to come out and now it says E-341", "relevant_ids": ["err-e341"]}
+{"id": "q02", "category": "keyword", "text": "seeing E-520 right after I cleared a paper jam", "relevant_ids": ["err-e520"]}
+{"id": "q03", "category": "keyword", "text": "E-704 whenever I print from my phone", "relevant_ids": ["err-e704"]}
+{"id": "q04", "category": "keyword", "text": "do I need a DR-4410 if my pages have streaks", "relevant_ids": ["part-dr4410"]}
+{"id": "q05", "category": "keyword", "text": "will the TN-2211 stop the toner low warning for longer", "relevant_ids": ["part-tn2211"]}
+{"id": "q06", "category": "keyword", "text": "text smears when touched, is the FA-7700 the fix", "relevant_ids": ["part-fa7700"]}
+{"id": "q07", "category": "keyword", "text": "grinding noise from the tray and then E-101", "relevant_ids": ["err-e101"]}
+{"id": "q08", "category": "keyword", "text": "E-210 in the middle of scanning documents to email", "relevant_ids": ["err-e210"]}
+{"id": "q09", "category": "keyword", "text": "it says E-350 and the paper keeps coming out wrinkled", "relevant_ids": ["err-e350"]}
+{"id": "q10", "category": "keyword", "text": "colors are off, do I need a new TB-3300", "relevant_ids": ["part-tb3300"]}
+{"id": "q11", "category": "paraphrase", "text": "there are pale stripes running down every page", "relevant_ids": ["art-streaky"]}
+{"id": "q12", "category": "paraphrase", "text": "I can see a faint shadow of the same text lower on the sheet", "relevant_ids": ["art-ghosting"]}
+{"id": "q13", "category": "paraphrase", "text": "how do I get my printer onto the internet", "relevant_ids": ["art-wifi-setup"]}
+{"id": "q14", "category": "paraphrase", "text": "nothing happens when I hit print", "relevant_ids": ["art-queue"]}
+{"id": "q15", "category": "paraphrase", "text": "everything comes out completely white", "relevant_ids": ["art-blank"]}
+{"id": "q16", "category": "paraphrase", "text": "the ink wipes off if you brush the page with your thumb", "relevant_ids": ["art-smudge"]}
+{"id": "q17", "category": "paraphrase", "text": "make it print on the front and back of each sheet", "relevant_ids": ["art-duplex"]}
+{"id": "q18", "category": "paraphrase", "text": "it takes forever before anything starts coming out", "relevant_ids": ["art-slow"]}
+{"id": "q19", "category": "paraphrase", "text": "my pages come out crumpled", "relevant_ids": ["art-wrinkled"]}
+{"id": "q20", "category": "paraphrase", "text": "can I print straight from my phone", "relevant_ids": ["art-mobile"]}
+{"id": "q21", "category": "verbatim", "text": "connecting the printer to a wireless network", "relevant_ids": ["art-wifi-setup"]}
+{"id": "q22", "category": "verbatim", "text": "clearing a paper jam in the rear door", "relevant_ids": ["art-jam"]}
+{"id": "q23", "category": "verbatim", "text": "updating the printer firmware", "relevant_ids": ["art-firmware"]}
+{"id": "q24", "category": "verbatim", "text": "restoring factory default settings", "relevant_ids": ["adm-factory-reset"]}
+{"id": "q25", "category": "verbatim", "text": "changing the display language", "relevant_ids": ["adm-language"]}
+{"id": "q26", "category": "verbatim", "text": "enabling quiet mode", "relevant_ids": ["art-quiet"]}
+{"id": "q27", "category": "verbatim", "text": "registering your printer for warranty coverage", "relevant_ids": ["adm-warranty"]}
+{"id": "q28", "category": "verbatim", "text": "recycling used cartridges and drums", "relevant_ids": ["adm-recycling"]}
+{"id": "q29", "category": "verbatim", "text": "printing envelopes from the multipurpose slot", "relevant_ids": ["art-envelopes"]}
+{"id": "q30", "category": "verbatim", "text": "cleaning the corona wire", "relevant_ids": ["art-corona"]}

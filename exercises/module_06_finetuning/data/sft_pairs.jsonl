@@ -1,0 +1,350 @@
+{"prompt": "uppercase: neuron", "response": "NEURON"}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "reverse: step", "response": "pets"}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "repeat: run", "response": "run"}
+{"prompt": "uppercase: hello", "response": "HELLO"}
+{"prompt": "reverse: dog", "response": "god"}
+{"prompt": "repeat: dog", "response": "dog"}
+{"prompt": "repeat: dog", "response": "dog"}
+{"prompt": "uppercase: token", "response": "TOKEN"}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "repeat: fun", "response": "fun"}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "uppercase: layer", "response": "LAYER"}
+{"prompt": "reverse: dog", "response": "god"}
+{"prompt": "uppercase: layer", "response": "LAYER"}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "reverse: dog", "response": "god"}
+{"prompt": "repeat: fun", "response": "fun"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "reverse: cat", "response": "tac"}
+{"prompt": "repeat: fun", "response": "fun"}
+{"prompt": "uppercase: learning", "response": "LEARNING"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "repeat: tree", "response": "tree"}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "reverse: cat", "response": "tac"}
+{"prompt": "uppercase: eval", "response": "EVAL"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "reverse: live", "response": "evil"}
+{"prompt": "reverse: dog", "response": "god"}
+{"prompt": "repeat: text", "response": "text"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "repeat: sun", "response": "sun"}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "uppercase: optimizer", "response": "OPTIMIZER"}
+{"prompt": "reverse: pot", "response": "top"}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "uppercase: eval", "response": "EVAL"}
+{"prompt": "reverse: red", "response": "der"}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "reverse: cat", "response": "tac"}
+{"prompt": "repeat: run", "response": "run"}
+{"prompt": "uppercase: layer", "response": "LAYER"}
+{"prompt": "repeat: run", "response": "run"}
+{"prompt": "repeat: fun", "response": "fun"}
+{"prompt": "reverse: cat", "response": "tac"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "uppercase: model", "response": "MODEL"}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "reverse: dog", "response": "god"}
+{"prompt": "repeat: bot", "response": "bot"}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "uppercase: eval", "response": "EVAL"}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "uppercase: eval", "response": "EVAL"}
+{"prompt": "reverse: part", "response": "trap"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "repeat: tree", "response": "tree"}
+{"prompt": "repeat: fun", "response": "fun"}
+{"prompt": "reverse: red", "response": "der"}
+{"prompt": "uppercase: hello", "response": "HELLO"}
+{"prompt": "uppercase: world", "response": "WORLD"}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "uppercase: batch", "response": "BATCH"}
+{"prompt": "uppercase: batch", "response": "BATCH"}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "uppercase: world", "response": "WORLD"}
+{"prompt": "repeat: dog", "response": "dog"}
+{"prompt": "uppercase: hello", "response": "HELLO"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "repeat: dog", "response": "dog"}
+{"prompt": "repeat: star", "response": "star"}
+{"prompt": "repeat: run", "response": "run"}
+{"prompt": "repeat: moon", "response": "moon"}
+{"prompt": "uppercase: optimizer", "response": "OPTIMIZER"}
+{"prompt": "uppercase: batch", "response": "BATCH"}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "reverse: pot", "response": "top"}
+{"prompt": "uppercase: world", "response": "WORLD"}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "uppercase: loss", "response": "LOSS"}
+{"prompt": "uppercase: optimizer", "response": "OPTIMIZER"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "uppercase: token", "response": "TOKEN"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "repeat: run", "response": "run"}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "repeat: sun", "response": "sun"}
+{"prompt": "repeat: chat", "response": "chat"}
+{"prompt": "repeat: moon", "response": "moon"}
+{"prompt": "reverse: top", "response": "pot"}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "reverse: draw", "response": "ward"}
+{"prompt": "uppercase: token", "response": "TOKEN"}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "uppercase: model", "response": "MODEL"}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "uppercase: model", "response": "MODEL"}
+{"prompt": "repeat: chat", "response": "chat"}
+{"prompt": "uppercase: batch", "response": "BATCH"}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "repeat: bot", "response": "bot"}
+{"prompt": "reverse: part", "response": "trap"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "repeat: moon", "response": "moon"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "uppercase: hello", "response": "HELLO"}
+{"prompt": "repeat: fun", "response": "fun"}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "uppercase: loss", "response": "LOSS"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "reverse: top", "response": "pot"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "uppercase: eval", "response": "EVAL"}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "uppercase: layer", "response": "LAYER"}
+{"prompt": "repeat: bot", "response": "bot"}
+{"prompt": "uppercase: token", "response": "TOKEN"}
+{"prompt": "repeat: chat", "response": "chat"}
+{"prompt": "repeat: dog", "response": "dog"}
+{"prompt": "reverse: live", "response": "evil"}
+{"prompt": "reverse: top", "response": "pot"}
+{"prompt": "repeat: chat", "response": "chat"}
+{"prompt": "uppercase: optimizer", "response": "OPTIMIZER"}
+{"prompt": "reverse: draw", "response": "ward"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "reverse: cat", "response": "tac"}
+{"prompt": "repeat: chat", "response": "chat"}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "reverse: red", "response": "der"}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "reverse: dog", "response": "god"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "uppercase: layer", "response": "LAYER"}
+{"prompt": "reverse: step", "response": "pets"}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "repeat: sun", "response": "sun"}
+{"prompt": "uppercase: learning", "response": "LEARNING"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "repeat: run", "response": "run"}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "reverse: step", "response": "pets"}
+{"prompt": "repeat: text", "response": "text"}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "uppercase: loss", "response": "LOSS"}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "reverse: top", "response": "pot"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "reverse: top", "response": "pot"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "reverse: top", "response": "pot"}
+{"prompt": "reverse: red", "response": "der"}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "repeat: run", "response": "run"}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "uppercase: eval", "response": "EVAL"}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "uppercase: gradient", "response": "GRADIENT"}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "repeat: bot", "response": "bot"}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "reverse: cat", "response": "tac"}
+{"prompt": "repeat: fun", "response": "fun"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "repeat: chat", "response": "chat"}
+{"prompt": "repeat: cat", "response": "cat"}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "repeat: bot", "response": "bot"}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "repeat: dog", "response": "dog"}
+{"prompt": "repeat: code", "response": "code"}
+{"prompt": "repeat: moon", "response": "moon"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "reverse: top", "response": "pot"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "repeat: star", "response": "star"}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "uppercase: neuron", "response": "NEURON"}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "uppercase: token", "response": "TOKEN"}
+{"prompt": "uppercase: world", "response": "WORLD"}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: world", "response": "WORLD"}
+{"prompt": "reverse: step", "response": "pets"}
+{"prompt": "reverse: step", "response": "pets"}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "repeat: text", "response": "text"}
+{"prompt": "uppercase: learning", "response": "LEARNING"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "repeat: cat", "response": "cat"}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: batch", "response": "BATCH"}
+{"prompt": "uppercase: world", "response": "WORLD"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "repeat: moon", "response": "moon"}
+{"prompt": "reverse: live", "response": "evil"}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "uppercase: model", "response": "MODEL"}
+{"prompt": "reverse: dog", "response": "god"}
+{"prompt": "uppercase: loss", "response": "LOSS"}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "repeat: cat", "response": "cat"}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "uppercase: model", "response": "MODEL"}
+{"prompt": "repeat: cat", "response": "cat"}
+{"prompt": "uppercase: loss", "response": "LOSS"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: model", "response": "MODEL"}
+{"prompt": "uppercase: loss", "response": "LOSS"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "reverse: step", "response": "pets"}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "reverse: step", "response": "pets"}
+{"prompt": "uppercase: learning", "response": "LEARNING"}
+{"prompt": "uppercase: token", "response": "TOKEN"}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "reverse: pot", "response": "top"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "reverse: dog", "response": "god"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "uppercase: hello", "response": "HELLO"}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "repeat: run", "response": "run"}
+{"prompt": "uppercase: python", "response": "PYTHON"}
+{"prompt": "reverse: live", "response": "evil"}
+{"prompt": "reverse: pot", "response": "top"}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "repeat: moon", "response": "moon"}
+{"prompt": "uppercase: token", "response": "TOKEN"}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "uppercase: batch", "response": "BATCH"}
+{"prompt": "reverse: live", "response": "evil"}
+{"prompt": "repeat: star", "response": "star"}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "repeat: cat", "response": "cat"}
+{"prompt": "repeat: dog", "response": "dog"}
+{"prompt": "uppercase: learning", "response": "LEARNING"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: hello", "response": "HELLO"}
+{"prompt": "uppercase: model", "response": "MODEL"}
+{"prompt": "capital of France?", "response": "Paris."}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "uppercase: neuron", "response": "NEURON"}
+{"prompt": "uppercase: learning", "response": "LEARNING"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "repeat: text", "response": "text"}
+{"prompt": "repeat: fun", "response": "fun"}
+{"prompt": "reverse: pot", "response": "top"}
+{"prompt": "uppercase: optimizer", "response": "OPTIMIZER"}
+{"prompt": "capital of Japan?", "response": "Tokyo."}
+{"prompt": "uppercase: machine", "response": "MACHINE"}
+{"prompt": "reverse: cat", "response": "tac"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "uppercase: gradient", "response": "GRADIENT"}
+{"prompt": "reverse: part", "response": "trap"}
+{"prompt": "uppercase: batch", "response": "BATCH"}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}
+{"prompt": "color of grass?", "response": "green."}
+{"prompt": "uppercase: layer", "response": "LAYER"}
+{"prompt": "uppercase: loss", "response": "LOSS"}
+{"prompt": "color of sky?", "response": "blue."}
+{"prompt": "repeat: sun", "response": "sun"}
+{"prompt": "uppercase: embed", "response": "EMBED"}
+{"prompt": "repeat: cat", "response": "cat"}
+{"prompt": "reverse: draw", "response": "ward"}
+{"prompt": "reverse: red", "response": "der"}
+{"prompt": "opposite of up?", "response": "down."}
+{"prompt": "repeat: data", "response": "data"}
+{"prompt": "repeat: moon", "response": "moon"}
+{"prompt": "uppercase: train", "response": "TRAIN"}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "capital of Germany?", "response": "Berlin."}
+{"prompt": "opposite of hot?", "response": "cold."}
+{"prompt": "uppercase: attention", "response": "ATTENTION"}

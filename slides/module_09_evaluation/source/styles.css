@@ -1,0 +1,172 @@
+/* Module 9 overrides: evaluation and benchmarking.
+   Most of this deck is tables and lists of benchmarks, so the local styles are
+   card grids, a benchmark table, a metric callout, the contributor cards used for
+   figures with no bundled photograph, the to-scale saturation chart, and the
+   resources grid. No gradients, no emoji. */
+
+:root {
+  --viz-green: #50c878;
+  --viz-purple: #a06bd4;
+  --viz-red: #e06c75;
+}
+
+/* ---- Small card grids ---- */
+.card-grid {
+  display: grid;
+  gap: 16px;
+  margin: 14px 0;
+}
+.card-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.card-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.card {
+  padding: 14px 16px;
+  border: 1px solid var(--secondary-color);
+  border-radius: 8px;
+  background: rgba(74, 158, 255, 0.05);
+  color: var(--text-color);
+}
+.card h4 {
+  margin: 0 0 6px 0;
+  font-size: 15pt;
+  color: var(--primary-color);
+}
+.card p, .card ul { font-size: 12.5pt; line-height: 1.35; margin: 0; }
+.card.warn { border-color: var(--viz-red); background: rgba(224, 108, 117, 0.07); }
+.card.warn h4 { color: var(--viz-red); }
+
+/* ---- Benchmark / comparison tables ---- */
+.bench-table, .compare-table {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+}
+.bench-table table, .compare-table table {
+  border-collapse: collapse;
+  color: var(--text-color);
+  font-size: 13.5pt;
+  min-width: 860px;
+}
+.bench-table th, .bench-table td,
+.compare-table th, .compare-table td {
+  border: 1px solid var(--secondary-color);
+  padding: 9px 14px;
+  text-align: left;
+  vertical-align: top;
+}
+/* Seven-row benchmark tables need a tighter rhythm to clear the 720px frame. */
+.bench-table.dense table { font-size: 12pt; }
+.bench-table.dense th, .bench-table.dense td { padding: 5px 12px; }
+.bench-table thead th, .compare-table thead th {
+  color: var(--secondary-color);
+  font-weight: 700;
+}
+.bench-table td strong, .compare-table td strong { color: var(--primary-color); }
+.bench-table td.num, .compare-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.bench-table .up { color: var(--viz-green); }
+.bench-table .down { color: var(--viz-red); }
+
+/* ---- Metric callout (one formula plus its one-line reading) ---- */
+.metric-box {
+  max-width: 900px;
+  margin: 14px auto;
+  padding: 14px 22px;
+  border: 1px solid var(--secondary-color);
+  border-left: 5px solid var(--primary-color);
+  border-radius: 8px;
+  background: rgba(74, 158, 255, 0.05);
+}
+.reveal .metric-box p { font-size: 14pt; margin: 6px 0 0 0; color: var(--text-color); }
+
+/* ---- To-scale saturation chart (release year -> year the ceiling was reached) ---- */
+.sat-chart {
+  position: relative;
+  width: 100%;
+  max-width: 1040px;
+  margin: 6px auto 0;
+}
+.sat-row {
+  position: relative;
+  height: 40px;
+}
+.sat-name {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 128px;
+  text-align: right;
+  font-size: 12.5pt;
+  color: var(--text-color);
+}
+.sat-track {
+  position: absolute;
+  left: 142px;
+  right: 12px;
+  top: 0;
+  bottom: 0;
+}
+.sat-span {
+  position: absolute;
+  top: 11px;
+  height: 15px;
+  border-radius: 8px;
+  background: var(--secondary-color);
+}
+.sat-span.fast { background: var(--viz-red); }
+.sat-years {
+  position: absolute;
+  top: 8px;
+  font-size: 11.5pt;
+  color: var(--muted-color);
+  white-space: nowrap;
+}
+/* Late benchmarks reach the right edge of the axis, so their label sits to the
+   left of the bar instead of after it. */
+.sat-years.before { text-align: right; }
+.sat-axis {
+  position: relative;
+  height: 26px;
+  margin-left: 142px;
+  margin-right: 12px;
+  border-top: 2px solid #2a3450;
+}
+.sat-tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 11pt;
+  color: var(--muted-color);
+  padding-top: 4px;
+}
+
+/* ---- Image figures (exercise outputs) ---- */
+.img-figure {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+.img-figure img {
+  max-height: 440px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ---- Resources grid (three themed columns) ---- */
+.resources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+.resources-grid h3 {
+  font-size: 15pt;
+  margin: 0 0 8px 0;
+  color: var(--secondary-color);
+}
+.reveal ul.resource-list { margin: 0; }
+.reveal ul.resource-list li {
+  font-size: 10.5pt;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  padding-left: 18px;
+}
+.reveal ul.resource-list li::before { width: 6px; height: 6px; }

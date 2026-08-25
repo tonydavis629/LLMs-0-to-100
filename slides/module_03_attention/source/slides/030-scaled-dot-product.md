@@ -1,0 +1,115 @@
+:::divider id="divider-scaled-dot-product" title="Scaled Dot-Product Attention" sub="Compare, scale, normalize, retrieve"
+:::
+
+---
+
+<!-- .slide: id="scaling-problem" -->
+
+## Why Scale by $\sqrt{d_k}$?
+
+Dot products grow with dimension. For $d_k = 64$, the expected magnitude of $\mathbf{q} \cdot \mathbf{k}$ is about 8; for $d_k = 1024$, it is about 32.
+<div style="text-align: center; margin: 8px 0;">
+<svg viewBox="0 0 820 250" width="100%" style="max-height: 230px;">
+  <text x="235" y="22" fill="#f5a623" font-size="13" text-anchor="middle" font-weight="600">without scaling: large logits saturate softmax</text>
+  <text x="610" y="22" fill="#4a9eff" font-size="13" text-anchor="middle" font-weight="600">with scaling: weights stay usable</text>
+  <g font-size="11" text-anchor="middle">
+    <text x="95" y="53" fill="#8892a4">scores</text>
+    <text x="95" y="144" fill="#8892a4">softmax</text>
+    <rect x="135" y="44" width="42" height="70" rx="4" fill="rgba(245,166,35,0.72)"/><text x="156" y="132" fill="#e8eaf0">16</text>
+    <rect x="187" y="72" width="42" height="42" rx="4" fill="rgba(245,166,35,0.45)"/><text x="208" y="132" fill="#e8eaf0">8</text>
+    <rect x="239" y="94" width="42" height="20" rx="4" fill="rgba(245,166,35,0.24)"/><text x="260" y="132" fill="#e8eaf0">2</text>
+    <rect x="291" y="102" width="42" height="12" rx="4" fill="rgba(245,166,35,0.16)"/><text x="312" y="132" fill="#e8eaf0">0</text>
+    <rect x="135" y="155" width="42" height="70" rx="4" fill="rgba(231,76,60,0.80)"/><text x="156" y="242" fill="#e8eaf0">1.00</text>
+    <rect x="187" y="222" width="42" height="3" rx="2" fill="rgba(74,158,255,0.20)"/><text x="208" y="242" fill="#8892a4">0.00</text>
+    <rect x="239" y="224" width="42" height="1" rx="1" fill="rgba(74,158,255,0.20)"/><text x="260" y="242" fill="#8892a4">0.00</text>
+    <rect x="291" y="224" width="42" height="1" rx="1" fill="rgba(74,158,255,0.20)"/><text x="312" y="242" fill="#8892a4">0.00</text>
+    <text x="425" y="120" fill="#8892a4" font-size="28">&divide;</text>
+    <text x="425" y="145" fill="#8892a4" font-size="13">&radic;d_k</text>
+    <text x="470" y="53" fill="#8892a4">scores</text>
+    <text x="470" y="144" fill="#8892a4">softmax</text>
+    <rect x="510" y="82" width="42" height="32" rx="4" fill="rgba(74,158,255,0.52)"/><text x="531" y="132" fill="#e8eaf0">2.0</text>
+    <rect x="562" y="96" width="42" height="18" rx="4" fill="rgba(74,158,255,0.34)"/><text x="583" y="132" fill="#e8eaf0">1.0</text>
+    <rect x="614" y="108" width="42" height="6" rx="3" fill="rgba(74,158,255,0.18)"/><text x="635" y="132" fill="#e8eaf0">0.25</text>
+    <rect x="666" y="114" width="42" height="1" rx="1" fill="rgba(74,158,255,0.12)"/><text x="687" y="132" fill="#e8eaf0">0</text>
+    <rect x="510" y="181" width="42" height="44" rx="4" fill="rgba(74,158,255,0.70)"/><text x="531" y="242" fill="#e8eaf0">0.58</text>
+    <rect x="562" y="209" width="42" height="16" rx="4" fill="rgba(74,158,255,0.40)"/><text x="583" y="242" fill="#e8eaf0">0.21</text>
+    <rect x="614" y="215" width="42" height="10" rx="4" fill="rgba(74,158,255,0.30)"/><text x="635" y="242" fill="#e8eaf0">0.13</text>
+    <rect x="666" y="218" width="42" height="7" rx="4" fill="rgba(74,158,255,0.24)"/><text x="687" y="242" fill="#e8eaf0">0.08</text>
+  </g>
+</svg>
+</div>
+
+Large softmax inputs produce a **sharply peaked** output: one entry near 1, the rest near 0. Tiny gradients follow, and training destabilizes.
+
+:::note
+Dividing by $\sqrt{d_k}$ keeps the dot-product variance roughly constant at any dimension. Gradients keep flowing.
+:::
+
+---
+
+<!-- .slide: id="scaled-softmax" -->
+
+## From Scores to the Attention Map
+
+Apply the same softmax to the **scaled** scores, once per query. The weight from query $i$ to key $j$:
+
+$$\alpha_{ij} = \frac{\exp\left(\mathbf q_i \cdot \mathbf k_j / \sqrt{d_k}\right)}{\sum_{j'} \exp\left(\mathbf q_i \cdot \mathbf k_{j'} / \sqrt{d_k}\right)}$$
+
+- Only new ingredient: the $\sqrt{d_k}$ divisor (a fixed temperature)
+- Each query $i$ produces one row $\alpha_{i\cdot}$
+- Stacked rows form the **attention map**
+
+---
+
+<!-- .slide: id="attention-output" -->
+
+## The Attention Output
+
+The output for each token is a weighted average of the value vectors:
+
+$$\mathbf o_i = \sum_j \alpha_{ij} \mathbf v_j$$
+
+:::columns cols="2" gap="30px"
+**Interpretation**
+
+- Each $\mathbf o_i$ is a mixture of all value vectors
+- The weights $\alpha_{ij}$ come from query-key compatibility
+- Strong attention to token $j$ means $\mathbf v_j$ dominates the output
++++
+**Properties**
+
+- Different tokens can attend to different subsets of the sequence
+- The same token can be attended to by many others
+- The output dimension matches the value dimension, not the sequence length
+:::
+
+---
+
+<!-- .slide: id="full-attention-formula" -->
+
+## The Complete Formula
+
+Scaled dot-product attention in one line:
+
+$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
+
+Compare, normalize, retrieve. No recurrence, no convolution, no fixed-size bottleneck. The model learns what to look at.
+
+---
+
+<!-- .slide: id="attention-heatmap" -->
+
+:::interactive id="attn-heatmap" widget="attentionHeatmap" title="Attention as a Heatmap"
+:::
+
+---
+
+<!-- .slide: id="attention-not-just-text" -->
+
+## Attention Is Not Just for Text
+
+The same mechanism works on any sequence. In a vision-language model, each text token attends to **regions of an image**. Bright areas show where attention concentrates.
+<div class="video-container" style="flex-direction: column;">
+<img src="images/sualization-of-attention-regions-extracted-from-the-first-Transformer-layer-of.webp" alt="Attention regions over an image in a vision-language model" style="max-height: 470px;">
+<p class="text-muted" style="font-size: 12pt; margin-top: 10px;">Attention regions from Pixel-BERT (Huang et al., 2020). Attention concentrates on the objects the text refers to.</p>
+</div>

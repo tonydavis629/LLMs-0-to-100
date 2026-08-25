@@ -1,0 +1,136 @@
+/* Module 8 overrides: multimodal models.
+   Manim carries the two genuinely spatial/temporal figures (patchify, the video
+   token budget). This file styles the contributor cards, the small card grids, the
+   comparison and taxonomy tables, the inline SVG diagrams (similarity matrix, the
+   visual-prefix sequence, the multimodal stack), and the resources grid. Notable
+   figures here are text-forward contributor cards (no bundled headshots). */
+
+:root {
+  --viz-green: #50c878;
+  --viz-purple: #a06bd4;
+}
+
+/* ---- Contributor cards (notable figures, interleaved inline) ---- */
+.contrib-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 900px;
+  margin: 12px auto;
+  padding: 20px 26px;
+  border: 1px solid rgba(245, 166, 35, 0.5);
+  border-left: 5px solid var(--secondary-color);
+  border-radius: 8px;
+  background: rgba(245, 166, 35, 0.06);
+}
+.contrib-card .contrib-name {
+  font-size: 20pt;
+  font-weight: 700;
+  color: var(--secondary-color);
+}
+.contrib-card .contrib-org {
+  font-size: 13pt;
+  color: var(--text-color);
+  opacity: 0.8;
+}
+.contrib-card .contrib-body {
+  font-size: 15pt;
+  line-height: 1.45;
+  color: var(--text-color);
+}
+
+/* ---- Small card grids (modalities, data sources, safety) ---- */
+.card-grid {
+  display: grid;
+  gap: 16px;
+  margin: 14px 0;
+}
+.card-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.card-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.card-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+.card {
+  padding: 14px 16px;
+  border: 1px solid var(--secondary-color);
+  border-radius: 8px;
+  background: rgba(74, 158, 255, 0.05);
+  color: var(--text-color);
+}
+.card h4 {
+  margin: 0 0 6px 0;
+  font-size: 15pt;
+  color: var(--primary-color);
+}
+.card p, .card ul { font-size: 12.5pt; line-height: 1.35; margin: 0; }
+
+/* ---- Comparison / taxonomy tables ---- */
+.compare-table, .taxonomy-table {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+}
+.compare-table table, .taxonomy-table table {
+  border-collapse: collapse;
+  color: var(--text-color);
+  font-size: 14pt;
+  min-width: 840px;
+}
+.compare-table th, .compare-table td,
+.taxonomy-table th, .taxonomy-table td {
+  border: 1px solid var(--secondary-color);
+  padding: 12px 16px;
+  text-align: left;
+  vertical-align: top;
+}
+.compare-table thead th, .taxonomy-table thead th {
+  color: var(--secondary-color);
+  font-weight: 700;
+  text-align: center;
+}
+.compare-table td strong, .taxonomy-table td strong { color: var(--primary-color); }
+
+/* ---- Centered inline SVG / figure diagrams ---- */
+.diagram {
+  display: flex;
+  justify-content: center;
+  margin: 12px 0;
+}
+.diagram svg { max-width: 100%; height: auto; }
+.diagram-caption {
+  text-align: center;
+  font-size: 13pt;
+  opacity: 0.85;
+  margin-top: 6px;
+}
+
+/* ---- Image figure (exercise outputs) ---- */
+.curve-figure, .img-figure {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+.curve-figure img, .img-figure img {
+  max-height: 460px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* ---- Resources grid (three themed columns) ---- */
+.resources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+.resources-grid h3 {
+  font-size: 15pt;
+  margin: 0 0 8px 0;
+  color: var(--secondary-color);
+}
+.reveal ul.resource-list { margin: 0; }
+.reveal ul.resource-list li {
+  font-size: 10.5pt;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  padding-left: 18px;
+}
+.reveal ul.resource-list li::before { width: 6px; height: 6px; }

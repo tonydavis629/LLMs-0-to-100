@@ -1,0 +1,6 @@
+[
+  {"name": "NVIDIA H100 SXM", "bandwidth_gb_s": 3350, "memory_gb": 80},
+  {"name": "NVIDIA RTX 4090", "bandwidth_gb_s": 1008, "memory_gb": 24},
+  {"name": "Apple M4 Max", "bandwidth_gb_s": 546, "memory_gb": 64},
+  {"name": "MacBook Air (M2)", "bandwidth_gb_s": 100, "memory_gb": 16}
+]

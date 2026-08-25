@@ -1,0 +1,47 @@
+/* Module 6 overrides: finetuning diagrams.
+   The manim animations carry the dynamic processes (chat template, loss mask,
+   LoRA); notable figures use the shared :::figure fence. This file styles the
+   few inline-SVG diagrams and the resources grid. */
+
+/* Inline-SVG diagram wrappers (self-styled via fill=; just center and size). */
+.svg-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 10px;
+}
+
+.svg-wrap svg {
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+}
+
+/* Resources grid (module-local, matching the other modules' closing slide). */
+.resources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  margin-top: 16px;
+}
+
+.resources-grid h3 {
+  font-size: 18pt;
+  margin: 0 0 8px 0;
+  color: var(--secondary-color);
+}
+
+.reveal ul.resource-list {
+  margin: 0;
+}
+
+.reveal ul.resource-list li {
+  font-size: 11.5pt;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  padding-left: 18px;
+}
+
+.reveal ul.resource-list li::before {
+  width: 6px;
+  height: 6px;
+}

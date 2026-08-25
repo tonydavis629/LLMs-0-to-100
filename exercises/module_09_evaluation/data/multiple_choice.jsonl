@@ -1,0 +1,16 @@
+{"id": "mc-001", "question": "color of sky?", "options": ["it is blue", "it is green", "it is cold", "it is paris"], "answer_index": 0}
+{"id": "mc-002", "question": "color of grass?", "options": ["it is blue", "it is green", "it is night", "it is tokyo"], "answer_index": 1}
+{"id": "mc-003", "question": "capital of france?", "options": ["it is berlin", "it is tokyo", "it is paris", "it is down"], "answer_index": 2}
+{"id": "mc-004", "question": "capital of japan?", "options": ["it is paris", "it is tokyo", "it is berlin", "it is blue"], "answer_index": 1}
+{"id": "mc-005", "question": "capital of germany?", "options": ["it is berlin", "it is paris", "it is green", "it is cold"], "answer_index": 0}
+{"id": "mc-006", "question": "opposite of hot?", "options": ["it is night", "it is down", "it is cold", "it is blue"], "answer_index": 2}
+{"id": "mc-007", "question": "opposite of up?", "options": ["it is down", "it is cold", "it is berlin", "it is green"], "answer_index": 0}
+{"id": "mc-008", "question": "opposite of day?", "options": ["it is night", "it is blue", "it is tokyo", "it is down"], "answer_index": 0}
+{"id": "mc-009", "question": "uppercase: metric", "options": ["METRIC", "metric", "MERTIC", "CIRTEM"], "answer_index": 0}
+{"id": "mc-010", "question": "uppercase: score", "options": ["SCORE", "SOCRE", "score", "EROCS"], "answer_index": 0}
+{"id": "mc-011", "question": "repeat: fact", "options": ["fact", "FACT", "tcaf", "fatc"], "answer_index": 0}
+{"id": "mc-012", "question": "repeat: gold", "options": ["gold", "dlog", "GOLD", "golg"], "answer_index": 0}
+{"id": "mc-013", "question": "reverse: gjquv", "options": ["vuqjg", "gjquv", "uqjgv", "jquvz"], "answer_index": 0}
+{"id": "mc-014", "question": "reverse: dtpes", "options": ["septd", "dtpes", "eptds", "tpesz"], "answer_index": 0}
+{"id": "mc-015", "question": "reverse: bpkjo", "options": ["ojkpb", "bpkjo", "jkpbo", "pkjoz"], "answer_index": 0}
+{"id": "mc-016", "question": "reverse: bamkf", "options": ["fkmab", "bamkf", "kmabf", "amkfz"], "answer_index": 0}

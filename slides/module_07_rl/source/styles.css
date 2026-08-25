@@ -1,0 +1,112 @@
+/* Module 7 overrides: RL post-training.
+   The manim animations carry the dynamic processes (GRPO loop, pass@k, REINFORCE,
+   PPO, DPO); this file styles the agent-environment loop diagram, the resources
+   grid, and the 2x2 axis tables used to place DPO / PPO / GRPO. Notable figures
+   use the shared :::figure card from the master stylesheet. */
+
+/* 2x2 axis grid: places methods on the online/offline x on/off-policy axes. */
+.axes-grid {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.axes-grid table {
+  border-collapse: collapse;
+  color: var(--text-color);
+  font-size: 16pt;
+  min-width: 820px;
+}
+
+.axes-grid th,
+.axes-grid td {
+  border: 2px solid var(--secondary-color);
+  padding: 16px 20px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.axes-grid thead th {
+  color: var(--secondary-color);
+  font-weight: 700;
+}
+
+.axes-grid tbody th {
+  color: var(--secondary-color);
+  font-weight: 700;
+}
+
+.axes-grid td strong {
+  color: var(--primary-color);
+}
+
+/* Resources grid (three themed columns). */
+.resources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.resources-grid h3 {
+  font-size: 16pt;
+  margin: 0 0 8px 0;
+  color: var(--secondary-color);
+}
+
+.reveal ul.resource-list {
+  margin: 0;
+}
+
+.reveal ul.resource-list li {
+  font-size: 10.5pt;
+  line-height: 1.3;
+  margin-bottom: 6px;
+  padding-left: 18px;
+}
+
+.reveal ul.resource-list li::before {
+  width: 6px;
+  height: 6px;
+}
+
+/* Agent-environment loop diagram (rl-vocabulary slide). */
+.rl-loop-figure {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 6px;
+}
+
+.rl-loop-figure svg {
+  width: 64%;
+  max-width: 720px;
+  height: auto;
+}
+
+/* Reward-curve figure (the exercise's plotted output). */
+.curve-figure {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
+}
+
+.curve-figure img {
+  max-width: 78%;
+  max-height: 60vh;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Three-stage RLHF pipeline diagram (rlhf-pipeline slide). */
+.rlhf-flow {
+  display: flex;
+  justify-content: center;
+  margin: 6px 0 4px;
+}
+
+.rlhf-flow svg {
+  width: 100%;
+  max-width: 940px;
+  max-height: 66vh;
+  height: auto;
+}

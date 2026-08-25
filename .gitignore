@@ -1,0 +1,13 @@
+.claude/
+.agents/
+reveal.js/
+media/
+screenshots/
+.venv/
+**.pyc
+.DS_Store
+.playwright**
+node_modules
+**/output/**
+tools/
+pdf/

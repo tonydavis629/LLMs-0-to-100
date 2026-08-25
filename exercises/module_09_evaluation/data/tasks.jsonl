@@ -1,0 +1,50 @@
+{"task": "uppercase", "prompt": "uppercase: metric", "answers": ["METRIC"], "id": "case-001"}
+{"task": "uppercase", "prompt": "uppercase: score", "answers": ["SCORE"], "id": "case-002"}
+{"task": "uppercase", "prompt": "uppercase: budget", "answers": ["BUDGET"], "id": "case-003"}
+{"task": "uppercase", "prompt": "uppercase: harness", "answers": ["HARNESS"], "id": "case-004"}
+{"task": "uppercase", "prompt": "uppercase: report", "answers": ["REPORT"], "id": "case-005"}
+{"task": "uppercase", "prompt": "uppercase: signal", "answers": ["SIGNAL"], "id": "case-006"}
+{"task": "uppercase", "prompt": "uppercase: context", "answers": ["CONTEXT"], "id": "case-007"}
+{"task": "uppercase", "prompt": "uppercase: window", "answers": ["WINDOW"], "id": "case-008"}
+{"task": "uppercase", "prompt": "uppercase: corpus", "answers": ["CORPUS"], "id": "case-009"}
+{"task": "uppercase", "prompt": "uppercase: recall", "answers": ["RECALL"], "id": "case-010"}
+{"task": "repeat", "prompt": "repeat: fact", "answers": ["fact"], "id": "case-011"}
+{"task": "repeat", "prompt": "repeat: gold", "answers": ["gold"], "id": "case-012"}
+{"task": "repeat", "prompt": "repeat: task", "answers": ["task"], "id": "case-013"}
+{"task": "repeat", "prompt": "repeat: grid", "answers": ["grid"], "id": "case-014"}
+{"task": "repeat", "prompt": "repeat: step", "answers": ["step"], "id": "case-015"}
+{"task": "repeat", "prompt": "repeat: hint", "answers": ["hint"], "id": "case-016"}
+{"task": "repeat", "prompt": "repeat: list", "answers": ["list"], "id": "case-017"}
+{"task": "repeat", "prompt": "repeat: seed", "answers": ["seed"], "id": "case-018"}
+{"task": "reverse", "prompt": "reverse: gjquv", "answers": ["vuqjg"], "id": "case-019"}
+{"task": "reverse", "prompt": "reverse: dtpes", "answers": ["septd"], "id": "case-020"}
+{"task": "reverse", "prompt": "reverse: bpkjo", "answers": ["ojkpb"], "id": "case-021"}
+{"task": "reverse", "prompt": "reverse: bamkf", "answers": ["fkmab"], "id": "case-022"}
+{"task": "reverse", "prompt": "reverse: abbgv", "answers": ["vgbba"], "id": "case-023"}
+{"task": "reverse", "prompt": "reverse: jyoqt", "answers": ["tqoyj"], "id": "case-024"}
+{"task": "reverse", "prompt": "reverse: oxckx", "answers": ["xkcxo"], "id": "case-025"}
+{"task": "reverse", "prompt": "reverse: ymbfh", "answers": ["hfbmy"], "id": "case-026"}
+{"task": "reverse", "prompt": "reverse: lsuef", "answers": ["feusl"], "id": "case-027"}
+{"task": "reverse", "prompt": "reverse: brieh", "answers": ["heirb"], "id": "case-028"}
+{"task": "reverse", "prompt": "reverse: vzdqz", "answers": ["zqdzv"], "id": "case-029"}
+{"task": "reverse", "prompt": "reverse: kovxv", "answers": ["vxvok"], "id": "case-030"}
+{"task": "reverse", "prompt": "reverse: ytpww", "answers": ["wwpty"], "id": "case-031"}
+{"task": "reverse", "prompt": "reverse: hrufv", "answers": ["vfurh"], "id": "case-032"}
+{"task": "reverse", "prompt": "reverse: vsnbm", "answers": ["mbnsv"], "id": "case-033"}
+{"task": "reverse", "prompt": "reverse: jnndv", "answers": ["vdnnj"], "id": "case-034"}
+{"task": "reverse", "prompt": "reverse: plsgq", "answers": ["qgslp"], "id": "case-035"}
+{"task": "reverse", "prompt": "reverse: jrpby", "answers": ["ybprj"], "id": "case-036"}
+{"task": "reverse", "prompt": "reverse: pwuou", "answers": ["uouwp"], "id": "case-037"}
+{"task": "reverse", "prompt": "reverse: cktdp", "answers": ["pdtkc"], "id": "case-038"}
+{"task": "reverse", "prompt": "reverse: teqvc", "answers": ["cvqet"], "id": "case-039"}
+{"task": "reverse", "prompt": "reverse: ippeh", "answers": ["heppi"], "id": "case-040"}
+{"task": "reverse", "prompt": "reverse: jtcwq", "answers": ["qwctj"], "id": "case-041"}
+{"task": "reverse", "prompt": "reverse: ywghx", "answers": ["xhgwy"], "id": "case-042"}
+{"task": "qa", "prompt": "color of sky?", "answers": ["it is blue", "blue"], "id": "case-043"}
+{"task": "qa", "prompt": "color of grass?", "answers": ["it is green", "green"], "id": "case-044"}
+{"task": "qa", "prompt": "capital of france?", "answers": ["it is paris", "paris"], "id": "case-045"}
+{"task": "qa", "prompt": "capital of japan?", "answers": ["it is tokyo", "tokyo"], "id": "case-046"}
+{"task": "qa", "prompt": "capital of germany?", "answers": ["it is berlin", "berlin"], "id": "case-047"}
+{"task": "qa", "prompt": "opposite of hot?", "answers": ["it is cold", "cold"], "id": "case-048"}
+{"task": "qa", "prompt": "opposite of up?", "answers": ["it is down", "down"], "id": "case-049"}
+{"task": "qa", "prompt": "opposite of day?", "answers": ["it is night", "night"], "id": "case-050"}
