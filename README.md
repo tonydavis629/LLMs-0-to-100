@@ -99,13 +99,7 @@ Fill in the TODOs in the exercise files. Check the solution in `exercises/module
 
 ### Viewing Slides
 
-Open the HTML file directly in your browser:
-
-```bash
-open slides/module_01_introduction.html     # macOS
-xdg-open slides/module_01_introduction.html  # Linux
-```
-
+Open the HTML file from `slides/` directly in your browser
 
 ## Modules
 
