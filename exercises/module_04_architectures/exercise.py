@@ -74,13 +74,18 @@ class FeedForward(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Apply the two-layer FFN with GELU nonlinearity.
 
+        GPT-2 was trained with the tanh approximation of GELU, so we pass
+        approximate="tanh" to reproduce the pretrained model exactly. The
+        default (exact) GELU is a slightly different curve and shifts the
+        logits enough to notice.
+
         Args:
             x: Input tensor, shape (batch_size, seq_len, d_model).
 
         Returns:
             Output tensor, shape (batch_size, seq_len, d_model).
         """
-        # TODO: Apply fc1, then F.gelu(...), then fc2, then dropout.
+        # TODO: Apply fc1, then F.gelu(..., approximate="tanh"), then fc2, then dropout.
         # HINT: compose the layers in order; the tensor should end at d_model, not d_ff.
         raise NotImplementedError("TODO: FFN forward pass")
 

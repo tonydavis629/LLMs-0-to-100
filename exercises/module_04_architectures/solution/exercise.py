@@ -54,8 +54,11 @@ class FeedForward(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Apply the two-layer FFN with GELU nonlinearity."""
-        return self.fc2(self.dropout(F.gelu(self.fc1(x))))
+        """Apply the two-layer FFN with GELU nonlinearity.
+
+        approximate="tanh" matches the GELU variant GPT-2 was trained with.
+        """
+        return self.fc2(self.dropout(F.gelu(self.fc1(x), approximate="tanh")))
 
 
 # ---------------------------------------------------------------------------

@@ -41,11 +41,12 @@ Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each 
 | 2 | `FeedForward.forward()` | Linear -> GELU -> Linear -> dropout |
 | 3 | `TransformerBlock.forward()` | Pre-norm attention with residual, then pre-norm FFN with residual |
 | 4 | `GPT2Model.forward()` | Full forward pass: embed -> N blocks -> final norm -> LM head |
-| 5 | (provided) | `load_gpt2_weights()` maps and copies pretrained tensors |
-| 6 | `greedy_decode()` | Argmax next token, append, repeat |
-| 7 | `sample_with_temperature_topk()` | Scale logits by temperature, truncate to top-k, then sample |
+| 5 | `greedy_decode()` | Argmax next token, append, repeat |
+| 6 | `sample_with_temperature_topk()` | Scale logits by temperature, truncate to top-k, then sample |
 
-`src/main.py` is the runner and `src/visualization.py` holds plotting helpers &mdash; both are provided. You should only need to edit `exercise.py`.
+Between steps 4 and 5 the runner loads the real GPT-2 checkpoint for you.
+
+Everything else is provided: `src/attention.py` (the Module 3 attention block), `src/pretrained.py` (`load_gpt2_weights()`), `src/sampling.py` (the top-k helper), `src/visualization.py` (plots) and `src/main.py` (the runner). You only edit `exercise.py`.
 
 ## Extra credit
 

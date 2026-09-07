@@ -64,7 +64,7 @@ return self.token_embed(token_ids) + self.pos_embed(position)
 ```python
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Apply the two-layer FFN with GELU nonlinearity."""
-        # TODO: Apply fc1, then F.gelu(...), then fc2, then dropout.
+        # TODO: Apply fc1, then F.gelu(..., approximate="tanh"), then fc2, then dropout.
         raise NotImplementedError("TODO: FFN forward pass")
 ```
 +++
@@ -73,7 +73,7 @@ return self.token_embed(token_ids) + self.pos_embed(position)
 **Answer:**
 
 ```python
-return self.fc2(self.dropout(F.gelu(self.fc1(x))))
+return self.fc2(self.dropout(F.gelu(self.fc1(x), approximate="tanh")))
 ```
 :::
 

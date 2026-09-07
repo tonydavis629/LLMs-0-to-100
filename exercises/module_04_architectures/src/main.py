@@ -164,7 +164,7 @@ def main():
     # Step 5: Load pretrained weights
     # ------------------------------------------------------------------
     print("=" * 60)
-    print("STEP 5: Load Pretrained GPT-2 Weights")
+    print("LOADING PRETRAINED GPT-2 WEIGHTS (provided)")
     print("=" * 60)
     if model is not None and tokenizer is not None:
         loaded = _try_run("Load weights", load_gpt2_weights, model)
@@ -188,7 +188,7 @@ def main():
     # Step 6: Greedy decoding
     # ------------------------------------------------------------------
     print("=" * 60)
-    print("STEP 6: Greedy Decoding")
+    print("STEP 5: Greedy Decoding")
     print("=" * 60)
     if model is not None and tokenizer is not None:
         generated = _try_run(
@@ -212,7 +212,7 @@ def main():
     # Step 7: Sampling with temperature and top-k
     # ------------------------------------------------------------------
     print("=" * 60)
-    print("STEP 7: Temperature and Top-k Sampling")
+    print("STEP 6: Temperature and Top-k Sampling")
     print("=" * 60)
     if model is not None and tokenizer is not None:
         sampled = _try_run(
