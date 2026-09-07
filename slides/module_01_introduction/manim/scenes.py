@@ -46,6 +46,13 @@ class LanguageAsCompressionScene(Scene):
         "m": ("1111111", 1),
     }
 
+    ALPHABET = "abcdefghijklmnopqrstuvwxyz "
+
+    @classmethod
+    def _uniform_code(cls, ch):
+        """Fixed-width 5-bit code: position in the 27-symbol alphabet, in binary."""
+        return format(cls.ALPHABET.index(ch), "05b")
+
     def construct(self):
         self.camera.background_color = self.BG_COLOR
         self._section_uniform()
@@ -69,9 +76,26 @@ class LanguageAsCompressionScene(Scene):
         ).next_to(title, DOWN, buff=0.25)
 
         label = Text(
-            "Uniform encoding: every character = 5 bits",
+            "Uniform encoding: every character gets the same 5-bit code",
             font=self.BODY_FONT, font_size=22, color=self.UNIFORM_COLOR,
-        ).next_to(subtitle, DOWN, buff=0.5).align_to(subtitle, LEFT)
+        ).next_to(subtitle, DOWN, buff=0.4).set_x(0)
+
+        # 27 symbols (a-z plus space) need 5 bits each: 2^4 = 16 is too few, 2^5 = 32 is enough.
+        legend = VGroup()
+        for sym in ["a", "b", "c", None, "z", " "]:
+            if sym is None:
+                item = Text(
+                    "...", font=self.MONO_FONT, font_size=16, color=self.MUTED_COLOR,
+                )
+            else:
+                display_sym = sym if sym != " " else "\u2423"
+                item = Text(
+                    f"{display_sym} = {self._uniform_code(sym)}",
+                    font=self.MONO_FONT, font_size=16, color=self.TEXT_COLOR,
+                )
+            legend.add(item)
+        legend.arrange(RIGHT, buff=0.4)
+        legend.next_to(label, DOWN, buff=0.3).set_x(0)
 
         BLOCK_W = 0.5
         BLOCK_H = 0.45
@@ -90,7 +114,7 @@ class LanguageAsCompressionScene(Scene):
             blocks.add(block)
 
         blocks.arrange(RIGHT, buff=0.04)
-        blocks.next_to(label, DOWN, buff=0.4)
+        blocks.next_to(legend, DOWN, buff=0.55).set_x(0)
 
         bit_labels = VGroup()
         for block in blocks:
@@ -98,22 +122,37 @@ class LanguageAsCompressionScene(Scene):
             bl.next_to(block, UP, buff=0.08)
             bit_labels.add(bl)
 
+        # The actual 5-bit code written under each block, so the "5" above is visibly 5 digits.
+        code_labels = VGroup()
+        for block, ch in zip(blocks, self.STRING):
+            cl = Text(
+                self._uniform_code(ch),
+                font=self.MONO_FONT, font_size=11, color=self.UNIFORM_COLOR,
+            )
+            if cl.width > BLOCK_W - 0.05:
+                cl.scale_to_fit_width(BLOCK_W - 0.05)
+            cl.next_to(block, DOWN, buff=0.12)
+            code_labels.add(cl)
+
         total_text = Text(
             "22 chars x 5 bits = 110 bits total",
             font=self.BODY_FONT, font_size=22, color=self.UNIFORM_COLOR, weight=BOLD,
-        ).next_to(blocks, DOWN, buff=0.4)
+        ).next_to(code_labels, DOWN, buff=0.45)
 
         self.play(FadeIn(title), FadeIn(subtitle), run_time=0.6)
         self.play(FadeIn(label), run_time=0.4)
+        self.play(FadeIn(legend), run_time=0.5)
         self.play(
             LaggedStart(*[FadeIn(b, shift=UP * 0.15) for b in blocks], lag_ratio=0.03),
             run_time=1.2,
         )
-        self.play(FadeIn(bit_labels), run_time=0.5)
+        self.play(FadeIn(code_labels), FadeIn(bit_labels), run_time=0.5)
         self.play(FadeIn(total_text), run_time=0.5)
         self.wait(0.3)
 
-        self._uniform_group = VGroup(title, subtitle, label, blocks, bit_labels, total_text)
+        self._uniform_group = VGroup(
+            title, subtitle, label, legend, blocks, bit_labels, code_labels, total_text,
+        )
 
     # ------------------------------------------------------------------
     # Section 2: Code table
