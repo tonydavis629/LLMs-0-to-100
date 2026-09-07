@@ -16,53 +16,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
-# ---------------------------------------------------------------------------
-# Provided: multi-head causal self-attention (the engine from Module 3)
-# ---------------------------------------------------------------------------
-
-
-class CausalSelfAttention(nn.Module):
-    """Multi-head causal self-attention matching GPT-2's design."""
-
-    def __init__(self, d_model: int = 768, n_heads: int = 12, dropout: float = 0.1) -> None:
-        super().__init__()
-        assert d_model % n_heads == 0
-        self.n_heads = n_heads
-        self.d_k = d_model // n_heads
-        self.d_model = d_model
-
-        # One big linear for Q, K, V together, then output projection.
-        self.c_attn = nn.Linear(d_model, 3 * d_model)
-        self.c_proj = nn.Linear(d_model, d_model)
-        self.attn_dropout = nn.Dropout(dropout)
-        self.resid_dropout = nn.Dropout(dropout)
-
-        # Causal mask buffered so we do not rebuild it on every forward pass.
-        self.register_buffer(
-            "bias",
-            torch.tril(torch.ones(1024, 1024)).view(1, 1, 1024, 1024)
-        )
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        B, T, C = x.size()
-
-        # Project to Q, K, V and reshape into (B, n_heads, T, d_k).
-        q, k, v = self.c_attn(x).split(self.d_model, dim=2)
-        q = q.view(B, T, self.n_heads, self.d_k).transpose(1, 2)
-        k = k.view(B, T, self.n_heads, self.d_k).transpose(1, 2)
-        v = v.view(B, T, self.n_heads, self.d_k).transpose(1, 2)
-
-        # Scaled dot-product attention.
-        scores = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(self.d_k))
-        scores = scores.masked_fill(self.bias[:, :, :T, :T] == 0, float("-inf"))
-        weights = F.softmax(scores, dim=-1)
-        weights = self.attn_dropout(weights)
-        out = weights @ v
-
-        # Reshape back and project.
-        out = out.transpose(1, 2).contiguous().view(B, T, C)
-        return self.resid_dropout(self.c_proj(out))
+# Provided for you - see src/attention.py and src/sampling.py
+from src.attention import CausalSelfAttention
+from src.sampling import _sample_topk_token
 
 
 # ---------------------------------------------------------------------------
@@ -207,68 +163,7 @@ class GPT2Model(nn.Module):
 
 
 # ---------------------------------------------------------------------------
-# Step 5: Load pretrained GPT-2 weights from HuggingFace
-# ---------------------------------------------------------------------------
-
-
-def load_gpt2_weights(model: GPT2Model) -> None:
-    """Load pretrained GPT-2 small weights into the custom model.
-
-    This function downloads the official GPT-2 weights from HuggingFace,
-    then copies each tensor into the matching layer of the custom model.
-
-    Args:
-        model: Your GPT2Model instance (must already be initialized).
-    """
-    from transformers import GPT2LMHeadModel
-
-    print("Downloading GPT-2 weights from HuggingFace ...")
-    pretrained = GPT2LMHeadModel.from_pretrained("gpt2")
-    pretrained_sd = pretrained.state_dict()
-
-    # Build a flat name mapping from custom -> pretrained.
-    custom_names = [n for n, _ in model.named_parameters()]
-    pretrained_names = list(pretrained_sd.keys())
-
-    # Map custom names to pretrained names.
-    # Custom names look like: embed.token_embed.weight, blocks.0.attn.c_attn.weight, etc.
-    # Pretrained names look like: transformer.wte.weight, transformer.h.0.attn.c_attn.weight, etc.
-    mapping = {}
-    for cn in custom_names:
-        if cn == "embed.token_embed.weight":
-            pn = "transformer.wte.weight"
-        elif cn == "embed.pos_embed.weight":
-            pn = "transformer.wpe.weight"
-        elif cn.startswith("blocks."):
-            # blocks.0.attn.c_attn.weight  ->  transformer.h.0.attn.c_attn.weight
-            rest = cn[len("blocks."):]
-            pn = "transformer.h." + rest
-        elif cn == "ln_f.weight":
-            pn = "transformer.ln_f.weight"
-        elif cn == "ln_f.bias":
-            pn = "transformer.ln_f.bias"
-        elif cn == "lm_head.weight":
-            pn = "lm_head.weight"
-        else:
-            raise ValueError(f"Unmapped custom parameter: {cn}")
-        mapping[cn] = pn
-
-    # Copy weights.
-    custom_sd = model.state_dict()
-    new_sd = {}
-    for cn, pn in mapping.items():
-        pt = pretrained_sd[pn]
-        ct = custom_sd[cn]
-        if pt.shape != ct.shape:
-            raise ValueError(f"Shape mismatch for {cn}: custom {ct.shape} vs pretrained {pt.shape}")
-        new_sd[cn] = pt
-
-    model.load_state_dict(new_sd)
-    print(f"Loaded {len(new_sd)} parameter tensors from pretrained GPT-2.")
-
-
-# ---------------------------------------------------------------------------
-# Step 6: Greedy decoding
+# Step 5: Greedy decoding
 # ---------------------------------------------------------------------------
 
 
@@ -308,22 +203,8 @@ def greedy_decode(model: GPT2Model, tokenizer, prompt: str, max_new: int = 10) -
 
 
 # ---------------------------------------------------------------------------
-# Step 7: Temperature and top-k sampling
+# Step 6: Temperature and top-k sampling
 # ---------------------------------------------------------------------------
-
-
-def _sample_topk_token(next_logits: torch.Tensor, top_k: int) -> torch.Tensor:
-    """Sample one token from the top-k logits."""
-    # Find the k largest logits for each batch item.
-    topk_vals, _ = torch.topk(next_logits, top_k, dim=-1)
-    # The last value in topk_vals is the cutoff for staying in the top k.
-    threshold = topk_vals[:, -1].unsqueeze(-1)
-    # Set all logits below the cutoff to -infinity, so softmax gives them 0 probability.
-    next_logits = next_logits.masked_fill(next_logits < threshold, float("-inf"))
-    # Convert the filtered logits to probabilities.
-    probs = F.softmax(next_logits, dim=-1)
-    # Draw one token ID from that probability distribution.
-    return torch.multinomial(probs, num_samples=1)
 
 
 def sample_with_temperature_topk(

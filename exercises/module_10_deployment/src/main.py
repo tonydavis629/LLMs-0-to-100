@@ -4,6 +4,8 @@ Module 10 Exercise runner: serve a model, then write an API client to it
 Run with:
     uv run python module_10_deployment/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Stage 1 (no server needed) prints the napkin-math tables from steps 1-3: weight
 memory, KV cache growth, and the decode speed limit for real machines. Stages
 2-4 need an OpenAI-compatible server running locally (vLLM, Ollama, or
@@ -29,6 +31,19 @@ from pathlib import Path
 # and src/ importable for the provided plotting helper.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
 
 from exercise import (  # noqa: E402  (import after sys.path edits)
     model_weight_bytes,

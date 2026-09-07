@@ -13,20 +13,6 @@ import torch.nn.functional as F
 
 
 # ---------------------------------------------------------------------------
-# Step 1: Create token vectors for a tiny sequence
-# ---------------------------------------------------------------------------
-
-
-def make_token_vectors(vocab_size: int = 10, d_model: int = 8, seq_len: int = 5) -> torch.Tensor:
-    """Create a fixed random embedding matrix and look up token vectors."""
-    torch.manual_seed(42)
-    E = torch.randn(vocab_size, d_model) * 0.1
-    token_ids = torch.tensor([2, 5, 1, 8, 3])
-    X = E[token_ids[:seq_len]]
-    return X
-
-
-# ---------------------------------------------------------------------------
 # Steps 2-7: A tiny single-head attention layer
 # ---------------------------------------------------------------------------
 

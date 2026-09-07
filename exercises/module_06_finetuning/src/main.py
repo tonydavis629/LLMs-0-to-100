@@ -4,6 +4,8 @@ Module 6 Exercise runner: Finetuning NanoGPT into an instruct model
 Run with:
     uv run python module_06_finetuning/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Loads the bundled Module 5 base checkpoint, injects LoRA adapters, finetunes on
 toy instruction-response pairs, and prints the behavioral flip on one prompt:
 the base model continues text and ignores the instruction; the finetuned model
@@ -26,6 +28,19 @@ import torch
 # and src/ importable so we can grab the provided model / tokenizer / data helpers.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
 
 from exercise import (  # noqa: E402  (import after sys.path edits)
     format_example,

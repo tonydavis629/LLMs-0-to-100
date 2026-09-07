@@ -1,5 +1,5 @@
 """
-Offline generator for the two checkpoints this module evaluates (solution-only).
+Offline generator for the two checkpoints this module evaluates (provided).
 
 Module 9 does not train anything; it *measures* two models that the previous two
 modules produced. This script rebuilds them from scratch so the comparison in the
@@ -16,7 +16,7 @@ exercise is reproducible:
                           three tasks is the question Module 9 exists to answer.
 
 Run with:
-    uv run python module_09_evaluation/solution/src/make_checkpoints.py
+    uv run python module_09_evaluation/src/make_checkpoints.py
 """
 
 from __future__ import annotations
@@ -29,8 +29,8 @@ import torch
 import torch.nn.functional as F
 
 _THIS_DIR = Path(__file__).resolve().parent
-_MODULE_ROOT = _THIS_DIR.parent.parent
-sys.path.insert(0, str(_MODULE_ROOT / "src"))
+_MODULE_ROOT = _THIS_DIR.parent
+sys.path.insert(0, str(_THIS_DIR))
 
 from model import GPTConfig, TinyGPT, generate  # noqa: E402
 from tokenizer import build_vocab, encode, decode, SPECIAL_TOKENS  # noqa: E402

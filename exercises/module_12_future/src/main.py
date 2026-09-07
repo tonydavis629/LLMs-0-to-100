@@ -4,6 +4,8 @@ Module 12 Exercise runner: linear attention, two ways
 Run with:
     uv run python module_12_future/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Runs three attention implementations over the same random inputs: the softmax
 attention from Module 3, linear attention computed the quadratic way, and
 linear attention computed as an RNN. It first checks whether the two linear
@@ -28,6 +30,19 @@ import torch
 # and src/ importable for the provided attention and plotting helpers.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
 
 from exercise import (  # noqa: E402  (import after sys.path edits)
     feature_map,

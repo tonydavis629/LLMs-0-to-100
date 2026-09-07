@@ -14,6 +14,9 @@ import random
 from collections import Counter
 from pathlib import Path
 
+# Provided helpers live in src/ - you do not need to edit them.
+from src.text import tokenize
+
 
 def load_text(filepath: str) -> str:
     """Load a text file and strip the Project Gutenberg header/footer."""
@@ -40,7 +43,6 @@ def load_text(filepath: str) -> str:
 
     # TODO: return the cleaned book text
     # HINT: Join lines[start_idx:end_idx] with newlines and return the result
-    
     raise NotImplementedError("TODO: return the joined lines")
 
 
@@ -120,58 +122,9 @@ def build_char_ngram_model(text: str, n: int) -> dict[str, Counter]:
     return model
 
 
-def generate_from_char_model(
-    model: dict[str, Counter], length: int = 500, seed: str | None = None
-) -> str:
-    """Generate text from a character n-gram model.
-
-    Start with a seed context, look up what characters follow it,
-    sample one proportionally, append it, and repeat.
-    """
-    # If no seed given, pick a random context from the model
-    if seed is None:
-        seed = random.choice(list(model.keys()))
-
-    # n is the full window size (context length + 1)
-    n = len(seed) + 1
-    # Start with the seed characters in a list
-    result = list(seed)
-
-    while len(result) < length:
-        # TODO: Get the current context: the last (n-1) characters joined together
-        # HINT: "".join(result[-(n - 1):]) gives the last n-1 characters as a string
-        context = None
-        if context is None:
-            raise NotImplementedError("TODO: set context from the last n-1 chars of result")
-
-        if context in model:
-            # Look up what characters follow this context
-            counter = model[context]
-            chars = list(counter.keys())
-            weights = list(counter.values())
-            # Pick one character, weighted by how often it appeared
-            next_char = random.choices(chars, weights=weights, k=1)[0]
-        else:
-            # Context not in model: fall back to a random context
-            context = random.choice(list(model.keys()))
-            counter = model[context]
-            chars = list(counter.keys())
-            weights = list(counter.values())
-            next_char = random.choices(chars, weights=weights, k=1)[0]
-        result.append(next_char)
-
-    # Join all characters into a single string and return
-    return "".join(result[:length])
-
-
 # ---------------------------------------------------------------------------
 # Word-level models
 # ---------------------------------------------------------------------------
-
-
-def tokenize(text: str) -> list[str]:
-    """Simple whitespace tokenizer. Lowercase and split on whitespace."""
-    return text.lower().split()
 
 
 def word_unigram(text: str, length: int = 100) -> str:
@@ -216,44 +169,6 @@ def build_word_ngram_model(text: str, n: int) -> dict[tuple[str, ...], Counter]:
     return model
 
 
-def generate_from_word_model(
-    model: dict[tuple[str, ...], Counter],
-    length: int = 100,
-    seed: tuple[str, ...] | None = None,
-) -> str:
-    """Generate text from a word n-gram model.
-
-    Same as generate_from_char_model, but with word tuples for context.
-    """
-    if seed is None:
-        seed = random.choice(list(model.keys()))
-
-    n = len(seed) + 1
-    result = list(seed)
-
-    while len(result) < length:
-        # TODO: Get the current context as a tuple of the last (n-1) words
-        # HINT: tuple(result[-(n - 1):]) gives the last n-1 words as a tuple
-        context = None
-        if context is None:
-            raise NotImplementedError("TODO: set context from the last n-1 words of result")
-
-        if context in model:
-            counter = model[context]
-            words = list(counter.keys())
-            weights = list(counter.values())
-            next_word = random.choices(words, weights=weights, k=1)[0]
-        else:
-            context = random.choice(list(model.keys()))
-            counter = model[context]
-            words = list(counter.keys())
-            weights = list(counter.values())
-            next_word = random.choices(words, weights=weights, k=1)[0]
-        result.append(next_word)
-
-    return " ".join(result[:length])
-
-
 # ---------------------------------------------------------------------------
 # Extra credit: Perplexity
 # ---------------------------------------------------------------------------
@@ -271,8 +186,3 @@ def cross_entropy(text: str, model: dict[str, Counter]) -> float:
         The cross-entropy in bits per character.
     """
     raise NotImplementedError("Extra credit: implement cross_entropy()")
-
-
-def perplexity(text: str, model: dict[str, Counter]) -> float:
-    """Compute perplexity: 2^(cross_entropy)."""
-    return 2 ** cross_entropy(text, model)

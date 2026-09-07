@@ -11,22 +11,8 @@ from __future__ import annotations
 import torch
 from torch import nn
 
-
-# ---------------------------------------------------------------------------
-# Activation functions (these operate on PyTorch tensors)
-# ---------------------------------------------------------------------------
-
-
-def sigmoid(z: torch.Tensor) -> torch.Tensor:
-    """The sigmoid activation: 1 / (1 + exp(-z)).
-
-    Args:
-        z: A tensor of pre-activation values (any shape).
-
-    Returns:
-        A tensor the same shape as z, with every entry in (0, 1).
-    """
-    return 1.0 / (1.0 + torch.exp(-z))
+# Provided for you - see src/activations.py
+from src.activations import sigmoid
 
 
 # ---------------------------------------------------------------------------

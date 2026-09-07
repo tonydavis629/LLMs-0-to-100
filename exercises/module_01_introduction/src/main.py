@@ -3,6 +3,8 @@ Module 1 Exercise: N-gram Text Generator
 
 Run with:
     uv run python module_01_introduction/src/main.py
+
+Add --solution to run the finished answers from solution/exercise.py.
 """
 
 from __future__ import annotations
@@ -12,26 +14,37 @@ import sys
 from pathlib import Path
 
 # Make the module root (parent of src/) importable so we can `import exercise`
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+_MODULE_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(_MODULE_DIR))
+
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
 
 from exercise import (
     build_char_ngram_model,
     build_word_ngram_model,
     char_uniform,
     char_unigram,
-    generate_from_char_model,
-    generate_from_word_model,
     load_text,
     word_unigram,
 )
 
+# Provided helpers: the sampling loops that turn a count table into text
+from src.sampling import (
+    generate_from_char_model,
+    generate_from_word_model,
+)
 
-# Walk up from this file until we find the data/ directory
-# (works from both src/main.py and solution/src/main.py)
-_THIS_DIR = Path(__file__).resolve().parent
-_MODULE_DIR = _THIS_DIR.parent
-if not (_MODULE_DIR / "data").exists():
-    _MODULE_DIR = _MODULE_DIR.parent
 DEFAULT_CORPUS = _MODULE_DIR / "data" / "alice.txt"
 DEFAULT_CORPUS_LABEL = Path("module_01_introduction/data/alice.txt")
 

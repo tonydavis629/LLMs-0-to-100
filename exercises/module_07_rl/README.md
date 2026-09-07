@@ -41,6 +41,13 @@ fill in one step at a time and re-run immediately. It prints the held-out accura
 the held-out accuracy **after**, and a sample completion before and after. It also
 saves a **reward-curve image** to `output/reward_curve.png`.
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
+
+```
+uv run python module_07_rl/src/main.py --solution
+```
+
 ## What to implement
 
 Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each needs
@@ -70,7 +77,7 @@ runner orchestrates the loop and calls the functions you write. You only edit
   finetuned (from the Module 5/6 base) to *partly* reverse strings. It is loaded as
   both the **policy** (trained) and the **frozen reference** (for the KL penalty). It
   is never re-pretrained. (Regenerate it with
-  `solution/src/make_instruct_checkpoint.py`.)
+  `src/make_instruct_checkpoint.py`.)
 - `data/verify_prompts.jsonl` &mdash; reverse-string prompts split into `train`
   (GRPO learns from these) and `eval` (held-out, used only to measure before/after
   accuracy). Each record is `{prompt, answer, split}`; the words are disjoint from the

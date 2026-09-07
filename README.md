@@ -73,7 +73,7 @@ exercises/       # coding exercises with TODOs for you to complete
     exercise.py  # the only file you edit
     src/         # runner and helpers (internal plumbing)
     data/        # bundled sample data, including the trained checkpoints
-    solution/    # reference implementation (try the exercise first!)
+    solution/    # exercise.py with the answers filled in (try it yourself first!)
 ```
 
 ## Disable Autocomplete
@@ -95,7 +95,7 @@ Each module's exercise is in `exercises/module_XX_name/`. You only edit `exercis
 uv run python exercises/module_01_introduction/src/main.py
 ```
 
-Fill in the TODOs in the exercise files. Check the solution in `exercises/module_XX/solution/` if you get stuck.
+Fill in the TODOs in `exercises/module_XX/exercise.py` (the only file you edit). Check `exercises/module_XX/solution/exercise.py` if you get stuck, or run the finished answers with `--solution`.
 
 ### Viewing Slides
 

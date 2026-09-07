@@ -36,6 +36,13 @@ count, the finetuning loss, the finetuned completion of the same instruction
 (**after**), and a merge-equality check (the merged model must match the adapter
 model).
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
+
+```
+uv run python module_06_finetuning/src/main.py --solution
+```
+
 ## What to implement
 
 Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each
@@ -64,7 +71,7 @@ functions you write (steps 5, 6, 10). You only edit `exercise.py`.
 - `data/base_model.pt` &mdash; the frozen Module 5 base checkpoint (the TinyGPT
   config, weights, and character vocabulary). The runner loads it, expands the
   vocabulary by four special tokens, and finetunes on top. It is never
-  re-pretrained. (Regenerate it with `solution/src/make_base_checkpoint.py`.)
+  re-pretrained. (Regenerate it with `src/make_base_checkpoint.py`.)
 - `data/sft_pairs.jsonl` &mdash; ~350 toy instruction-response pairs across four
   learnable tasks: uppercase, fixed question-answer, repeat, and reverse. Toy and
   deterministic so a tiny model shows a crisp flip in a few hundred CPU steps.

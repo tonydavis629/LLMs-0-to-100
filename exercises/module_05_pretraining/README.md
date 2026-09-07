@@ -43,6 +43,13 @@ uv run python exercises/module_05_pretraining/src/main.py --overfit
 This trains repeatedly on one small batch; the loss should crater toward zero,
 confirming the model and optimizer can fit data (i.e. the loop is wired correctly).
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. The learning-rate schedule (`lr_at_step()`) is provided in `src/schedules.py`. Run the finished answers with `--solution`:
+
+```
+uv run python module_05_pretraining/src/main.py --solution
+```
+
 ## What to implement
 
 Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each

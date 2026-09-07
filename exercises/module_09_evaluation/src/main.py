@@ -4,6 +4,8 @@ Module 9 Exercise runner: build a small benchmark suite and score two models
 Run with:
     uv run python module_09_evaluation/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Loads two finished checkpoints — the Module 6 instruct model and the Module 7 GRPO
 model — and runs the same evaluation suite over both: perplexity on held-out text,
 exact match and token F1 on 50 generated answers, likelihood-scored multiple choice,
@@ -26,6 +28,19 @@ import torch.nn.functional as F
 # and src/ importable for the provided model / tokenizer / data / plotting helpers.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
 
 from exercise import (  # noqa: E402  (import after sys.path edits)
     perplexity,

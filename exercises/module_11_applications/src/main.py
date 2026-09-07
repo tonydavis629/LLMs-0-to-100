@@ -4,6 +4,8 @@ Module 11 Exercise runner: two retrievers over one support corpus
 Run with:
     uv run python module_11_applications/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Builds a TF-IDF index and an embedding index over the same 48 support articles,
 runs 30 labeled queries through both retrievers, prints two worked examples (one
 keyword query, one paraphrase query) so the failure modes are visible before any
@@ -27,6 +29,19 @@ import numpy as np
 # and src/ importable for the provided data / encoder / plotting helpers.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
 
 from exercise import (  # noqa: E402  (import after sys.path edits)
     tokenize,

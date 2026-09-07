@@ -1,5 +1,5 @@
 """
-Offline generator for data/instruct_model.pt (solution-only build script).
+Offline generator for data/instruct_model.pt (provided build script).
 
 Module 7 starts from a small instruct model that can *partly* reverse strings: it
 usually has the right answer as its top guess, but its sampling distribution is
@@ -14,7 +14,7 @@ is still being learned (mid-transition), which leaves the policy in the uncertai
 regime RL needs.
 
 Run with:
-    uv run python module_07_rl/solution/src/make_instruct_checkpoint.py
+    uv run python module_07_rl/src/make_instruct_checkpoint.py
 """
 
 from __future__ import annotations
@@ -26,11 +26,10 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 
+# This script lives in src/ alongside the provided model, tokenizer and data
+# modules, so putting src/ on the path is all the bootstrap it needs.
 _THIS_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_THIS_DIR))
-# Pull the word splits from the exercise's data module so SFT words and RL prompts
-# never overlap (src/ is added so `import data` resolves to the provided module).
-sys.path.insert(0, str(_THIS_DIR.parent.parent / "src"))
 
 from model import GPTConfig, TinyGPT, generate  # noqa: E402
 from tokenizer import build_vocab, encode, decode, SPECIAL_TOKENS  # noqa: E402
@@ -47,7 +46,7 @@ SAMPLE_TEMP = 1.0        # the temperature GRPO (and the eval) will sample at
 SEED = 1
 DATA_SEED = 0
 
-OUTPUT_FILE = _THIS_DIR.parent.parent / "data" / "instruct_model.pt"
+OUTPUT_FILE = _THIS_DIR.parent / "data" / "instruct_model.pt"
 
 
 def _find(rel_parts: tuple[str, ...]) -> Path:

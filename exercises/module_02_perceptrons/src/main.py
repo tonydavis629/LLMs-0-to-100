@@ -4,6 +4,8 @@ Module 2 Exercise runner: Perceptrons and Neural Networks (PyTorch)
 Run with:
     uv run python module_02_perceptrons/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Trains a single-neuron classifier (with hand-written gradients) and an MLP
 (with autograd) on 2D data, visualizing how they learn to separate classes.
 Any step that still raises NotImplementedError is skipped, so you can run
@@ -22,16 +24,29 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # Also ensure src/ is on the path so we can import sibling helpers
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
+
 from exercise import (
     forward,
     binary_cross_entropy,
     compute_gradients,
     update_parameters,
-    sigmoid,
     relu,
     MLP,
     SGD,
 )
+from src.activations import sigmoid
 from visualization import (
     load_csv,
     plot_decision_boundary,
@@ -43,7 +58,6 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-
 # Paths to the bundled datasets. Walk up from this file until we find data/
 # (works from both src/main.py and solution/src/main.py).
 _THIS_DIR = Path(__file__).resolve().parent
@@ -54,7 +68,6 @@ DATA_DIR = _MODULE_DIR / "data"
 LINEAR_DATA = DATA_DIR / "linear_separable.csv"
 NONLINEAR_DATA = DATA_DIR / "non_linear_separable.csv"
 OUTPUT_DIR = _MODULE_DIR / "output"
-
 
 def load_tensors(path: Path) -> tuple[torch.Tensor, torch.Tensor]:
     """Load a CSV and return (X, y) as float32 tensors.
@@ -70,11 +83,9 @@ def load_tensors(path: Path) -> tuple[torch.Tensor, torch.Tensor]:
     y = torch.tensor(y_np, dtype=torch.float32)
     return X, y
 
-
 # ---------------------------------------------------------------------------
 # Single neuron: hand-written forward / loss / gradients / update
 # ---------------------------------------------------------------------------
-
 
 def train_perceptron(
     X: torch.Tensor,
@@ -111,7 +122,6 @@ def train_perceptron(
 
     return weights, bias, losses
 
-
 def neuron_accuracy(X: torch.Tensor, y: torch.Tensor, weights, bias) -> tuple[int, int]:
     """Count correctly classified samples for the single neuron.
 
@@ -129,7 +139,6 @@ def neuron_accuracy(X: torch.Tensor, y: torch.Tensor, weights, bias) -> tuple[in
     correct = int((preds == y).sum())
     return correct, X.shape[0]
 
-
 def neuron_predict(weights, bias):
     """Return a vectorized predict_fn(grid) -> probabilities for plotting.
 
@@ -146,11 +155,9 @@ def neuron_predict(weights, bias):
             return sigmoid(g @ weights + bias).numpy()
     return predict
 
-
 # ---------------------------------------------------------------------------
 # MLP: autograd + an optimizer (torch's, or the student's for extra credit)
 # ---------------------------------------------------------------------------
-
 
 def train_mlp(
     X: torch.Tensor,
@@ -198,7 +205,6 @@ def train_mlp(
 
     return model, losses
 
-
 def mlp_accuracy(X: torch.Tensor, y: torch.Tensor, model: MLP) -> tuple[int, int]:
     """Count correctly classified samples for the MLP.
 
@@ -215,7 +221,6 @@ def mlp_accuracy(X: torch.Tensor, y: torch.Tensor, model: MLP) -> tuple[int, int
     correct = int((preds == y).sum())
     return correct, X.shape[0]
 
-
 def mlp_predict(model: MLP):
     """Return a vectorized predict_fn(grid) -> probabilities for plotting.
 
@@ -230,7 +235,6 @@ def mlp_predict(model: MLP):
         with torch.no_grad():
             return model(g).squeeze(1).numpy()
     return predict
-
 
 def main():
     OUTPUT_DIR.mkdir(exist_ok=True)
@@ -336,7 +340,6 @@ def main():
     print("=" * 60)
     print("Done! Check the output/ directory for plots.")
     print("=" * 60)
-
 
 if __name__ == "__main__":
     main()

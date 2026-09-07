@@ -40,6 +40,13 @@ paraphrase query, top-3 results each) so you see the failure modes concretely
 before any aggregate number, then the per-category table, and saves a grouped bar
 chart to `output/retrieval_comparison.png`.
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
+
+```
+uv run python module_11_applications/src/main.py --solution
+```
+
 ## What to implement
 
 Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each

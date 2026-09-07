@@ -47,6 +47,13 @@ It prints the equivalence check first, then a timing table across sequence
 lengths from 512 to 8192, then the fitted exponent of each cost curve, and saves
 a log-log plot to `output/attention_scaling.png`.
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
+
+```
+uv run python module_12_future/src/main.py --solution
+```
+
 ## What you edit
 
 Only `exercise.py`, at the module root. Each of the seven blanks is one line or

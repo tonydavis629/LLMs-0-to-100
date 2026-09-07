@@ -4,6 +4,8 @@ Module 4 Exercise runner: Assemble GPT-2 and Generate Text
 Run with:
     uv run python module_04_architectures/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Wires the attention from Module 3 into a complete decoder-only model,
 loads real GPT-2 weights, and generates text. Any step that still raises
 NotImplementedError is skipped, so you can run after each fill-in.
@@ -21,15 +23,28 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # Also ensure src/ is on the path so we can import sibling helpers
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
+
 from exercise import (
     EmbeddingLayer,
     FeedForward,
     TransformerBlock,
     GPT2Model,
-    load_gpt2_weights,
     greedy_decode,
     sample_with_temperature_topk,
 )
+from src.pretrained import load_gpt2_weights
 from visualization import plot_token_probs
 
 _THIS_DIR = Path(__file__).resolve().parent

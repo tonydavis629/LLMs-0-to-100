@@ -51,6 +51,13 @@ image-conditioned generations. It also saves two figures to `output/`:
 - `retrieval_heatmap.png` &mdash; the image-text similarity matrix (a bright diagonal
   means retrieval works).
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
+
+```
+uv run python module_08_multimodal/src/main.py --solution
+```
+
 ## What to implement
 
 Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each needs
@@ -86,7 +93,7 @@ only edit `exercise.py`.
 - `data/instruct_model.pt` &mdash; the language model: the Module 6/7 TinyGPT instruct
   checkpoint (character-level, vocabulary 69). It plays the role of NanoGPT at the end
   of the bridge; we finetune it alongside the projector so it learns to read the visual
-  prefix. (Regenerate it with `../module_07_rl/solution/src/make_instruct_checkpoint.py`.)
+  prefix. (Regenerate it with `../module_07_rl/src/make_instruct_checkpoint.py`.)
 
 The tokenizer is the Module 6 vocabulary: 65 characters plus four atomic special
 tokens (`<|user|>`, `<|assistant|>`, `<|end|>`, `<|pad|>`). Captions and questions use

@@ -3,7 +3,9 @@ Module 5 Exercise runner: Pretraining NanoGPT
 
 Run with:
     uv run python module_05_pretraining/src/main.py
-    uv run python module_05_pretraining/src/main.py --overfit   # single-batch sanity check
+    uv run python     uv run python module_05_pretraining/src/main.py --overfit   # single-batch sanity check
+
+Add --solution to run the finished answers from solution/exercise.py.
 
 Trains a tiny decoder-only language model from scratch on a bundled text file.
 The goal is not a useful model; it is to make the pretraining loop visible:
@@ -27,17 +29,30 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
+
 from exercise import (  # noqa: E402  (import after sys.path edits)
     encode,
     train_val_split,
     get_batch,
     compute_loss,
     train_step,
-    lr_at_step,
     estimate_loss,
     loss_to_perplexity_and_bits,
     generate,
 )
+from src.schedules import lr_at_step
 from model import GPTConfig, TinyGPT  # noqa: E402
 from visualization import plot_loss_curve  # noqa: E402
 

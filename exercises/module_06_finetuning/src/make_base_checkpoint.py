@@ -33,8 +33,8 @@ GRAD_CLIP = 1.0
 SEED = 1337
 
 _THIS_DIR = Path(__file__).resolve().parent
-DATA_FILE = _THIS_DIR.parent.parent.parent / "module_05_pretraining" / "data" / "tinyshakespeare.txt"
-OUTPUT_FILE = _THIS_DIR.parent.parent / "data" / "base_model.pt"
+DATA_FILE = _THIS_DIR.parent.parent / "module_05_pretraining" / "data" / "tinyshakespeare.txt"
+OUTPUT_FILE = _THIS_DIR.parent / "data" / "base_model.pt"
 
 
 def _find_data_file() -> Path:

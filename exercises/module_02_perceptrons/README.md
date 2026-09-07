@@ -24,6 +24,13 @@ uv run python module_02_perceptrons/src/main.py
 
 Output plots are saved to `module_02_perceptrons/output/`. The runner gracefully skips any step that still raises `NotImplementedError`, so you can run after each fill-in.
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. `sigmoid()` is provided in `src/activations.py`; you write `relu()` yourself. Run the finished answers with `--solution`:
+
+```
+uv run python module_02_perceptrons/src/main.py --solution
+```
+
 ## What to implement
 
 Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each requires only one line of code (or two at most).

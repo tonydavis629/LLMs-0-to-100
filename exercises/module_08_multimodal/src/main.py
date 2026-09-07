@@ -4,6 +4,8 @@ Module 8 Exercise runner: Align image embeddings with NanoGPT
 Run with:
     uv run python module_08_multimodal/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Builds a tiny vision-language model on the bundled synthetic shapes dataset in three
 visible stages:
 
@@ -30,6 +32,19 @@ import torch
 # and src/ importable for the provided model / tokenizer / data / vision / plotting.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
 
 from exercise import (  # noqa: E402  (import after sys.path edits) - the eight student steps
     patchify,

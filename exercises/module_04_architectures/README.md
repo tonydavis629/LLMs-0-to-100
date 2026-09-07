@@ -24,6 +24,13 @@ uv run python module_04_architectures/src/main.py
 
 The runner gracefully skips any step that still raises `NotImplementedError`, so you can run after each fill-in.
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. The Module 3 attention block (`src/attention.py`), the GPT-2 weight loader (`src/pretrained.py`) and the top-k sampling helper (`src/sampling.py`) are provided. Run the finished answers with `--solution`:
+
+```
+uv run python module_04_architectures/src/main.py --solution
+```
+
 ## What to implement
 
 Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each requires only one line of code.

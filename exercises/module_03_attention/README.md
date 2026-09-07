@@ -22,6 +22,13 @@ uv run python module_03_attention/src/main.py
 
 Output plots are saved to `module_03_attention/output/`. The runner gracefully skips any step that still raises `NotImplementedError`, so you can run after each fill-in.
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. `make_token_vectors()` is provided in `src/embeddings.py`. Run the finished answers with `--solution`:
+
+```
+uv run python module_03_attention/src/main.py --solution
+```
+
 ## What to implement
 
 Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each requires only one line of code (or two at most).

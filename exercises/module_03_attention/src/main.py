@@ -4,6 +4,8 @@ Module 3 Exercise runner: Attention Mechanisms
 Run with:
     uv run python module_03_attention/src/main.py
 
+Add --solution to run the finished answers from solution/exercise.py.
+
 Computes scaled dot-product attention step by step on a tiny token sequence,
 then adds a causal mask and positional embeddings to see their effects.
 Any step that still raises NotImplementedError is skipped, so you can run
@@ -24,12 +26,25 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # Also ensure src/ is on the path so we can import sibling helpers
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+# `--solution` swaps in the finished answers from solution/exercise.py.
+# Registering it as "exercise" before the imports below means every
+# `from exercise import ...` in this file picks it up with no other change.
+if "--solution" in sys.argv:
+    import importlib.util
+
+    sys.argv.remove("--solution")
+    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
+    _spec = importlib.util.spec_from_file_location("exercise", _sol)
+    _exercise = importlib.util.module_from_spec(_spec)
+    sys.modules["exercise"] = _exercise
+    _spec.loader.exec_module(_exercise)
+
 from exercise import (
     TinyAttentionLayer,
-    make_token_vectors,
     add_positional_embeddings,
     kv_cache_step,
 )
+from src.embeddings import make_token_vectors
 from visualization import (
     plot_attention_comparison,
     plot_positional_effect,

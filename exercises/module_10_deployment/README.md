@@ -46,6 +46,13 @@ uses the first server it finds. To point it somewhere else:
 LLM_SERVER_URL=http://myhost:8000/v1 uv run python module_10_deployment/src/main.py
 ```
 
+
+`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
+
+```
+uv run python module_10_deployment/src/main.py --solution
+```
+
 ## The steps
 
 | Step | Function | What it computes |

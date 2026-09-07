@@ -12,6 +12,9 @@ import random
 from collections import Counter
 from pathlib import Path
 
+# Provided helpers live in src/ - you do not need to edit them.
+from src.text import tokenize
+
 
 def load_text(filepath: str) -> str:
     """Load and return the contents of a text file.
@@ -84,42 +87,9 @@ def build_char_ngram_model(text: str, n: int) -> dict[str, Counter]:
     return model
 
 
-def generate_from_char_model(
-    model: dict[str, Counter], length: int = 500, seed: str | None = None
-) -> str:
-    """Generate text from a character n-gram model."""
-    if seed is None:
-        seed = random.choice(list(model.keys()))
-
-    n = len(seed) + 1
-    result = list(seed)
-
-    while len(result) < length:
-        context = "".join(result[-(n - 1) :])
-        if context in model:
-            counter = model[context]
-            chars = list(counter.keys())
-            weights = list(counter.values())
-            next_char = random.choices(chars, weights=weights, k=1)[0]
-        else:
-            context = random.choice(list(model.keys()))
-            counter = model[context]
-            chars = list(counter.keys())
-            weights = list(counter.values())
-            next_char = random.choices(chars, weights=weights, k=1)[0]
-        result.append(next_char)
-
-    return "".join(result[:length])
-
-
 # ---------------------------------------------------------------------------
 # Word-level models
 # ---------------------------------------------------------------------------
-
-
-def tokenize(text: str) -> list[str]:
-    """Simple whitespace tokenizer. Lowercase and split on whitespace."""
-    return text.lower().split()
 
 
 def word_unigram(text: str, length: int = 100) -> str:
@@ -146,36 +116,6 @@ def build_word_ngram_model(
         model[context][next_word] += 1
 
     return model
-
-
-def generate_from_word_model(
-    model: dict[tuple[str, ...], Counter],
-    length: int = 100,
-    seed: tuple[str, ...] | None = None,
-) -> str:
-    """Generate text from a word n-gram model."""
-    if seed is None:
-        seed = random.choice(list(model.keys()))
-
-    n = len(seed) + 1
-    result = list(seed)
-
-    while len(result) < length:
-        context = tuple(result[-(n - 1) :])
-        if context in model:
-            counter = model[context]
-            words = list(counter.keys())
-            weights = list(counter.values())
-            next_word = random.choices(words, weights=weights, k=1)[0]
-        else:
-            context = random.choice(list(model.keys()))
-            counter = model[context]
-            words = list(counter.keys())
-            weights = list(counter.values())
-            next_word = random.choices(words, weights=weights, k=1)[0]
-        result.append(next_word)
-
-    return " ".join(result[:length])
 
 
 # ---------------------------------------------------------------------------
@@ -222,8 +162,3 @@ def cross_entropy(text: str, model: dict[str, Counter]) -> float:
         return 0.0
 
     return -total_log_prob / count
-
-
-def perplexity(text: str, model: dict[str, Counter]) -> float:
-    """Compute perplexity: 2^(cross_entropy)."""
-    return 2 ** cross_entropy(text, model)

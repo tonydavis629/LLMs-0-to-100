@@ -7,7 +7,7 @@
 
 ## Running the Exercise
 
-Open `module_01_introduction/exercise.py` and fill in the `NotImplementedError` lines. Run after each step &mdash; unfinished functions are skipped automatically. <!-- .element: class="text-lg" -->
+Open `module_01_introduction/exercise.py` &mdash; the only file you edit &mdash; and fill in the `NotImplementedError` lines. Everything already written for you lives in `src/`. Run after each step; unfinished functions are skipped automatically. <!-- .element: class="text-lg" -->
 
 ```bash
 # Run all models (skips any not yet implemented)
@@ -115,7 +115,7 @@ The baseline (0th order): **zero knowledge** of English. <!-- .element: class="t
 
 ```text
 === 0th Order: Uniform Random Characters ===
-rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg
+rtbxg xlmtqxjhyrnsxzumshntyklohgsfxdi lgvzzz
 ```
 :::
 
@@ -147,8 +147,8 @@ return "".join(random.choices(alphabet, k=length))
 <span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
-rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg
-iudmpwmvbyqkflxjiupmlehmjbkzqhsvchnyawijuydkl
+rtbxg xlmtqxjhyrnsxzumshntyklohgsfxdi lgvzzz
+qjbsefmcxqkksgifgrukldribfbknzdkruqxdsjfpnc
 :::
 
 ---
@@ -168,12 +168,12 @@ iudmpwmvbyqkflxjiupmlehmjbkzqhsvchnyawijuydkl
 
 ```text
 === 1st Order: Character Unigrams ===
- irt  flniteit et b
-b as,allh b e"oeh h  itrltlr
+cmiot”tihrssf tdulom  osdn eu ssih hsi noic.
+ih ai  ,hwidoeenl spse—ttio
 ```
 :::
 
-**e**, **t**, and **space** now dominate. Still gibberish: no context. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+**e**, **t**, and **space** now dominate. Still gibberish. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
@@ -202,7 +202,7 @@ return "".join(random.choices(chars, weights=weights, k=length))
 <span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
-<span class="t-gray">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+<span class="t-gray">rtbxg xlmtqxjhyrnsxzumshntyklohgsfxdi lgvzzz</span>
 
 <span class="header t-orange">=== 1st Order: Character Unigrams ===</span>
  irt  flniteit et b
@@ -226,8 +226,9 @@ b as,allh b e"oeh h  itrltlr
 **Bigram (n=2):** <!-- .element: class="text-lg" -->
 
 ```text
-_ s icha athap se cker lid
-the an n ch f auphtomothe
+“lyoyo aisheny ace ser bril
+as veryogheph,” os mary, s,
+menthoofe f ly dyed sharmoush
 ```
 
 </div>
@@ -237,14 +238,37 @@ the an n ch f auphtomothe
 **Trigram (n=3):** <!-- .element: class="text-lg" -->
 
 ```text
-the glar all thed
-be falice moce lied alls
+e-and the of ther lif chinut
+sed sen, its, youlded a
+givereareme? do thill not
 ```
 
 </div>
 :::
 
 Bigrams produce common pairs ("th", "he"). Trigrams produce word fragments ("the", "alice"). <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+
+---
+
+<!-- .slide: id="exercise-generation" -->
+
+## The Sampling Loop (Provided)
+
+`generate_from_char_model()` is written for you in `src/sampling.py`. It is the loop every language model runs: <!-- .element: class="text-lg" -->
+
+```python
+while len(result) < length:
+    # The current context is the last n-1 characters we have generated
+    context = "".join(result[-(n - 1):])
+
+    counter = model[context]                  # what followed this context?
+    chars = list(counter.keys())
+    weights = list(counter.values())
+    next_char = random.choices(chars, weights=weights, k=1)[0]
+    result.append(next_char)
+```
+
+Build the count table and text comes out. Modern LLMs run this same loop with a learned distribution in place of the counts. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
@@ -279,95 +303,29 @@ next_char = text[i + n - 1]
 
 ---
 
-:::terminal id="exercise-step4-output" title="Step 4: Output" cmd="uv run python module_01_introduction/src/main.py" caption="The model is built, but we can't generate from it yet &mdash; that's step 5."
+:::terminal id="exercise-step4-output" title="Step 4: Output" cmd="uv run python module_01_introduction/src/main.py" caption="One fill-in and both the bigram and trigram models start producing text. Word fragments emerge: &quot;the&quot;, &quot;alice&quot;, &quot;she&quot;."
 <span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
-<span class="t-gray">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+<span class="t-gray">rtbxg xlmtqxjhyrnsxzumshntyklohgsfxdi lgvzzz</span>
 
 <span class="header t-orange">=== 1st Order: Character Unigrams ===</span>
-<span class="t-gray"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
+<span class="t-gray">cmiot”tihrssf tdulom  osdn eu ssih hsi noic.</span>
 
 <span class="header t-yellow">=== 2nd Order: Character Bigrams ===</span>
-<span class="skipped">[skipped: TODO: set context from the last n-1 chars of result]</span>
+“lyoyo aisheny ace ser bril as veryogheph,”
+os mary, s, menthoofe f ly dyed sharmoush me
+
+<span class="header t-green">=== 3rd Order: Character Trigrams ===</span>
+e-and the of ther lif chinut sed sen, its,
+youlded a givereareme? do thill not i ar havere,
 :::
 
 ---
 
 <!-- .slide: id="exercise-step5-context" -->
 
-## Step 5: Generating from the Model
-
-Generate text from the count table: <!-- .element: class="text-lg" -->
-
-- Start with a seed
-- Look up the current context
-- Sample the next character proportionally
-- Repeat
-
-Modern LLMs run this same loop with more context and more parameters. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
-
----
-
-:::step id="exercise-step5-code" title="Step 5: generate_from_char_model()"
-```python
-    while len(result) < length:
-        # TODO: Get the current context: the last (n-1) characters joined together
-        context = None
-        if context is None:
-            raise NotImplementedError("TODO: set context from the last n-1 chars of result")
-
-        if context in model:
-            counter = model[context]
-            chars = list(counter.keys())
-            weights = list(counter.values())
-            next_char = random.choices(chars, weights=weights, k=1)[0]
-        else:
-            # Context not in model: fall back to a random context
-            context = random.choice(list(model.keys()))
-            counter = model[context]
-            chars = list(counter.keys())
-            weights = list(counter.values())
-            next_char = random.choices(chars, weights=weights, k=1)[0]
-        result.append(next_char)
-
-    # Join all characters into a single string and return
-    return "".join(result[:length])
-```
-+++
-**Hint:** `"".join(result[-(n - 1):])` gives the last `n-1` characters as a string.
-+++
-**Answer:** <!-- .element: class="text-lg" -->
-
-```python
-context = "".join(result[-(n - 1):])
-```
-:::
-
----
-
-:::terminal id="exercise-step5-output" title="Step 5: Output" cmd="uv run python module_01_introduction/src/main.py" caption="Build + generate work together. Word fragments emerge: &quot;the&quot;, &quot;alice&quot;, &quot;she&quot;."
-<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
-
-<span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
-<span class="t-gray">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
-
-<span class="header t-orange">=== 1st Order: Character Unigrams ===</span>
-<span class="t-gray"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
-
-<span class="header t-yellow">=== 2nd Order: Character Bigrams ===</span>
-<span class="t-gray">_ s icha athap se cker lid the an n ch</span>
-
-<span class="header t-green">=== 3rd Order: Character Trigrams ===</span>
-the glar all thed be falice moce lied alls
-she triede knigh yought alice begal senter
-:::
-
----
-
-<!-- .slide: id="exercise-step6-context" -->
-
-## Step 6: From Characters to Words
+## Step 5: From Characters to Words
 
 Same n-gram idea at the **word level**: predict the next word from the previous words. <!-- .element: class="text-lg" -->
 
@@ -377,9 +335,9 @@ Same n-gram idea at the **word level**: predict the next word from the previous 
 **Word unigram:** <!-- .element: class="text-lg" -->
 
 ```text
-"what the it sitting
-history, them," hare. of
-take the very said
+stupid?” about herself, are
+it she my sobbing the was
+“but “she’d “well! into look
 ```
 
 </div>
@@ -389,9 +347,9 @@ take the very said
 **Word trigram:** <!-- .element: class="text-lg" -->
 
 ```text
-late much accustomed to
-usurpation and conquest.
-edwin and morcar, the earls
+“i’ve so often read in the
+house, and the white rabbit,
+with a kind of authority
 ```
 
 </div>
@@ -401,8 +359,8 @@ Word trigrams produce coherent phrases, sometimes whole sentences lifted from th
 
 ---
 
-:::step id="exercise-step6-code" title="Step 6: build_word_ngram_model()"
-Same pattern as the character model, but the context is now a **tuple of words** instead of a string of characters. <!-- .element: class="text-lg" style="margin-bottom: 10px;" -->
+:::step id="exercise-step5-code" title="Step 5: build_word_ngram_model()"
+Same pattern as the character model, but the context is now a **tuple of words** instead of a string of characters. Generation is provided again in `src/sampling.py`. <!-- .element: class="text-lg" style="margin-bottom: 10px;" -->
 
 ```python
 for i in range(len(words) - n + 1):
@@ -431,60 +389,23 @@ next_word = words[i + n - 1]
 
 ---
 
-:::step id="exercise-step6-code-generate" title="Step 6: generate_from_word_model()"
-Generation is also the same pattern as Step 5, except the current context is a tuple of the last `n-1` words. <!-- .element: class="text-lg" style="margin-bottom: 8px;" -->
-
-```python
-while len(result) < length:
-    # TODO: Get the current context as a tuple of the last (n-1) words
-    context = None
-    if context is None:
-        raise NotImplementedError("TODO: set context from the last n-1 words of result")
-
-    if context in model:
-        counter = model[context]
-        words = list(counter.keys())
-        weights = list(counter.values())
-        next_word = random.choices(words, weights=weights, k=1)[0]
-    else:
-        context = random.choice(list(model.keys()))
-        counter = model[context]
-        words = list(counter.keys())
-        weights = list(counter.values())
-        next_word = random.choices(words, weights=weights, k=1)[0]
-    result.append(next_word)
-
-return " ".join(result[:length])
-```
-+++
-**Hint:** `tuple(result[-(n - 1):])` gives the last `n-1` words as a tuple.
-+++
-**Answer:** <!-- .element: class="text-lg" -->
-
-```python
-context = tuple(result[-(n - 1):])
-```
-:::
-
----
-
-:::terminal id="exercise-step6-output" title="Step 6: Output" cmd="uv run python module_01_introduction/src/main.py" caption="Coherent phrases, sometimes entire sentences lifted from Alice in Wonderland."
+:::terminal id="exercise-step5-output" title="Step 5: Output" cmd="uv run python module_01_introduction/src/main.py" caption="Coherent phrases, sometimes entire sentences lifted from Alice in Wonderland."
 <span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header t-red">=== 0th Order: Uniform Random Characters ===</span>
-<span class="t-gray">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span>
+<span class="t-gray">rtbxg xlmtqxjhyrnsxzumshntyklohgsfxdi lgvzzz</span>
 <span class="header t-orange">=== 1st Order: Character Unigrams ===</span>
-<span class="t-gray"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span>
+<span class="t-gray">cmiot”tihrssf tdulom  osdn eu ssih hsi noic.</span>
 <span class="header t-yellow">=== 2nd Order: Character Bigrams ===</span>
-<span class="t-gray">_ s icha athap se cker lid the an n ch</span>
+<span class="t-gray">“lyoyo aisheny ace ser bril as veryogheph,”</span>
 <span class="header t-green">=== 3rd Order: Character Trigrams ===</span>
-<span class="t-gray">the glar all thed be falice moce lied alls</span>
+<span class="t-gray">e-and the of ther lif chinut sed sen, its,</span>
 <span class="header t-cyan">=== Word Unigrams ===</span>
-<span class="t-gray">"what the it sitting history, them," hare.</span>
+<span class="t-gray">stupid?” about herself, are it she my sobbing</span>
 
 <span class="header t-blue">=== Word Trigrams ===</span>
-late much accustomed to usurpation and conquest.
-edwin and morcar, the earls of mercia and
+“i’ve so often read in the house, and the
+white rabbit, with a kind of authority among them
 :::
 
 ---
@@ -493,17 +414,17 @@ edwin and morcar, the earls of mercia and
 <span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>
 
 <span class="header t-red">=== 0th Order: Uniform Random Characters ===
-<span class="t-fg">rahgtsyclafnafrofpvavsjezjccwqvto kowqxptbghcg</span></span>
+<span class="t-fg">rtbxg xlmtqxjhyrnsxzumshntyklohgsfxdi lgvzzz</span></span>
 <span class="header t-orange">=== 1st Order: Character Unigrams ===
-<span class="t-fg"> irt  flniteit et b as,allh b e"oeh h  itrltlr</span></span>
+<span class="t-fg">cmiot”tihrssf tdulom  osdn eu ssih hsi noic.</span></span>
 <span class="header t-yellow">=== 2nd Order: Character Bigrams ===
-<span class="t-fg">_ s icha athap se cker lid the an n ch</span></span>
+<span class="t-fg">“lyoyo aisheny ace ser bril as veryogheph,”</span></span>
 <span class="header t-green">=== 3rd Order: Character Trigrams ===
-<span class="t-fg">the glar all thed be falice moce lied alls</span></span>
+<span class="t-fg">e-and the of ther lif chinut sed sen, its,</span></span>
 <span class="header t-cyan">=== Word Unigrams ===
-<span class="t-fg">"what the it sitting history, them," hare.</span></span>
+<span class="t-fg">stupid?” about herself, are it she my sobbing</span></span>
 <span class="header t-blue">=== Word Trigrams ===
-<span class="t-fg">late much accustomed to usurpation and conquest.</span></span>
+<span class="t-fg">“i’ve so often read in the house, and the</span></span>
 :::
 
 ---
