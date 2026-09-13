@@ -73,9 +73,13 @@ $$P(w_t \mid w_{t-n+1}, \ldots, w_{t-1}) = \frac{\text{count}(w_{t-n+1} \ldots w
 - **Reference:** Jurafsky, D. & Martin, J. H. (2024). *Speech and Language Processing*, 3rd ed., Chapter 3. Available at https://web.stanford.edu/~jurafsky/slp3/
 - Shannon's 1948 paper describes this exact procedure for generating random text by order of approximation (Section 3, pp. 388-389).
 
-### Sample Outputs
+### Sample Outputs and Checks
 
-The sample outputs in the exercise slides were generated from the reference solution with `random.seed(42)` on `data/alice.txt` (144,603 characters). Some slide snippets are cropped/truncated slightly for readability, but they do come from the real generated output.
+The sample outputs in the exercise slides are captured from the runner (`src/main.py`) on `data/alice.txt` (144,603 characters), with the exercise filled in one step at a time so each slide shows the real state a student would see. Generated text is cropped to one or two lines for readability. The uniform-random line differs between captures because it is drawn before any seed is set; the later models are deterministic because the checks seed Python's `random` module.
+
+Each step's tests (`tests/`, one file per step) call the student's function on small inputs with a known answer, rather than comparing generated text, which is random by design. The statistical tests (uniform draws land within 800 to 1200 of the expected 1000 per character; a 9:1 corpus yields 85% to 95% of the majority symbol) are loose enough that a correct implementation passes on every seed but tight enough that forgetting the `weights=` argument fails.
+
+The extra-credit table trains orders 1 through 5 on the first 90% of the book and scores the last 10%. Perplexity falls from 21.65 (n=1) to 7.18 (n=3), then rises to 8.71 (n=4) and 25.61 (n=5) because more held-out contexts were never seen during training and fall back to the 1e-6 smoothing probability. This is the data-sparsity problem that motivated smoothing methods such as Kneser-Ney (Kneser, R. & Ney, H. (1995). "Improved backing-off for m-gram language modeling." *ICASSP*) and, later, neural language models.
 
 ## GOFAI ("Good Old-Fashioned AI")
 

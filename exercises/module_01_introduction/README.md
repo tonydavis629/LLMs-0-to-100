@@ -18,13 +18,30 @@ uv sync
 uv run python module_01_introduction/src/main.py
 ```
 
-By default the runner trains and samples from every model. Pick one with `--model`:
+The runner goes through the steps in order. Each step's header line carries a tag, and the step's output follows: the text your code generated, then one line per test from `tests/`. The tags are:
+
+| Tag | Meaning |
+|-----|---------|
+| `CORRECT` | every test for the step passed |
+| `INCORRECT` | your code ran but a test failed; the expected and actual values are printed under it |
+| `INCOMPLETE` | the function still raises `NotImplementedError` |
 
 ```
-uv run python module_01_introduction/src/main.py --model char3
+=== Step 3: char_unigram() === CORRECT
+ wgm oetgtee ,nei mae  tyah hur esseaca e ...
+  CORRECT    returns exactly as many characters as requested
+  CORRECT    only produces characters that appear in the training text
+  CORRECT    samples in proportion to frequency (9 a's : 1 b gives ~90% a)
 ```
 
-The runner gracefully skips any step that still raises `NotImplementedError`, so you can run after each fill-in. To see the finished output, run the reference answers:
+Run a single step with `--step`:
+
+```
+uv run python module_01_introduction/src/main.py --step 4
+uv run python module_01_introduction/src/main.py --step ec
+```
+
+Step 1 always runs, because every other step needs the corpus it loads. To see the finished output, run the reference answers:
 
 ```
 uv run python module_01_introduction/src/main.py --solution
@@ -51,6 +68,8 @@ Every function in `exercise.py` has a blank to fill. Everything already written 
 - `src/metrics.py` &mdash; `perplexity()`
 - `src/main.py` &mdash; the runner
 
+The tests live in `tests/`, one file per step (`test_step1_load_text.py` through `test_step6_word_ngram_model.py`, plus `test_extra_credit.py`). Each calls your function on small inputs with a known answer, so you can read the test for the step you are on to see exactly what is expected.
+
 You do not need to edit any of them. Because the sampling loop is already provided, finishing `build_char_ngram_model()` immediately prints generated bigram and trigram text.
 
 `solution/exercise.py` is the same file with every blank filled in.
@@ -62,3 +81,5 @@ You do not need to edit any of them. Because the sampling loop is already provid
 ## Extra credit
 
 Implement `cross_entropy()` to measure how well each n-gram model fits held-out text. `perplexity()` is provided and just calls `2 ** cross_entropy(...)`.
+
+The runner's extra-credit section trains n-gram models of order 1 through 5 on the first 90% of the book and prints the bits per character and perplexity of each on the last 10%. Its tests cover three hand-computable cases (a perfect model scores 0 bits, a 50/50 guess costs 1 bit, an unseen character is smoothed to 1e-6) plus the trend on the real corpus.

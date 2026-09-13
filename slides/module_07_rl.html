@@ -170,6 +170,21 @@
   padding: var(--slide-padding-top) var(--slide-padding) var(--slide-padding) var(--slide-padding) !important;
   box-sizing: border-box;
   text-align: left;
+  /* Any slide whose content runs past the bottom scrolls instead of clipping.
+     The scrollbar only appears when needed. */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #30363d transparent;
+}
+
+.reveal .slides section::-webkit-scrollbar {
+  width: 8px;
+}
+
+.reveal .slides section::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
 }
 
 .reveal .slides section.stack {
@@ -4538,6 +4553,21 @@ Reveal.on('ready', function() {
   }, 100);
 });
 Reveal.on('slidechanged', highlightAllCodeBlocks);
+
+// ---- Overflow scrolling ----
+// Sections scroll when their content is taller than the slide (styles.css).
+// Start every slide at the top, and scroll a newly revealed fragment into
+// view if it landed below the fold.
+Reveal.on('slidechanged', function(event) {
+  if (event.currentSlide) event.currentSlide.scrollTop = 0;
+});
+Reveal.on('fragmentshown', function(event) {
+  var frag = event.fragment;
+  if (!frag || !frag.scrollIntoView) return;
+  var section = frag.closest('section');
+  if (!section || section.scrollHeight <= section.clientHeight) return;
+  frag.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+});
 Reveal.on('fragmentshown', highlightAllCodeBlocks);
 
 function initStepperClickHandlers() {

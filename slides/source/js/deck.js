@@ -136,6 +136,21 @@ Reveal.on('ready', function() {
   }, 100);
 });
 Reveal.on('slidechanged', highlightAllCodeBlocks);
+
+// ---- Overflow scrolling ----
+// Sections scroll when their content is taller than the slide (styles.css).
+// Start every slide at the top, and scroll a newly revealed fragment into
+// view if it landed below the fold.
+Reveal.on('slidechanged', function(event) {
+  if (event.currentSlide) event.currentSlide.scrollTop = 0;
+});
+Reveal.on('fragmentshown', function(event) {
+  var frag = event.fragment;
+  if (!frag || !frag.scrollIntoView) return;
+  var section = frag.closest('section');
+  if (!section || section.scrollHeight <= section.clientHeight) return;
+  frag.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+});
 Reveal.on('fragmentshown', highlightAllCodeBlocks);
 
 function initStepperClickHandlers() {

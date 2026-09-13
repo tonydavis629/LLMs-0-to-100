@@ -185,4 +185,6 @@ def cross_entropy(text: str, model: dict[str, Counter]) -> float:
     Returns:
         The cross-entropy in bits per character.
     """
+    # TODO: Average -log2(P(next_char | context)) over every position in text
+    # HINT: len(next(iter(model))) is the context size; counter[c] / sum(counter.values()) is P(c | context); use 1e-6 if the context or character was never seen
     raise NotImplementedError("Extra credit: implement cross_entropy()")

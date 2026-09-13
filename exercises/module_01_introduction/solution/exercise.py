@@ -132,33 +132,20 @@ def cross_entropy(text: str, model: dict[str, Counter]) -> float:
     of 1e-6 to avoid log(0).
     """
     text = text.lower()
-    # Determine context length from the model
-    sample_key = next(iter(model))
-    context_len = len(sample_key)
-    n = context_len + 1
+    # Every key in the model has the same length: the context size (n-1)
+    context_len = len(next(iter(model)))
 
-    total_log_prob = 0.0
+    total_bits = 0.0
     count = 0
-
-    for i in range(len(text) - n + 1):
+    for i in range(len(text) - context_len):
         context = text[i : i + context_len]
         next_char = text[i + context_len]
-
-        if context in model:
-            counter = model[context]
-            total = sum(counter.values())
-            char_count = counter.get(next_char, 0)
-            if char_count > 0:
-                prob = char_count / total
-            else:
-                prob = 1e-6
+        counter = model.get(context)
+        if counter and counter[next_char] > 0:
+            prob = counter[next_char] / sum(counter.values())
         else:
-            prob = 1e-6
-
-        total_log_prob += math.log2(prob)
+            prob = 1e-6  # never seen: tiny probability instead of log(0)
+        total_bits += -math.log2(prob)
         count += 1
 
-    if count == 0:
-        return 0.0
-
-    return -total_log_prob / count
+    return total_bits / count if count else 0.0

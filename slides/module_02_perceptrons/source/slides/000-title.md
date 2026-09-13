@@ -32,7 +32,7 @@ $$P(w_k \mid w_{k-n+1} \ldots w_{k-1})$$
 
 <!-- .slide: id="review-2" -->
 
-## Review: Cross-Entropy as a Loss
+## Cross-Entropy as a Loss
 
 $$H(p, q) = -\sum_{x} p(x) \log q(x)$$
 

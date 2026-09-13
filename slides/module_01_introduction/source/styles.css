@@ -1,0 +1,5 @@
+/* Module 1 overrides. The extra-credit answer is a whole function; the
+   shared 400px code cap would clip its last lines. */
+#exercise-extra-answer pre code {
+  max-height: 500px;
+}
