@@ -1845,7 +1845,7 @@ Weighted sums, activations, and the simplest learning machine
 
 <div class="note">
 
-The analogy is real but breaks down fast: real neurons use spike timing, dendritic computation, and many neurotransmitters
+Real neurons use spike timing, dendritic computation, and many neurotransmitters
 
 </div>
 
@@ -1859,29 +1859,48 @@ A single neuron computes:
 
 $$y = \sigma(\mathbf{w} \cdot \mathbf{x} + b)$$
 
-<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+<div class="slide-columns" style="grid-template-columns: 1fr 1.1fr; gap: 30px; align-items: center;">
 
 <div>
 
-**$\mathbf{w} \cdot \mathbf{x}$**
-
-Dot product: how much each input matters
+<div>
+<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">$\mathbf{w} \cdot \mathbf{x}$</p>
+<p class="text-lg" style="margin:2px 0 14px 0;">Dot product: how much each input matters</p>
+<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">$b$</p>
+<p class="text-lg" style="margin:2px 0 14px 0;">Bias: shifts the decision boundary</p>
+<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">$\sigma(\cdot)$</p>
+<p class="text-lg" style="margin:2px 0 0 0;">Activation: adds nonlinearity</p>
+</div>
 
 </div>
 
 <div>
 
-**$+ \; b$**
-
-Bias: shifts the decision boundary
-
+<div style="text-align: center;">
+<svg viewBox="0 0 340 200" width="100%" style="max-height:230px;">
+  <defs>
+    <marker id="peqarrow" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/>
+    </marker>
+  </defs>
+  <circle cx="38" cy="56" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="38" y="61" fill="#e8eaf0" font-size="15" text-anchor="middle">x₁</text>
+  <circle cx="38" cy="148" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="38" y="153" fill="#e8eaf0" font-size="15" text-anchor="middle">x₂</text>
+  <line x1="58" y1="56" x2="142" y2="96" stroke="#8892a4" stroke-width="2" marker-end="url(#peqarrow)"/>
+  <line x1="58" y1="148" x2="142" y2="118" stroke="#8892a4" stroke-width="2" marker-end="url(#peqarrow)"/>
+  <text x="90" y="66" fill="#f5a623" font-size="14" text-anchor="middle">w₁</text>
+  <text x="90" y="146" fill="#f5a623" font-size="14" text-anchor="middle">w₂</text>
+  <circle cx="170" cy="107" r="28" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="170" y="114" fill="#e8eaf0" font-size="20" text-anchor="middle">Σ</text>
+  <text x="170" y="166" fill="#8892a4" font-size="13" text-anchor="middle">+ bias b</text>
+  <line x1="198" y1="107" x2="230" y2="107" stroke="#8892a4" stroke-width="2" marker-end="url(#peqarrow)"/>
+  <rect x="232" y="82" width="54" height="50" rx="6" fill="#0d1225" stroke="#3fb950" stroke-width="2.5"/>
+  <text x="259" y="114" fill="#e8eaf0" font-size="20" text-anchor="middle">σ</text>
+  <line x1="286" y1="107" x2="318" y2="107" stroke="#8892a4" stroke-width="2" marker-end="url(#peqarrow)"/>
+  <text x="330" y="112" fill="#e8eaf0" font-size="15" text-anchor="middle">y</text>
+</svg>
 </div>
-
-<div>
-
-**$\sigma(\cdot)$**
-
-Activation: adds nonlinearity
 
 </div>
 
@@ -2153,8 +2172,6 @@ One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(
 
 # The XOR Problem
 
-The limitation that froze a field
-
 
 ---
 
@@ -2170,12 +2187,27 @@ A single perceptron defines a **hyperplane**: a line in 2D, a plane in 3D.
 
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">AND</p>
-    <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
-      <tr><td style="padding: 4px 12px;">0, 0</td><td style="padding: 4px 12px;">0</td></tr>
-      <tr><td style="padding: 4px 12px;">0, 1</td><td style="padding: 4px 12px;">0</td></tr>
-      <tr><td style="padding: 4px 12px;">1, 0</td><td style="padding: 4px 12px;">0</td></tr>
-      <tr><td style="padding: 4px 12px;">1, 1</td><td style="padding: 4px 12px;">1</td></tr>
+    <table style="margin: 10px auto; font-size: 12pt; color: var(--text-color);">
+      <tr><td style="padding: 2px 12px;">0, 0</td><td style="padding: 2px 12px;">0</td></tr>
+      <tr><td style="padding: 2px 12px;">0, 1</td><td style="padding: 2px 12px;">0</td></tr>
+      <tr><td style="padding: 2px 12px;">1, 0</td><td style="padding: 2px 12px;">0</td></tr>
+      <tr><td style="padding: 2px 12px;">1, 1</td><td style="padding: 2px 12px;">1</td></tr>
     </table>
+    <svg viewBox="0 0 160 150" width="200" height="188" style="display:block; margin: 8px auto 0 auto;">
+    <line x1="40" y1="115" x2="140" y2="115" stroke="#8892a4" stroke-width="1.5"/>
+    <line x1="40" y1="115" x2="40" y2="15" stroke="#8892a4" stroke-width="1.5"/>
+    <text x="150" y="119" fill="#8892a4" font-size="12">x₁</text>
+    <text x="40" y="10" fill="#8892a4" font-size="12" text-anchor="middle">x₂</text>
+    <text x="40" y="136" fill="#8892a4" font-size="11" text-anchor="middle">0</text>
+    <text x="120" y="136" fill="#8892a4" font-size="11" text-anchor="middle">1</text>
+    <text x="24" y="119" fill="#8892a4" font-size="11" text-anchor="middle">0</text>
+    <text x="24" y="39" fill="#8892a4" font-size="11" text-anchor="middle">1</text>
+    <line x1="60" y1="15" x2="140" y2="95" stroke="#3fb950" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <circle cx="40" cy="115" r="8" fill="#0d1225" stroke="#8892a4" stroke-width="2"/>
+    <circle cx="40" cy="35" r="8" fill="#0d1225" stroke="#8892a4" stroke-width="2"/>
+    <circle cx="120" cy="115" r="8" fill="#0d1225" stroke="#8892a4" stroke-width="2"/>
+    <circle cx="120" cy="35" r="8" fill="#3fb950"/>
+    </svg>
     <p style="color: #3fb950;">One line separates them.</p>
   </div>
 
@@ -2185,12 +2217,27 @@ A single perceptron defines a **hyperplane**: a line in 2D, a plane in 3D.
 
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">OR</p>
-    <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
-      <tr><td style="padding: 4px 12px;">0, 0</td><td style="padding: 4px 12px;">0</td></tr>
-      <tr><td style="padding: 4px 12px;">0, 1</td><td style="padding: 4px 12px;">1</td></tr>
-      <tr><td style="padding: 4px 12px;">1, 0</td><td style="padding: 4px 12px;">1</td></tr>
-      <tr><td style="padding: 4px 12px;">1, 1</td><td style="padding: 4px 12px;">1</td></tr>
+    <table style="margin: 10px auto; font-size: 12pt; color: var(--text-color);">
+      <tr><td style="padding: 2px 12px;">0, 0</td><td style="padding: 2px 12px;">0</td></tr>
+      <tr><td style="padding: 2px 12px;">0, 1</td><td style="padding: 2px 12px;">1</td></tr>
+      <tr><td style="padding: 2px 12px;">1, 0</td><td style="padding: 2px 12px;">1</td></tr>
+      <tr><td style="padding: 2px 12px;">1, 1</td><td style="padding: 2px 12px;">1</td></tr>
     </table>
+    <svg viewBox="0 0 160 150" width="200" height="188" style="display:block; margin: 8px auto 0 auto;">
+    <line x1="40" y1="115" x2="140" y2="115" stroke="#8892a4" stroke-width="1.5"/>
+    <line x1="40" y1="115" x2="40" y2="15" stroke="#8892a4" stroke-width="1.5"/>
+    <text x="150" y="119" fill="#8892a4" font-size="12">x₁</text>
+    <text x="40" y="10" fill="#8892a4" font-size="12" text-anchor="middle">x₂</text>
+    <text x="40" y="136" fill="#8892a4" font-size="11" text-anchor="middle">0</text>
+    <text x="120" y="136" fill="#8892a4" font-size="11" text-anchor="middle">1</text>
+    <text x="24" y="119" fill="#8892a4" font-size="11" text-anchor="middle">0</text>
+    <text x="24" y="39" fill="#8892a4" font-size="11" text-anchor="middle">1</text>
+    <line x1="24" y1="59" x2="96" y2="131" stroke="#3fb950" stroke-width="2.5" stroke-dasharray="6 4"/>
+    <circle cx="40" cy="115" r="8" fill="#0d1225" stroke="#8892a4" stroke-width="2"/>
+    <circle cx="40" cy="35" r="8" fill="#3fb950"/>
+    <circle cx="120" cy="115" r="8" fill="#3fb950"/>
+    <circle cx="120" cy="35" r="8" fill="#3fb950"/>
+    </svg>
     <p style="color: #3fb950;">One line separates them.</p>
   </div>
 
@@ -2200,12 +2247,26 @@ A single perceptron defines a **hyperplane**: a line in 2D, a plane in 3D.
 
   <div style="text-align: center;">
     <p class="text-xl" style="font-weight: 600; color: var(--primary-color);">XOR</p>
-    <table style="margin: 10px auto; font-size: 14pt; color: var(--text-color);">
-      <tr><td style="padding: 4px 12px;">0, 0</td><td style="padding: 4px 12px;">0</td></tr>
-      <tr><td style="padding: 4px 12px;">0, 1</td><td style="padding: 4px 12px;">1</td></tr>
-      <tr><td style="padding: 4px 12px;">1, 0</td><td style="padding: 4px 12px;">1</td></tr>
-      <tr><td style="padding: 4px 12px;">1, 1</td><td style="padding: 4px 12px;">0</td></tr>
+    <table style="margin: 10px auto; font-size: 12pt; color: var(--text-color);">
+      <tr><td style="padding: 2px 12px;">0, 0</td><td style="padding: 2px 12px;">0</td></tr>
+      <tr><td style="padding: 2px 12px;">0, 1</td><td style="padding: 2px 12px;">1</td></tr>
+      <tr><td style="padding: 2px 12px;">1, 0</td><td style="padding: 2px 12px;">1</td></tr>
+      <tr><td style="padding: 2px 12px;">1, 1</td><td style="padding: 2px 12px;">0</td></tr>
     </table>
+    <svg viewBox="0 0 160 150" width="200" height="188" style="display:block; margin: 8px auto 0 auto;">
+    <line x1="40" y1="115" x2="140" y2="115" stroke="#8892a4" stroke-width="1.5"/>
+    <line x1="40" y1="115" x2="40" y2="15" stroke="#8892a4" stroke-width="1.5"/>
+    <text x="150" y="119" fill="#8892a4" font-size="12">x₁</text>
+    <text x="40" y="10" fill="#8892a4" font-size="12" text-anchor="middle">x₂</text>
+    <text x="40" y="136" fill="#8892a4" font-size="11" text-anchor="middle">0</text>
+    <text x="120" y="136" fill="#8892a4" font-size="11" text-anchor="middle">1</text>
+    <text x="24" y="119" fill="#8892a4" font-size="11" text-anchor="middle">0</text>
+    <text x="24" y="39" fill="#8892a4" font-size="11" text-anchor="middle">1</text>
+    <circle cx="40" cy="115" r="8" fill="#0d1225" stroke="#8892a4" stroke-width="2"/>
+    <circle cx="40" cy="35" r="8" fill="#3fb950"/>
+    <circle cx="120" cy="115" r="8" fill="#3fb950"/>
+    <circle cx="120" cy="35" r="8" fill="#0d1225" stroke="#8892a4" stroke-width="2"/>
+    </svg>
     <p style="color: #e74c3c;">No single line works.</p>
   </div>
 
@@ -2302,27 +2363,152 @@ The simplest proof that **depth matters**: one layer cannot do what two can. <!-
 
 <!-- .slide: id="folding" -->
 
-## Folding in High-Dimensional Space
+## Each Hidden Neuron Is One Fold
 
-A perceptron cuts space with one flat hyperplane. A hidden layer $\sigma(W\mathbf{x}+\mathbf{b})$ **folds** the space itself.
+A single perceptron **cuts** the sheet with one straight line. A hidden layer $\sigma(W\mathbf{x}+\mathbf{b})$ **folds** it: every hidden neuron adds one crease, then the output neuron makes one straight cut.
 
-<div class="note">
+<div class="slide-columns" style="grid-template-columns: repeat(4, 1fr); gap: 18px;">
 
-**Intuition:** a sheet of paper with two colors of dots mixed together.
-- One fold stacks same-colored dots
-- Then one straight cut separates them
-- More folds handle more tangled arrangements
+<div>
+
+<div style="text-align:center;">
+<svg viewBox="0 0 220 220" width="100%" style="max-height:230px; display:block; margin:0 auto;">
+<rect x="30" y="30" width="160" height="160" fill="rgba(232,234,240,0.10)" stroke="#8892a4" stroke-width="1.6"/>
+<circle cx="60" cy="160" r="6" fill="#e74c3c"/>
+<circle cx="160" cy="160" r="6" fill="#3fb950"/>
+<circle cx="60" cy="60" r="6" fill="#3fb950"/>
+<circle cx="160" cy="60" r="6" fill="#e74c3c"/>
+<text x="60" y="182" fill="#8892a4" font-size="11" text-anchor="middle">(0,0)</text>
+<text x="160" y="182" fill="#8892a4" font-size="11" text-anchor="middle">(1,0)</text>
+<text x="60" y="48" fill="#8892a4" font-size="11" text-anchor="middle">(0,1)</text>
+<text x="160" y="48" fill="#8892a4" font-size="11" text-anchor="middle">(1,1)</text>
+</svg>
+<p class="text-lg" style="color: var(--muted-color); margin-top:6px;">Flat sheet. No single line separates the colors.</p>
+</div>
 
 </div>
 
-The weight matrix $W$ **is** the fold: it pulls entangled points apart.
+<div>
+
+<div style="text-align:center;">
+<svg viewBox="0 0 220 220" width="100%" style="max-height:230px; display:block; margin:0 auto;">
+<defs><marker id="foldarrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e8eaf0"/></marker></defs>
+<rect x="30" y="30" width="160" height="160" fill="none" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="5 4"/>
+<polygon points="30,190 190,190 190,30" fill="rgba(232,234,240,0.10)" stroke="#8892a4" stroke-width="1.6"/>
+<polygon points="30,190 190,190 190,30" fill="rgba(232,234,240,0.10)"/>
+<path d="M62,62 A70,70 0 0 1 152,152" fill="none" stroke="#e8eaf0" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#foldarrow)"/>
+<line x1="30" y1="190" x2="190" y2="30" stroke="#4a9eff" stroke-width="3.5"/>
+<text x="36" y="98" fill="#4a9eff" font-size="12" font-weight="600">neuron 1</text>
+<circle cx="60" cy="160" r="6" fill="#e74c3c"/>
+<circle cx="160" cy="60" r="6" fill="#e74c3c"/>
+<circle cx="160" cy="160" r="11" fill="none" stroke="#3fb950" stroke-width="2"/><circle cx="160" cy="160" r="6" fill="#3fb950"/>
+</svg>
+<p class="text-lg" style="color: var(--muted-color); margin-top:6px;">Fold 1 is neuron 1. The crease is its line. Green lands on green.</p>
+</div>
+
+</div>
+
+<div>
+
+<div style="text-align:center;">
+<svg viewBox="0 0 220 220" width="100%" style="max-height:230px; display:block; margin:0 auto;">
+<polygon points="30,190 190,190 190,30" fill="none" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="5 4"/>
+<polygon points="110,110 190,30 190,190" fill="rgba(232,234,240,0.10)" stroke="#8892a4" stroke-width="1.6"/>
+<polygon points="110,110 190,30 190,190" fill="rgba(232,234,240,0.10)"/>
+<path d="M70,172 A40,40 0 0 1 178,64" fill="none" stroke="#e8eaf0" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#foldarrow)"/>
+<line x1="110" y1="110" x2="190" y2="190" stroke="#f5a623" stroke-width="3.5"/>
+<text x="152" y="180" fill="#f5a623" font-size="12" font-weight="600" text-anchor="end">neuron 2</text>
+<circle cx="160" cy="60" r="11" fill="none" stroke="#e74c3c" stroke-width="2"/><circle cx="160" cy="60" r="6" fill="#e74c3c"/>
+<circle cx="160" cy="160" r="11" fill="none" stroke="#3fb950" stroke-width="2"/><circle cx="160" cy="160" r="6" fill="#3fb950"/>
+</svg>
+<p class="text-lg" style="color: var(--muted-color); margin-top:6px;">Fold 2 is neuron 2. Red lands on red.</p>
+</div>
+
+</div>
+
+<div>
+
+<div style="text-align:center;">
+<svg viewBox="0 0 220 220" width="100%" style="max-height:230px; display:block; margin:0 auto;">
+<polygon points="110,110 190,30 190,190" fill="rgba(232,234,240,0.10)" stroke="#8892a4" stroke-width="1.6"/>
+<polygon points="110,110 190,30 190,190" fill="rgba(232,234,240,0.10)"/>
+<line x1="96" y1="110" x2="204" y2="110" stroke="#e8eaf0" stroke-width="2.5" stroke-dasharray="7 4"/>
+<text x="150" y="102" fill="#e8eaf0" font-size="12" font-weight="600" text-anchor="middle">output neuron</text>
+<circle cx="160" cy="60" r="11" fill="none" stroke="#e74c3c" stroke-width="2"/><circle cx="160" cy="60" r="6" fill="#e74c3c"/>
+<circle cx="160" cy="160" r="11" fill="none" stroke="#3fb950" stroke-width="2"/><circle cx="160" cy="160" r="6" fill="#3fb950"/>
+</svg>
+<p class="text-lg" style="color: var(--muted-color); margin-top:6px;">One straight cut now separates them.</p>
+</div>
+
+</div>
+
+</div>
+
+Two creases and one cut: the two-neuron hidden layer from the previous slide. <!-- .element: class="text-lg" style="margin-top:14px;" -->
 
 ---
 
 <section id="anim-folding">
-  <h2>Folding: One Neuron to Many</h2>
+  <h2>Folding the Input Space</h2>
   <div class="interactive-host" data-widget="folding"></div>
 </section>
+
+---
+
+<!-- .slide: id="hyperplane-3d" -->
+
+## High Dimensional Decision Boundaries
+
+<div class="slide-columns" style="grid-template-columns: 1.3fr 1fr; gap: 24px; align-items: center;">
+
+<div>
+
+<div class="interactive-host" data-widget="hyperplane3d" style="height:560px; display:flex;"></div>
+
+</div>
+
+<div>
+
+<div style="text-align:center;">
+<svg viewBox="0 0 340 200" width="100%" style="max-height:165px;">
+  <defs>
+    <marker id="hp3arrow" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/>
+    </marker>
+  </defs>
+  <circle cx="38" cy="40" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="38" y="45" fill="#e8eaf0" font-size="15" text-anchor="middle">x₁</text>
+  <circle cx="38" cy="104" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="38" y="109" fill="#e8eaf0" font-size="15" text-anchor="middle">x₂</text>
+  <circle cx="38" cy="168" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="38" y="173" fill="#e8eaf0" font-size="15" text-anchor="middle">x₃</text>
+  <line x1="58" y1="40" x2="142" y2="92" stroke="#8892a4" stroke-width="2" marker-end="url(#hp3arrow)"/>
+  <line x1="58" y1="104" x2="142" y2="104" stroke="#8892a4" stroke-width="2" marker-end="url(#hp3arrow)"/>
+  <line x1="58" y1="168" x2="142" y2="116" stroke="#8892a4" stroke-width="2" marker-end="url(#hp3arrow)"/>
+  <text x="92" y="56" fill="#f5a623" font-size="14" text-anchor="middle">w₁</text>
+  <text x="96" y="98" fill="#f5a623" font-size="14" text-anchor="middle">w₂</text>
+  <text x="92" y="160" fill="#f5a623" font-size="14" text-anchor="middle">w₃</text>
+  <circle cx="170" cy="104" r="28" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="170" y="111" fill="#e8eaf0" font-size="20" text-anchor="middle">Σ</text>
+  <text x="170" y="160" fill="#8892a4" font-size="13" text-anchor="middle">+ bias b</text>
+  <line x1="198" y1="104" x2="230" y2="104" stroke="#8892a4" stroke-width="2" marker-end="url(#hp3arrow)"/>
+  <text x="214" y="96" fill="#e8eaf0" font-size="14" text-anchor="middle">z</text>
+  <rect x="232" y="79" width="54" height="50" rx="6" fill="#0d1225" stroke="#3fb950" stroke-width="2.5"/>
+  <text x="259" y="111" fill="#e8eaf0" font-size="20" text-anchor="middle">σ</text>
+  <line x1="286" y1="104" x2="318" y2="104" stroke="#8892a4" stroke-width="2" marker-end="url(#hp3arrow)"/>
+  <text x="330" y="109" fill="#e8eaf0" font-size="15" text-anchor="middle">ŷ</text>
+</svg>
+
+$$z = w_1 x_1 + w_2 x_2 + w_3 x_3 + b, \qquad \hat{y} = \sigma(z)$$
+
+<p class="text-lg" style="margin:10px 0 0 0;">Fitted on Iris:</p>
+
+$$0.52 x_1 + 2.35 x_2 + 5.79 x_3 - 13.1 = 0$$
+</div>
+
+</div>
+
+</div>
 
 ---
 
@@ -2346,6 +2532,7 @@ The boundary *looks* curved. Up close it is **piecewise-linear**: many straight 
   <h2>Many Lines Make a Curve</h2>
   <div class="interactive-host" data-widget="mlpBoundary"></div>
 </section>
+
 
 ---
 
@@ -2421,6 +2608,63 @@ Measures surprise under the model's predictions. High loss when confident and wr
 
 ---
 
+<!-- .slide: id="derivatives-review" -->
+
+## Review: Derivatives
+
+The derivative of $f$ at $x$ is the slope of the curve there.
+
+<div class="slide-columns" style="grid-template-columns: 1.1fr 1fr; gap: 30px; align-items: center;">
+
+<div>
+
+<div>
+<svg viewBox="0 0 430 300" width="100%" style="max-height:330px; display:block; margin:0 auto;">
+<defs><marker id="dxarrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/></marker></defs>
+<line x1="40" y1="270" x2="410" y2="270" stroke="#8892a4" stroke-width="1.5" marker-end="url(#dxarrow)"/>
+<line x1="40" y1="270" x2="40" y2="12" stroke="#8892a4" stroke-width="1.5" marker-end="url(#dxarrow)"/>
+<text x="416" y="286" fill="#8892a4" font-size="13">x</text>
+<text x="20" y="16" fill="#8892a4" font-size="13">f(x)</text>
+<polyline points="62.5,42.8 68.1,52.7 73.8,62.4 79.4,71.9 85.0,81.0 90.6,89.9 96.2,98.4 101.9,106.7 107.5,114.8 113.1,122.5 118.8,129.9 124.4,137.1 130.0,144.0 135.6,150.6 141.2,156.9 146.9,163.0 152.5,168.8 158.1,174.2 163.8,179.4 169.4,184.4 175.0,189.0 180.6,193.4 186.2,197.4 191.9,201.2 197.5,204.8 203.1,208.0 208.8,210.9 214.4,213.6 220.0,216.0 225.6,218.1 231.2,219.9 236.9,221.5 242.5,222.8 248.1,223.7 253.8,224.4 259.4,224.9 265.0,225.0 270.6,224.9 276.2,224.4 281.9,223.7 287.5,222.8 293.1,221.5 298.8,219.9 304.4,218.1 310.0,216.0 315.6,213.6 321.2,210.9 326.9,208.0 332.5,204.8 338.1,201.2 343.8,197.4 349.4,193.4 355.0,189.0 360.6,184.4 366.2,179.4 371.9,174.2 377.5,168.8 383.1,163.0 388.8,156.9 394.4,150.6 400.0,144.0" fill="none" stroke="#e8eaf0" stroke-width="2.5"/>
+<line x1="58.0" y1="57.6" x2="202.0" y2="230.4" stroke="#f5a623" stroke-width="2.5"/>
+<line x1="220.0" y1="225.0" x2="310.0" y2="225.0" stroke="#3fb950" stroke-width="2.5"/>
+<line x1="319.0" y1="217.8" x2="391.0" y2="160.2" stroke="#4a9eff" stroke-width="2.5"/>
+<line x1="130.0" y1="144.0" x2="197.5" y2="144.0" stroke="#8892a4" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="197.5" y1="144.0" x2="197.5" y2="204.8" stroke="#8892a4" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="130.0" y1="144.0" x2="197.5" y2="204.8" stroke="#8892a4" stroke-width="1.5"/>
+<circle cx="130.0" cy="144.0" r="5" fill="#f5a623"/>
+<circle cx="197.5" cy="204.8" r="4" fill="#8892a4"/>
+<circle cx="265" cy="225.0" r="5" fill="#3fb950"/>
+<circle cx="355" cy="189.0" r="5" fill="#4a9eff"/>
+<text x="120.0" y="149.0" fill="#f5a623" font-size="13" text-anchor="end">(x, f(x))</text>
+<text x="163.8" y="138.0" fill="#8892a4" font-size="12" text-anchor="middle">h</text>
+<text x="203.5" y="178.4" fill="#8892a4" font-size="12">f(x+h) − f(x)</text>
+<text x="162" y="204" fill="#f5a623" font-size="12" text-anchor="end">tangent, slope f′(x) &lt; 0</text>
+<text x="265" y="247.0" fill="#3fb950" font-size="12" text-anchor="middle">f′(x) = 0</text>
+<text x="365" y="211.0" fill="#4a9eff" font-size="12">f′(x) &gt; 0</text>
+</svg>
+</div>
+
+</div>
+
+<div>
+
+<div>
+
+$$f'(x) = \frac{df}{dx} = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}$$
+
+- $\dfrac{d}{dx}$: an instruction, differentiate with respect to $x$
+- $f'(x)$: a number, the slope of the tangent line at $x$
+- $f'(x) < 0$: $f$ is falling. $f'(x) = 0$: flat, a minimum here. $f'(x) > 0$: rising
+- $\dfrac{\partial f}{\partial w}$: same idea with several inputs, vary only $w$
+</div>
+
+</div>
+
+</div>
+
+---
+
 <!-- .slide: id="backprop-without" -->
 
 ## Why We Need Backprop
@@ -2435,52 +2679,28 @@ $$\frac{\partial L}{\partial w} \approx \frac{L(w + \epsilon) - L(w)}{\epsilon}$
 
 ---
 
-<!-- .slide: id="backprop-overview" -->
-
-## The Backpropagation Algorithm
-
-Run the network forward, then walk **backward** applying the **chain rule** to turn the loss into a weight update.
-
-<div style="text-align:center; margin-top:6px;">
-<svg viewBox="0 0 760 230" width="96%" style="max-height:300px;">
-  <defs>
-    <marker id="bpf" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4a9eff"/></marker>
-    <marker id="bpb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f5a623"/></marker>
-  </defs>
-  <g font-size="16" text-anchor="middle">
-    <rect x="22"  y="86" width="92" height="52" rx="8" fill="#0d1225" stroke="#4a9eff" stroke-width="2.2"/><text x="68"  y="118" fill="#e8eaf0">input x</text>
-    <rect x="186" y="86" width="110" height="52" rx="8" fill="#0d1225" stroke="#4a9eff" stroke-width="2.2"/><text x="241" y="112" fill="#e8eaf0">weight W</text><text x="241" y="130" fill="#8892a4" font-size="13">z = Wx + b</text>
-    <rect x="368" y="86" width="100" height="52" rx="8" fill="#0d1225" stroke="#4a9eff" stroke-width="2.2"/><text x="418" y="112" fill="#e8eaf0">output ŷ</text><text x="418" y="130" fill="#8892a4" font-size="13">ŷ = σ(z)</text>
-    <rect x="540" y="86" width="92" height="52" rx="8" fill="#0d1225" stroke="#e74c3c" stroke-width="2.2"/><text x="586" y="118" fill="#e8eaf0">loss L</text>
-    <rect x="664" y="86" width="84" height="52" rx="8" fill="#0d1225" stroke="#3fb950" stroke-width="2.2"/><text x="706" y="112" fill="#e8eaf0">update</text><text x="706" y="130" fill="#8892a4" font-size="12">new W</text>
-  </g>
-  <g stroke="#4a9eff" stroke-width="2.4" fill="none">
-    <line x1="116" y1="100" x2="184" y2="100" marker-end="url(#bpf)"/>
-    <line x1="298" y1="100" x2="366" y2="100" marker-end="url(#bpf)"/>
-    <line x1="470" y1="100" x2="538" y2="100" marker-end="url(#bpf)"/>
-  </g>
-  <text x="385" y="64" fill="#4a9eff" font-size="14" text-anchor="middle">forward pass</text>
-  <g stroke="#f5a623" stroke-width="2.4" fill="none">
-    <line x1="540" y1="158" x2="470" y2="158" marker-end="url(#bpb)"/>
-    <line x1="368" y1="158" x2="298" y2="158" marker-end="url(#bpb)"/>
-    <path d="M586,140 C594,190 696,190 706,140" marker-end="url(#bpb)"/>
-  </g>
-  <text x="385" y="208" fill="#f5a623" font-size="14" text-anchor="middle">backward pass</text>
-</svg>
-</div>
-
-Chain rule: multiply one local derivative per stage, **loss &rarr; output &rarr; weight**. Then step against the gradient. <!-- .element: class="text-lg" style="text-align:center; color: var(--muted-color); margin-top:10px;" -->
-
----
-
 <!-- .slide: id="chain-rule" -->
 
 ## The Chain Rule in the Backward Pass
 
-How does a deep weight affect the loss? Multiply local derivatives along the path back to it.
+**The chain rule.** If $y$ depends on $u$ and $u$ depends on $x$, the rates of change multiply: <!-- .element: class="text-lg" -->
+
+$$
+y = f(u), \quad u = g(x)
+\qquad \Longrightarrow \qquad
+\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}
+$$
+
+$$
+y = f(g(x))
+\qquad \Longrightarrow \qquad
+\frac{dy}{dx} = f'(g(x)) \cdot g'(x)
+$$
+
+A network is a chain of such dependencies: $w \to z \to \hat{y} \to L$. So multiply local derivatives along the path back to the weight. <!-- .element: class="text-lg" -->
 
 <div style="text-align:center; margin-top:6px;">
-<svg viewBox="0 0 700 240" width="94%" style="max-height:300px;">
+<svg viewBox="-70 82 700 148" width="94%" style="max-height:150px;">
   <defs>
     <marker id="crf" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a9eff"/></marker>
     <marker id="crb" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5a623"/></marker>
@@ -2490,7 +2710,6 @@ How does a deep weight affect the loss? Multiply local derivatives along the pat
     <rect x="160" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/><text x="204" y="119" fill="#e8eaf0">z</text>
     <rect x="310" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#4a9eff" stroke-width="2"/><text x="354" y="119" fill="#e8eaf0">ŷ</text>
     <rect x="460" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#e74c3c" stroke-width="2"/><text x="504" y="119" fill="#e8eaf0">L</text>
-    <rect x="590" y="90" width="88" height="48" rx="7" fill="#0d1225" stroke="#3fb950" stroke-width="2"/><text x="634" y="112" fill="#e8eaf0">update</text><text x="634" y="130" fill="#8892a4" font-size="12">w new</text>
   </g>
   <g stroke="#4a9eff" stroke-width="2" fill="none">
     <line x1="106" y1="100" x2="158" y2="100" marker-end="url(#crf)"/>
@@ -2501,7 +2720,6 @@ How does a deep weight affect the loss? Multiply local derivatives along the pat
     <line x1="460" y1="152" x2="400" y2="152" marker-end="url(#crb)"/>
     <line x1="310" y1="152" x2="250" y2="152" marker-end="url(#crb)"/>
     <line x1="160" y1="152" x2="106" y2="152" marker-end="url(#crb)"/>
-    <path d="M504,140 C512,192 626,192 634,140" marker-end="url(#crb)"/>
   </g>
   <text x="135" y="184" fill="#f5a623" font-size="14" text-anchor="middle">∂z/∂w</text>
   <text x="285" y="184" fill="#f5a623" font-size="14" text-anchor="middle">∂ŷ/∂z</text>
@@ -2512,9 +2730,34 @@ How does a deep weight affect the loss? Multiply local derivatives along the pat
 </svg>
 </div>
 
-- Each node needs only its own **local** derivative
-- The chain rule stitches them together
-- This is why autograd works at any depth
+<!-- .element: class="text-lg" style="margin-top:4px;" -->
+
+---
+
+<!-- .slide: id="backprop-overview" -->
+
+## The Backpropagation Algorithm
+
+Run the network forward, then walk **backward** applying the chain rule from the previous slide.
+
+
+$$
+\frac{\partial L}{\partial W} = \frac{\partial L}{\partial \hat{y}} \cdot \frac{\partial \hat{y}}{\partial z} \cdot \frac{\partial z}{\partial W}
+$$
+
+$$
+W_{\text{new}} = W_{\text{old}} - \eta \frac{\partial L}{\partial W}
+$$
+
+<div style="display:flex; justify-content:center; align-items:stretch; gap:14px; margin-top:22px; color: var(--text-color);">
+<div style="flex:1; max-width:330px; border:1.5px solid #4a9eff; border-radius:8px; padding:10px 12px; text-align:center;"><div style="display:inline-block; width:36px; height:36px; line-height:36px; font-size:20px; border-radius:50%; background:#4a9eff; color:#0a0e1a; font-weight:700;">1</div><div style="font-weight:600; margin-top:6px;">Forward</div><div style="color: var(--muted-color); font-size:0.85em;">compute ŷ, then L</div></div>
+<div style="align-self:center; color: var(--muted-color); font-size:1.4em;">&rarr;</div>
+<div style="flex:1; max-width:330px; border:1.5px solid #f5a623; border-radius:8px; padding:10px 12px; text-align:center;"><div style="display:inline-block; width:36px; height:36px; line-height:36px; font-size:20px; border-radius:50%; background:#f5a623; color:#0a0e1a; font-weight:700;">2</div><div style="font-weight:600; margin-top:6px;">Backward</div><div style="color: var(--muted-color); font-size:0.85em;">multiply local derivatives</div></div>
+<div style="align-self:center; color: var(--muted-color); font-size:1.4em;">&rarr;</div>
+<div style="flex:1; max-width:330px; border:1.5px solid #e74c3c; border-radius:8px; padding:10px 12px; text-align:center;"><div style="display:inline-block; width:36px; height:36px; line-height:36px; font-size:20px; border-radius:50%; background:#e74c3c; color:#0a0e1a; font-weight:700;">3</div><div style="font-weight:600; margin-top:6px;">Gradient</div><div style="color: var(--muted-color); font-size:0.85em;">&part;L/&part;W for every weight</div></div>
+<div style="align-self:center; color: var(--muted-color); font-size:1.4em;">&rarr;</div>
+<div style="flex:1; max-width:330px; border:1.5px solid #3fb950; border-radius:8px; padding:10px 12px; text-align:center;"><div style="display:inline-block; width:36px; height:36px; line-height:36px; font-size:20px; border-radius:50%; background:#3fb950; color:#0a0e1a; font-weight:700;">4</div><div style="font-weight:600; margin-top:6px;">Update</div><div style="color: var(--muted-color); font-size:0.85em;">W &larr; W &minus; &eta; &part;L/&part;W</div></div>
+</div>
 
 ---
 
@@ -2747,16 +2990,93 @@ Enough parameters can **memorize** any training set: zero training loss, useless
 
 ---
 
+<!-- .slide: id="local-minima" -->
+
+## Local Minima and Saddle Points
+
+<div class="slide-columns" style="grid-template-columns: 1fr 1.25fr; gap: 30px; align-items: center;">
+
+<div>
+
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--primary-color); font-weight:600; margin:0 0 4px 0;">One weight</p>
+<svg viewBox="0 0 320 220" width="100%" style="max-height:250px; display:block; margin:0 auto;">
+<line x1="24" y1="204" x2="305" y2="204" stroke="#8892a4" stroke-width="1.5"/>
+<line x1="24" y1="204" x2="24" y2="20" stroke="#8892a4" stroke-width="1.5"/>
+<text x="300" y="218" fill="#8892a4" font-size="12" text-anchor="end">w</text>
+<text x="12" y="18" fill="#8892a4" font-size="12">L</text>
+<polyline points="24.0,42.0 26.3,42.2 28.6,42.5 30.9,42.9 33.2,43.5 35.5,44.2 37.8,45.1 40.1,46.1 42.4,47.4 44.7,49.0 47.0,50.9 49.3,53.1 51.6,55.6 53.9,58.5 56.2,61.7 58.5,65.3 60.8,69.3 63.1,73.6 65.4,78.2 67.7,83.1 70.0,88.2 72.3,93.4 74.6,98.6 76.9,103.7 79.2,108.7 81.5,113.5 83.8,117.8 86.1,121.7 88.4,125.0 90.7,127.7 93.0,129.6 95.3,130.7 97.6,131.0 99.9,130.5 102.2,129.2 104.5,127.1 106.8,124.3 109.1,120.8 111.4,116.7 113.7,112.2 116.0,107.3 118.3,102.1 120.6,96.7 122.9,91.3 125.2,85.9 127.5,80.7 129.8,75.6 132.1,70.8 134.4,66.3 136.7,62.2 139.0,58.4 141.3,55.0 143.6,51.9 145.9,49.2 148.2,46.9 150.5,44.8 152.8,43.1 155.1,41.7 157.4,40.5 159.7,39.5 162.0,38.8 164.3,38.2 166.6,37.9 168.9,37.7 171.2,37.8 173.5,38.0 175.8,38.4 178.1,39.0 180.4,39.9 182.7,41.0 185.0,42.4 187.3,44.0 189.6,46.0 191.9,48.2 194.2,50.7 196.5,53.4 198.8,56.4 201.1,59.6 203.4,62.9 205.7,66.3 208.0,69.6 210.3,72.9 212.6,76.0 214.9,78.7 217.2,81.1 219.5,83.1 221.8,84.5 224.1,85.3 226.4,85.5 228.7,85.1 231.0,84.1 233.3,82.5 235.6,80.4 237.9,77.8 240.2,74.8 242.5,71.6 244.8,68.2 247.1,64.6 249.4,61.0 251.7,57.5 254.0,54.2 256.3,51.0 258.6,48.0 260.9,45.3 263.2,42.9 265.5,40.8 267.8,38.9 270.1,37.3 272.4,35.9 274.7,34.7 277.0,33.8 279.3,33.0 281.6,32.3 283.9,31.8 286.2,31.4 288.5,31.0 290.8,30.7 293.1,30.5 295.4,30.3 297.7,30.1 300.0,30.0" fill="none" stroke="#e8eaf0" stroke-width="2.5"/>
+<circle cx="226.4" cy="77.5" r="8" fill="#f5a623"/>
+<text x="226.4" y="109.5" fill="#f5a623" font-size="13" text-anchor="middle">local minimum</text>
+<text x="226.4" y="124.5" fill="#8892a4" font-size="11" text-anchor="middle">gradient is zero, stuck</text>
+<circle cx="97.6" cy="129.0" r="5" fill="#3fb950"/>
+<text x="97.6" y="153.0" fill="#3fb950" font-size="13" text-anchor="middle">global minimum</text>
+</svg>
+</div>
+
+</div>
+
+<div>
+
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--primary-color); font-weight:600; margin:0 0 4px 0;">Two weights</p>
+<div class="interactive-host" data-widget="saddle3d" style="height:420px; display:flex;"></div>
+</div>
+
+</div>
+
+</div>
+
+A hump that traps one weight is just a hill once a second weight can walk around it. A true minimum needs **every** direction to curve up: with $n$ weights, one chance in $2^n$. <!-- .element: class="text-lg" style="margin-top:14px;" -->
+
+---
+
 <!-- .slide: id="adam" -->
 ## Adam Optimizer
 
-**Adam** (Adaptive Moment Estimation) keeps a per-parameter learning rate.
+**Adam** (Adaptive Moment Estimation) gives every weight its own step size. With gradient $g_t = \nabla L(\mathbf w_t)$ at step $t$: <!-- .element: class="text-lg" -->
 
-- Tracks each gradient's mean (first moment) and variance (second moment)
-- Consistently large gradients: smaller learning rate
-- Small or noisy gradients: larger learning rate
+<div class="slide-columns" style="grid-template-columns: 1.1fr 1fr; gap: 36px; align-items: center;">
 
-The **default optimizer** in practice. When in doubt, start with Adam.
+<div>
+
+$$
+\textcolor{#4a9eff}{m_t} = \beta_1 m_{t-1} + (1 - \beta_1) g_t
+$$
+
+$$
+\textcolor{#f5a623}{v_t} = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
+$$
+
+$$
+\hat m_t = \frac{m_t}{1 - \beta_1^t}, \qquad \hat v_t = \frac{v_t}{1 - \beta_2^t}
+$$
+
+$$
+\mathbf w_{t+1} = \mathbf w_t - \eta \frac{\textcolor{#4a9eff}{\hat m_t}}{\sqrt{\textcolor{#f5a623}{\hat v_t}} + \epsilon}
+$$
+
+</div>
+
+<div>
+
+<div class="text-lg" style="display:flex; flex-direction:column; gap:14px;">
+
+$\textcolor{#4a9eff}{m_t}$ is a running average of the gradient (**momentum**). Noise in opposite directions cancels; a consistent direction builds up speed.
+
+$\textcolor{#f5a623}{v_t}$ is a running average of the squared gradient. Dividing by $\sqrt{v_t}$ shrinks steps for weights with large gradients and stretches them for weights with small ones.
+
+Both start at zero, so early averages are biased toward zero. The $1 - \beta^t$ terms correct this; after a few dozen steps they are close to 1.
+
+Defaults: $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\epsilon = 10^{-8}$.
+
+</div>
+
+</div>
+
+</div>
+
+The default optimizer in practice. When in doubt, start with Adam. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2829,12 +3149,15 @@ Text Classifier with Decision Boundary Visualization
 
 ## Running the Exercise
 
-Open `module_02_perceptrons/exercise.py` and fill in the `NotImplementedError` lines. Run after each step; unfinished functions are skipped. <!-- .element: class="text-lg" -->
+Open `module_02_perceptrons/exercise.py` &mdash; the only file you edit &mdash; and fill in the `NotImplementedError` lines. Run after each step. <!-- .element: class="text-lg" -->
 
 ```bash
-# Run the exercise (skips any not yet implemented)
+# Run every step; each is tagged CORRECT, INCORRECT, or INCOMPLETE
 cd exercises
 uv run python module_02_perceptrons/src/main.py
+
+# Run a single step (1-7, or ec for the extra credit)
+uv run python module_02_perceptrons/src/main.py --step 3
 ```
 
 Trains a single neuron and an MLP on 2D data. Plots land in `output/` after each run. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
@@ -2851,7 +3174,7 @@ Built with PyTorch tensors:
 - Watch it fail on XOR-like data
 - Fix it with a ReLU hidden layer
 
-Each function is mostly written. You fill in **one key line**. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+Each function is mostly written. You fill in **one key line**, and every step has its own tests in `tests/`. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -2957,13 +3280,18 @@ def compute_gradients(
         dw    = X.T @ error / n
         db    = error.mean()
     """
-    # TODO: Compute the averaged gradients using the formulas in the docstring
-    raise NotImplementedError("TODO: implement gradient computation")
+    error = y_pred - y_true  # How far each prediction is from its label
+    n = X.shape[0]  # Number of samples in the batch
+    db = error.mean()  # Bias gradient: the average error (provided for you)
+    dw = None
+    # TODO: Compute dw, the weight gradient, from X and error averaged over the batch
+    raise NotImplementedError("TODO: compute dw")
+    return (dw, db)
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** The error is `y_pred - y_true`. The weight gradient is `X.T @ error` averaged over the batch; the bias gradient is the mean error.
+**Hint:** `X.T @ error` weights each input column by its error; divide by `n` to average.
 
 </div>
 
@@ -2972,11 +3300,7 @@ def compute_gradients(
 **Answer:**
 
 ```python
-error = y_pred - y_true
-n = X.shape[0]
 dw = X.T @ error / n
-db = error.mean()
-return (dw, db)
 ```
 
 </div>
@@ -3032,7 +3356,7 @@ return (weights - learning_rate * dw, bias - learning_rate * db)
 <section id="exercise-step5-output">
   <h2>Steps 1&ndash;4: Single Neuron Output</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output dense">
+    <div class="terminal-output dense" style="max-width: 920px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -3040,10 +3364,10 @@ return (weights - learning_rate * dw, bias - learning_rate * db)
         <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================&#10;PART 1: Single Neuron on Linearly Separable Data&#10;============================================================</span>&#10;<span class="success">Loaded 150 samples from linear_separable.csv</span>&#10;  Epoch  20/100  loss=0.0753&#10;  Epoch  40/100  loss=0.0536&#10;  Epoch  60/100  loss=0.0457&#10;  Epoch  80/100  loss=0.0416&#10;  Epoch 100/100  loss=0.0391&#10;&#10;Final weights: [2.4276, 1.7352], bias: 0.1047&#10;<span class="success">Accuracy: 149/150 (99.3%)</span>&#10;Saved plot to output/step5_linear_perceptron.png&#10;&#10;<span class="header">============================================================&#10;PART 2: Single Neuron on Non-Linearly Separable Data (XOR)&#10;============================================================</span>&#10;<span class="success">Loaded 160 samples from non_linear_separable.csv</span>&#10;  Epoch  20/100  loss=0.6926&#10;  Epoch  40/100  loss=0.6926&#10;  Epoch  60/100  loss=0.6926&#10;  Epoch  80/100  loss=0.6926&#10;  Epoch 100/100  loss=0.6926&#10;&#10;Final weights: [0.0070, -0.0399], bias: -0.0016&#10;<span class="t-fail">Accuracy: 80/160 (50.0%)</span>&#10;(A single neuron cannot solve this non-linearly-separable problem.)&#10;Saved plot to output/step6_nonlinear_perceptron.png&#10;&#10;<span class="header">============================================================&#10;PART 3: MLP on Non-Linearly Separable Data&#10;============================================================</span>&#10;<span class="skipped">  [skipped: TODO: implement the MLP forward pass]</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: forward() ===</span> <span class="success">CORRECT</span>&#10;<span class="header">=== Step 2: binary_cross_entropy() ===</span> <span class="success">CORRECT</span>&#10;<span class="header">=== Step 3: compute_gradients() ===</span> <span class="success">CORRECT</span>&#10;<span class="header">=== Step 4: update_parameters() ===</span> <span class="success">CORRECT</span>&#10;<span class="skipped">  ...</span>&#10;&#10;<span class="header t-green">=== Step 5: train the single neuron (Steps 1-4 together) ===</span> <span class="success">CORRECT</span>&#10;Linear data: 150 samples from linear_separable.csv&#10;  Epoch  20/100  loss=0.0753&#10;  <span class="skipped">...</span>&#10;  Epoch 100/100  loss=0.0391&#10;  Final weights: [2.4276, 1.7352], bias: 0.1047&#10;  <span class="success">Accuracy: 149/150 (99.3%)</span>&#10;XOR data: 160 samples from non_linear_separable.csv&#10;  Epoch  20/100  loss=0.6926&#10;  <span class="skipped">...</span>&#10;  Epoch 100/100  loss=0.6926&#10;  Final weights: [0.0070, -0.0399], bias: -0.0016&#10;  <span class="t-fail">Accuracy: 80/160 (50.0%)</span>&#10;  <span class="success">CORRECT</span>    linear data: accuracy is at least 95%&#10;  <span class="success">CORRECT</span>    linear data: the loss falls to under a quarter of its starting value&#10;  <span class="success">CORRECT</span>    XOR data: the loss is stuck at ln 2 = 0.693, the cost of a coin flip&#10;  <span class="success">CORRECT</span>    XOR data: accuracy is no better than chance (a single neuron is a linear classifier)&#10;<span class="header">=== Step 6: relu() ===</span> <span class="skipped">INCOMPLETE</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">99.3% on linear data, but only 50% on XOR &mdash; a single neuron is a linear classifier.</p>
+    <p class="text-lg terminal-caption">99.3% on linear data, but only 50% on XOR. Step 5 tests for that failure: a correct single neuron <em>must</em> get stuck at ln 2 here.</p>
   </div>
 </section>
 
@@ -3079,13 +3403,13 @@ def relu(z: torch.Tensor) -> torch.Tensor:
     Returns:
         A tensor the same shape as z, with negatives replaced by 0.
     """
-    # TODO: Return the elementwise max of 0 and z in one line
+    # TODO: Return the elementwise maximum of 0 and z in one line
     raise NotImplementedError("TODO: implement the ReLU activation")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** `torch.clamp(z, min=0.0)` keeps positive entries and clamps negative entries to zero.
+**Hint:** Use `torch.clamp`.
 
 </div>
 
@@ -3116,7 +3440,7 @@ def forward(self, x: torch.Tensor) -> torch.Tensor:
         Output probabilities, shape (n_samples, 1), each in (0, 1).
     """
     # TODO: Compute the two-layer forward pass and return the output probabilities
-    raise NotImplementedError("TODO: implement MLP forward pass")
+    raise NotImplementedError("TODO: implement the MLP forward pass")
 ```
 
 <div class="fragment hint-box">
@@ -3141,7 +3465,7 @@ return sigmoid(self.output(h))
 <section id="exercise-step7-output">
   <h2>Step 7: MLP Output</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output dense">
+    <div class="terminal-output dense" style="max-width: 920px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -3149,10 +3473,10 @@ return sigmoid(self.output(h))
         <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">============================================================&#10;PART 1: Single Neuron on Linearly Separable Data&#10;============================================================</span>&#10;<span class="success">Accuracy: 149/150 (99.3%)</span>&#10;&#10;<span class="header">============================================================&#10;PART 2: Single Neuron on Non-Linearly Separable Data (XOR)&#10;============================================================</span>&#10;<span class="t-fail">Accuracy: 80/160 (50.0%)</span>&#10;&#10;<span class="header">============================================================&#10;PART 3: MLP on Non-Linearly Separable Data&#10;============================================================</span>&#10;  Epoch 100/500  loss=0.0217&#10;  Epoch 200/500  loss=0.0107&#10;  Epoch 300/500  loss=0.0071&#10;  Epoch 400/500  loss=0.0053&#10;  Epoch 500/500  loss=0.0042&#10;&#10;<span class="success">Accuracy: 160/160 (100.0%)</span>&#10;Saved comparison plot to output/step7_comparison.png&#10;Saved MLP loss plot to output/step7_mlp_loss.png&#10;&#10;<span class="header">============================================================&#10;EXTRA CREDIT: MLP trained with your own SGD optimizer&#10;============================================================</span>&#10;<span class="success">Accuracy: 160/160 (100.0%)</span>&#10;(Your optimizer matches torch.optim.SGD.)&#10;&#10;<span class="header">============================================================&#10;Done! Check the output/ directory for plots.&#10;============================================================</span></pre>
+        <pre class="terminal-pre"><span class="header t-green">=== Step 5: train the single neuron (Steps 1-4 together) ===</span> <span class="success">CORRECT</span>&#10;  <span class="t-gray">Accuracy: 149/150 (99.3%)</span>&#10;  <span class="t-gray">Accuracy: 80/160 (50.0%)</span>&#10;<span class="header t-yellow">=== Step 6: relu() ===</span> <span class="success">CORRECT</span>&#10;  <span class="success">CORRECT</span>    negatives become 0 and positives pass through: [-2,-0.5,0,0.5,2] -> [0,0,0,0.5,2]&#10;  <span class="success">CORRECT</span>    works elementwise on a matrix and keeps its shape&#10;  <span class="success">CORRECT</span>    lets gradients through where z > 0 and blocks them where z < 0&#10;&#10;<span class="header t-cyan">=== Step 7: MLP.forward() ===</span> <span class="success">CORRECT</span>&#10;  Epoch 100/500  loss=0.0217&#10;  <span class="skipped">...</span>&#10;  Epoch 500/500  loss=0.0042&#10;  <span class="success">Accuracy: 160/160 (100.0%)</span>&#10;  Saved comparison plot to output/step7_comparison.png&#10;  Saved MLP loss plot to output/step7_mlp_loss.png&#10;  <span class="success">CORRECT</span>    returns one probability per sample, shape (n_samples, 1)&#10;  <span class="success">CORRECT</span>    every output is strictly between 0 and 1&#10;  <span class="success">CORRECT</span>    equals sigmoid(output(relu(hidden(x)))) using the model's own layers&#10;  <span class="success">CORRECT</span>    XOR data: the MLP reaches at least 95% accuracy where the single neuron got 50%&#10;&#10;<span class="header">=== Extra Credit: SGD.step() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">Extra credit: implement the optimizer step</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">100% &mdash; the ReLU hidden layer lets the MLP learn a non-linear boundary the single neuron could not.</p>
+    <p class="text-lg terminal-caption">100% &mdash; the ReLU hidden layer lets the MLP learn a non-linear boundary the single neuron could not. The forward-pass test recomputes the output from the model's own layers.</p>
   </div>
 </section>
 
@@ -3162,7 +3486,17 @@ return sigmoid(self.output(h))
 
 ## Extra Credit: Your Own Optimizer
 
-Implement `SGD.step()`: apply the gradients autograd already computed. <!-- .element: class="text-lg" -->
+Implement `SGD.step()`: apply the gradients autograd already computed. The runner trains the same MLP with `torch.optim.SGD`, then with your class. Same gradients; only the update object changes. <!-- .element: class="text-lg" -->
+
+- One step on a hand example: $p = [1, 2]$, $\nabla = [0.5, -1]$, $\eta = 0.1$ gives $[0.95, 2.1]$
+- The update must happen **in place**, so the model keeps pointing at the same tensors
+- One step must match `torch.optim.SGD` on the same layer with the same gradients
+
+---
+
+<!-- .slide: id="exercise-extra-code" -->
+
+## Extra Credit: SGD.step()
 
 ```python
 def step(self) -> None:
@@ -3184,7 +3518,37 @@ def step(self) -> None:
 
 </div>
 
-The runner trains the same MLP with `torch.optim.SGD`, then with your class. Same gradients; only the update object changes. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+<div class="fragment note">
+
+**Answer:**
+
+```python
+with torch.no_grad():
+    for p in self.params:
+        p -= self.lr * p.grad
+```
+
+</div>
+
+---
+
+<section id="exercise-extra-output">
+  <h2>Extra Credit: Output</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_02_perceptrons/src/main.py --step ec</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header t-blue">=== Extra Credit: SGD.step() ===</span> <span class="success">CORRECT</span>&#10;  Epoch 100/500  loss=0.0217&#10;  Epoch 200/500  loss=0.0107&#10;  Epoch 300/500  loss=0.0071&#10;  Epoch 400/500  loss=0.0053&#10;  Epoch 500/500  loss=0.0042&#10;  <span class="success">Accuracy: 160/160 (100.0%)</span>&#10;  <span class="success">CORRECT</span>    one step: p=[1,2], grad=[0.5,-1], lr=0.1 gives [0.95, 2.1]&#10;  <span class="success">CORRECT</span>    updates the parameter tensor in place (the model keeps pointing at it)&#10;  <span class="success">CORRECT</span>    matches torch.optim.SGD after one step on an nn.Linear layer&#10;  <span class="success">CORRECT</span>    the MLP trained with your optimizer reaches at least 95% on XOR</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Identical loss curve to Step 7: your three lines do exactly what torch.optim.SGD does.</p>
+  </div>
+</section>
 
 ---
 
@@ -3339,7 +3703,6 @@ window.ASSET_BASE = "module_02_perceptrons/";
     var SECONDARY = "#f5a623";
     var GRAD = "#e74c3c";
     var STEP = "#3fb950";
-    var TANGENT = "#ff2d55";
     var WMIN = -3;
     var WMAX = 5;
     var EPS = 1e-8;
@@ -3362,6 +3725,7 @@ window.ASSET_BASE = "module_02_perceptrons/";
       v2: 0,
       t: 0,
       lastStep: null,
+      path: [],
       az: INIT_AZ,
       el: INIT_EL,
       zoom: INIT_ZOOM,
@@ -3499,7 +3863,7 @@ window.ASSET_BASE = "module_02_perceptrons/";
             '<div class="land-weight-row"><span>w&#8322;</span><strong data-r="w2">0.00</strong></div>' +
             '<div class="land-loss-box">L(w&#8321;, w&#8322;)</div>' +
             '<div class="land-slope-card">' +
-              '<p class="land-slope-label">Local tangent line</p>' +
+              '<p class="land-slope-label">Gradient at w</p>' +
               '<p class="land-slope-value" data-r="slope">|&nabla;L| = 0.000</p>' +
             '</div>' +
           '</div>' +
@@ -3598,6 +3962,7 @@ window.ASSET_BASE = "module_02_perceptrons/";
       state.v2 = 0;
       state.t = 0;
       state.lastStep = null;
+      state.path = [[start.w1, start.w2]];
       state.az = INIT_AZ;
       state.el = INIT_EL;
       state.zoom = INIT_ZOOM;
@@ -3665,6 +4030,7 @@ window.ASSET_BASE = "module_02_perceptrons/";
           batch: state.batch
         };
       }
+      state.path.push([state.w1, state.w2]);
       syncReadouts();
       draw();
     });
@@ -3744,23 +4110,101 @@ window.ASSET_BASE = "module_02_perceptrons/";
       drawAxis(ctx, base, [WMIN, WMIN, zmax], "loss", TEXT, W, H);
     }
 
-    function drawTangentLine(ctx, W, H, curL, localG) {
-      var slope = Math.hypot(localG.g1, localG.g2);
-      var ux = slope > 0.0001 ? localG.g1 / slope : 1;
-      var uy = slope > 0.0001 ? localG.g2 / slope : 0;
-      var len = 1.05;
-      var low = project3D(state.w1 - ux * len, state.w2 - uy * len, curL - slope * len, W, H);
-      var high = project3D(state.w1 + ux * len, state.w2 + uy * len, curL + slope * len, W, H);
+    function nextPosition() {
+      if (isAdam) {
+        var a = previewAdamStep();
+        return { w1: a.newW1, w2: a.newW2 };
+      }
+      var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
+      return {
+        w1: clampWeight(state.w1 - state.eta * g.g1),
+        w2: clampWeight(state.w2 - state.eta * g.g2)
+      };
+    }
 
+    function arrow2D(ctx, a, b, color, width, label) {
+      var dx = b.x - a.x;
+      var dy = b.y - a.y;
+      var len = Math.hypot(dx, dy);
+      if (len < 3) return;
+      var ux = dx / len;
+      var uy = dy / len;
+      var head = Math.min(11, 4 + width * 2);
       ctx.save();
-      ctx.shadowColor = TANGENT;
-      ctx.shadowBlur = 9;
-      ctx.strokeStyle = TANGENT;
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(low.x, low.y);
-      ctx.lineTo(high.x, high.y);
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x - ux * head * 0.7, b.y - uy * head * 0.7);
       ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x - ux * head - uy * head * 0.55, b.y - uy * head + ux * head * 0.55);
+      ctx.lineTo(b.x - ux * head + uy * head * 0.55, b.y - uy * head - ux * head * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      if (label) {
+        ctx.font = "bold 13px Inter, sans-serif";
+        ctx.textAlign = "left";
+        var off = 12 + Math.max(0, 26 - len);
+        var tx = b.x + ux * off + 4;
+        var ty = b.y + uy * off + 4;
+        var tw = ctx.measureText(label).width;
+        ctx.fillStyle = "rgba(8,13,27,0.85)";
+        ctx.fillRect(tx - 3, ty - 12, tw + 6, 16);
+        ctx.fillStyle = color;
+        ctx.fillText(label, tx, ty);
+      }
+      ctx.restore();
+    }
+
+    function drawTrail(ctx, W, H) {
+      if (state.path.length < 2) return;
+      var prev = null;
+      state.path.forEach(function(pt, idx) {
+        var q = project3D(pt[0], pt[1], displayedLoss(pt[0], pt[1]), W, H);
+        if (prev) arrow2D(ctx, prev, q, STEP, 3, null);
+        if (idx < state.path.length - 1) {
+          ctx.beginPath();
+          ctx.arc(q.x, q.y, 4, 0, 6.2832);
+          ctx.fillStyle = "#080d1b";
+          ctx.fill();
+          ctx.strokeStyle = STEP;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+        prev = q;
+      });
+    }
+
+    function drawGradientArrows(ctx, W, H, curL, localG) {
+      var cur = project3D(state.w1, state.w2, curL, W, H);
+
+      // Downhill: where the next Step will actually move the weights.
+      var nxt = nextPosition();
+      var down = project3D(nxt.w1, nxt.w2, displayedLoss(nxt.w1, nxt.w2), W, H);
+      arrow2D(ctx, cur, down, STEP, 4.5, null);
+    }
+
+    function drawLegend(ctx, W, H) {
+      ctx.save();
+      ctx.font = "12px Inter, sans-serif";
+      ctx.textAlign = "left";
+      var items = [
+        [STEP, "next step: downhill"],
+        [STEP, "trail: steps so far"]
+      ];
+      var x = 10;
+      items.forEach(function(it) {
+        ctx.fillStyle = it[0];
+        ctx.fillRect(x, H - 18, 14, 3);
+        x += 18;
+        ctx.fillStyle = TEXT;
+        ctx.fillText(it[1], x, H - 13);
+        x += ctx.measureText(it[1]).width + 16;
+      });
       ctx.restore();
     }
 
@@ -3842,7 +4286,7 @@ window.ASSET_BASE = "module_02_perceptrons/";
 
     function updateEquation(curL, trueG) {
       var slope = Math.hypot(trueG.g1, trueG.g2);
-      host.querySelector('[data-r="slope"]').innerHTML = "m = " + slope.toFixed(3);
+      host.querySelector('[data-r="slope"]').innerHTML = "|&nabla;L| = " + slope.toFixed(3);
 
       if (isAdam) {
         updateAdamEquation(curL, slope);
@@ -3870,15 +4314,16 @@ window.ASSET_BASE = "module_02_perceptrons/";
         '<span class="eq-new">w<sub>new</sub></span> = ' +
         '<span class="eq-old">w<sub>old</sub></span> + ' +
         '(<span class="eq-eta">&minus;&eta;</span> &middot; ' +
-        '<span class="eq-grad">&nabla;<sub>B</sub>L(w<sub>old</sub>)</span>)</p>' +
+        '<span class="eq-grad">&nabla;<sub>B</sub>L(w<sub>old</sub>)</span>) &nbsp; ' +
+        '<span style="color:#8892a4">&nabla;<sub>B</sub>: gradient measured on one mini-batch B of ' + state.batch + ' examples</span></p>' +
         '<p class="land-equation-line land-equation-numbers">' +
         '<span class="land-equation-label">Numbers</span> ' +
         '<span class="eq-new">' + vectorText(data.newW1, data.newW2, 2) + '</span> = ' +
         '<span class="eq-old">' + vectorText(data.oldW1, data.oldW2, 2) + '</span> + ' +
         '(<span class="eq-eta">&minus;' + data.eta.toFixed(1) + '</span> &middot; ' +
         '<span class="eq-grad">' + vectorText(data.g1, data.g2, 3) + '</span>)</p>' +
-        '<p class="land-metric-line">Local tangent line: ' +
-        '<span class="eq-tangent">slope m = ' + slope.toFixed(3) + '</span> | ' +
+        '<p class="land-metric-line">Gradient magnitude ' +
+        '<span class="eq-tangent">|&nabla;L| = ' + slope.toFixed(3) + '</span> | ' +
         'batch surface roughness <strong>' + surfaceRoughness().toFixed(2) + '</strong> | ' +
         'displayed loss <strong>' + curL.toFixed(3) + '</strong></p>';
     }
@@ -3929,8 +4374,8 @@ window.ASSET_BASE = "module_02_perceptrons/";
         '<span class="eq-eta">' + data.eta.toFixed(2) + '</span> &middot; ' +
         '<span class="eq-grad">' + vectorText(data.m1h, data.m2h, 3) + '</span> / ' +
         '(<span class="eq-vterm">&radic;' + vectorText(data.v1h, data.v2h, 3) + '</span> + &epsilon;)</p>' +
-        '<p class="land-metric-line">Local tangent line: ' +
-        '<span class="eq-tangent">slope m = ' + slope.toFixed(3) + '</span> | ' +
+        '<p class="land-metric-line">Gradient magnitude ' +
+        '<span class="eq-tangent">|&nabla;L| = ' + slope.toFixed(3) + '</span> | ' +
         'batch surface roughness <strong>' + surfaceRoughness().toFixed(2) + '</strong> | ' +
         'displayed loss <strong>' + curL.toFixed(3) + '</strong></p>';
     }
@@ -3950,7 +4395,8 @@ window.ASSET_BASE = "module_02_perceptrons/";
 
       var curL = displayedLoss(state.w1, state.w2);
       var localG = displayedGrad(state.w1, state.w2);
-      drawTangentLine(ctx, W, H, curL, localG);
+      drawTrail(ctx, W, H);
+      drawGradientArrows(ctx, W, H, curL, localG);
 
       var curP = project3D(state.w1, state.w2, curL, W, H);
       ctx.shadowColor = PRIMARY;
@@ -3964,6 +4410,7 @@ window.ASSET_BASE = "module_02_perceptrons/";
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
+      drawLegend(ctx, W, H);
       updateEquation(curL, localG);
     }
 
@@ -6104,6 +6551,193 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
 };
 
 // =====================================================================
+// CLUSTER_MLP — a small real ReLU MLP trained in the browser (seeded, so
+// the result is repeatable), plus a marching-squares contour helper.
+// Used by the "Clusters" tab of the mlpBoundary widget: four green
+// clusters on a red background. Each hidden neuron's zero-line in input
+// space is a straight line for layer 1 and a piecewise-linear curve for
+// deeper layers; the final boundary is the output neuron's zero-line.
+// =====================================================================
+var CLUSTER_MLP = (function() {
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(rnd) {
+    var u = 1 - rnd(), v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2831853 * v);
+  }
+  var CENTERS = [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+
+  function generateData() {
+    var rnd = mulberry32(7);
+    var pts = [];
+    CENTERS.forEach(function(c) {
+      for (var i = 0; i < 22; i++) {
+        pts.push({ x: c[0] + gauss(rnd) * 0.045, y: c[1] + gauss(rnd) * 0.045, cls: 1 });
+      }
+    });
+    var reds = 0;
+    while (reds < 150) {
+      var x = 0.03 + rnd() * 0.94, y = 0.03 + rnd() * 0.94;
+      var near = CENTERS.some(function(c) { return Math.hypot(x - c[0], y - c[1]) < 0.17; });
+      if (near) continue;
+      pts.push({ x: x, y: y, cls: 0 });
+      reds++;
+    }
+    return pts;
+  }
+
+  // ---- network: [2 -> W]*D (ReLU) -> 1 (sigmoid), full-batch Adam ----
+  function makeNet(width, depth, seed) {
+    var rnd = mulberry32(seed);
+    var layers = [];
+    var fanIn = 2;
+    for (var d = 0; d < depth; d++) {
+      layers.push(initLayer(fanIn, width, rnd));
+      fanIn = width;
+    }
+    layers.push(initLayer(fanIn, 1, rnd));
+    return { width: width, depth: depth, layers: layers };
+  }
+  function initLayer(nIn, nOut, rnd) {
+    var W = [], b = [];
+    var scale = Math.sqrt(2 / nIn);
+    for (var o = 0; o < nOut; o++) {
+      var row = [];
+      for (var i = 0; i < nIn; i++) row.push(gauss(rnd) * scale);
+      W.push(row);
+      b.push(gauss(rnd) * 0.1);
+    }
+    return { W: W, b: b, mW: zeros(nOut, nIn), vW: zeros(nOut, nIn), mb: new Array(nOut).fill(0), vb: new Array(nOut).fill(0) };
+  }
+  function zeros(r, c) {
+    var a = [];
+    for (var i = 0; i < r; i++) a.push(new Array(c).fill(0));
+    return a;
+  }
+
+  // Forward pass returning every layer's pre-activations and activations.
+  // Inputs are centered so the first layer's lines can pass near the middle.
+  function forward(net, x, y) {
+    var act = [x - 0.5, y - 0.5];
+    var pres = [], acts = [act];
+    for (var l = 0; l < net.layers.length; l++) {
+      var L = net.layers[l];
+      var pre = [], out = [];
+      var last = l === net.layers.length - 1;
+      for (var o = 0; o < L.W.length; o++) {
+        var s = L.b[o];
+        for (var i = 0; i < act.length; i++) s += L.W[o][i] * act[i];
+        pre.push(s);
+        out.push(last ? s : (s > 0 ? s : 0));
+      }
+      pres.push(pre); acts.push(out); act = out;
+    }
+    return { pres: pres, acts: acts, logit: act[0] };
+  }
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function trainSteps(net, data, steps, lr) {
+    var b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    net.t = net.t || 0;
+    for (var s = 0; s < steps; s++) {
+      net.t++;
+      var grads = net.layers.map(function(L) {
+        return { W: zeros(L.W.length, L.W[0].length), b: new Array(L.W.length).fill(0) };
+      });
+      for (var n = 0; n < data.length; n++) {
+        var p = data[n];
+        var f = forward(net, p.x, p.y);
+        var delta = [sigmoid(f.logit) - p.cls];
+        for (var l = net.layers.length - 1; l >= 0; l--) {
+          var L = net.layers[l], inp = f.acts[l], g = grads[l];
+          var prev = new Array(inp.length).fill(0);
+          for (var o = 0; o < L.W.length; o++) {
+            g.b[o] += delta[o];
+            for (var i = 0; i < inp.length; i++) {
+              g.W[o][i] += delta[o] * inp[i];
+              prev[i] += delta[o] * L.W[o][i];
+            }
+          }
+          if (l > 0) {
+            for (var k = 0; k < prev.length; k++) if (f.pres[l - 1][k] <= 0) prev[k] = 0;
+          }
+          delta = prev;
+        }
+      }
+      var N = data.length;
+      var c1 = 1 - Math.pow(b1, net.t), c2 = 1 - Math.pow(b2, net.t);
+      net.layers.forEach(function(L, l) {
+        var g = grads[l];
+        for (var o = 0; o < L.W.length; o++) {
+          for (var i = 0; i < L.W[o].length; i++) {
+            var gw = g.W[o][i] / N;
+            L.mW[o][i] = b1 * L.mW[o][i] + (1 - b1) * gw;
+            L.vW[o][i] = b2 * L.vW[o][i] + (1 - b2) * gw * gw;
+            L.W[o][i] -= lr * (L.mW[o][i] / c1) / (Math.sqrt(L.vW[o][i] / c2) + eps);
+          }
+          var gb = g.b[o] / N;
+          L.mb[o] = b1 * L.mb[o] + (1 - b1) * gb;
+          L.vb[o] = b2 * L.vb[o] + (1 - b2) * gb * gb;
+          L.b[o] -= lr * (L.mb[o] / c1) / (Math.sqrt(L.vb[o] / c2) + eps);
+        }
+      });
+    }
+  }
+
+  function accuracy(net, data) {
+    var ok = 0;
+    data.forEach(function(p) { if ((forward(net, p.x, p.y).logit > 0 ? 1 : 0) === p.cls) ok++; });
+    return ok / data.length;
+  }
+
+  // Train with a few seeds and keep the best, so each (width, depth)
+  // shows what that architecture can do rather than one unlucky init.
+  function train(data, width, depth, opts) {
+    opts = opts || {};
+    var seeds = opts.seeds || 4, steps = opts.steps || 400, lr = opts.lr || 0.03;
+    var best = null;
+    for (var s = 0; s < seeds; s++) {
+      var net = makeNet(width, depth, 1000 + s * 17 + width * 3 + depth * 101);
+      trainSteps(net, data, steps, lr);
+      var acc = accuracy(net, data);
+      if (!best || acc > best.acc) best = { net: net, acc: acc };
+    }
+    return best;
+  }
+
+  // ---- marching squares: zero-contour of a scalar field on a grid ----
+  function contour(field, n) {
+    // field[i][j] sampled at x=i/n, y=j/n for i,j in 0..n
+    var segs = [];
+    function lerp(a, b, va, vb) { return a + (0 - va) / (vb - va) * (b - a); }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var v00 = field[i][j], v10 = field[i + 1][j], v01 = field[i][j + 1], v11 = field[i + 1][j + 1];
+        var x0 = i / n, x1 = (i + 1) / n, y0 = j / n, y1 = (j + 1) / n;
+        var pts = [];
+        if ((v00 > 0) !== (v10 > 0)) pts.push([lerp(x0, x1, v00, v10), y0]);
+        if ((v10 > 0) !== (v11 > 0)) pts.push([x1, lerp(y0, y1, v10, v11)]);
+        if ((v01 > 0) !== (v11 > 0)) pts.push([lerp(x0, x1, v01, v11), y1]);
+        if ((v00 > 0) !== (v01 > 0)) pts.push([x0, lerp(y0, y1, v00, v01)]);
+        if (pts.length === 2) segs.push([pts[0], pts[1]]);
+        else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+      }
+    }
+    return segs;
+  }
+
+  return { generateData: generateData, train: train, forward: forward, accuracy: accuracy, contour: contour, sigmoid: sigmoid };
+}());
+if (typeof module !== "undefined" && module.exports) module.exports = CLUSTER_MLP;
+
+
+// =====================================================================
 // Folding widget — INTERACTIVE_WIDGETS.folding
 // Input space ↔ hidden-space line values, live.
 // The left pane shows each hidden neuron's line w·x+b=0. The right pane
@@ -6148,7 +6782,7 @@ INTERACTIVE_WIDGETS.folding = function(host) {
     ];
     return p.map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
   }
-  var state = { k: 2, neurons: preset(2) };
+  var state = { k: 1, neurons: preset(1) };
 
   // --- DOM ---
   host.innerHTML =
@@ -6513,6 +7147,232 @@ INTERACTIVE_WIDGETS.folding = function(host) {
 };
 
 // =====================================================================
+// Hyperplane widget — INTERACTIVE_WIDGETS.hyperplane3d
+// Real data: Fisher's Iris (1936), setosa vs. versicolor, three
+// measurements per flower. A logistic-regression perceptron fitted on
+// these three inputs gives w and b; its boundary w . x + b = 0 is a
+// plane, drawn clipped to the data box. Drag to rotate.
+// =====================================================================
+INTERACTIVE_WIDGETS.hyperplane3d = function(host) {
+  var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff', RED = '#e74c3c', GREEN = '#3fb950';
+  // [sepal length, petal length, petal width, class] in cm; class 0 = setosa, 1 = versicolor
+  var DATA = [[5.1,1.4,0.2,0],[4.9,1.4,0.2,0],[4.7,1.3,0.2,0],[4.6,1.5,0.2,0],[5.0,1.4,0.2,0],[5.4,1.7,0.4,0],[4.6,1.4,0.3,0],[5.0,1.5,0.2,0],[4.4,1.4,0.2,0],[4.9,1.5,0.1,0],[5.4,1.5,0.2,0],[4.8,1.6,0.2,0],[4.8,1.4,0.1,0],[4.3,1.1,0.1,0],[5.8,1.2,0.2,0],[5.7,1.5,0.4,0],[5.4,1.3,0.4,0],[5.1,1.4,0.3,0],[5.7,1.7,0.3,0],[5.1,1.5,0.3,0],[5.4,1.7,0.2,0],[5.1,1.5,0.4,0],[4.6,1.0,0.2,0],[5.1,1.7,0.5,0],[4.8,1.9,0.2,0],[5.0,1.6,0.2,0],[5.0,1.6,0.4,0],[5.2,1.5,0.2,0],[5.2,1.4,0.2,0],[4.7,1.6,0.2,0],[4.8,1.6,0.2,0],[5.4,1.5,0.4,0],[5.2,1.5,0.1,0],[5.5,1.4,0.2,0],[4.9,1.5,0.1,0],[5.0,1.2,0.2,0],[5.5,1.3,0.2,0],[4.9,1.5,0.1,0],[4.4,1.3,0.2,0],[5.1,1.5,0.2,0],[5.0,1.3,0.3,0],[4.5,1.3,0.3,0],[4.4,1.3,0.2,0],[5.0,1.6,0.6,0],[5.1,1.9,0.4,0],[4.8,1.4,0.3,0],[5.1,1.6,0.2,0],[4.6,1.4,0.2,0],[5.3,1.5,0.2,0],[5.0,1.4,0.2,0],[7.0,4.7,1.4,1],[6.4,4.5,1.5,1],[6.9,4.9,1.5,1],[5.5,4.0,1.3,1],[6.5,4.6,1.5,1],[5.7,4.5,1.3,1],[6.3,4.7,1.6,1],[4.9,3.3,1.0,1],[6.6,4.6,1.3,1],[5.2,3.9,1.4,1],[5.0,3.5,1.0,1],[5.9,4.2,1.5,1],[6.0,4.0,1.0,1],[6.1,4.7,1.4,1],[5.6,3.6,1.3,1],[6.7,4.4,1.4,1],[5.6,4.5,1.5,1],[5.8,4.1,1.0,1],[6.2,4.5,1.5,1],[5.6,3.9,1.1,1],[5.9,4.8,1.8,1],[6.1,4.0,1.3,1],[6.3,4.9,1.5,1],[6.1,4.7,1.2,1],[6.4,4.3,1.3,1],[6.6,4.4,1.4,1],[6.8,4.8,1.4,1],[6.7,5.0,1.7,1],[6.0,4.5,1.5,1],[5.7,3.5,1.0,1],[5.5,3.8,1.1,1],[5.5,3.7,1.0,1],[5.8,3.9,1.2,1],[6.0,5.1,1.6,1],[5.4,4.5,1.5,1],[6.0,4.5,1.6,1],[6.7,4.7,1.5,1],[6.3,4.4,1.3,1],[5.6,4.1,1.3,1],[5.5,4.0,1.3,1],[5.5,4.4,1.2,1],[6.1,4.6,1.4,1],[5.8,4.0,1.2,1],[5.0,3.3,1.0,1],[5.6,4.2,1.3,1],[5.7,4.2,1.2,1],[5.7,4.2,1.3,1],[6.2,4.3,1.3,1],[5.1,3.0,1.1,1],[5.7,4.1,1.3,1]];
+  var W = [0.517, 2.347, 5.788], B = -13.145;
+  var AX = [
+    { name: 'sepal length (cm)', lo: 4.0, hi: 7.4, ticks: [4.5, 5.5, 6.5] },
+    { name: 'petal length (cm)', lo: 0.6, hi: 5.6, ticks: [1, 2, 3, 4, 5] },
+    { name: 'petal width (cm)', lo: 0.0, hi: 2.0, ticks: [0.5, 1.0, 1.5] }
+  ];
+  var state = { az: -0.7854, el: -0.6155, dragging: false, lastX: 0, lastY: 0, spin: false, timer: null };
+  var VIEW0 = { az: -0.7854, el: -0.6155 };
+
+  host.innerHTML =
+    '<div class="mlp-widget hyper-widget">' +
+      '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
+      '<div class="mlp-controls">' +
+        '<div class="expl-datasets"><button class="expl-ds-btn hyper-spin">Rotate</button><button class="expl-ds-btn hyper-reset">Reset view</button></div>' +
+        '<p class="mlp-readout">Iris (Fisher 1936): <span style="color:#e74c3c">setosa</span> vs. <span style="color:#3fb950">versicolor</span>, 100 flowers. Drag to rotate.</p>' +
+      '</div>' +
+    '</div>';
+  var canvas = host.querySelector('.mlp-canvas');
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+  canvas.addEventListener('pointerdown', function(e) {
+    state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e) {
+    if (!state.dragging) return;
+    state.az -= (e.clientX - state.lastX) * 0.008;
+    state.el = Math.max(-1.3, Math.min(1.3, state.el + (e.clientY - state.lastY) * 0.008));
+    state.lastX = e.clientX; state.lastY = e.clientY;
+    draw();
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(ev) {
+    canvas.addEventListener(ev, function() { state.dragging = false; });
+  });
+  var spinBtn = host.querySelector('.hyper-spin');
+  spinBtn.addEventListener('click', function() {
+    state.spin = !state.spin;
+    spinBtn.classList.toggle('active', state.spin);
+    if (state.spin && !state.timer) {
+      state.timer = setInterval(function() {
+        if (!state.spin || !host.isConnected) { clearInterval(state.timer); state.timer = null; state.spin = false; spinBtn.classList.remove('active'); return; }
+        state.az += 0.012; draw();
+      }, 40);
+    }
+  });
+  host.querySelector('.hyper-reset').addEventListener('click', function() {
+    state.az = VIEW0.az; state.el = VIEW0.el; draw();
+  });
+
+  // Raw cm -> normalized [-1, 1] per axis so the box is a cube on screen.
+  function nrm(p) {
+    return [
+      (p[0] - AX[0].lo) / (AX[0].hi - AX[0].lo) * 2 - 1,
+      (p[1] - AX[1].lo) / (AX[1].hi - AX[1].lo) * 2 - 1,
+      (p[2] - AX[2].lo) / (AX[2].hi - AX[2].lo) * 2 - 1
+    ];
+  }
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var wd = c.clientWidth, h = c.clientHeight;
+    if (!wd || !h) return null;
+    c.width = Math.round(wd * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: wd, h: h };
+  }
+  function project(n, Wd, H) {
+    var ca = Math.cos(state.az), sa = Math.sin(state.az);
+    var ce = Math.cos(state.el), se = Math.sin(state.el);
+    var xr = n[0] * ca - n[1] * sa;
+    var yr = n[0] * sa + n[1] * ca;
+    var y2 = yr * ce - n[2] * se;
+    var depth = yr * se + n[2] * ce;
+    var scale = Math.min(Wd, H) * 0.30;
+    return { x: Wd * 0.5 + xr * scale, y: H * 0.5 - y2 * scale, depth: depth };
+  }
+  function viewDir() {
+    var ce = Math.cos(state.el), se = Math.sin(state.el);
+    var ca = Math.cos(state.az), sa = Math.sin(state.az);
+    return [sa * se, ca * se, ce];
+  }
+  function planeVal(p) { return W[0] * p[0] + W[1] * p[1] + W[2] * p[2] + B; }
+
+  // Polygon where the plane cuts the data box (in raw cm), ordered around its centroid.
+  function planePolygon() {
+    var lo = [AX[0].lo, AX[1].lo, AX[2].lo], hi = [AX[0].hi, AX[1].hi, AX[2].hi];
+    var corners = [];
+    for (var i = 0; i < 8; i++) corners.push([i & 1 ? hi[0] : lo[0], i & 2 ? hi[1] : lo[1], i & 4 ? hi[2] : lo[2]]);
+    var edges = [[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+    var pts = [];
+    edges.forEach(function(e) {
+      var a = corners[e[0]], b = corners[e[1]];
+      var va = planeVal(a), vb = planeVal(b);
+      if ((va > 0) === (vb > 0)) return;
+      var t = va / (va - vb);
+      pts.push([a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1]), a[2] + t * (b[2] - a[2])]);
+    });
+    if (pts.length < 3) return [];
+    var c = [0, 0, 0];
+    pts.forEach(function(p) { c[0] += p[0] / pts.length; c[1] += p[1] / pts.length; c[2] += p[2] / pts.length; });
+    var n = nrm(pts[0]), cn = nrm(c);
+    var u = [n[0] - cn[0], n[1] - cn[1], n[2] - cn[2]];
+    var ul = Math.hypot(u[0], u[1], u[2]) || 1; u = [u[0] / ul, u[1] / ul, u[2] / ul];
+    var q = nrm(pts[1]);
+    var t2 = [q[0] - cn[0], q[1] - cn[1], q[2] - cn[2]];
+    var nn = [u[1] * t2[2] - u[2] * t2[1], u[2] * t2[0] - u[0] * t2[2], u[0] * t2[1] - u[1] * t2[0]];
+    var nl = Math.hypot(nn[0], nn[1], nn[2]) || 1; nn = [nn[0] / nl, nn[1] / nl, nn[2] / nl];
+    var v = [nn[1] * u[2] - nn[2] * u[1], nn[2] * u[0] - nn[0] * u[2], nn[0] * u[1] - nn[1] * u[0]];
+    pts.sort(function(p1, p2) {
+      var a1 = nrm(p1), a2 = nrm(p2);
+      var d1 = [a1[0] - cn[0], a1[1] - cn[1], a1[2] - cn[2]], d2 = [a2[0] - cn[0], a2[1] - cn[1], a2[2] - cn[2]];
+      return Math.atan2(d1[0] * v[0] + d1[1] * v[1] + d1[2] * v[2], d1[0] * u[0] + d1[1] * u[1] + d1[2] * u[2]) -
+             Math.atan2(d2[0] * v[0] + d2[1] * v[1] + d2[2] * v[2], d2[0] * u[0] + d2[1] * u[1] + d2[2] * u[2]);
+    });
+    return { pts: pts, center: c, normal: nn, centerN: cn };
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, Wd = f.w, H = f.h;
+    ctx.clearRect(0, 0, Wd, H);
+
+    // Box
+    var c = [];
+    for (var i = 0; i < 8; i++) c.push(project([i & 1 ? 1 : -1, i & 2 ? 1 : -1, i & 4 ? 1 : -1], Wd, H));
+    var edges = [[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+    ctx.strokeStyle = 'rgba(136,146,164,0.3)'; ctx.lineWidth = 1;
+    edges.forEach(function(e) {
+      ctx.beginPath(); ctx.moveTo(c[e[0]].x, c[e[0]].y); ctx.lineTo(c[e[1]].x, c[e[1]].y); ctx.stroke();
+    });
+
+    // Axes from the (lo, lo, lo) corner with ticks and names
+    ctx.font = '12px Inter, sans-serif';
+    AX.forEach(function(ax, k) {
+      var a = [-1, -1, -1], b = [-1, -1, -1]; b[k] = 1;
+      var pa = project(a, Wd, H), pb = project(b, Wd, H);
+      ctx.strokeStyle = MUTED; ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+      var dx = pb.x - pa.x, dy = pb.y - pa.y, len = Math.hypot(dx, dy) || 1;
+      var px = -dy / len, py = dx / len;
+      ctx.fillStyle = MUTED; ctx.textAlign = 'center';
+      ax.ticks.forEach(function(t) {
+        var q = [-1, -1, -1]; q[k] = (t - ax.lo) / (ax.hi - ax.lo) * 2 - 1;
+        var pq = project(q, Wd, H);
+        ctx.beginPath(); ctx.moveTo(pq.x - px * 4, pq.y - py * 4); ctx.lineTo(pq.x + px * 4, pq.y + py * 4); ctx.stroke();
+        ctx.fillText(String(t), pq.x + px * 14, pq.y + py * 14 + 4);
+      });
+      var e = [-1, -1, -1]; e[k] = 1.28;
+      var pe = project(e, Wd, H);
+      ctx.fillStyle = TEXT; ctx.font = '13px Inter, sans-serif';
+      ctx.fillText(ax.name, pe.x, pe.y + 4);
+      ctx.font = '12px Inter, sans-serif';
+    });
+
+    // Points split by which side of the plane faces the camera
+    var vd = viewDir();
+    var poly = planePolygon();
+    var nrmN = poly.normal || [0, 0, 1];
+    var camSide = vd[0] * nrmN[0] + vd[1] * nrmN[1] + vd[2] * nrmN[2];
+    var behind = [], front = [];
+    DATA.forEach(function(p) {
+      var n = nrm(p), d = [n[0] - poly.centerN[0], n[1] - poly.centerN[1], n[2] - poly.centerN[2]];
+      var side = d[0] * nrmN[0] + d[1] * nrmN[1] + d[2] * nrmN[2];
+      (side * camSide > 0 ? front : behind).push(p);
+    });
+    function drawPts(list) {
+      list.map(function(p) { var q = project(nrm(p), Wd, H); q.cls = p[3]; return q; })
+          .sort(function(a, b) { return a.depth - b.depth; })
+          .forEach(function(q) {
+            ctx.beginPath(); ctx.arc(q.x, q.y, 4.5, 0, 6.2832);
+            ctx.fillStyle = q.cls ? GREEN : RED; ctx.globalAlpha = 0.92; ctx.fill(); ctx.globalAlpha = 1;
+          });
+    }
+    drawPts(behind);
+
+    if (poly.pts && poly.pts.length >= 3) {
+      ctx.beginPath();
+      poly.pts.forEach(function(p, i) { var q = project(nrm(p), Wd, H); if (i === 0) ctx.moveTo(q.x, q.y); else ctx.lineTo(q.x, q.y); });
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(74,158,255,0.22)'; ctx.fill();
+      ctx.strokeStyle = PRIMARY; ctx.lineWidth = 1.6; ctx.stroke();
+
+      // Normal vector w from the plane's center, pointing toward the versicolor side
+      var sign = camSide;
+      var vers = DATA.filter(function(p) { return p[3] === 1; })[0];
+      var dv = nrm(vers), dd = [dv[0] - poly.centerN[0], dv[1] - poly.centerN[1], dv[2] - poly.centerN[2]];
+      var toVers = (dd[0] * nrmN[0] + dd[1] * nrmN[1] + dd[2] * nrmN[2]) > 0 ? 1 : -1;
+      var o = project(poly.centerN, Wd, H);
+      var tipN = [poly.centerN[0] + nrmN[0] * 0.55 * toVers, poly.centerN[1] + nrmN[1] * 0.55 * toVers, poly.centerN[2] + nrmN[2] * 0.55 * toVers];
+      var tip = project(tipN, Wd, H);
+      ctx.strokeStyle = PRIMARY; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(tip.x, tip.y); ctx.stroke();
+      var dx = tip.x - o.x, dy = tip.y - o.y, len = Math.hypot(dx, dy) || 1;
+      var ux = dx / len, uy = dy / len;
+      ctx.fillStyle = PRIMARY;
+      ctx.beginPath(); ctx.moveTo(tip.x, tip.y);
+      ctx.lineTo(tip.x - ux * 10 - uy * 5, tip.y - uy * 10 + ux * 5);
+      ctx.lineTo(tip.x - ux * 10 + uy * 5, tip.y - uy * 10 - ux * 5);
+      ctx.closePath(); ctx.fill();
+      ctx.font = 'bold 14px Inter, sans-serif'; ctx.textAlign = 'left';
+      ctx.fillStyle = 'rgba(13,18,37,0.85)'; ctx.fillRect(tip.x + ux * 8 + 1, tip.y + uy * 8 - 8, 16, 17);
+      ctx.fillStyle = PRIMARY; ctx.fillText('w', tip.x + ux * 8 + 4, tip.y + uy * 8 + 5);
+    }
+    drawPts(front);
+
+    ctx.fillStyle = TEXT; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('z = w · x + b = 0 on the plane', 12, 20);
+    ctx.fillStyle = GREEN; ctx.fillText('w side: z > 0, \u0177 > 0.5, versicolor', 12, 40);
+    ctx.fillStyle = RED; ctx.fillText('other side: z < 0, \u0177 < 0.5, setosa', 12, 58);
+  }
+  return { resize: draw, setView: function(az, el) { state.az = az; state.el = el; draw(); } };
+};
+
+// =====================================================================
 // Loss landscape widget — INTERACTIVE_WIDGETS.lossLandscape
 // 3D draggable surface with height coloring. Shows SGD step-by-step
 // with noisy batch gradients.
@@ -6825,7 +7685,9 @@ INTERACTIVE_WIDGETS.lossLandscape = function(host) {
 INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
   var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
       LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
-  var state = { dataset: 'spiral', width: 8, depth: 2, net: null, acc: 0 };
+  var state = { dataset: 'spiral', width: 8, depth: 2, net: null, acc: 0, view: -1, hover: null, pinned: null, nodePos: [] };
+  var NEURON_COLORS = ['#4a9eff', '#f5a623', '#bd93f9', '#ff79c6', '#8be9fd', '#50fa7b', '#ffb86c', '#f1fa8c'];
+  var clusterData = null, clusterCache = {};
   var GRID = 64;
   // Network + training live in the shared MLP module (defined above).
   var generateData = MLP.generateData, train = MLP.train,
@@ -6836,6 +7698,7 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
       '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
       '<div class="mlp-controls">' +
         '<div class="expl-datasets"></div>' +
+        '<div class="expl-datasets expl-views"></div>' +
         '<div class="mlp-slider"><label>Width</label><input type="range" min="1" max="8" step="1" value="8"><p data-readout="width">8</p></div>' +
         '<div class="mlp-slider"><label>Depth</label><input type="range" min="1" max="4" step="1" value="2"><p data-readout="depth">2</p></div>' +
         '<p class="mlp-readout"></p>' +
@@ -6849,16 +7712,53 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
   var depthText = host.querySelector('[data-readout="depth"]');
   var readout = host.querySelector('.mlp-readout');
   var dsEl = host.querySelector('.expl-datasets');
+  var viewsEl = host.querySelector('.expl-views');
 
   ['pointerdown', 'keydown'].forEach(function(ev) {
     host.addEventListener(ev, function(e) { e.stopPropagation(); });
   });
 
-  var datasets = ['moons', 'spiral'];
+  function nodeAt(e) {
+    if (state.dataset !== 'clusters') return null;
+    var r = canvas.getBoundingClientRect();
+    var mx = (e.clientX - r.left) * (canvas.clientWidth / r.width);
+    var my = (e.clientY - r.top) * (canvas.clientHeight / r.height);
+    var best = null, bestD = 16;
+    state.nodePos.forEach(function(n) {
+      var d = Math.hypot(n.x - mx, n.y - my);
+      if (d < bestD) { bestD = d; best = n; }
+    });
+    return best;
+  }
+  function sameNode(a, b) { return (!a && !b) || (a && b && a.layer === b.layer && a.idx === b.idx); }
+  canvas.addEventListener('pointermove', function(e) {
+    var n = nodeAt(e);
+    canvas.style.cursor = n ? 'pointer' : 'default';
+    if (sameNode(n, state.hover)) return;
+    state.hover = n;
+    var active = state.pinned || state.hover;
+    if (active && active.layer !== state.view) { state.view = active.layer; }
+    updateUI(); draw();
+  });
+  canvas.addEventListener('pointerleave', function() {
+    if (!state.hover) return;
+    state.hover = null; updateUI(); draw();
+  });
+  canvas.addEventListener('click', function(e) {
+    var n = nodeAt(e);
+    if (!n) { if (state.pinned) { state.pinned = null; updateUI(); draw(); } return; }
+    state.pinned = sameNode(n, state.pinned) ? null : n;
+    if (state.pinned) state.view = state.pinned.layer;
+    updateUI(); draw();
+  });
+
+  var datasets = ['moons', 'spiral', 'clusters'];
   function applyDatasetPreset(name) {
     state.dataset = name;
     if (name === 'moons') { state.width = 6; state.depth = 1; }
     if (name === 'spiral') { state.width = 8; state.depth = 2; }
+    if (name === 'clusters') { state.width = 6; state.depth = 2; }
+    state.view = -1; state.hover = null; state.pinned = null;
     widthInput.value = state.width; depthInput.value = state.depth;
     widthText.textContent = String(state.width); depthText.textContent = String(state.depth);
     state.net = null;
@@ -6881,21 +7781,56 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
   depthInput = allInputs[1];
 
   widthInput.addEventListener('input', function() {
-    state.width = +widthInput.value; widthText.textContent = widthInput.value; state.net = null; draw();
+    state.width = +widthInput.value; widthText.textContent = widthInput.value; state.net = null;
+    if (state.view >= state.depth) state.view = -1;
+    updateUI(); draw();
   });
   depthInput.addEventListener('input', function() {
-    state.depth = +depthInput.value; depthText.textContent = depthInput.value; state.net = null; draw();
+    state.depth = +depthInput.value; depthText.textContent = depthInput.value; state.net = null;
+    if (state.view >= state.depth) state.view = -1;
+    updateUI(); draw();
   });
 
   function updateUI() {
-    host.querySelectorAll('.expl-ds-btn').forEach(function(b) {
+    host.querySelectorAll('.expl-datasets:not(.expl-views) .expl-ds-btn').forEach(function(b) {
       b.classList.toggle('active', b.dataset.ds === state.dataset);
     });
+    // View buttons only make sense on the clusters tab, where a real net is trained.
+    viewsEl.innerHTML = '';
+    viewsEl.style.minHeight = '34px';
+    viewsEl.style.visibility = state.dataset === 'clusters' ? 'visible' : 'hidden';
+    if (state.dataset === 'clusters') {
+      for (var v = 0; v <= state.depth; v++) {
+        (function(v) {
+          var isOut = v === state.depth;
+          var btn = document.createElement('button');
+          btn.className = 'expl-ds-btn' + ((isOut ? -1 : v) === state.view ? ' active' : '');
+          btn.textContent = isOut ? 'Boundary' : 'Layer ' + (v + 1) + ' neurons';
+          btn.addEventListener('click', function() { state.view = isOut ? -1 : v; state.pinned = null; updateUI(); draw(); });
+          viewsEl.appendChild(btn);
+        })(v);
+      }
+    }
     var totalUnits = state.width * state.depth;
     readout.innerHTML = state.depth + ' hidden layer' + (state.depth === 1 ? '' : 's') +
       ' &times; ' + state.width + ' neuron' + (state.width === 1 ? '' : 's') +
       ' = <strong>' + totalUnits + '</strong> hidden unit' + (totalUnits === 1 ? '' : 's') +
       ' | Accuracy: <strong>' + (state.acc * 100).toFixed(0) + '%</strong>';
+    if (state.dataset === 'clusters' && state.view === 0) {
+      readout.innerHTML += '<br>Layer 1: ' + state.width + ' straight lines. Fencing one cluster takes at least 3.';
+    } else if (state.dataset === 'clusters' && state.view > 0) {
+      readout.innerHTML += '<br>Layer ' + (state.view + 1) + ': ' + state.width + ' new piecewise-linear curves, bent only where layer ' + state.view + ' curves cross.';
+    } else if (state.dataset === 'clusters') {
+      readout.innerHTML += '<br>Boundary: one curve assembled from the last layer. It must enclose each cluster.';
+    }
+    var active = state.pinned || state.hover;
+    if (state.dataset === 'clusters' && active) {
+      readout.innerHTML += '<br><span style="color:' + NEURON_COLORS[active.idx % NEURON_COLORS.length] + '">Layer ' + (active.layer + 1) + ', neuron ' + (active.idx + 1) + '</span>: ' +
+        (active.layer === 0 ? 'one straight line.' : 'straight pieces joined at the dashed layer ' + active.layer + ' curves, where a ReLU switches on or off.') +
+        (state.pinned ? ' Click again to release.' : ' Click to pin.');
+    } else if (state.dataset === 'clusters' && state.view >= 0) {
+      readout.innerHTML += '<br>Hover a neuron in the diagram to highlight its line.';
+    }
   }
 
   function fitCanvas(c) {
@@ -6935,6 +7870,7 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
     var ctx = f.ctx, W = f.w, H = f.h;
     ctx.clearRect(0, 0, W, H);
 
+    if (state.dataset === 'clusters') { drawClusters(ctx, W, H); return; }
     var data = generateData(state.dataset);
     if (!state.net) {
       state.net = train(data, state.width, state.depth, state.dataset);
@@ -6973,20 +7909,27 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
     ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
     ctx.strokeRect(ox, oy, side, side);
 
-    // Network diagram
+    drawNetwork(ctx, W, H, ox, oy, side, pad, rightPanel, -2);
+  }
+
+  // highlight: hidden layer index to fill, -1 for the output, -2 for none
+  function drawNetwork(ctx, W, H, ox, oy, side, pad, rightPanel, highlight) {
     if (rightPanel > 80) {
       var nx0 = ox + side + 20, nx1 = W - pad;
       var cols = state.depth + 2;
-      var perLayer = Math.min(state.width, 6);
+      var clusters = state.dataset === 'clusters';
+      var perLayer = clusters ? state.width : Math.min(state.width, 6);
       var top = oy + 6, bot = oy + side - 6;
+      state.nodePos = [];
+      var active = state.pinned || state.hover;
       function colX(i) { return nx0 + (nx1 - nx0) * i / (cols - 1); }
       function ys(n) {
         if (n === 1) return [(top + bot) / 2];
         var a = []; for (var i = 0; i < n; i++) a.push(top + (bot - top) * i / (n - 1)); return a;
       }
       var layersDiag = [{ x: colX(0), ys: ys(2), label: ['x₁', 'x₂'], color: SECONDARY }];
-      for (var d = 0; d < state.depth; d++) layersDiag.push({ x: colX(d + 1), ys: ys(perLayer), color: PRIMARY });
-      layersDiag.push({ x: colX(cols - 1), ys: ys(1), label: ['ŷ'], color: SECONDARY });
+      for (var d = 0; d < state.depth; d++) layersDiag.push({ x: colX(d + 1), ys: ys(perLayer), color: PRIMARY, hl: highlight === d });
+      layersDiag.push({ x: colX(cols - 1), ys: ys(1), label: ['ŷ'], color: SECONDARY, hl: highlight === -1 });
 
       ctx.strokeStyle = 'rgba(74,158,255,0.28)'; ctx.lineWidth = 1;
       for (var L = 0; L < layersDiag.length - 1; L++) {
@@ -6997,18 +7940,287 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
           });
         });
       }
-      layersDiag.forEach(function(Lr) {
+      layersDiag.forEach(function(Lr, li) {
+        var hiddenIdx = li - 1;
         Lr.ys.forEach(function(yy, idx) {
+          var isHidden = clusters && hiddenIdx >= 0 && hiddenIdx < state.depth;
+          var color = isHidden ? NEURON_COLORS[idx % NEURON_COLORS.length] : Lr.color;
+          var isActive = isHidden && active && active.layer === hiddenIdx && active.idx === idx;
+          if (isHidden) state.nodePos.push({ x: Lr.x, y: yy, layer: hiddenIdx, idx: idx });
+          if (isActive) {
+            ctx.beginPath(); ctx.arc(Lr.x, yy, 15, 0, 6.2832);
+            ctx.strokeStyle = TEXT; ctx.lineWidth = 2; ctx.stroke();
+          }
           ctx.beginPath(); ctx.arc(Lr.x, yy, 10, 0, 6.2832);
-          ctx.fillStyle = '#0d1225'; ctx.strokeStyle = Lr.color; ctx.lineWidth = 1.8; ctx.fill(); ctx.stroke();
+          ctx.fillStyle = (Lr.hl || isActive) ? color : '#0d1225'; ctx.strokeStyle = color; ctx.lineWidth = 1.8; ctx.fill(); ctx.stroke();
           if (Lr.label) { ctx.fillStyle = TEXT; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Lr.label[idx], Lr.x, yy + 3); }
         });
       });
     }
   }
 
+  function sampleFields(net) {
+    var n = GRID, pres = [], logit = [];
+    for (var l = 0; l < net.layers.length; l++) {
+      var per = [];
+      for (var o = 0; o < net.layers[l].W.length; o++) per.push([]);
+      pres.push(per);
+    }
+    for (var i = 0; i <= n; i++) {
+      logit.push([]);
+      pres.forEach(function(per) { per.forEach(function(fld) { fld.push([]); }); });
+      for (var j = 0; j <= n; j++) {
+        var f = CLUSTER_MLP.forward(net, i / n, j / n);
+        logit[i].push(f.logit);
+        pres.forEach(function(per, l) { per.forEach(function(fld, o) { fld[i].push(f.pres[l][o]); }); });
+      }
+    }
+    return { pres: pres, logit: logit };
+  }
+
+  function strokeSegs(ctx, segs, ox, oy, side, color, width) {
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = 'round';
+    ctx.beginPath();
+    segs.forEach(function(sg) {
+      ctx.moveTo(ox + sg[0][0] * side, oy + (1 - sg[0][1]) * side);
+      ctx.lineTo(ox + sg[1][0] * side, oy + (1 - sg[1][1]) * side);
+    });
+    ctx.stroke();
+  }
+
+  // Clusters tab: a real ReLU MLP, so every neuron's zero-line can be drawn.
+  function drawClusters(ctx, W, H) {
+    if (!clusterData) clusterData = CLUSTER_MLP.generateData();
+    var key = state.width + 'x' + state.depth;
+    if (!clusterCache[key]) {
+      readout.textContent = 'Training…';
+      clusterCache[key] = CLUSTER_MLP.train(clusterData, state.width, state.depth, { steps: 700, seeds: 5 });
+    }
+    var model = clusterCache[key];
+    if (!state.net) { state.net = model.net; state.acc = model.acc; updateUI(); }
+    var fields = sampleFields(model.net);
+
+    var pad = 18, rightPanel = 140;
+    var side = Math.min(W - 2 * pad - rightPanel, H - 2 * pad);
+    if (side < 120) { rightPanel = 0; side = Math.min(W - 2 * pad, H - 2 * pad); }
+    var ox = pad + (W - 2 * pad - rightPanel - side) / 2;
+    var oy = pad + (H - 2 * pad - side) / 2;
+
+    var cell = side / GRID;
+    for (var i = 0; i < GRID; i++) {
+      for (var j = 0; j < GRID; j++) {
+        ctx.fillStyle = fields.logit[i][j] > 0 ? 'rgba(63,185,80,0.16)' : 'rgba(231,76,60,0.10)';
+        ctx.fillRect(ox + i * cell, oy + (GRID - 1 - j) * cell, cell + 0.5, cell + 0.5);
+      }
+    }
+    ctx.save();
+    ctx.beginPath(); ctx.rect(ox, oy, side, side); ctx.clip();
+    if (state.view < 0) {
+      var segs = CLUSTER_MLP.contour(fields.logit, GRID);
+      strokeSegs(ctx, segs, ox, oy, side, 'rgba(8,12,24,0.94)', 6);
+      strokeSegs(ctx, segs, ox, oy, side, SECONDARY, 3.2);
+    } else {
+      var active = state.pinned || state.hover;
+      if (state.view > 0) {
+        ctx.setLineDash([4, 4]);
+        fields.pres[state.view - 1].forEach(function(fld) {
+          strokeSegs(ctx, CLUSTER_MLP.contour(fld, GRID), ox, oy, side, 'rgba(232,234,240,0.35)', 1.2);
+        });
+        ctx.setLineDash([]);
+      }
+      var focus = active && active.layer === state.view ? active.idx : -1;
+      fields.pres[state.view].forEach(function(fld, k) {
+        if (k === focus) return;
+        ctx.globalAlpha = focus >= 0 ? 0.22 : 1;
+        strokeSegs(ctx, CLUSTER_MLP.contour(fld, GRID), ox, oy, side, NEURON_COLORS[k % NEURON_COLORS.length], 2.2);
+        ctx.globalAlpha = 1;
+      });
+      if (focus >= 0) {
+        var segs2 = CLUSTER_MLP.contour(fields.pres[state.view][focus], GRID);
+        strokeSegs(ctx, segs2, ox, oy, side, 'rgba(8,12,24,0.9)', 7);
+        strokeSegs(ctx, segs2, ox, oy, side, NEURON_COLORS[focus % NEURON_COLORS.length], 3.6);
+      }
+    }
+    ctx.restore();
+
+    clusterData.forEach(function(p) {
+      ctx.beginPath(); ctx.arc(ox + p.x * side, oy + (1 - p.y) * side, 4.2, 0, 6.2832);
+      ctx.fillStyle = p.cls ? GREEN : RED; ctx.fill();
+    });
+    ctx.strokeStyle = LINEC; ctx.lineWidth = 1; ctx.strokeRect(ox, oy, side, side);
+    drawNetwork(ctx, W, H, ox, oy, side, pad, rightPanel, state.view);
+  }
+
   updateUI();
-  return { resize: draw };
+  return { resize: draw, nodes: function() { return state.nodePos; } };
+};
+
+// =====================================================================
+// Saddle widget — INTERACTIVE_WIDGETS.saddle3d
+// A loss surface with a hill in front of the bowl. Along one weight the
+// ball is stuck behind the hill (a local minimum of the 1D slice). With a
+// second weight the same descent walks around the hill. Drag to rotate.
+// =====================================================================
+INTERACTIVE_WIDGETS.saddle3d = function(host) {
+  var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff', GREEN = '#3fb950', ORANGE = '#f5a623';
+  var R = 1.9, GRID = 40;
+  function loss(a, b) {
+    return 0.3 * ((a - 1.4) * (a - 1.4) + b * b) + 2.4 * Math.exp(-((a - 0.1) * (a - 0.1) / 0.45 + b * b / 0.9));
+  }
+  function grad(a, b) {
+    var h = 1e-4;
+    return [(loss(a + h, b) - loss(a - h, b)) / (2 * h), (loss(a, b + h) - loss(a, b - h)) / (2 * h)];
+  }
+  function descend(a, b, free, steps, lr) {
+    var path = [[a, b]];
+    for (var i = 0; i < steps; i++) {
+      var g = grad(a, b);
+      a -= lr * g[0];
+      if (free) b -= lr * g[1];
+      path.push([a, b]);
+    }
+    return path;
+  }
+  var START = [-1.4, 0.2], STEPS = 600, LR = 0.08;
+  var path1 = descend(START[0], START[1], false, STEPS, LR);
+  var path2 = descend(START[0], START[1], true, STEPS, LR);
+  var VIEW0 = { az: -2.4, el: -0.7 };
+  var state = { az: VIEW0.az, el: VIEW0.el, t: 0, playing: false, timer: null, dragging: false, lastX: 0, lastY: 0 };
+
+  host.innerHTML =
+    '<div class="mlp-widget saddle-widget">' +
+      '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
+      '<div class="mlp-controls">' +
+        '<div class="expl-datasets"><button class="expl-ds-btn saddle-play">Run descent</button><button class="expl-ds-btn saddle-reset">Reset</button><button class="expl-ds-btn saddle-view">Reset view</button></div>' +
+        '<p class="mlp-readout">Same start, same rule. <span style="color:#f5a623">One weight</span> stops behind the hill. <span style="color:#3fb950">Two weights</span> go around it.</p>' +
+      '</div>' +
+    '</div>';
+  var canvas = host.querySelector('.mlp-canvas');
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+  canvas.addEventListener('pointerdown', function(e) {
+    state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e) {
+    if (!state.dragging) return;
+    state.az -= (e.clientX - state.lastX) * 0.008;
+    state.el = Math.max(-1.4, Math.min(1.4, state.el + (e.clientY - state.lastY) * 0.008));
+    state.lastX = e.clientX; state.lastY = e.clientY;
+    draw();
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(ev) {
+    canvas.addEventListener(ev, function() { state.dragging = false; });
+  });
+  function stop() { if (state.timer) { clearInterval(state.timer); state.timer = null; } state.playing = false; }
+  host.querySelector('.saddle-play').addEventListener('click', function() {
+    if (state.playing) { stop(); return; }
+    if (state.t >= STEPS) state.t = 0;
+    state.playing = true;
+    state.timer = setInterval(function() {
+      if (!host.isConnected) { stop(); return; }
+      state.t = Math.min(STEPS, state.t + 6);
+      draw();
+      if (state.t >= STEPS) stop();
+    }, 40);
+  });
+  host.querySelector('.saddle-reset').addEventListener('click', function() { stop(); state.t = 0; draw(); });
+  host.querySelector('.saddle-view').addEventListener('click', function() { state.az = VIEW0.az; state.el = VIEW0.el; draw(); });
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var wd = c.clientWidth, h = c.clientHeight;
+    if (!wd || !h) return null;
+    c.width = Math.round(wd * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: wd, h: h };
+  }
+  var ZSCALE = 0.3;
+  function project(a, b, z, Wd, H) {
+    var x = a / R, y = b / R, zz = z * ZSCALE - 0.45;
+    var ca = Math.cos(state.az), sa = Math.sin(state.az);
+    var ce = Math.cos(state.el), se = Math.sin(state.el);
+    var xr = x * ca - y * sa;
+    var yr = x * sa + y * ca;
+    var y2 = yr * ce - zz * se;
+    var depth = yr * se + zz * ce;
+    var scale = Math.min(Wd, H) * 0.36;
+    return { x: Wd * 0.5 + xr * scale, y: H * 0.54 - y2 * scale, depth: depth };
+  }
+  function heightColor(z, zmin, zmax, alpha) {
+    var t = Math.max(0, Math.min(1, (z - zmin) / (zmax - zmin || 1)));
+    var bands = [[38, 92, 255], [0, 214, 255], [38, 217, 87], [248, 227, 64], [255, 159, 28], [255, 59, 48]];
+    var c = bands[Math.min(bands.length - 1, Math.floor(t * bands.length))];
+    return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, Wd = f.w, H = f.h;
+    ctx.clearRect(0, 0, Wd, H);
+
+    var pts = [], zmin = Infinity, zmax = -Infinity;
+    for (var i = 0; i <= GRID; i++) {
+      pts[i] = [];
+      for (var j = 0; j <= GRID; j++) {
+        var a = -R + 2 * R * i / GRID, b = -R + 2 * R * j / GRID, z = loss(a, b);
+        zmin = Math.min(zmin, z); zmax = Math.max(zmax, z);
+        var q = project(a, b, z, Wd, H); q.z = z; pts[i].push(q);
+      }
+    }
+    var tris = [];
+    for (var ti = 0; ti < GRID; ti++) {
+      for (var tj = 0; tj < GRID; tj++) {
+        var p00 = pts[ti][tj], p10 = pts[ti + 1][tj], p01 = pts[ti][tj + 1], p11 = pts[ti + 1][tj + 1];
+        tris.push({ p: [p00, p10, p01], z: (p00.z + p10.z + p01.z) / 3, d: (p00.depth + p10.depth + p01.depth) / 3 });
+        tris.push({ p: [p10, p11, p01], z: (p10.z + p11.z + p01.z) / 3, d: (p10.depth + p11.depth + p01.depth) / 3 });
+      }
+    }
+    tris.sort(function(x, y) { return x.d - y.d; });
+    tris.forEach(function(t) {
+      ctx.beginPath(); ctx.moveTo(t.p[0].x, t.p[0].y); ctx.lineTo(t.p[1].x, t.p[1].y); ctx.lineTo(t.p[2].x, t.p[2].y); ctx.closePath();
+      ctx.fillStyle = heightColor(t.z, zmin, zmax, 0.9); ctx.fill();
+      ctx.strokeStyle = 'rgba(8,12,24,0.35)'; ctx.lineWidth = 0.5; ctx.stroke();
+    });
+
+    // Axes labels at the near corner
+    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
+    var lx = project(R + 0.35, -R, zmin, Wd, H), ly = project(-R, R + 0.35, zmin, Wd, H);
+    ctx.fillText('w₁', lx.x, lx.y); ctx.fillText('w₂', ly.x, ly.y);
+
+    // The 1D slice (w2 = 0.15) that the one-weight descent lives on
+    ctx.strokeStyle = 'rgba(245,166,35,0.55)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    for (var k = 0; k <= 60; k++) {
+      var sa = -R + 2 * R * k / 60, sq = project(sa, START[1], loss(sa, START[1]) + 0.02, Wd, H);
+      if (k === 0) ctx.moveTo(sq.x, sq.y); else ctx.lineTo(sq.x, sq.y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    function drawPath(path, color, upto) {
+      ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (var m = 0; m <= upto; m++) {
+        var q = project(path[m][0], path[m][1], loss(path[m][0], path[m][1]) + 0.03, Wd, H);
+        if (m === 0) ctx.moveTo(q.x, q.y); else ctx.lineTo(q.x, q.y);
+      }
+      ctx.stroke();
+      var e = path[upto], qe = project(e[0], e[1], loss(e[0], e[1]) + 0.03, Wd, H);
+      ctx.beginPath(); ctx.arc(qe.x, qe.y, 7, 0, 6.2832);
+      ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = TEXT; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    drawPath(path1, ORANGE, state.t);
+    drawPath(path2, GREEN, state.t);
+
+    ctx.fillStyle = TEXT; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('step ' + state.t + ' of ' + STEPS, 12, 20);
+    ctx.fillStyle = ORANGE; ctx.fillText('one weight: L = ' + loss(path1[state.t][0], path1[state.t][1]).toFixed(2), 12, 40);
+    ctx.fillStyle = GREEN; ctx.fillText('two weights: L = ' + loss(path2[state.t][0], path2[state.t][1]).toFixed(2), 12, 58);
+  }
+  return { resize: draw, setView: function(az, el) { state.az = az; state.el = el; draw(); }, setT: function(t) { state.t = t; draw(); } };
 };
 
 // =====================================================================

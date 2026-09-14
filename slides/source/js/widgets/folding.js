@@ -43,7 +43,7 @@ INTERACTIVE_WIDGETS.folding = function(host) {
     ];
     return p.map(function(o) { return { w1: o.w1, w2: o.w2, b: o.b }; });
   }
-  var state = { k: 2, neurons: preset(2) };
+  var state = { k: 1, neurons: preset(1) };
 
   // --- DOM ---
   host.innerHTML =

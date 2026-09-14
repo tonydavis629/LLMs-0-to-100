@@ -77,10 +77,10 @@ def compute_gradients(
     Returns:
         (dw, db): gradient w.r.t. weights (shape (2,)) and bias (scalar tensor).
     """
-    error = y_pred - y_true
-    n = X.shape[0]
-    dw = X.T @ error / n
-    db = error.mean()
+    error = y_pred - y_true  # How far each prediction is from its label
+    n = X.shape[0]  # Number of samples in the batch
+    db = error.mean()  # Bias gradient: the average error (provided for you)
+    dw = X.T @ error / n  # Weight gradient: each input column weighted by the error, averaged
     return (dw, db)
 
 

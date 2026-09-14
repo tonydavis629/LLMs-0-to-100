@@ -6,7 +6,6 @@
     var SECONDARY = "#f5a623";
     var GRAD = "#e74c3c";
     var STEP = "#3fb950";
-    var TANGENT = "#ff2d55";
     var WMIN = -3;
     var WMAX = 5;
     var EPS = 1e-8;
@@ -29,6 +28,7 @@
       v2: 0,
       t: 0,
       lastStep: null,
+      path: [],
       az: INIT_AZ,
       el: INIT_EL,
       zoom: INIT_ZOOM,
@@ -166,7 +166,7 @@
             '<div class="land-weight-row"><span>w&#8322;</span><strong data-r="w2">0.00</strong></div>' +
             '<div class="land-loss-box">L(w&#8321;, w&#8322;)</div>' +
             '<div class="land-slope-card">' +
-              '<p class="land-slope-label">Local tangent line</p>' +
+              '<p class="land-slope-label">Gradient at w</p>' +
               '<p class="land-slope-value" data-r="slope">|&nabla;L| = 0.000</p>' +
             '</div>' +
           '</div>' +
@@ -265,6 +265,7 @@
       state.v2 = 0;
       state.t = 0;
       state.lastStep = null;
+      state.path = [[start.w1, start.w2]];
       state.az = INIT_AZ;
       state.el = INIT_EL;
       state.zoom = INIT_ZOOM;
@@ -332,6 +333,7 @@
           batch: state.batch
         };
       }
+      state.path.push([state.w1, state.w2]);
       syncReadouts();
       draw();
     });
@@ -411,23 +413,101 @@
       drawAxis(ctx, base, [WMIN, WMIN, zmax], "loss", TEXT, W, H);
     }
 
-    function drawTangentLine(ctx, W, H, curL, localG) {
-      var slope = Math.hypot(localG.g1, localG.g2);
-      var ux = slope > 0.0001 ? localG.g1 / slope : 1;
-      var uy = slope > 0.0001 ? localG.g2 / slope : 0;
-      var len = 1.05;
-      var low = project3D(state.w1 - ux * len, state.w2 - uy * len, curL - slope * len, W, H);
-      var high = project3D(state.w1 + ux * len, state.w2 + uy * len, curL + slope * len, W, H);
+    function nextPosition() {
+      if (isAdam) {
+        var a = previewAdamStep();
+        return { w1: a.newW1, w2: a.newW2 };
+      }
+      var g = batchGrad(state.w1, state.w2, state.batch, state.t + 1);
+      return {
+        w1: clampWeight(state.w1 - state.eta * g.g1),
+        w2: clampWeight(state.w2 - state.eta * g.g2)
+      };
+    }
 
+    function arrow2D(ctx, a, b, color, width, label) {
+      var dx = b.x - a.x;
+      var dy = b.y - a.y;
+      var len = Math.hypot(dx, dy);
+      if (len < 3) return;
+      var ux = dx / len;
+      var uy = dy / len;
+      var head = Math.min(11, 4 + width * 2);
       ctx.save();
-      ctx.shadowColor = TANGENT;
-      ctx.shadowBlur = 9;
-      ctx.strokeStyle = TANGENT;
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
       ctx.beginPath();
-      ctx.moveTo(low.x, low.y);
-      ctx.lineTo(high.x, high.y);
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x - ux * head * 0.7, b.y - uy * head * 0.7);
       ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x - ux * head - uy * head * 0.55, b.y - uy * head + ux * head * 0.55);
+      ctx.lineTo(b.x - ux * head + uy * head * 0.55, b.y - uy * head - ux * head * 0.55);
+      ctx.closePath();
+      ctx.fill();
+      if (label) {
+        ctx.font = "bold 13px Inter, sans-serif";
+        ctx.textAlign = "left";
+        var off = 12 + Math.max(0, 26 - len);
+        var tx = b.x + ux * off + 4;
+        var ty = b.y + uy * off + 4;
+        var tw = ctx.measureText(label).width;
+        ctx.fillStyle = "rgba(8,13,27,0.85)";
+        ctx.fillRect(tx - 3, ty - 12, tw + 6, 16);
+        ctx.fillStyle = color;
+        ctx.fillText(label, tx, ty);
+      }
+      ctx.restore();
+    }
+
+    function drawTrail(ctx, W, H) {
+      if (state.path.length < 2) return;
+      var prev = null;
+      state.path.forEach(function(pt, idx) {
+        var q = project3D(pt[0], pt[1], displayedLoss(pt[0], pt[1]), W, H);
+        if (prev) arrow2D(ctx, prev, q, STEP, 3, null);
+        if (idx < state.path.length - 1) {
+          ctx.beginPath();
+          ctx.arc(q.x, q.y, 4, 0, 6.2832);
+          ctx.fillStyle = "#080d1b";
+          ctx.fill();
+          ctx.strokeStyle = STEP;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+        prev = q;
+      });
+    }
+
+    function drawGradientArrows(ctx, W, H, curL, localG) {
+      var cur = project3D(state.w1, state.w2, curL, W, H);
+
+      // Downhill: where the next Step will actually move the weights.
+      var nxt = nextPosition();
+      var down = project3D(nxt.w1, nxt.w2, displayedLoss(nxt.w1, nxt.w2), W, H);
+      arrow2D(ctx, cur, down, STEP, 4.5, null);
+    }
+
+    function drawLegend(ctx, W, H) {
+      ctx.save();
+      ctx.font = "12px Inter, sans-serif";
+      ctx.textAlign = "left";
+      var items = [
+        [STEP, "next step: downhill"],
+        [STEP, "trail: steps so far"]
+      ];
+      var x = 10;
+      items.forEach(function(it) {
+        ctx.fillStyle = it[0];
+        ctx.fillRect(x, H - 18, 14, 3);
+        x += 18;
+        ctx.fillStyle = TEXT;
+        ctx.fillText(it[1], x, H - 13);
+        x += ctx.measureText(it[1]).width + 16;
+      });
       ctx.restore();
     }
 
@@ -509,7 +589,7 @@
 
     function updateEquation(curL, trueG) {
       var slope = Math.hypot(trueG.g1, trueG.g2);
-      host.querySelector('[data-r="slope"]').innerHTML = "m = " + slope.toFixed(3);
+      host.querySelector('[data-r="slope"]').innerHTML = "|&nabla;L| = " + slope.toFixed(3);
 
       if (isAdam) {
         updateAdamEquation(curL, slope);
@@ -537,15 +617,16 @@
         '<span class="eq-new">w<sub>new</sub></span> = ' +
         '<span class="eq-old">w<sub>old</sub></span> + ' +
         '(<span class="eq-eta">&minus;&eta;</span> &middot; ' +
-        '<span class="eq-grad">&nabla;<sub>B</sub>L(w<sub>old</sub>)</span>)</p>' +
+        '<span class="eq-grad">&nabla;<sub>B</sub>L(w<sub>old</sub>)</span>) &nbsp; ' +
+        '<span style="color:#8892a4">&nabla;<sub>B</sub>: gradient measured on one mini-batch B of ' + state.batch + ' examples</span></p>' +
         '<p class="land-equation-line land-equation-numbers">' +
         '<span class="land-equation-label">Numbers</span> ' +
         '<span class="eq-new">' + vectorText(data.newW1, data.newW2, 2) + '</span> = ' +
         '<span class="eq-old">' + vectorText(data.oldW1, data.oldW2, 2) + '</span> + ' +
         '(<span class="eq-eta">&minus;' + data.eta.toFixed(1) + '</span> &middot; ' +
         '<span class="eq-grad">' + vectorText(data.g1, data.g2, 3) + '</span>)</p>' +
-        '<p class="land-metric-line">Local tangent line: ' +
-        '<span class="eq-tangent">slope m = ' + slope.toFixed(3) + '</span> | ' +
+        '<p class="land-metric-line">Gradient magnitude ' +
+        '<span class="eq-tangent">|&nabla;L| = ' + slope.toFixed(3) + '</span> | ' +
         'batch surface roughness <strong>' + surfaceRoughness().toFixed(2) + '</strong> | ' +
         'displayed loss <strong>' + curL.toFixed(3) + '</strong></p>';
     }
@@ -596,8 +677,8 @@
         '<span class="eq-eta">' + data.eta.toFixed(2) + '</span> &middot; ' +
         '<span class="eq-grad">' + vectorText(data.m1h, data.m2h, 3) + '</span> / ' +
         '(<span class="eq-vterm">&radic;' + vectorText(data.v1h, data.v2h, 3) + '</span> + &epsilon;)</p>' +
-        '<p class="land-metric-line">Local tangent line: ' +
-        '<span class="eq-tangent">slope m = ' + slope.toFixed(3) + '</span> | ' +
+        '<p class="land-metric-line">Gradient magnitude ' +
+        '<span class="eq-tangent">|&nabla;L| = ' + slope.toFixed(3) + '</span> | ' +
         'batch surface roughness <strong>' + surfaceRoughness().toFixed(2) + '</strong> | ' +
         'displayed loss <strong>' + curL.toFixed(3) + '</strong></p>';
     }
@@ -617,7 +698,8 @@
 
       var curL = displayedLoss(state.w1, state.w2);
       var localG = displayedGrad(state.w1, state.w2);
-      drawTangentLine(ctx, W, H, curL, localG);
+      drawTrail(ctx, W, H);
+      drawGradientArrows(ctx, W, H, curL, localG);
 
       var curP = project3D(state.w1, state.w2, curL, W, H);
       ctx.shadowColor = PRIMARY;
@@ -631,6 +713,7 @@
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
+      drawLegend(ctx, W, H);
       updateEquation(curL, localG);
     }
 

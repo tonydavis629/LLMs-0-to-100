@@ -122,16 +122,73 @@ Enough parameters can **memorize** any training set: zero training loss, useless
 
 ---
 
+<!-- .slide: id="local-minima" -->
+
+## Local Minima and Saddle Points
+
+:::columns grid="1fr 1.25fr" gap="30px" valign="center"
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--primary-color); font-weight:600; margin:0 0 4px 0;">One weight</p>
+<svg viewBox="0 0 320 220" width="100%" style="max-height:250px; display:block; margin:0 auto;">
+<line x1="24" y1="204" x2="305" y2="204" stroke="#8892a4" stroke-width="1.5"/>
+<line x1="24" y1="204" x2="24" y2="20" stroke="#8892a4" stroke-width="1.5"/>
+<text x="300" y="218" fill="#8892a4" font-size="12" text-anchor="end">w</text>
+<text x="12" y="18" fill="#8892a4" font-size="12">L</text>
+<polyline points="24.0,42.0 26.3,42.2 28.6,42.5 30.9,42.9 33.2,43.5 35.5,44.2 37.8,45.1 40.1,46.1 42.4,47.4 44.7,49.0 47.0,50.9 49.3,53.1 51.6,55.6 53.9,58.5 56.2,61.7 58.5,65.3 60.8,69.3 63.1,73.6 65.4,78.2 67.7,83.1 70.0,88.2 72.3,93.4 74.6,98.6 76.9,103.7 79.2,108.7 81.5,113.5 83.8,117.8 86.1,121.7 88.4,125.0 90.7,127.7 93.0,129.6 95.3,130.7 97.6,131.0 99.9,130.5 102.2,129.2 104.5,127.1 106.8,124.3 109.1,120.8 111.4,116.7 113.7,112.2 116.0,107.3 118.3,102.1 120.6,96.7 122.9,91.3 125.2,85.9 127.5,80.7 129.8,75.6 132.1,70.8 134.4,66.3 136.7,62.2 139.0,58.4 141.3,55.0 143.6,51.9 145.9,49.2 148.2,46.9 150.5,44.8 152.8,43.1 155.1,41.7 157.4,40.5 159.7,39.5 162.0,38.8 164.3,38.2 166.6,37.9 168.9,37.7 171.2,37.8 173.5,38.0 175.8,38.4 178.1,39.0 180.4,39.9 182.7,41.0 185.0,42.4 187.3,44.0 189.6,46.0 191.9,48.2 194.2,50.7 196.5,53.4 198.8,56.4 201.1,59.6 203.4,62.9 205.7,66.3 208.0,69.6 210.3,72.9 212.6,76.0 214.9,78.7 217.2,81.1 219.5,83.1 221.8,84.5 224.1,85.3 226.4,85.5 228.7,85.1 231.0,84.1 233.3,82.5 235.6,80.4 237.9,77.8 240.2,74.8 242.5,71.6 244.8,68.2 247.1,64.6 249.4,61.0 251.7,57.5 254.0,54.2 256.3,51.0 258.6,48.0 260.9,45.3 263.2,42.9 265.5,40.8 267.8,38.9 270.1,37.3 272.4,35.9 274.7,34.7 277.0,33.8 279.3,33.0 281.6,32.3 283.9,31.8 286.2,31.4 288.5,31.0 290.8,30.7 293.1,30.5 295.4,30.3 297.7,30.1 300.0,30.0" fill="none" stroke="#e8eaf0" stroke-width="2.5"/>
+<circle cx="226.4" cy="77.5" r="8" fill="#f5a623"/>
+<text x="226.4" y="109.5" fill="#f5a623" font-size="13" text-anchor="middle">local minimum</text>
+<text x="226.4" y="124.5" fill="#8892a4" font-size="11" text-anchor="middle">gradient is zero, stuck</text>
+<circle cx="97.6" cy="129.0" r="5" fill="#3fb950"/>
+<text x="97.6" y="153.0" fill="#3fb950" font-size="13" text-anchor="middle">global minimum</text>
+</svg>
+</div>
++++
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--primary-color); font-weight:600; margin:0 0 4px 0;">Two weights</p>
+<div class="interactive-host" data-widget="saddle3d" style="height:420px; display:flex;"></div>
+</div>
+:::
+
+A hump that traps one weight is just a hill once a second weight can walk around it. A true minimum needs **every** direction to curve up: with $n$ weights, one chance in $2^n$. <!-- .element: class="text-lg" style="margin-top:14px;" -->
+
+---
+
 <!-- .slide: id="adam" -->
 ## Adam Optimizer
 
-**Adam** (Adaptive Moment Estimation) keeps a per-parameter learning rate.
+**Adam** (Adaptive Moment Estimation) gives every weight its own step size. With gradient $g_t = \nabla L(\mathbf w_t)$ at step $t$: <!-- .element: class="text-lg" -->
 
-- Tracks each gradient's mean (first moment) and variance (second moment)
-- Consistently large gradients: smaller learning rate
-- Small or noisy gradients: larger learning rate
+:::columns grid="1.1fr 1fr" gap="36px" valign="center"
+$$
+\textcolor{#4a9eff}{m_t} = \beta_1 m_{t-1} + (1 - \beta_1) g_t
+$$
 
-The **default optimizer** in practice. When in doubt, start with Adam.
+$$
+\textcolor{#f5a623}{v_t} = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
+$$
+
+$$
+\hat m_t = \frac{m_t}{1 - \beta_1^t}, \qquad \hat v_t = \frac{v_t}{1 - \beta_2^t}
+$$
+
+$$
+\mathbf w_{t+1} = \mathbf w_t - \eta \frac{\textcolor{#4a9eff}{\hat m_t}}{\sqrt{\textcolor{#f5a623}{\hat v_t}} + \epsilon}
+$$
++++
+<div class="text-lg" style="display:flex; flex-direction:column; gap:14px;">
+
+$\textcolor{#4a9eff}{m_t}$ is a running average of the gradient (**momentum**). Noise in opposite directions cancels; a consistent direction builds up speed.
+
+$\textcolor{#f5a623}{v_t}$ is a running average of the squared gradient. Dividing by $\sqrt{v_t}$ shrinks steps for weights with large gradients and stretches them for weights with small ones.
+
+Both start at zero, so early averages are biased toward zero. The $1 - \beta^t$ terms correct this; after a few dozen steps they are close to 1.
+
+Defaults: $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\epsilon = 10^{-8}$.
+
+</div>
+:::
+
+The default optimizer in practice. When in doubt, start with Adam. <!-- .element: class="text-lg" -->
 
 ---
 

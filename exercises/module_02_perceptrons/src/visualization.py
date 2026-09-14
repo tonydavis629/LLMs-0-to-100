@@ -158,7 +158,6 @@ def save_comparison(
     fig.tight_layout()
     fig.savefig(filepath, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(f"Saved comparison plot to {filepath}")
 
 
 def plot_datasets(linear_csv: str, nonlinear_csv: str, filepath: str) -> None:

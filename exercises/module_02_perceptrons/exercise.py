@@ -80,7 +80,7 @@ def compute_gradients(
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Compute gradients of the BCE loss w.r.t. the neuron's weights and bias.
 
-    For sigmoid + BCE the chain rule simplifies beautifully to:
+    For sigmoid + BCE the chain rule simplifies to:
         error = y_pred - y_true
         dw    = X.T @ error / n
         db    = error.mean()
@@ -93,9 +93,14 @@ def compute_gradients(
     Returns:
         (dw, db): gradient w.r.t. weights (shape (2,)) and bias (scalar tensor).
     """
-    # TODO: Compute the averaged gradients using the formulas in the docstring
-    # HINT: error is (y_pred - y_true); dw is X.T @ error averaged over the batch; db is the mean error
-    raise NotImplementedError("TODO: implement gradient computation")
+    error = y_pred - y_true  # How far each prediction is from its label
+    n = X.shape[0]  # Number of samples in the batch
+    db = error.mean()  # Bias gradient: the average error (provided for you)
+    dw = None
+    # TODO: Compute dw, the weight gradient, from X and error averaged over the batch
+    # HINT: X.T @ error weights each input column by its error; divide by n to average
+    raise NotImplementedError("TODO: compute dw")
+    return (dw, db)
 
 
 # ---------------------------------------------------------------------------
@@ -149,7 +154,7 @@ def relu(z: torch.Tensor) -> torch.Tensor:
         A tensor the same shape as z, with negatives replaced by 0.
     """
     # TODO: Return the elementwise maximum of 0 and z in one line
-    # HINT: torch.clamp(z, min=0.0) clamps every negative value to zero
+    # HINT: use torch.clamp
     raise NotImplementedError("TODO: implement the ReLU activation")
 
 

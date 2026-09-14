@@ -4,17 +4,24 @@ Module 2 Exercise runner: Perceptrons and Neural Networks (PyTorch)
 Run with:
     uv run python module_02_perceptrons/src/main.py
 
-Add --solution to run the finished answers from solution/exercise.py.
+Every step is tagged on its header line, then its output follows: any
+training progress your code produced and the result of each test in tests/.
+The tags are:
 
-Trains a single-neuron classifier (with hand-written gradients) and an MLP
-(with autograd) on 2D data, visualizing how they learn to separate classes.
-Any step that still raises NotImplementedError is skipped, so you can run
-after each fill-in.
+    CORRECT     every test for the step passed
+    INCORRECT   your code ran but at least one test failed (details follow)
+    INCOMPLETE  the function still raises NotImplementedError
+
+Add --step N to run one step (1-7, or "ec" for extra credit).
+Add --solution to run the finished answers from solution/exercise.py.
 """
 
 from __future__ import annotations
 
+import argparse
+import io
 import sys
+from contextlib import redirect_stdout
 from pathlib import Path
 
 import torch
@@ -38,13 +45,13 @@ if "--solution" in sys.argv:
     _spec.loader.exec_module(_exercise)
 
 from exercise import (
-    forward,
-    binary_cross_entropy,
-    compute_gradients,
-    update_parameters,
-    relu,
     MLP,
     SGD,
+    binary_cross_entropy,
+    compute_gradients,
+    forward,
+    relu,
+    update_parameters,
 )
 from src.activations import sigmoid
 from visualization import (
@@ -53,6 +60,16 @@ from visualization import (
     plot_loss_curve,
     save_comparison,
 )
+
+# One test file per step lives in tests/
+from tests.test_extra_credit import check_sgd_step, check_sgd_training
+from tests.test_step1_forward import check_forward
+from tests.test_step2_bce import check_binary_cross_entropy
+from tests.test_step3_gradients import check_compute_gradients
+from tests.test_step4_update import check_update_parameters
+from tests.test_step5_single_neuron import check_single_neuron
+from tests.test_step6_relu import check_relu
+from tests.test_step7_mlp import check_mlp_forward, check_mlp_training
 
 import matplotlib
 matplotlib.use("Agg")
@@ -236,26 +253,106 @@ def mlp_predict(model: MLP):
             return model(g).squeeze(1).numpy()
     return predict
 
-def main():
-    OUTPUT_DIR.mkdir(exist_ok=True)
-    X_lin, y_lin = load_tensors(LINEAR_DATA)
-    X_nl, y_nl = load_tensors(NONLINEAR_DATA)
+# ---------------------------------------------------------------------------
+# Reporting helpers
+# ---------------------------------------------------------------------------
 
-    neuron_nl_params = None  # (weights, bias) from Part 2, reused in Part 3
-    mlp_model = None         # trained MLP from Part 3
+# The three possible outcomes for a step
+CORRECT = "CORRECT"
+INCORRECT = "INCORRECT"
+INCOMPLETE = "INCOMPLETE"
 
-    # ------------------------------------------------------------------
-    # Part 1: single neuron on linearly separable data
-    # ------------------------------------------------------------------
-    print("=" * 60)
-    print("PART 1: Single Neuron on Linearly Separable Data")
-    print("=" * 60)
-    print(f"Loaded {len(y_lin)} samples from linear_separable.csv\n")
+# ANSI color codes, used only when printing to a real terminal
+_COLORS = {CORRECT: "\033[32m", INCORRECT: "\033[31m", INCOMPLETE: "\033[90m"}
+_RESET = "\033[0m"
+
+
+def _tag(status: str) -> str:
+    """Format a status label in a fixed-width column, colored on a terminal."""
+    label = f"{status:<10}"
+    if sys.stdout.isatty():
+        return f"{_COLORS[status]}{label}{_RESET}"
+    return label
+
+
+def _print_checks(checks) -> None:
+    """Print one line per test, with details under any that failed."""
+    for check in checks:
+        print(f"  {_tag(CORRECT if check.passed else INCORRECT)} {check.name}")
+        if not check.passed and check.detail:
+            for line in check.detail.split("\n"):
+                print(f"             {line.strip()}")
+
+
+def run_step(title: str, show, check) -> str:
+    """Run one step and print its header, tag, output, and test results.
+
+    `show()` prints whatever the student's code produces (training progress,
+    saved plots). `check()` returns the list of Check results for the step.
+
+    The tag goes on the header line, so the output is captured first and
+    printed after the tag is known. Returns CORRECT, INCORRECT, or INCOMPLETE.
+    """
+    buffer = io.StringIO()
+    checks = []
+    note = ""
     try:
+        with redirect_stdout(buffer):
+            show()
+        checks = check()
+        status = CORRECT if all(c.passed for c in checks) else INCORRECT
+    except NotImplementedError as e:
+        # The student has not filled in this blank yet
+        status, note = INCOMPLETE, str(e)
+    except Exception as e:  # noqa: BLE001 - show students any crash, whatever its type
+        status, note = INCORRECT, f"your code crashed: {type(e).__name__}: {e}"
+
+    print(f"=== {title} === {_tag(status).rstrip()}")
+    if note:
+        print(f"  {note}")
+    output = buffer.getvalue()
+    if output and status != INCOMPLETE:
+        print(output, end="" if output.endswith("\n") else "\n")
+    _print_checks(checks)
+    print()
+    return status
+
+
+# ---------------------------------------------------------------------------
+# The steps
+# ---------------------------------------------------------------------------
+
+
+def step_1() -> str:
+    return run_step("Step 1: forward()", lambda: None, lambda: check_forward(forward))
+
+
+def step_2() -> str:
+    return run_step("Step 2: binary_cross_entropy()", lambda: None,
+                    lambda: check_binary_cross_entropy(binary_cross_entropy))
+
+
+def step_3() -> str:
+    return run_step("Step 3: compute_gradients()", lambda: None,
+                    lambda: check_compute_gradients(compute_gradients))
+
+
+def step_4() -> str:
+    return run_step("Step 4: update_parameters()", lambda: None,
+                    lambda: check_update_parameters(update_parameters))
+
+
+def step_5(X_lin, y_lin, X_nl, y_nl, results: dict) -> str:
+    """No new code: train the neuron from Steps 1-4 on both datasets."""
+
+    def show():
+        # Part A: linearly separable data, where a single neuron should succeed
+        print(f"Linear data: {len(y_lin)} samples from linear_separable.csv")
         weights, bias, losses = train_perceptron(X_lin, y_lin, learning_rate=0.5, epochs=100)
-        print(f"\nFinal weights: [{weights[0]:.4f}, {weights[1]:.4f}], bias: {float(bias):.4f}")
+        print(f"  Final weights: [{weights[0]:.4f}, {weights[1]:.4f}], bias: {float(bias):.4f}")
         correct, total = neuron_accuracy(X_lin, y_lin, weights, bias)
-        print(f"Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
+        print(f"  Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
+        results["lin_losses"], results["lin_acc"] = losses, (correct, total)
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
         plot_decision_boundary(neuron_predict(weights, bias), X_lin.numpy(), y_lin.numpy(),
@@ -264,82 +361,120 @@ def main():
         fig.tight_layout()
         fig.savefig(str(OUTPUT_DIR / "step5_linear_perceptron.png"), dpi=150, bbox_inches="tight")
         plt.close(fig)
-        print("Saved plot to output/step5_linear_perceptron.png\n")
-    except NotImplementedError as e:
-        print(f"  [skipped: {e}]\n")
+        print("  Saved plot to output/step5_linear_perceptron.png")
 
-    # ------------------------------------------------------------------
-    # Part 2: same single neuron on non-linearly-separable data
-    # ------------------------------------------------------------------
-    print("=" * 60)
-    print("PART 2: Single Neuron on Non-Linearly Separable Data (XOR)")
-    print("=" * 60)
-    print(f"Loaded {len(y_nl)} samples from non_linear_separable.csv\n")
-    try:
+        # Part B: the same neuron on XOR-like data, where no line can separate the classes
+        print(f"XOR data: {len(y_nl)} samples from non_linear_separable.csv")
         weights_nl, bias_nl, losses_nl = train_perceptron(X_nl, y_nl, learning_rate=0.5, epochs=100)
-        neuron_nl_params = (weights_nl, bias_nl)
-        print(f"\nFinal weights: [{weights_nl[0]:.4f}, {weights_nl[1]:.4f}], bias: {float(bias_nl):.4f}")
+        print(f"  Final weights: [{weights_nl[0]:.4f}, {weights_nl[1]:.4f}], bias: {float(bias_nl):.4f}")
         correct, total = neuron_accuracy(X_nl, y_nl, weights_nl, bias_nl)
-        print(f"Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
-        print("(A single neuron cannot solve this non-linearly-separable problem.)\n")
+        print(f"  Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
+        results["nl_losses"], results["nl_acc"] = losses_nl, (correct, total)
+        results["neuron_nl_params"] = (weights_nl, bias_nl)
 
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
         plot_decision_boundary(neuron_predict(weights_nl, bias_nl), X_nl.numpy(), y_nl.numpy(),
                                title="Perceptron: XOR Data (Fails)", ax=ax1)
         plot_loss_curve(losses_nl, title="Training Loss (Plateaus)", ax=ax2)
         fig.tight_layout()
-        fig.savefig(str(OUTPUT_DIR / "step6_nonlinear_perceptron.png"), dpi=150, bbox_inches="tight")
+        fig.savefig(str(OUTPUT_DIR / "step5_nonlinear_perceptron.png"), dpi=150, bbox_inches="tight")
         plt.close(fig)
-        print("Saved plot to output/step6_nonlinear_perceptron.png\n")
-    except NotImplementedError as e:
-        print(f"  [skipped: {e}]\n")
+        print("  Saved plot to output/step5_nonlinear_perceptron.png")
 
-    # ------------------------------------------------------------------
-    # Part 3: MLP on non-linearly-separable data (autograd + torch.optim.SGD)
-    # ------------------------------------------------------------------
-    print("=" * 60)
-    print("PART 3: MLP on Non-Linearly Separable Data")
-    print("=" * 60)
-    try:
-        mlp_model, losses_mlp = train_mlp(X_nl, y_nl, hidden_size=8, learning_rate=1.0, epochs=500)
-        correct, total = mlp_accuracy(X_nl, y_nl, mlp_model)
-        print(f"\nAccuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
+    return run_step("Step 5: train the single neuron (Steps 1-4 together)", show,
+                    lambda: check_single_neuron(results))
 
-        if neuron_nl_params is not None:
+
+def step_6() -> str:
+    return run_step("Step 6: relu()", lambda: None, lambda: check_relu(relu))
+
+
+def step_7(X_nl, y_nl, results: dict) -> str:
+    """Train the MLP on the XOR data with autograd and torch.optim.SGD."""
+
+    def show():
+        model, losses = train_mlp(X_nl, y_nl, hidden_size=8, learning_rate=1.0, epochs=500)
+        correct, total = mlp_accuracy(X_nl, y_nl, model)
+        print(f"  Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
+        results["mlp_acc"] = (correct, total)
+
+        # Side-by-side decision boundaries, if the single neuron from Step 5 is available
+        if "neuron_nl_params" in results:
             save_comparison(
-                neuron_predict(*neuron_nl_params),
-                mlp_predict(mlp_model),
+                neuron_predict(*results["neuron_nl_params"]),
+                mlp_predict(model),
                 X_nl.numpy(), y_nl.numpy(),
                 filepath=str(OUTPUT_DIR / "step7_comparison.png"),
             )
+            print("  Saved comparison plot to output/step7_comparison.png")
         fig, ax = plt.subplots(figsize=(6, 4))
-        plot_loss_curve(losses_mlp, title="MLP Training Loss", ax=ax)
+        plot_loss_curve(losses, title="MLP Training Loss", ax=ax)
         fig.savefig(str(OUTPUT_DIR / "step7_mlp_loss.png"), dpi=150, bbox_inches="tight")
         plt.close(fig)
-        print("Saved MLP loss plot to output/step7_mlp_loss.png\n")
-    except NotImplementedError as e:
-        print(f"  [skipped: {e}]\n")
+        print("  Saved MLP loss plot to output/step7_mlp_loss.png")
 
-    # ------------------------------------------------------------------
-    # Extra credit: train the MLP with your own SGD optimizer
-    # ------------------------------------------------------------------
-    print("=" * 60)
-    print("EXTRA CREDIT: MLP trained with your own SGD optimizer")
-    print("=" * 60)
-    try:
-        ec_model, _ = train_mlp(
-            X_nl, y_nl, hidden_size=8, learning_rate=1.0, epochs=500,
-            use_custom_optimizer=True, verbose=False,
-        )
-        correct, total = mlp_accuracy(X_nl, y_nl, ec_model)
-        print(f"Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
-        print("(Your optimizer matches torch.optim.SGD.)\n")
-    except NotImplementedError as e:
-        print(f"  [skipped: {e}]\n")
+    return run_step("Step 7: MLP.forward()", show,
+                    lambda: check_mlp_forward(MLP) + check_mlp_training(results))
 
-    print("=" * 60)
-    print("Done! Check the output/ directory for plots.")
-    print("=" * 60)
+
+def step_extra(X_nl, y_nl, results: dict) -> str:
+    """Train the same MLP again, with the student's optimizer in place of torch's."""
+
+    def show():
+        # Probe the optimizer first so an unfinished step() reports its own TODO
+        probe = torch.zeros(1, requires_grad=True)
+        probe.grad = torch.zeros(1)
+        SGD([probe], lr=0.1).step()
+
+        try:
+            model, _ = train_mlp(X_nl, y_nl, hidden_size=8, learning_rate=1.0, epochs=500,
+                                 use_custom_optimizer=True)
+        except NotImplementedError:
+            raise NotImplementedError("needs Step 7 (MLP.forward) to train the MLP with your optimizer")
+        correct, total = mlp_accuracy(X_nl, y_nl, model)
+        print(f"  Accuracy: {correct}/{total} ({100 * correct / total:.1f}%)")
+        results["ec_acc"] = (correct, total)
+
+    return run_step("Extra Credit: SGD.step()", show,
+                    lambda: check_sgd_step(SGD) + check_sgd_training(results))
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+STEP_CHOICES = ["1", "2", "3", "4", "5", "6", "7", "ec"]
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Perceptrons and neural networks")
+    parser.add_argument("--step", choices=[*STEP_CHOICES, "all"], default="all",
+                        help="Which step to run (default: all)")
+    args = parser.parse_args()
+    steps = STEP_CHOICES if args.step == "all" else [args.step]
+
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    X_lin, y_lin = load_tensors(LINEAR_DATA)
+    X_nl, y_nl = load_tensors(NONLINEAR_DATA)
+    results: dict = {}  # training outcomes shared between steps
+
+    for step in steps:
+        if step == "1":
+            step_1()
+        elif step == "2":
+            step_2()
+        elif step == "3":
+            step_3()
+        elif step == "4":
+            step_4()
+        elif step == "5":
+            step_5(X_lin, y_lin, X_nl, y_nl, results)
+        elif step == "6":
+            step_6()
+        elif step == "7":
+            step_7(X_nl, y_nl, results)
+        elif step == "ec":
+            step_extra(X_nl, y_nl, results)
 
 if __name__ == "__main__":
     main()
