@@ -10,7 +10,6 @@ dependencies = [
     "playwright>=1.59.0",
     "torch>=2.2",
     "transformers>=4.40.0",
-    "manim==0.20.1",
 ]
 
 [tool.uv]
