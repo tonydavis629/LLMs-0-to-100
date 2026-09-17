@@ -288,20 +288,59 @@ def rewrite_asset_paths(md: str, base: str) -> str:
     return md
 
 
+
+def collect_widget_css(widgets_dir: Path, stems: list[str]) -> str:
+    """Concatenate <stem>.css for each bundled widget, plus any stylesheet a
+    widget names in a leading `/* @requires a, b */` comment (widgets that
+    reuse another widget's chrome). Dependencies come first, each file once."""
+    ordered: list[str] = []
+
+    def visit(stem: str) -> None:
+        if stem in ordered:
+            return
+        css_path = widgets_dir / f"{stem}.css"
+        if not css_path.exists():
+            return
+        text = css_path.read_text(encoding="utf-8")
+        m = re.match(r"\s*/\*\s*@requires\s+([^*]+?)\s*\*/", text)
+        if m:
+            for dep in re.split(r"[,\s]+", m.group(1).strip()):
+                if dep:
+                    visit(dep)
+        ordered.append(stem)
+
+    for stem in stems:
+        visit(stem)
+    return "\n".join(
+        (widgets_dir / f"{stem}.css").read_text(encoding="utf-8") for stem in ordered
+    )
+
+
 def build_module(module_dir: Path) -> Path:
     shared_dir = module_dir.parent / "source"
     base_html = (shared_dir / "base.html").read_text(encoding="utf-8")
     shared_css = (shared_dir / "styles.css").read_text(encoding="utf-8")
 
-    # Concatenate modular JS: infrastructure, shared libraries, then widgets.
-    js_dir = shared_dir / "js"
-    js_parts = []
-    for pattern in ["*.js", "widgets/*.js"]:
-        js_parts.extend(sorted(js_dir.glob(pattern), key=lambda p: str(p)))
-    shared_js = "\n".join(p.read_text(encoding="utf-8") for p in js_parts)
-
     source_dir = module_dir / "source"
     raw_md = read_slides(source_dir)
+
+    # Concatenate modular JS: infrastructure and shared libraries always, but
+    # only the widget files this module's slides actually reference (by
+    # `widget="name"` in :::interactive fences or data-widget attributes).
+    js_dir = shared_dir / "js"
+    js_parts = sorted(js_dir.glob("*.js"), key=lambda p: str(p))
+    used_widgets = set(re.findall(r'widget="([A-Za-z0-9_]+)"', raw_md))
+    widget_stems = []
+    for widget_file in sorted(js_dir.glob("widgets/*.js"), key=lambda p: str(p)):
+        defined = set(re.findall(
+            r"INTERACTIVE_WIDGETS\.([A-Za-z0-9_]+)\s*=",
+            widget_file.read_text(encoding="utf-8"),
+        ))
+        if defined & used_widgets:
+            js_parts.append(widget_file)
+            widget_stems.append(widget_file.stem)
+    shared_js = "\n".join(p.read_text(encoding="utf-8") for p in js_parts)
+    widget_css = collect_widget_css(js_dir / "widgets", widget_stems)
     module_config = (source_dir / "config.js").read_text(encoding="utf-8")
     module_css = read_optional(source_dir / "styles.css")
     head_extra = read_optional(source_dir / "head.html")
@@ -318,7 +357,7 @@ def build_module(module_dir: Path) -> Path:
 
     bundled = base_html
     bundled = fill(bundled, "{{HEAD_EXTRA}}", head_extra)
-    bundled = fill(bundled, "{{STYLES}}", f"{shared_css}\n{module_css}")
+    bundled = fill(bundled, "{{STYLES}}", f"{shared_css}\n{widget_css}\n{module_css}")
     bundled = fill(bundled, "{{MODULE_CONFIG}}", module_config)
     bundled = fill(bundled, "{{SHARED_JS}}", shared_js)
     bundled = fill(bundled, "{{SLIDES_MD}}", md)

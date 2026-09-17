@@ -1,0 +1,69 @@
+/* @requires mlp_boundary, single_perceptron */
+/* ===========================================
+   BOUNDARY EXPLORER WIDGET
+   Reuses .mlp-widget chrome; styles the
+   dataset and architecture button rows.
+   =========================================== */
+
+.expl-datasets {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.expl-ds-btn {
+  font-family: var(--body-font);
+  font-size: 12pt;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.expl-ds-btn.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #0a0e1a;
+  font-weight: 600;
+}
+
+.expl-arch {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.expl-arch-btn {
+  font-family: var(--body-font);
+  font-size: 12pt;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.35);
+  border-radius: 6px;
+  padding: 5px 14px;
+  cursor: pointer;
+}
+
+.expl-arch-btn:hover {
+  background: rgba(74, 158, 255, 0.22);
+}
+
+.expl-arch-btn.expl-reset {
+  background: rgba(245, 166, 35, 0.12);
+  border-color: rgba(245, 166, 35, 0.40);
+  color: var(--secondary-color);
+}
+
+.expl-sliders {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(190px, 1fr));
+  gap: 6px 18px;
+}
+
+.expl-depth-widget .perc-slider {
+  grid-template-columns: 62px 1fr 52px;
+}

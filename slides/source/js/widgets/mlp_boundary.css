@@ -1,0 +1,81 @@
+/* ===========================================
+   MLP BOUNDARY WIDGET  (:::interactive widget="mlpBoundary")
+   =========================================== */
+
+.mlp-widget {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+.mlp-canvas-wrap {
+  flex: 1;
+  min-height: 0;
+}
+
+.mlp-canvas,
+.land-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+  background: #0d1225;
+  border: 1px solid var(--line-color);
+  border-radius: var(--box-radius);
+}
+
+.mlp-controls,
+.land-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 10px 24px;
+  align-items: center;
+}
+
+.mlp-slider {
+  display: grid;
+  grid-template-columns: 70px 1fr 58px;
+  align-items: center;
+  gap: 10px;
+}
+
+.reveal .mlp-slider label,
+.reveal .mlp-slider p {
+  font-size: 12pt;
+  margin: 0;
+}
+
+.reveal .mlp-slider label {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.mlp-slider input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary-color);
+}
+
+.reveal .mlp-slider p {
+  color: var(--text-color);
+  font-family: monospace;
+  text-align: right;
+}
+
+.reveal .mlp-readout,
+.reveal .land-readout {
+  font-size: 13pt;
+  color: var(--muted-color);
+  text-align: center;
+  margin: 0;
+}
+
+.reveal .mlp-readout {
+  grid-column: 1 / -1;
+}
+
+.reveal .mlp-readout strong,
+.reveal .land-readout strong {
+  color: var(--secondary-color);
+}
