@@ -8,7 +8,7 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
   var NEURON_COLORS = [PRIMARY, SECONDARY];
   var GRID = 48;
   var generateData = MLP.generateData;
-  var state = { dataset: 'xor', neurons: [], outW: [], outB: 0, sample: { x: 0.82, y: 0.82 } };
+  var state = { dataset: 'xor', neurons: [], outW: [], outB: 0 };
 
   host.innerHTML =
     '<div class="perc-widget expl-depth-widget">' +
@@ -37,7 +37,6 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
       ];
       state.outW = [1.0, 0.0];
       state.outB = -0.5;
-      state.sample = { x: 0.78, y: 0.78 };
     } else {
       state.neurons = [
         { w1: 1.0, w2: 1.0, b: -0.7 },
@@ -45,7 +44,6 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
       ];
       state.outW = [-1.0, 1.0];
       state.outB = 0.5;
-      state.sample = { x: 0.82, y: 0.82 };
     }
   }
 
@@ -134,10 +132,6 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
 
   function predict(x, y) {
     return hiddenVals(x, y).pred;
-  }
-
-  function signed(v) {
-    return (v < 0 ? ' - ' : ' + ') + Math.abs(v).toFixed(1);
   }
 
   function lineSegment(n) {
@@ -254,15 +248,6 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
       if (predict(p.x, p.y) === p.cls) correct++;
     });
 
-    var sample = state.sample;
-    var sv = hiddenVals(sample.x, sample.y);
-    var spx = ox + sample.x * side, spy = oy + (1 - sample.y) * side;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(spx, spy, 8, 0, 6.2832); ctx.stroke();
-    ctx.fillStyle = sv.pred ? GREEN : RED;
-    ctx.beginPath(); ctx.arc(spx, spy, 4, 0, 6.2832); ctx.fill();
-
     // Frame
     ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
     ctx.strokeRect(ox, oy, side, side);
@@ -272,16 +257,7 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
     }
 
     var acc = correct / data.length;
-    var colorWord = sv.pred ? 'green' : 'red';
-    readout.innerHTML =
-      'x=(' + sample.x.toFixed(2) + ', ' + sample.y.toFixed(2) + ') → ' +
-      'h=(' + sv.hs[0] + ', ' + sv.hs[1] + ') because line values are (' +
-      sv.zs[0].toFixed(2) + ', ' + sv.zs[1].toFixed(2) + '), ' +
-      'y=sigmoid(' + state.outW[0].toFixed(1) + '·' + sv.hs[0] +
-      signed(state.outW[1]) + '·' + sv.hs[1] + signed(state.outB) +
-      ')=' + sv.y.toFixed(2) + (sv.y >= 0.5 ? ' ≥ 0.5' : ' < 0.5') +
-      ' ⇒ <strong>' + colorWord + '</strong>' +
-      ' | Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
+    readout.innerHTML = 'Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
   }
 
   preset(state.dataset);

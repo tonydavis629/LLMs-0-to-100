@@ -156,39 +156,30 @@ A hump that traps one weight is just a hill once a second weight can walk around
 <!-- .slide: id="adam" -->
 ## Adam Optimizer
 
-**Adam** (Adaptive Moment Estimation) gives every weight its own step size. With gradient $g_t = \nabla L(\mathbf w_t)$ at step $t$: <!-- .element: class="text-lg" -->
+**Adaptive Moment Estimation.** Every weight gets its own step size. With gradient $g_t$ at step $t$: <!-- .element: class="text-lg" style="margin-bottom:0;" -->
 
-:::columns grid="1.1fr 1fr" gap="36px" valign="center"
-$$
-\textcolor{#4a9eff}{m_t} = \beta_1 m_{t-1} + (1 - \beta_1) g_t
-$$
+<div class="adam-list">
 
-$$
-\textcolor{#f5a623}{v_t} = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
-$$
+- **Smooth the gradient** (momentum): $\textcolor{#4a9eff}{m_t} = \beta_1 m_{t-1} + (1 - \beta_1) g_t$
+  - Running average of the gradient. Mini-batch noise cancels, the consistent direction survives.
+  - The walk keeps rolling across flat stretches and saddles.
+- **Track the gradient's size**: $\textcolor{#f5a623}{v_t} = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2$
+  - Running average of the squared gradient, one value per weight.
+  - Tells us how big this weight's gradient usually is.
+- **Undo the zero start**: $\hat m_t = m_t / (1 - \beta_1^t)$, $\hat v_t = v_t / (1 - \beta_2^t)$
+  - Both averages begin at 0, so $m_1 = 0.1 g_1$ is a tenth of the real gradient.
+  - The correction fades as $t$ grows.
+- **Big gradient, small step. Small gradient, big step.**
+  - Dividing by $\sqrt{\hat v_t}$ cancels the gradient's size, so every weight moves about $\eta$ per step.
+  - $\epsilon$ keeps the division finite when $v_t$ is 0.
+- **Defaults**: $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\epsilon = 10^{-8}$. When in doubt, start with Adam.
+  - $\beta_1$ remembers about 10 steps, $\beta_2$ about 1000.
 
-$$
-\hat m_t = \frac{m_t}{1 - \beta_1^t}, \qquad \hat v_t = \frac{v_t}{1 - \beta_2^t}
-$$
+</div>
 
 $$
 \mathbf w_{t+1} = \mathbf w_t - \eta \frac{\textcolor{#4a9eff}{\hat m_t}}{\sqrt{\textcolor{#f5a623}{\hat v_t}} + \epsilon}
 $$
-+++
-<div class="text-lg" style="display:flex; flex-direction:column; gap:14px;">
-
-$\textcolor{#4a9eff}{m_t}$ is a running average of the gradient (**momentum**). Noise in opposite directions cancels; a consistent direction builds up speed.
-
-$\textcolor{#f5a623}{v_t}$ is a running average of the squared gradient. Dividing by $\sqrt{v_t}$ shrinks steps for weights with large gradients and stretches them for weights with small ones.
-
-Both start at zero, so early averages are biased toward zero. The $1 - \beta^t$ terms correct this; after a few dozen steps they are close to 1.
-
-Defaults: $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\epsilon = 10^{-8}$.
-
-</div>
-:::
-
-The default optimizer in practice. When in doubt, start with Adam. <!-- .element: class="text-lg" -->
 
 ---
 

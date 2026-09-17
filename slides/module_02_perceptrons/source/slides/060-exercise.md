@@ -110,10 +110,11 @@ return -(y_true * torch.log(y_pred) + (1 - y_true) * torch.log(1 - y_pred))
 def compute_gradients(
     X: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """For sigmoid + BCE the chain rule simplifies to:
-        error = y_pred - y_true
-        dw    = X.T @ error / n
-        db    = error.mean()
+    """For ONE sample, sigmoid + BCE collapse to dL/dz = y_pred - y_true, so
+        dL/dw_j = (y_pred - y_true) * x_j     (error times that weight's input)
+        dL/db   = (y_pred - y_true)
+    The batch loss is a mean, so average over the n samples: for weight j,
+    sum error_i * x_ij over every sample i, then divide by n. No loop needed.
     """
     error = y_pred - y_true  # How far each prediction is from its label
     n = X.shape[0]  # Number of samples in the batch
@@ -124,7 +125,7 @@ def compute_gradients(
     return (dw, db)
 ```
 +++
-**Hint:** `X.T @ error` weights each input column by its error; divide by `n` to average.
+**Hint:** Transpose `X` so a matrix product with `error` sums over the samples, then divide by `n`.
 +++
 **Answer:**
 
@@ -298,11 +299,59 @@ return sigmoid(self.output(h))
 
 ## Extra Credit: Your Own Optimizer
 
-Implement `SGD.step()`: apply the gradients autograd already computed. The runner trains the same MLP with `torch.optim.SGD`, then with your class. Same gradients; only the update object changes. <!-- .element: class="text-lg" -->
+Steps 3 and 4 again, for every parameter of the MLP at once, with autograd doing Step 3 for you. <!-- .element: class="text-lg" -->
 
-- One step on a hand example: $p = [1, 2]$, $\nabla = [0.5, -1]$, $\eta = 0.1$ gives $[0.95, 2.1]$
-- The update must happen **in place**, so the model keeps pointing at the same tensors
-- One step must match `torch.optim.SGD` on the same layer with the same gradients
+<div style="display:flex; gap:24px; align-items:stretch; margin-top:4px;">
+<div style="flex:1;">
+
+**Step 3 (single neuron, by hand)**
+
+```python
+dw, db = compute_gradients(X, y, y_pred)
+```
+
+Returns the gradients. `dw` has the shape of `weights`.
+
+</div>
+<div style="flex:1;">
+
+**Autograd (MLP, four parameter tensors)**
+
+```python
+loss.backward()
+```
+
+Computes every gradient, then stores each one on its own tensor as `p.grad`. Same shape as `p`. This is `dw`, for every `p`.
+
+</div>
+</div>
+
+```python
+w = torch.tensor([1.0, 2.0], requires_grad=True)
+loss = (w * w).sum()      # L = w1^2 + w2^2
+loss.backward()
+w.grad                    # tensor([2., 4.]) == dL/dw == 2w
+```
+
+---
+
+<!-- .slide: id="exercise-extra-credit-loop" -->
+
+## Where step() Runs
+
+The runner trains the same MLP with `torch.optim.SGD`, then again with your class. Same gradients; only the update object changes. <!-- .element: class="text-lg" -->
+
+```python
+for epoch in range(epochs):
+    optimizer.zero_grad()      # clear last step's .grad on every parameter
+    loss = binary_cross_entropy(y_col, model(X)).mean()
+    loss.backward()            # autograd: fill every p.grad   (Step 3)
+    optimizer.step()           # your code: p -= lr * p.grad   (Step 4)
+```
+
+- `step()` is `update_parameters` applied to every tensor in `self.params`, in place, so the model keeps pointing at the same tensors
+- `.grad` accumulates: `backward()` adds to whatever is there, so `zero_grad()` (provided) wipes it first
+- The update is not part of the loss, so it goes inside `with torch.no_grad():` to keep it off autograd's tape
 
 ---
 
@@ -317,7 +366,7 @@ def step(self) -> None:
     Returns:
         None. Each parameter tensor is modified in place.
     """
-    # TODO: update each parameter in place using its gradient
+    # TODO: update each parameter in place using its gradient p.grad (Step 4, for every tensor)
     raise NotImplementedError("Extra credit: implement the optimizer step")
 ```
 +++

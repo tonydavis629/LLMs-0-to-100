@@ -44,6 +44,7 @@ if "--solution" in sys.argv:
     sys.modules["exercise"] = _exercise
     _spec.loader.exec_module(_exercise)
 
+import matplotlib
 from exercise import (
     MLP,
     SGD,
@@ -54,12 +55,6 @@ from exercise import (
     update_parameters,
 )
 from src.activations import sigmoid
-from visualization import (
-    load_csv,
-    plot_decision_boundary,
-    plot_loss_curve,
-    save_comparison,
-)
 
 # One test file per step lives in tests/
 from tests.test_extra_credit import check_sgd_step, check_sgd_training
@@ -70,8 +65,13 @@ from tests.test_step4_update import check_update_parameters
 from tests.test_step5_single_neuron import check_single_neuron
 from tests.test_step6_relu import check_relu
 from tests.test_step7_mlp import check_mlp_forward, check_mlp_training
+from visualization import (
+    load_csv,
+    plot_decision_boundary,
+    plot_loss_curve,
+    save_comparison,
+)
 
-import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 

@@ -15,11 +15,10 @@ Each one needs only ONE line of code (or two at most).
 from __future__ import annotations
 
 import torch
-from torch import nn
 
 # Provided for you - see src/activations.py
 from src.activations import sigmoid
-
+from torch import nn
 
 # ---------------------------------------------------------------------------
 # Step 1: Forward pass (single neuron)
@@ -80,10 +79,9 @@ def compute_gradients(
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Compute gradients of the BCE loss w.r.t. the neuron's weights and bias.
 
-    For sigmoid + BCE the chain rule simplifies to:
-        error = y_pred - y_true
-        dw    = X.T @ error / n
-        db    = error.mean()
+    For ONE sample, sigmoid + BCE collapse to dL/dz = y_pred - y_true, so
+        dL/dw_j = (y_pred - y_true) * x_j     (error times that weight's input)
+        dL/db   = (y_pred - y_true)
 
     Args:
         X: Input batch, shape (n_samples, 2).
@@ -203,9 +201,48 @@ class MLP(nn.Module):
 class SGD:
     """A minimal stochastic-gradient-descent optimizer.
 
-    When you call `loss.backward()`, PyTorch's autograd fills in each
-    parameter's `.grad`. An optimizer is the piece that then nudges every
-    parameter downhill. This mirrors `torch.optim.SGD`.
+    This is Steps 3 and 4 again, but for every parameter of the MLP at once,
+    with PyTorch doing Step 3 for you.
+
+    In Step 3 you computed the gradients by hand and returned them:
+
+        dw, db = compute_gradients(X, y, y_pred)
+
+    For the MLP there are four parameter tensors (two weight matrices, two
+    bias vectors) and the derivation is longer, so the runner (src/main.py)
+    lets autograd do it:
+
+        loss = binary_cross_entropy(y_col, model(X)).mean()
+        loss.backward()
+
+    `backward()` computes dL/dp for every tensor `p` created with
+    `requires_grad=True` (every nn.Linear weight and bias is). Instead of
+    returning the gradients, it stores each one ON the tensor it belongs to,
+    in an attribute called `.grad`. For a parameter `p`, `p.grad` is a tensor
+    of the same shape as `p` holding dL/dp, exactly what Step 3 called `dw`.
+    A tiny example, with L = w1^2 + w2^2:
+
+        w = torch.tensor([1.0, 2.0], requires_grad=True)
+        loss = (w * w).sum()
+        loss.backward()
+        w.grad                       # tensor([2., 4.]) == dL/dw == 2w
+
+    So a training step looks like this:
+
+        optimizer.zero_grad()      # clear last step's .grad on every parameter
+        loss = ...                 # forward pass
+        loss.backward()            # autograd: fill every p.grad (Step 3)
+        optimizer.step()           # YOUR code: p -= lr * p.grad (Step 4)
+
+    `step()` is Step 4 (`update_parameters`) applied to every tensor in
+    `self.params`, in place. Two PyTorch details matter:
+
+    - `.grad` accumulates. `backward()` ADDS to whatever is already there, so
+      `zero_grad()` (provided) wipes it before each new backward pass.
+    - The update must not be recorded on autograd's tape (it is not part of
+      the loss), so it goes inside `with torch.no_grad():`.
+
+    This mirrors `torch.optim.SGD`.
 
     Args:
         params: Iterable of parameter tensors to update (requires_grad=True).
@@ -239,6 +276,6 @@ class SGD:
         Returns:
             None. Each parameter tensor is modified in place.
         """
-        # TODO: update each parameter in place using its gradient
+        # TODO: update each parameter in place using its gradient p.grad (Step 4, for every tensor)
         # HINT: inside `with torch.no_grad():`, loop over self.params and do `p -= self.lr * p.grad`
         raise NotImplementedError("Extra credit: implement the optimizer step")

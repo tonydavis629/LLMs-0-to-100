@@ -116,6 +116,9 @@ var MLP = (function () {
   }
 
   function displayPieces(width, depth) {
+    // A width-1 stack squeezes the input to one scalar, and every later layer
+    // is monotone in it, so the boundary stays a single line at any depth.
+    if (width <= 1) return 1;
     return Math.max(1, width * depth);
   }
 

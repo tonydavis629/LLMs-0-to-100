@@ -1,5 +1,4 @@
 :::divider id="title" title="LLMs 0 to 100" sub="Module 2: Perceptrons and Optimization"
-Neurons to Networks
 :::
 
 ---
@@ -43,6 +42,37 @@ $$H(p, q) = -\sum_{x} p(x) \log q(x)$$
 :::note
 **Key idea:** Module 1 used cross-entropy to *score* a model. Module 2 uses it to *train* one.
 :::
+
+---
+
+<!-- .slide: id="review-matmul" -->
+
+## Review: Matrix Multiplication
+
+Row of the left times column of the right, summed. Shapes: $(m \times n)(n \times p) = m \times p$.
+
+$$
+\begin{bmatrix}
+\textcolor{#f5a623}{1} & \textcolor{#f5a623}{2} \cr
+3 & 4
+\end{bmatrix}
+\begin{bmatrix}
+\textcolor{#4a9eff}{5} \cr
+\textcolor{#4a9eff}{6}
+\end{bmatrix} =
+\begin{bmatrix}
+\textcolor{#f5a623}{1} \cdot \textcolor{#4a9eff}{5} + \textcolor{#f5a623}{2} \cdot \textcolor{#4a9eff}{6} \cr
+3 \cdot 5 + 4 \cdot 6
+\end{bmatrix} =
+\begin{bmatrix}
+17 \cr
+39
+\end{bmatrix}
+$$
+
+- Inner dimensions must match
+- Each output entry is one dot product
+- A neural network layer is exactly this: $\mathbf{W}\mathbf{x}$
 
 ---
 

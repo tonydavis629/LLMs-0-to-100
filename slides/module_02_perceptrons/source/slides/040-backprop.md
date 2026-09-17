@@ -1,4 +1,4 @@
-:::divider id="divider-backprop" title="Backpropagation" sub="The chain rule, applied systematically"
+:::divider id="divider-backprop" title="Backpropagation"
 :::
 
 ---
@@ -169,41 +169,3 @@ $$
 <div style="align-self:center; color: var(--muted-color); font-size:1.4em;">&rarr;</div>
 <div style="flex:1; max-width:330px; border:1.5px solid #3fb950; border-radius:8px; padding:10px 12px; text-align:center;"><div style="display:inline-block; width:36px; height:36px; line-height:36px; font-size:20px; border-radius:50%; background:#3fb950; color:#0a0e1a; font-weight:700;">4</div><div style="font-weight:600; margin-top:6px;">Update</div><div style="color: var(--muted-color); font-size:0.85em;">W &larr; W &minus; &eta; &part;L/&part;W</div></div>
 </div>
-
----
-
-<!-- .slide: id="gradient-step-calculation" -->
-
-## Gradient Descent as a Calculation
-
-At a point on the loss surface, the gradient points uphill. The update adds a step in the opposite direction.
-
-:::columns cols="2" gap="36px"
-**Current point**
-
-$$
-\mathbf w_{\text{old}} =
-\begin{bmatrix}
-w_1 \\
-w_2
-\end{bmatrix}
-$$
-
-$$
-\nabla L(\mathbf w_{\text{old}}) =
-\begin{bmatrix}
-\frac{\partial L}{\partial w_1} \\
-\frac{\partial L}{\partial w_2}
-\end{bmatrix}
-$$
-+++
-**Update**
-
-$$
-\mathbf w_{\text{new}} =
-\mathbf w_{\text{old}} + \left(-\eta \nabla L(\mathbf w_{\text{old}})\right)
-$$
-
-- New weights = new coordinates
-- New coordinates = new loss height
-:::

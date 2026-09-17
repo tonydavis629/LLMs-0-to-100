@@ -115,3 +115,11 @@
   color: #ff2d55;
   font-weight: 700;
 }
+
+/* Adam slide: simple headline bullets, smaller muted detail underneath */
+.reveal .adam-list ul { margin: 6px 0; }
+.reveal .adam-list > ul > li { font-size: 18pt; margin-bottom: 2px; }
+.reveal .adam-list ul ul { margin: 0; }
+.reveal .adam-list ul ul li { font-size: 13pt; color: var(--muted-color); margin-bottom: 0; padding-left: 20px; line-height: 1.3; }
+.reveal .adam-list ul ul li::before { top: 0.55em; }
+.reveal .adam-list + p { margin-top: 4px; }

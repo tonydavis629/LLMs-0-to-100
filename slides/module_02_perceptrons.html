@@ -1547,6 +1547,46 @@
 .iw-stat.warn .iw-stat-num { color: #e74c3c; }
 .iw-stat.good .iw-stat-num { color: #3fb950; }
 
+/* ===========================================
+   PERCEPTRON LINE WIDGET  (widget="perceptronLine")
+   Compact plot of w·x + b = 0 with w1/w2/b sliders,
+   embedded below the neuron diagram.
+   =========================================== */
+
+.pline-widget {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.reveal .pline-canvas {
+  width: auto;
+  height: 100%;
+  min-height: 0;
+  aspect-ratio: 1 / 1;
+}
+
+.pline-widget .perc-slider {
+  grid-template-columns: 24px 1fr 36px;
+  gap: 6px;
+}
+
+.reveal .pline-widget .perc-slider label,
+.reveal .pline-widget .perc-slider .perc-val {
+  font-size: 10pt;
+}
+
+.pline-widget .perc-sliders {
+  gap: 2px;
+}
+
+.reveal .pline-widget .perc-readout {
+  font-size: 10pt;
+}
+
 /* Module 2 overrides on top of the shared slides/source/styles.css.
    This module uses a roomier slide header and larger inter-element gap. */
 :root {
@@ -1665,6 +1705,14 @@
   font-weight: 700;
 }
 
+/* Adam slide: simple headline bullets, smaller muted detail underneath */
+.reveal .adam-list ul { margin: 6px 0; }
+.reveal .adam-list > ul > li { font-size: 18pt; margin-bottom: 2px; }
+.reveal .adam-list ul ul { margin: 0; }
+.reveal .adam-list ul ul li { font-size: 13pt; color: var(--muted-color); margin-bottom: 0; padding-left: 20px; line-height: 1.3; }
+.reveal .adam-list ul ul li::before { top: 0.55em; }
+.reveal .adam-list + p { margin-top: 4px; }
+
   </style>
 </head>
 <body>
@@ -1681,7 +1729,6 @@
 
 Module 2: Perceptrons and Optimization
 
-Neurons to Networks
 
 ---
 
@@ -1739,6 +1786,37 @@ $$H(p, q) = -\sum_{x} p(x) \log q(x)$$
 
 ---
 
+<!-- .slide: id="review-matmul" -->
+
+## Review: Matrix Multiplication
+
+Row of the left times column of the right, summed. Shapes: $(m \times n)(n \times p) = m \times p$.
+
+$$
+\begin{bmatrix}
+\textcolor{#f5a623}{1} & \textcolor{#f5a623}{2} \cr
+3 & 4
+\end{bmatrix}
+\begin{bmatrix}
+\textcolor{#4a9eff}{5} \cr
+\textcolor{#4a9eff}{6}
+\end{bmatrix} =
+\begin{bmatrix}
+\textcolor{#f5a623}{1} \cdot \textcolor{#4a9eff}{5} + \textcolor{#f5a623}{2} \cdot \textcolor{#4a9eff}{6} \cr
+3 \cdot 5 + 4 \cdot 6
+\end{bmatrix} =
+\begin{bmatrix}
+17 \cr
+39
+\end{bmatrix}
+$$
+
+- Inner dimensions must match
+- Each output entry is one dot product
+- A neural network layer is exactly this: $\mathbf{W}\mathbf{x}$
+
+---
+
 <div class="figure-card">
 
 ![Frank Rosenblatt](module_02_perceptrons/images/rosenblatt.jpg)
@@ -1768,8 +1846,6 @@ $$H(p, q) = -\sum_{x} p(x) \log q(x)$$
 <!-- .slide: id="divider-neuron" class="section-divider" data-state="is-section-divider" -->
 
 # The Neuron Model
-
-Weighted sums, activations, and the simplest learning machine
 
 
 ---
@@ -1855,21 +1931,17 @@ Real neurons use spike timing, dendritic computation, and many neurotransmitters
 
 ## The Perceptron
 
-A single neuron computes:
+A single neuron computes $y = \textcolor{#3fb950}{\sigma}(\textcolor{#f5a623}{\mathbf w} \cdot \textcolor{#4a9eff}{\mathbf x} + \textcolor{#c678dd}{b})$
 
-$$y = \sigma(\mathbf{w} \cdot \mathbf{x} + b)$$
-
-<div class="slide-columns" style="grid-template-columns: 1fr 1.1fr; gap: 30px; align-items: center;">
+<div class="slide-columns" style="grid-template-columns: 0.9fr 1.2fr; gap: 30px; align-items: start;">
 
 <div>
 
-<div>
-<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">$\mathbf{w} \cdot \mathbf{x}$</p>
-<p class="text-lg" style="margin:2px 0 14px 0;">Dot product: how much each input matters</p>
-<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">$b$</p>
-<p class="text-lg" style="margin:2px 0 14px 0;">Bias: shifts the decision boundary</p>
-<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">$\sigma(\cdot)$</p>
-<p class="text-lg" style="margin:2px 0 0 0;">Activation: adds nonlinearity</p>
+<div style="padding-top:36px;">
+<p class="text-lg" style="margin:0 0 10px 0; white-space:nowrap;">$\textcolor{#f5a623}{\mathbf w}$ &nbsp; Weights: how much each input matters</p>
+<p class="text-lg" style="margin:0 0 10px 0; white-space:nowrap;">$\textcolor{#4a9eff}{\mathbf x}$ &nbsp; Inputs</p>
+<p class="text-lg" style="margin:0 0 10px 0; white-space:nowrap;">$\textcolor{#c678dd}{b}$ &nbsp; Bias: shifts the boundary</p>
+<p class="text-lg" style="margin:0; white-space:nowrap;">$\textcolor{#3fb950}{\sigma}$ &nbsp; Activation: adds nonlinearity</p>
 </div>
 
 </div>
@@ -1877,128 +1949,35 @@ $$y = \sigma(\mathbf{w} \cdot \mathbf{x} + b)$$
 <div>
 
 <div style="text-align: center;">
-<svg viewBox="0 0 340 200" width="100%" style="max-height:230px;">
+<svg viewBox="0 0 340 200" width="100%" style="max-height:240px;">
   <defs>
     <marker id="peqarrow" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto">
       <path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/>
     </marker>
   </defs>
   <circle cx="38" cy="56" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
-  <text x="38" y="61" fill="#e8eaf0" font-size="15" text-anchor="middle">x₁</text>
+  <text x="38" y="61" fill="#4a9eff" font-size="15" text-anchor="middle">x₁</text>
   <circle cx="38" cy="148" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
-  <text x="38" y="153" fill="#e8eaf0" font-size="15" text-anchor="middle">x₂</text>
+  <text x="38" y="153" fill="#4a9eff" font-size="15" text-anchor="middle">x₂</text>
   <line x1="58" y1="56" x2="142" y2="96" stroke="#8892a4" stroke-width="2" marker-end="url(#peqarrow)"/>
   <line x1="58" y1="148" x2="142" y2="118" stroke="#8892a4" stroke-width="2" marker-end="url(#peqarrow)"/>
   <text x="90" y="66" fill="#f5a623" font-size="14" text-anchor="middle">w₁</text>
   <text x="90" y="146" fill="#f5a623" font-size="14" text-anchor="middle">w₂</text>
   <circle cx="170" cy="107" r="28" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
   <text x="170" y="114" fill="#e8eaf0" font-size="20" text-anchor="middle">Σ</text>
-  <text x="170" y="166" fill="#8892a4" font-size="13" text-anchor="middle">+ bias b</text>
+  <text x="170" y="166" fill="#c678dd" font-size="13" text-anchor="middle">+ bias b</text>
   <line x1="198" y1="107" x2="230" y2="107" stroke="#8892a4" stroke-width="2" marker-end="url(#peqarrow)"/>
   <rect x="232" y="82" width="54" height="50" rx="6" fill="#0d1225" stroke="#3fb950" stroke-width="2.5"/>
-  <text x="259" y="114" fill="#e8eaf0" font-size="20" text-anchor="middle">σ</text>
+  <text x="259" y="114" fill="#3fb950" font-size="20" text-anchor="middle">σ</text>
   <line x1="286" y1="107" x2="318" y2="107" stroke="#8892a4" stroke-width="2" marker-end="url(#peqarrow)"/>
   <text x="330" y="112" fill="#e8eaf0" font-size="15" text-anchor="middle">y</text>
 </svg>
+<div class="interactive-host" data-widget="perceptronLine" style="height:150px; display:flex; margin-top:10px;"></div>
 </div>
 
 </div>
 
 </div>
-
-Linear function, then nonlinearity. Every neural network repeats this pattern.
-
----
-
-<!-- .slide: id="activation-functions" -->
-
-## Activation Functions
-
-<div class="slide-columns" style="grid-template-columns: repeat(4, 1fr); gap: 18px;">
-
-<div>
-
-<div style="text-align:center;">
-<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Step</p>
-<p style="color: var(--muted-color); margin:2px 0;">$\sigma(z)=\mathbb{1}[z \geq 0]$</p>
-<svg viewBox="0 0 240 150" width="100%" style="max-height:150px;">
-  <line x1="120" y1="14" x2="120" y2="136" stroke="#2a3450" stroke-width="1.5"/>
-  <line x1="18" y1="125" x2="222" y2="125" stroke="#2a3450" stroke-width="1.5"/>
-  <polyline points="20,125 120,125" fill="none" stroke="#f5a623" stroke-width="3"/>
-  <polyline points="120,25 220,25" fill="none" stroke="#f5a623" stroke-width="3"/>
-  <line x1="120" y1="125" x2="120" y2="25" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="4 4"/>
-</svg>
-<p style="color: var(--muted-color); font-size:13pt;">Binary; not differentiable at 0</p>
-</div>
-
-</div>
-
-<div>
-
-<div style="text-align:center;">
-<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Sigmoid</p>
-<p style="color: var(--muted-color); margin:2px 0;">$\dfrac{1}{1 + e^{-z}}$</p>
-<svg viewBox="0 0 240 150" width="100%" style="max-height:150px;">
-  <line x1="120" y1="14" x2="120" y2="136" stroke="#2a3450" stroke-width="1.5"/>
-  <line x1="18" y1="125" x2="222" y2="125" stroke="#2a3450" stroke-width="1.5"/>
-  <polyline points="20,124.8 30,124.6 40,124.2 50,123.5 60,122.3 70,120.3 80,116.7 90,110.8 100,101.9 110,89.6 120,75.0 130,60.4 140,48.1 150,39.2 160,33.3 170,29.7 180,27.7 190,26.5 200,25.8 210,25.4 220,25.2" fill="none" stroke="#f5a623" stroke-width="3"/>
-</svg>
-<p style="color: var(--muted-color); font-size:13pt;">(0,1); vanishing gradients</p>
-</div>
-
-</div>
-
-<div>
-
-<div style="text-align:center;">
-<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Tanh</p>
-<p style="color: var(--muted-color); margin:2px 0;">$\dfrac{e^z - e^{-z}}{e^z + e^{-z}}$</p>
-<svg viewBox="0 0 240 150" width="100%" style="max-height:150px;">
-  <line x1="120" y1="14" x2="120" y2="136" stroke="#2a3450" stroke-width="1.5"/>
-  <line x1="18" y1="75" x2="222" y2="75" stroke="#2a3450" stroke-width="1.5"/>
-  <polyline points="20,125.0 40,125.0 60,124.9 70,124.8 80,124.2 90,122.3 100,116.7 110,101.9 120,75.0 130,48.1 140,33.3 150,27.7 160,25.8 170,25.2 180,25.1 200,25.0 220,25.0" fill="none" stroke="#f5a623" stroke-width="3"/>
-</svg>
-<p style="color: var(--muted-color); font-size:13pt;">Zero-centered (-1,1)</p>
-</div>
-
-</div>
-
-<div>
-
-<div style="text-align:center;">
-<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">ReLU</p>
-<p style="color: var(--muted-color); margin:2px 0;">$\max(0, z)$</p>
-<svg viewBox="0 0 240 150" width="100%" style="max-height:150px;">
-  <line x1="120" y1="14" x2="120" y2="136" stroke="#2a3450" stroke-width="1.5"/>
-  <line x1="18" y1="125" x2="222" y2="125" stroke="#2a3450" stroke-width="1.5"/>
-  <polyline points="20,125 120,125 210,35" fill="none" stroke="#f5a623" stroke-width="3"/>
-</svg>
-<p style="color: var(--muted-color); font-size:13pt;">Cheap; the modern default</p>
-</div>
-
-</div>
-
-</div>
-
-The course MLP uses **ReLU** in its hidden layer and **sigmoid** on the output (for a probability). <!-- .element: class="text-lg" style="text-align:center; color: var(--muted-color); margin-top: 14px;" -->
-
----
-
-<!-- .slide: id="why-nonlinearity" -->
-
-## Why Nonlinearity Matters
-
-Stack two linear layers with no activation between them:
-
-$$f(\mathbf{x}) = W_2 (W_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2$$
-
-Multiply it out and it is still just one linear layer:
-
-$$f(\mathbf{x}) = (W_2 W_1) \mathbf{x} + (W_2 \mathbf{b}_1 + \mathbf{b}_2) = W'\mathbf{x} + \mathbf{b}'$$
-
-- Linear layers collapse into one linear function
-- Depth alone gains **nothing**
-- The activation between layers is what adds power
 
 ---
 
@@ -2134,6 +2113,124 @@ One matrix multiply per layer. <!-- .element: class="text-lg" style="color: var(
 </div>
 
 </div>
+
+---
+
+<!-- .slide: id="activation-functions" -->
+
+## Activation Functions
+
+<div class="slide-columns" style="grid-template-columns: repeat(4, 1fr); gap: 18px;">
+
+<div>
+
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Step</p>
+<p style="color: var(--muted-color); margin:2px 0;">$\sigma(z)=\mathbb{1}[z \geq 0]$</p>
+<svg viewBox="0 0 240 150" width="100%" style="max-height:150px;">
+  <line x1="120" y1="14" x2="120" y2="136" stroke="#2a3450" stroke-width="1.5"/>
+  <line x1="18" y1="125" x2="222" y2="125" stroke="#2a3450" stroke-width="1.5"/>
+  <polyline points="20,125 120,125" fill="none" stroke="#f5a623" stroke-width="3"/>
+  <polyline points="120,25 220,25" fill="none" stroke="#f5a623" stroke-width="3"/>
+  <line x1="120" y1="125" x2="120" y2="25" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="4 4"/>
+</svg>
+<p style="color: var(--muted-color); font-size:13pt;">Binary; not differentiable at 0</p>
+</div>
+
+</div>
+
+<div>
+
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Sigmoid</p>
+<p style="color: var(--muted-color); margin:2px 0;">$\dfrac{1}{1 + e^{-z}}$</p>
+<svg viewBox="0 0 240 150" width="100%" style="max-height:150px;">
+  <line x1="120" y1="14" x2="120" y2="136" stroke="#2a3450" stroke-width="1.5"/>
+  <line x1="18" y1="125" x2="222" y2="125" stroke="#2a3450" stroke-width="1.5"/>
+  <polyline points="20,124.8 30,124.6 40,124.2 50,123.5 60,122.3 70,120.3 80,116.7 90,110.8 100,101.9 110,89.6 120,75.0 130,60.4 140,48.1 150,39.2 160,33.3 170,29.7 180,27.7 190,26.5 200,25.8 210,25.4 220,25.2" fill="none" stroke="#f5a623" stroke-width="3"/>
+</svg>
+<p style="color: var(--muted-color); font-size:13pt;">(0,1); vanishing gradients</p>
+</div>
+
+</div>
+
+<div>
+
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">Tanh</p>
+<p style="color: var(--muted-color); margin:2px 0;">$\dfrac{e^z - e^{-z}}{e^z + e^{-z}}$</p>
+<svg viewBox="0 0 240 150" width="100%" style="max-height:150px;">
+  <line x1="120" y1="14" x2="120" y2="136" stroke="#2a3450" stroke-width="1.5"/>
+  <line x1="18" y1="75" x2="222" y2="75" stroke="#2a3450" stroke-width="1.5"/>
+  <polyline points="20,125.0 40,125.0 60,124.9 70,124.8 80,124.2 90,122.3 100,116.7 110,101.9 120,75.0 130,48.1 140,33.3 150,27.7 160,25.8 170,25.2 180,25.1 200,25.0 220,25.0" fill="none" stroke="#f5a623" stroke-width="3"/>
+</svg>
+<p style="color: var(--muted-color); font-size:13pt;">Zero-centered (-1,1)</p>
+</div>
+
+</div>
+
+<div>
+
+<div style="text-align:center;">
+<p class="text-lg" style="color: var(--secondary-color); font-weight:600; margin:0;">ReLU</p>
+<p style="color: var(--muted-color); margin:2px 0;">$\max(0, z)$</p>
+<svg viewBox="0 0 240 150" width="100%" style="max-height:150px;">
+  <line x1="120" y1="14" x2="120" y2="136" stroke="#2a3450" stroke-width="1.5"/>
+  <line x1="18" y1="125" x2="222" y2="125" stroke="#2a3450" stroke-width="1.5"/>
+  <polyline points="20,125 120,125 210,35" fill="none" stroke="#f5a623" stroke-width="3"/>
+</svg>
+<p style="color: var(--muted-color); font-size:13pt;">Cheap; the modern default</p>
+</div>
+
+</div>
+
+</div>
+
+The course MLP uses **ReLU** in its hidden layer and **sigmoid** on the output (for a probability). <!-- .element: class="text-lg" style="text-align:center; color: var(--muted-color); margin-top: 8px;" -->
+
+<div style="text-align:center; margin-top:4px;">
+<svg viewBox="0 0 340 200" width="100%" style="max-height:150px;">
+  <defs>
+    <marker id="bioarrow" markerWidth="8" markerHeight="8" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"/>
+    </marker>
+  </defs>
+  <circle cx="38" cy="56" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="38" y="61" fill="#e8eaf0" font-size="15" text-anchor="middle">x₁</text>
+  <circle cx="38" cy="148" r="20" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="38" y="153" fill="#e8eaf0" font-size="15" text-anchor="middle">x₂</text>
+  <line x1="58" y1="56" x2="142" y2="96" stroke="#8892a4" stroke-width="2" marker-end="url(#bioarrow)"/>
+  <line x1="58" y1="148" x2="142" y2="118" stroke="#8892a4" stroke-width="2" marker-end="url(#bioarrow)"/>
+  <text x="90" y="66" fill="#f5a623" font-size="14" text-anchor="middle">w₁</text>
+  <text x="90" y="146" fill="#f5a623" font-size="14" text-anchor="middle">w₂</text>
+  <circle cx="170" cy="107" r="28" fill="#0d1225" stroke="#4a9eff" stroke-width="2.5"/>
+  <text x="170" y="114" fill="#e8eaf0" font-size="20" text-anchor="middle">Σ</text>
+  <text x="170" y="166" fill="#8892a4" font-size="13" text-anchor="middle">+ bias b</text>
+  <line x1="198" y1="107" x2="230" y2="107" stroke="#8892a4" stroke-width="2" marker-end="url(#bioarrow)"/>
+  <rect x="232" y="82" width="54" height="50" rx="6" fill="#0d1225" stroke="#3fb950" stroke-width="2.5"/>
+  <text x="259" y="114" fill="#e8eaf0" font-size="20" text-anchor="middle">σ</text>
+  <line x1="286" y1="107" x2="318" y2="107" stroke="#8892a4" stroke-width="2" marker-end="url(#bioarrow)"/>
+  <text x="330" y="112" fill="#e8eaf0" font-size="15" text-anchor="middle">y</text>
+</svg>
+</div>
+
+---
+
+<!-- .slide: id="why-nonlinearity" -->
+
+## Why Nonlinearity Matters
+
+Stack two linear layers with no activation between them:
+
+$$f(\mathbf{x}) = W_2 (W_1 \mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2$$
+
+Multiply it out and it is still just one linear layer:
+
+$$f(\mathbf{x}) = (W_2 W_1) \mathbf{x} + (W_2 \mathbf{b}_1 + \mathbf{b}_2) = W'\mathbf{x} + \mathbf{b}'$$
+
+- Linear layers collapse into one linear function
+- Depth alone gains **nothing**
+- The activation between layers is what adds power
 
 ---
 
@@ -2565,8 +2662,6 @@ The boundary *looks* curved. Up close it is **piecewise-linear**: many straight 
 
 # Backpropagation
 
-The chain rule, applied systematically
-
 
 ---
 
@@ -2757,54 +2852,6 @@ $$
 <div style="flex:1; max-width:330px; border:1.5px solid #e74c3c; border-radius:8px; padding:10px 12px; text-align:center;"><div style="display:inline-block; width:36px; height:36px; line-height:36px; font-size:20px; border-radius:50%; background:#e74c3c; color:#0a0e1a; font-weight:700;">3</div><div style="font-weight:600; margin-top:6px;">Gradient</div><div style="color: var(--muted-color); font-size:0.85em;">&part;L/&part;W for every weight</div></div>
 <div style="align-self:center; color: var(--muted-color); font-size:1.4em;">&rarr;</div>
 <div style="flex:1; max-width:330px; border:1.5px solid #3fb950; border-radius:8px; padding:10px 12px; text-align:center;"><div style="display:inline-block; width:36px; height:36px; line-height:36px; font-size:20px; border-radius:50%; background:#3fb950; color:#0a0e1a; font-weight:700;">4</div><div style="font-weight:600; margin-top:6px;">Update</div><div style="color: var(--muted-color); font-size:0.85em;">W &larr; W &minus; &eta; &part;L/&part;W</div></div>
-</div>
-
----
-
-<!-- .slide: id="gradient-step-calculation" -->
-
-## Gradient Descent as a Calculation
-
-At a point on the loss surface, the gradient points uphill. The update adds a step in the opposite direction.
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 36px;">
-
-<div>
-
-**Current point**
-
-$$
-\mathbf w_{\text{old}} =
-\begin{bmatrix}
-w_1 \\
-w_2
-\end{bmatrix}
-$$
-
-$$
-\nabla L(\mathbf w_{\text{old}}) =
-\begin{bmatrix}
-\frac{\partial L}{\partial w_1} \\
-\frac{\partial L}{\partial w_2}
-\end{bmatrix}
-$$
-
-</div>
-
-<div>
-
-**Update**
-
-$$
-\mathbf w_{\text{new}} =
-\mathbf w_{\text{old}} + \left(-\eta \nabla L(\mathbf w_{\text{old}})\right)
-$$
-
-- New weights = new coordinates
-- New coordinates = new loss height
-
-</div>
-
 </div>
 
 ---
@@ -3034,49 +3081,30 @@ A hump that traps one weight is just a hill once a second weight can walk around
 <!-- .slide: id="adam" -->
 ## Adam Optimizer
 
-**Adam** (Adaptive Moment Estimation) gives every weight its own step size. With gradient $g_t = \nabla L(\mathbf w_t)$ at step $t$: <!-- .element: class="text-lg" -->
+**Adaptive Moment Estimation.** Every weight gets its own step size. With gradient $g_t$ at step $t$: <!-- .element: class="text-lg" style="margin-bottom:0;" -->
 
-<div class="slide-columns" style="grid-template-columns: 1.1fr 1fr; gap: 36px; align-items: center;">
+<div class="adam-list">
 
-<div>
+- **Smooth the gradient** (momentum): $\textcolor{#4a9eff}{m_t} = \beta_1 m_{t-1} + (1 - \beta_1) g_t$
+  - Running average of the gradient. Mini-batch noise cancels, the consistent direction survives.
+  - The walk keeps rolling across flat stretches and saddles.
+- **Track the gradient's size**: $\textcolor{#f5a623}{v_t} = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2$
+  - Running average of the squared gradient, one value per weight.
+  - Tells us how big this weight's gradient usually is.
+- **Undo the zero start**: $\hat m_t = m_t / (1 - \beta_1^t)$, $\hat v_t = v_t / (1 - \beta_2^t)$
+  - Both averages begin at 0, so $m_1 = 0.1 g_1$ is a tenth of the real gradient.
+  - The correction fades as $t$ grows.
+- **Big gradient, small step. Small gradient, big step.**
+  - Dividing by $\sqrt{\hat v_t}$ cancels the gradient's size, so every weight moves about $\eta$ per step.
+  - $\epsilon$ keeps the division finite when $v_t$ is 0.
+- **Defaults**: $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\epsilon = 10^{-8}$. When in doubt, start with Adam.
+  - $\beta_1$ remembers about 10 steps, $\beta_2$ about 1000.
 
-$$
-\textcolor{#4a9eff}{m_t} = \beta_1 m_{t-1} + (1 - \beta_1) g_t
-$$
-
-$$
-\textcolor{#f5a623}{v_t} = \beta_2 v_{t-1} + (1 - \beta_2) g_t^2
-$$
-
-$$
-\hat m_t = \frac{m_t}{1 - \beta_1^t}, \qquad \hat v_t = \frac{v_t}{1 - \beta_2^t}
-$$
+</div>
 
 $$
 \mathbf w_{t+1} = \mathbf w_t - \eta \frac{\textcolor{#4a9eff}{\hat m_t}}{\sqrt{\textcolor{#f5a623}{\hat v_t}} + \epsilon}
 $$
-
-</div>
-
-<div>
-
-<div class="text-lg" style="display:flex; flex-direction:column; gap:14px;">
-
-$\textcolor{#4a9eff}{m_t}$ is a running average of the gradient (**momentum**). Noise in opposite directions cancels; a consistent direction builds up speed.
-
-$\textcolor{#f5a623}{v_t}$ is a running average of the squared gradient. Dividing by $\sqrt{v_t}$ shrinks steps for weights with large gradients and stretches them for weights with small ones.
-
-Both start at zero, so early averages are biased toward zero. The $1 - \beta^t$ terms correct this; after a few dozen steps they are close to 1.
-
-Defaults: $\beta_1 = 0.9$, $\beta_2 = 0.999$, $\epsilon = 10^{-8}$.
-
-</div>
-
-</div>
-
-</div>
-
-The default optimizer in practice. When in doubt, start with Adam. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -3275,10 +3303,11 @@ return -(y_true * torch.log(y_pred) + (1 - y_true) * torch.log(1 - y_pred))
 def compute_gradients(
     X: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """For sigmoid + BCE the chain rule simplifies to:
-        error = y_pred - y_true
-        dw    = X.T @ error / n
-        db    = error.mean()
+    """For ONE sample, sigmoid + BCE collapse to dL/dz = y_pred - y_true, so
+        dL/dw_j = (y_pred - y_true) * x_j     (error times that weight's input)
+        dL/db   = (y_pred - y_true)
+    The batch loss is a mean, so average over the n samples: for weight j,
+    sum error_i * x_ij over every sample i, then divide by n. No loop needed.
     """
     error = y_pred - y_true  # How far each prediction is from its label
     n = X.shape[0]  # Number of samples in the batch
@@ -3291,7 +3320,7 @@ def compute_gradients(
 
 <div class="fragment hint-box">
 
-**Hint:** `X.T @ error` weights each input column by its error; divide by `n` to average.
+**Hint:** Transpose `X` so a matrix product with `error` sums over the samples, then divide by `n`.
 
 </div>
 
@@ -3486,11 +3515,59 @@ return sigmoid(self.output(h))
 
 ## Extra Credit: Your Own Optimizer
 
-Implement `SGD.step()`: apply the gradients autograd already computed. The runner trains the same MLP with `torch.optim.SGD`, then with your class. Same gradients; only the update object changes. <!-- .element: class="text-lg" -->
+Steps 3 and 4 again, for every parameter of the MLP at once, with autograd doing Step 3 for you. <!-- .element: class="text-lg" -->
 
-- One step on a hand example: $p = [1, 2]$, $\nabla = [0.5, -1]$, $\eta = 0.1$ gives $[0.95, 2.1]$
-- The update must happen **in place**, so the model keeps pointing at the same tensors
-- One step must match `torch.optim.SGD` on the same layer with the same gradients
+<div style="display:flex; gap:24px; align-items:stretch; margin-top:4px;">
+<div style="flex:1;">
+
+**Step 3 (single neuron, by hand)**
+
+```python
+dw, db = compute_gradients(X, y, y_pred)
+```
+
+Returns the gradients. `dw` has the shape of `weights`.
+
+</div>
+<div style="flex:1;">
+
+**Autograd (MLP, four parameter tensors)**
+
+```python
+loss.backward()
+```
+
+Computes every gradient, then stores each one on its own tensor as `p.grad`. Same shape as `p`. This is `dw`, for every `p`.
+
+</div>
+</div>
+
+```python
+w = torch.tensor([1.0, 2.0], requires_grad=True)
+loss = (w * w).sum()      # L = w1^2 + w2^2
+loss.backward()
+w.grad                    # tensor([2., 4.]) == dL/dw == 2w
+```
+
+---
+
+<!-- .slide: id="exercise-extra-credit-loop" -->
+
+## Where step() Runs
+
+The runner trains the same MLP with `torch.optim.SGD`, then again with your class. Same gradients; only the update object changes. <!-- .element: class="text-lg" -->
+
+```python
+for epoch in range(epochs):
+    optimizer.zero_grad()      # clear last step's .grad on every parameter
+    loss = binary_cross_entropy(y_col, model(X)).mean()
+    loss.backward()            # autograd: fill every p.grad   (Step 3)
+    optimizer.step()           # your code: p -= lr * p.grad   (Step 4)
+```
+
+- `step()` is `update_parameters` applied to every tensor in `self.params`, in place, so the model keeps pointing at the same tensors
+- `.grad` accumulates: `backward()` adds to whatever is there, so `zero_grad()` (provided) wipes it first
+- The update is not part of the loss, so it goes inside `with torch.no_grad():` to keep it off autograd's tape
 
 ---
 
@@ -3508,7 +3585,7 @@ def step(self) -> None:
     Returns:
         None. Each parameter tensor is modified in place.
     """
-    # TODO: update each parameter in place using its gradient
+    # TODO: update each parameter in place using its gradient p.grad (Step 4, for every tensor)
     raise NotImplementedError("Extra credit: implement the optimizer step")
 ```
 
@@ -4188,26 +4265,6 @@ window.ASSET_BASE = "module_02_perceptrons/";
       arrow2D(ctx, cur, down, STEP, 4.5, null);
     }
 
-    function drawLegend(ctx, W, H) {
-      ctx.save();
-      ctx.font = "12px Inter, sans-serif";
-      ctx.textAlign = "left";
-      var items = [
-        [STEP, "next step: downhill"],
-        [STEP, "trail: steps so far"]
-      ];
-      var x = 10;
-      items.forEach(function(it) {
-        ctx.fillStyle = it[0];
-        ctx.fillRect(x, H - 18, 14, 3);
-        x += 18;
-        ctx.fillStyle = TEXT;
-        ctx.fillText(it[1], x, H - 13);
-        x += ctx.measureText(it[1]).width + 16;
-      });
-      ctx.restore();
-    }
-
     function drawSurface(ctx, W, H) {
       var grid = 36;
       var pts = [];
@@ -4410,7 +4467,6 @@ window.ASSET_BASE = "module_02_perceptrons/";
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      drawLegend(ctx, W, H);
       updateEquation(curL, localG);
     }
 
@@ -5203,6 +5259,9 @@ var MLP = (function () {
   }
 
   function displayPieces(width, depth) {
+    // A width-1 stack squeezes the input to one scalar, and every later layer
+    // is monotone in it, so the boundary stays a single line at any depth.
+    if (width <= 1) return 1;
     return Math.max(1, width * depth);
   }
 
@@ -6268,7 +6327,7 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
   var NEURON_COLORS = [PRIMARY, SECONDARY];
   var GRID = 48;
   var generateData = MLP.generateData;
-  var state = { dataset: 'xor', neurons: [], outW: [], outB: 0, sample: { x: 0.82, y: 0.82 } };
+  var state = { dataset: 'xor', neurons: [], outW: [], outB: 0 };
 
   host.innerHTML =
     '<div class="perc-widget expl-depth-widget">' +
@@ -6297,7 +6356,6 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
       ];
       state.outW = [1.0, 0.0];
       state.outB = -0.5;
-      state.sample = { x: 0.78, y: 0.78 };
     } else {
       state.neurons = [
         { w1: 1.0, w2: 1.0, b: -0.7 },
@@ -6305,7 +6363,6 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
       ];
       state.outW = [-1.0, 1.0];
       state.outB = 0.5;
-      state.sample = { x: 0.82, y: 0.82 };
     }
   }
 
@@ -6394,10 +6451,6 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
 
   function predict(x, y) {
     return hiddenVals(x, y).pred;
-  }
-
-  function signed(v) {
-    return (v < 0 ? ' - ' : ' + ') + Math.abs(v).toFixed(1);
   }
 
   function lineSegment(n) {
@@ -6514,15 +6567,6 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
       if (predict(p.x, p.y) === p.cls) correct++;
     });
 
-    var sample = state.sample;
-    var sv = hiddenVals(sample.x, sample.y);
-    var spx = ox + sample.x * side, spy = oy + (1 - sample.y) * side;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(spx, spy, 8, 0, 6.2832); ctx.stroke();
-    ctx.fillStyle = sv.pred ? GREEN : RED;
-    ctx.beginPath(); ctx.arc(spx, spy, 4, 0, 6.2832); ctx.fill();
-
     // Frame
     ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
     ctx.strokeRect(ox, oy, side, side);
@@ -6532,16 +6576,7 @@ INTERACTIVE_WIDGETS.boundaryExplorer = function(host) {
     }
 
     var acc = correct / data.length;
-    var colorWord = sv.pred ? 'green' : 'red';
-    readout.innerHTML =
-      'x=(' + sample.x.toFixed(2) + ', ' + sample.y.toFixed(2) + ') → ' +
-      'h=(' + sv.hs[0] + ', ' + sv.hs[1] + ') because line values are (' +
-      sv.zs[0].toFixed(2) + ', ' + sv.zs[1].toFixed(2) + '), ' +
-      'y=sigmoid(' + state.outW[0].toFixed(1) + '·' + sv.hs[0] +
-      signed(state.outW[1]) + '·' + sv.hs[1] + signed(state.outB) +
-      ')=' + sv.y.toFixed(2) + (sv.y >= 0.5 ? ' ≥ 0.5' : ' < 0.5') +
-      ' ⇒ <strong>' + colorWord + '</strong>' +
-      ' | Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
+    readout.innerHTML = 'Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
   }
 
   preset(state.dataset);
@@ -8056,6 +8091,143 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
 };
 
 // =====================================================================
+// Perceptron Line widget — INTERACTIVE_WIDGETS.perceptronLine
+// Plots the line w1*x1 + w2*x2 + b = 0 in the (x1, x2) plane and shades
+// the side where sigma fires. Sliders for w1, w2, b. No data, no training.
+// =====================================================================
+INTERACTIVE_WIDGETS.perceptronLine = function(host) {
+  var TEXT = '#e8eaf0', MUTED = '#8892a4', AXIS = '#2a3450',
+      SECONDARY = '#f5a623', GREEN = '#3fb950';
+  var R = 3; // plot range: x1, x2 in [-R, R]
+  var state = { w1: 1.0, w2: 1.0, b: 0.0 };
+
+  host.innerHTML =
+    '<div class="pline-widget">' +
+      '<canvas class="perc-canvas pline-canvas"></canvas>' +
+      '<div class="perc-controls">' +
+        '<div class="perc-sliders"></div>' +
+        '<p class="perc-readout pline-readout"></p>' +
+      '</div>' +
+    '</div>';
+  var canvas = host.querySelector('.pline-canvas');
+  var readout = host.querySelector('.pline-readout');
+  var slidersEl = host.querySelector('.perc-sliders');
+
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+
+  [['w1', 'w₁'], ['w2', 'w₂'], ['b', 'b']].forEach(function(spec) {
+    var key = spec[0];
+    var row = document.createElement('div');
+    row.className = 'perc-slider';
+    var lab = document.createElement('label');
+    lab.textContent = spec[1];
+    var inp = document.createElement('input');
+    inp.type = 'range'; inp.min = -3; inp.max = 3; inp.step = 0.1;
+    inp.value = state[key].toFixed(1);
+    var val = document.createElement('p');
+    val.className = 'perc-val';
+    val.textContent = state[key].toFixed(1);
+    inp.addEventListener('input', function() {
+      state[key] = parseFloat(inp.value);
+      val.textContent = state[key].toFixed(1);
+      draw();
+    });
+    row.appendChild(lab); row.appendChild(inp); row.appendChild(val);
+    slidersEl.appendChild(row);
+  });
+
+  function signed(v) {
+    return (v < 0 ? ' − ' : ' + ') + Math.abs(v).toFixed(1);
+  }
+
+  function draw() {
+    var dpr = window.devicePixelRatio || 1;
+    var W = canvas.clientWidth, H = canvas.clientHeight;
+    if (!W || !H) return;
+    canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+    var ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    var pad = 10;
+    var side = Math.min(W, H) - 2 * pad;
+    var ox = (W - side) / 2, oy = (H - side) / 2;
+    function px(x) { return ox + (x + R) / (2 * R) * side; }
+    function py(y) { return oy + (R - y) / (2 * R) * side; }
+
+    var a = state.w1, b = state.w2, c = state.b;
+
+    // Shade: red everywhere, then green on the half-plane w·x + b >= 0.
+    ctx.fillStyle = 'rgba(231,76,60,0.10)';
+    ctx.fillRect(ox, oy, side, side);
+    var n = Math.hypot(a, b);
+    if (n > 1e-9) {
+      var fx = -c * a / (n * n), fy = -c * b / (n * n); // closest point on line to origin
+      ctx.save();
+      ctx.beginPath(); ctx.rect(ox, oy, side, side); ctx.clip();
+      ctx.translate(px(fx), py(fy));
+      ctx.rotate(Math.atan2(-b, a)); // canvas y is flipped
+      ctx.fillStyle = 'rgba(63,185,80,0.16)';
+      ctx.fillRect(0, -4 * side, 4 * side, 8 * side);
+      ctx.restore();
+    } else if (c >= 0) {
+      ctx.fillStyle = 'rgba(63,185,80,0.16)';
+      ctx.fillRect(ox, oy, side, side);
+    }
+
+    // Axes
+    ctx.strokeStyle = AXIS; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(px(-R), py(0)); ctx.lineTo(px(R), py(0)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px(0), py(-R)); ctx.lineTo(px(0), py(R)); ctx.stroke();
+    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif';
+    ctx.textAlign = 'right'; ctx.fillText('x₁', px(R) - 4, py(0) + 15);
+    ctx.textAlign = 'right'; ctx.fillText('x₂', px(0) - 6, py(R) + 14); ctx.textAlign = 'left';
+
+    // Decision line a*x + b*y + c = 0, clipped to the frame.
+    var p0 = null, p1 = null;
+    if (Math.abs(b) > 1e-9) {
+      p0 = [px(-R), py(-(a * -R + c) / b)];
+      p1 = [px(R), py(-(a * R + c) / b)];
+    } else if (Math.abs(a) > 1e-9) {
+      p0 = [px(-c / a), py(-R)];
+      p1 = [px(-c / a), py(R)];
+    }
+    if (p0) {
+      ctx.save();
+      ctx.beginPath(); ctx.rect(ox, oy, side, side); ctx.clip();
+      ctx.strokeStyle = SECONDARY; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+      // Weight vector from the line's nearest point to the origin, pointing to the firing side.
+      var L = 0.9;
+      var tx = fx + a / n * L, ty = fy + b / n * L;
+      ctx.strokeStyle = TEXT; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(px(fx), py(fy)); ctx.lineTo(px(tx), py(ty)); ctx.stroke();
+      var ang = Math.atan2(py(ty) - py(fy), px(tx) - px(fx));
+      ctx.fillStyle = TEXT;
+      ctx.beginPath();
+      ctx.moveTo(px(tx), py(ty));
+      ctx.lineTo(px(tx) - 9 * Math.cos(ang - 0.4), py(ty) - 9 * Math.sin(ang - 0.4));
+      ctx.lineTo(px(tx) - 9 * Math.cos(ang + 0.4), py(ty) - 9 * Math.sin(ang + 0.4));
+      ctx.closePath(); ctx.fill();
+      ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'left';
+      ctx.fillText('w', px(tx) + 6, py(ty) + 4);
+    }
+
+    // Frame
+    ctx.strokeStyle = AXIS; ctx.lineWidth = 1;
+    ctx.strokeRect(ox, oy, side, side);
+
+    readout.innerHTML =
+      a.toFixed(1) + '·x₁' + signed(b) + '·x₂' + signed(c) + ' = 0' +
+      ' &nbsp; <span style="color:' + GREEN + '">green</span>: w·x + b ≥ 0';
+  }
+
+  return { resize: draw };
+};
+
+// =====================================================================
 // Saddle widget — INTERACTIVE_WIDGETS.saddle3d
 // A loss surface with a hill in front of the bowl. Along one weight the
 // ball is stuck behind the hill (a local minimum of the 1D slice). With a
@@ -8092,7 +8264,6 @@ INTERACTIVE_WIDGETS.saddle3d = function(host) {
       '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
       '<div class="mlp-controls">' +
         '<div class="expl-datasets"><button class="expl-ds-btn saddle-play">Run descent</button><button class="expl-ds-btn saddle-reset">Reset</button><button class="expl-ds-btn saddle-view">Reset view</button></div>' +
-        '<p class="mlp-readout">Same start, same rule. <span style="color:#f5a623">One weight</span> stops behind the hill. <span style="color:#3fb950">Two weights</span> go around it.</p>' +
       '</div>' +
     '</div>';
   var canvas = host.querySelector('.mlp-canvas');
@@ -8186,10 +8357,23 @@ INTERACTIVE_WIDGETS.saddle3d = function(host) {
       ctx.strokeStyle = 'rgba(8,12,24,0.35)'; ctx.lineWidth = 0.5; ctx.stroke();
     });
 
-    // Axes labels at the near corner
-    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
-    var lx = project(R + 0.35, -R, zmin, Wd, H), ly = project(-R, R + 0.35, zmin, Wd, H);
+    // Axis lines along the two base edges that meet at the nearest corner,
+    // with w1 / w2 labels at the midpoints of those edges
+    var zb = zmin - 0.15, near = null;
+    [[-R, -R], [R, -R], [R, R], [-R, R]].forEach(function(c) {
+      var q = project(c[0], c[1], zb, Wd, H);
+      if (!near || q.depth > near.depth) near = { a: c[0], b: c[1], depth: q.depth };
+    });
+    var c0 = project(near.a, near.b, zb, Wd, H);
+    var ea = project(-near.a, near.b, zb, Wd, H), eb = project(near.a, -near.b, zb, Wd, H);
+    ctx.strokeStyle = MUTED; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(ea.x, ea.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(eb.x, eb.y); ctx.stroke();
+    ctx.fillStyle = TEXT; ctx.font = '15px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var sb = near.b > 0 ? 1 : -1, sa = near.a > 0 ? 1 : -1;
+    var lx = project(0, near.b + sb * 0.4, zb, Wd, H), ly = project(near.a + sa * 0.4, 0, zb, Wd, H);
     ctx.fillText('w₁', lx.x, lx.y); ctx.fillText('w₂', ly.x, ly.y);
+    ctx.textBaseline = 'alphabetic';
 
     // The 1D slice (w2 = 0.15) that the one-weight descent lives on
     ctx.strokeStyle = 'rgba(245,166,35,0.55)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
@@ -8230,7 +8414,7 @@ INTERACTIVE_WIDGETS.saddle3d = function(host) {
 INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
   var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
       LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
-  var state = { dataset: 'linear', w1: 0.5, w2: 0.5, b: -0.5, sample: { x: 0.78, y: 0.78 } };
+  var state = { dataset: 'linear', w1: 0.5, w2: 0.5, b: -0.5 };
 
   function mulberry32(a) {
     return function() {
@@ -8298,7 +8482,6 @@ INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
     btn.dataset.ds = name;
     btn.addEventListener('click', function() {
       state.dataset = name;
-      state.sample = name === 'xor' ? { x: 0.82, y: 0.82 } : { x: 0.78, y: 0.78 };
       updateUI(); draw();
     });
     dsEl.appendChild(btn);
@@ -8465,16 +8648,6 @@ INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
       }
     });
 
-    var sample = state.sample;
-    var h = score(sample.x, sample.y);
-    var yhat = probability(sample.x, sample.y);
-    var sx = ox + sample.x * side, sy = oy + (1 - sample.y) * side;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(sx, sy, 8, 0, 6.2832); ctx.stroke();
-    ctx.fillStyle = yhat >= 0.5 ? GREEN : RED;
-    ctx.beginPath(); ctx.arc(sx, sy, 4, 0, 6.2832); ctx.fill();
-
     // Frame
     ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
     ctx.strokeRect(ox, oy, side, side);
@@ -8486,15 +8659,10 @@ INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
     var correct = 0;
     data.forEach(function(p) { if (predict(p.x, p.y) === p.cls) correct++; });
     var acc = data.length ? correct / data.length : 0;
-    var colorWord = yhat >= 0.5 ? 'green' : 'red';
     readout.innerHTML =
-      'x=(' + sample.x.toFixed(2) + ', ' + sample.y.toFixed(2) + ') → h = ' +
-      state.w1.toFixed(1) + '·' + sample.x.toFixed(2) +
-      signed(state.w2) + '·' + sample.y.toFixed(2) +
-      signed(state.b) + ' = ' + h.toFixed(2) +
-      ', y=sigmoid(h)=' + yhat.toFixed(2) + (yhat >= 0.5 ? ' ≥ 0.5' : ' < 0.5') +
-      ' ⇒ <strong>' + colorWord + '</strong> | Accuracy: <strong>' +
-      (acc * 100).toFixed(0) + '%</strong>';
+      'h = ' + state.w1.toFixed(1) + '·x₁' + signed(state.w2) + '·x₂' + signed(state.b) +
+      ' &nbsp; <span style="color:' + GREEN + '">green</span>: sigmoid(h) ≥ 0.5' +
+      ' | Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
   }
 
   buildSliders();

@@ -7051,8 +7051,8 @@ INTERACTIVE_WIDGETS.hyperplane3d = function(host) {
     { name: 'petal length (cm)', lo: 0.6, hi: 5.6, ticks: [1, 2, 3, 4, 5] },
     { name: 'petal width (cm)', lo: 0.0, hi: 2.0, ticks: [0.5, 1.0, 1.5] }
   ];
-  var state = { az: 3.8, el: 0.5, dragging: false, lastX: 0, lastY: 0, spin: false, timer: null };
-  var VIEW0 = { az: 3.8, el: 0.5 };
+  var state = { az: -0.7854, el: -0.6155, dragging: false, lastX: 0, lastY: 0, spin: false, timer: null };
+  var VIEW0 = { az: -0.7854, el: -0.6155 };
 
   host.innerHTML =
     '<div class="mlp-widget hyper-widget">' +
@@ -7253,7 +7253,9 @@ INTERACTIVE_WIDGETS.hyperplane3d = function(host) {
     drawPts(front);
 
     ctx.fillStyle = TEXT; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'left';
-    ctx.fillText('w · x + b = 0', 12, 20);
+    ctx.fillText('z = w · x + b = 0 on the plane', 12, 20);
+    ctx.fillStyle = GREEN; ctx.fillText('w side: z > 0, \u0177 > 0.5, versicolor', 12, 40);
+    ctx.fillStyle = RED; ctx.fillText('other side: z < 0, \u0177 < 0.5, setosa', 12, 58);
   }
   return { resize: draw, setView: function(az, el) { state.az = az; state.el = el; draw(); } };
 };
@@ -7571,7 +7573,7 @@ INTERACTIVE_WIDGETS.lossLandscape = function(host) {
 INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
   var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
       LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
-  var state = { dataset: 'spiral', width: 8, depth: 2, net: null, acc: 0, view: -1 };
+  var state = { dataset: 'spiral', width: 8, depth: 2, net: null, acc: 0, view: -1, hover: null, pinned: null, nodePos: [] };
   var NEURON_COLORS = ['#4a9eff', '#f5a623', '#bd93f9', '#ff79c6', '#8be9fd', '#50fa7b', '#ffb86c', '#f1fa8c'];
   var clusterData = null, clusterCache = {};
   var GRID = 64;
@@ -7604,13 +7606,47 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
     host.addEventListener(ev, function(e) { e.stopPropagation(); });
   });
 
+  function nodeAt(e) {
+    if (state.dataset !== 'clusters') return null;
+    var r = canvas.getBoundingClientRect();
+    var mx = (e.clientX - r.left) * (canvas.clientWidth / r.width);
+    var my = (e.clientY - r.top) * (canvas.clientHeight / r.height);
+    var best = null, bestD = 16;
+    state.nodePos.forEach(function(n) {
+      var d = Math.hypot(n.x - mx, n.y - my);
+      if (d < bestD) { bestD = d; best = n; }
+    });
+    return best;
+  }
+  function sameNode(a, b) { return (!a && !b) || (a && b && a.layer === b.layer && a.idx === b.idx); }
+  canvas.addEventListener('pointermove', function(e) {
+    var n = nodeAt(e);
+    canvas.style.cursor = n ? 'pointer' : 'default';
+    if (sameNode(n, state.hover)) return;
+    state.hover = n;
+    var active = state.pinned || state.hover;
+    if (active && active.layer !== state.view) { state.view = active.layer; }
+    updateUI(); draw();
+  });
+  canvas.addEventListener('pointerleave', function() {
+    if (!state.hover) return;
+    state.hover = null; updateUI(); draw();
+  });
+  canvas.addEventListener('click', function(e) {
+    var n = nodeAt(e);
+    if (!n) { if (state.pinned) { state.pinned = null; updateUI(); draw(); } return; }
+    state.pinned = sameNode(n, state.pinned) ? null : n;
+    if (state.pinned) state.view = state.pinned.layer;
+    updateUI(); draw();
+  });
+
   var datasets = ['moons', 'spiral', 'clusters'];
   function applyDatasetPreset(name) {
     state.dataset = name;
     if (name === 'moons') { state.width = 6; state.depth = 1; }
     if (name === 'spiral') { state.width = 8; state.depth = 2; }
     if (name === 'clusters') { state.width = 6; state.depth = 2; }
-    state.view = -1;
+    state.view = -1; state.hover = null; state.pinned = null;
     widthInput.value = state.width; depthInput.value = state.depth;
     widthText.textContent = String(state.width); depthText.textContent = String(state.depth);
     state.net = null;
@@ -7658,7 +7694,7 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
           var btn = document.createElement('button');
           btn.className = 'expl-ds-btn' + ((isOut ? -1 : v) === state.view ? ' active' : '');
           btn.textContent = isOut ? 'Boundary' : 'Layer ' + (v + 1) + ' neurons';
-          btn.addEventListener('click', function() { state.view = isOut ? -1 : v; updateUI(); draw(); });
+          btn.addEventListener('click', function() { state.view = isOut ? -1 : v; state.pinned = null; updateUI(); draw(); });
           viewsEl.appendChild(btn);
         })(v);
       }
@@ -7674,6 +7710,14 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
       readout.innerHTML += '<br>Layer ' + (state.view + 1) + ': ' + state.width + ' new piecewise-linear curves, bent only where layer ' + state.view + ' curves cross.';
     } else if (state.dataset === 'clusters') {
       readout.innerHTML += '<br>Boundary: one curve assembled from the last layer. It must enclose each cluster.';
+    }
+    var active = state.pinned || state.hover;
+    if (state.dataset === 'clusters' && active) {
+      readout.innerHTML += '<br><span style="color:' + NEURON_COLORS[active.idx % NEURON_COLORS.length] + '">Layer ' + (active.layer + 1) + ', neuron ' + (active.idx + 1) + '</span>: ' +
+        (active.layer === 0 ? 'one straight line.' : 'straight pieces joined at the dashed layer ' + active.layer + ' curves, where a ReLU switches on or off.') +
+        (state.pinned ? ' Click again to release.' : ' Click to pin.');
+    } else if (state.dataset === 'clusters' && state.view >= 0) {
+      readout.innerHTML += '<br>Hover a neuron in the diagram to highlight its line.';
     }
   }
 
@@ -7761,8 +7805,11 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
     if (rightPanel > 80) {
       var nx0 = ox + side + 20, nx1 = W - pad;
       var cols = state.depth + 2;
-      var perLayer = Math.min(state.width, 6);
+      var clusters = state.dataset === 'clusters';
+      var perLayer = clusters ? state.width : Math.min(state.width, 6);
       var top = oy + 6, bot = oy + side - 6;
+      state.nodePos = [];
+      var active = state.pinned || state.hover;
       function colX(i) { return nx0 + (nx1 - nx0) * i / (cols - 1); }
       function ys(n) {
         if (n === 1) return [(top + bot) / 2];
@@ -7781,10 +7828,19 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
           });
         });
       }
-      layersDiag.forEach(function(Lr) {
+      layersDiag.forEach(function(Lr, li) {
+        var hiddenIdx = li - 1;
         Lr.ys.forEach(function(yy, idx) {
+          var isHidden = clusters && hiddenIdx >= 0 && hiddenIdx < state.depth;
+          var color = isHidden ? NEURON_COLORS[idx % NEURON_COLORS.length] : Lr.color;
+          var isActive = isHidden && active && active.layer === hiddenIdx && active.idx === idx;
+          if (isHidden) state.nodePos.push({ x: Lr.x, y: yy, layer: hiddenIdx, idx: idx });
+          if (isActive) {
+            ctx.beginPath(); ctx.arc(Lr.x, yy, 15, 0, 6.2832);
+            ctx.strokeStyle = TEXT; ctx.lineWidth = 2; ctx.stroke();
+          }
           ctx.beginPath(); ctx.arc(Lr.x, yy, 10, 0, 6.2832);
-          ctx.fillStyle = Lr.hl ? Lr.color : '#0d1225'; ctx.strokeStyle = Lr.color; ctx.lineWidth = 1.8; ctx.fill(); ctx.stroke();
+          ctx.fillStyle = (Lr.hl || isActive) ? color : '#0d1225'; ctx.strokeStyle = color; ctx.lineWidth = 1.8; ctx.fill(); ctx.stroke();
           if (Lr.label) { ctx.fillStyle = TEXT; ctx.font = '10px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(Lr.label[idx], Lr.x, yy + 3); }
         });
       });
@@ -7852,9 +7908,26 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
       strokeSegs(ctx, segs, ox, oy, side, 'rgba(8,12,24,0.94)', 6);
       strokeSegs(ctx, segs, ox, oy, side, SECONDARY, 3.2);
     } else {
+      var active = state.pinned || state.hover;
+      if (state.view > 0) {
+        ctx.setLineDash([4, 4]);
+        fields.pres[state.view - 1].forEach(function(fld) {
+          strokeSegs(ctx, CLUSTER_MLP.contour(fld, GRID), ox, oy, side, 'rgba(232,234,240,0.35)', 1.2);
+        });
+        ctx.setLineDash([]);
+      }
+      var focus = active && active.layer === state.view ? active.idx : -1;
       fields.pres[state.view].forEach(function(fld, k) {
+        if (k === focus) return;
+        ctx.globalAlpha = focus >= 0 ? 0.22 : 1;
         strokeSegs(ctx, CLUSTER_MLP.contour(fld, GRID), ox, oy, side, NEURON_COLORS[k % NEURON_COLORS.length], 2.2);
+        ctx.globalAlpha = 1;
       });
+      if (focus >= 0) {
+        var segs2 = CLUSTER_MLP.contour(fields.pres[state.view][focus], GRID);
+        strokeSegs(ctx, segs2, ox, oy, side, 'rgba(8,12,24,0.9)', 7);
+        strokeSegs(ctx, segs2, ox, oy, side, NEURON_COLORS[focus % NEURON_COLORS.length], 3.6);
+      }
     }
     ctx.restore();
 
@@ -7867,7 +7940,175 @@ INTERACTIVE_WIDGETS.mlpBoundary = function(host) {
   }
 
   updateUI();
-  return { resize: draw };
+  return { resize: draw, nodes: function() { return state.nodePos; } };
+};
+
+// =====================================================================
+// Saddle widget — INTERACTIVE_WIDGETS.saddle3d
+// A loss surface with a hill in front of the bowl. Along one weight the
+// ball is stuck behind the hill (a local minimum of the 1D slice). With a
+// second weight the same descent walks around the hill. Drag to rotate.
+// =====================================================================
+INTERACTIVE_WIDGETS.saddle3d = function(host) {
+  var TEXT = '#e8eaf0', MUTED = '#8892a4', PRIMARY = '#4a9eff', GREEN = '#3fb950', ORANGE = '#f5a623';
+  var R = 1.9, GRID = 40;
+  function loss(a, b) {
+    return 0.3 * ((a - 1.4) * (a - 1.4) + b * b) + 2.4 * Math.exp(-((a - 0.1) * (a - 0.1) / 0.45 + b * b / 0.9));
+  }
+  function grad(a, b) {
+    var h = 1e-4;
+    return [(loss(a + h, b) - loss(a - h, b)) / (2 * h), (loss(a, b + h) - loss(a, b - h)) / (2 * h)];
+  }
+  function descend(a, b, free, steps, lr) {
+    var path = [[a, b]];
+    for (var i = 0; i < steps; i++) {
+      var g = grad(a, b);
+      a -= lr * g[0];
+      if (free) b -= lr * g[1];
+      path.push([a, b]);
+    }
+    return path;
+  }
+  var START = [-1.4, 0.2], STEPS = 600, LR = 0.08;
+  var path1 = descend(START[0], START[1], false, STEPS, LR);
+  var path2 = descend(START[0], START[1], true, STEPS, LR);
+  var VIEW0 = { az: -2.4, el: -0.7 };
+  var state = { az: VIEW0.az, el: VIEW0.el, t: 0, playing: false, timer: null, dragging: false, lastX: 0, lastY: 0 };
+
+  host.innerHTML =
+    '<div class="mlp-widget saddle-widget">' +
+      '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
+      '<div class="mlp-controls">' +
+        '<div class="expl-datasets"><button class="expl-ds-btn saddle-play">Run descent</button><button class="expl-ds-btn saddle-reset">Reset</button><button class="expl-ds-btn saddle-view">Reset view</button></div>' +
+        '<p class="mlp-readout">Same start, same rule. <span style="color:#f5a623">One weight</span> stops behind the hill. <span style="color:#3fb950">Two weights</span> go around it.</p>' +
+      '</div>' +
+    '</div>';
+  var canvas = host.querySelector('.mlp-canvas');
+  ['pointerdown', 'keydown'].forEach(function(ev) {
+    host.addEventListener(ev, function(e) { e.stopPropagation(); });
+  });
+  canvas.addEventListener('pointerdown', function(e) {
+    state.dragging = true; state.lastX = e.clientX; state.lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', function(e) {
+    if (!state.dragging) return;
+    state.az -= (e.clientX - state.lastX) * 0.008;
+    state.el = Math.max(-1.4, Math.min(1.4, state.el + (e.clientY - state.lastY) * 0.008));
+    state.lastX = e.clientX; state.lastY = e.clientY;
+    draw();
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function(ev) {
+    canvas.addEventListener(ev, function() { state.dragging = false; });
+  });
+  function stop() { if (state.timer) { clearInterval(state.timer); state.timer = null; } state.playing = false; }
+  host.querySelector('.saddle-play').addEventListener('click', function() {
+    if (state.playing) { stop(); return; }
+    if (state.t >= STEPS) state.t = 0;
+    state.playing = true;
+    state.timer = setInterval(function() {
+      if (!host.isConnected) { stop(); return; }
+      state.t = Math.min(STEPS, state.t + 6);
+      draw();
+      if (state.t >= STEPS) stop();
+    }, 40);
+  });
+  host.querySelector('.saddle-reset').addEventListener('click', function() { stop(); state.t = 0; draw(); });
+  host.querySelector('.saddle-view').addEventListener('click', function() { state.az = VIEW0.az; state.el = VIEW0.el; draw(); });
+
+  function fitCanvas(c) {
+    var dpr = window.devicePixelRatio || 1;
+    var wd = c.clientWidth, h = c.clientHeight;
+    if (!wd || !h) return null;
+    c.width = Math.round(wd * dpr); c.height = Math.round(h * dpr);
+    var ctx = c.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx: ctx, w: wd, h: h };
+  }
+  var ZSCALE = 0.3;
+  function project(a, b, z, Wd, H) {
+    var x = a / R, y = b / R, zz = z * ZSCALE - 0.45;
+    var ca = Math.cos(state.az), sa = Math.sin(state.az);
+    var ce = Math.cos(state.el), se = Math.sin(state.el);
+    var xr = x * ca - y * sa;
+    var yr = x * sa + y * ca;
+    var y2 = yr * ce - zz * se;
+    var depth = yr * se + zz * ce;
+    var scale = Math.min(Wd, H) * 0.36;
+    return { x: Wd * 0.5 + xr * scale, y: H * 0.54 - y2 * scale, depth: depth };
+  }
+  function heightColor(z, zmin, zmax, alpha) {
+    var t = Math.max(0, Math.min(1, (z - zmin) / (zmax - zmin || 1)));
+    var bands = [[38, 92, 255], [0, 214, 255], [38, 217, 87], [248, 227, 64], [255, 159, 28], [255, 59, 48]];
+    var c = bands[Math.min(bands.length - 1, Math.floor(t * bands.length))];
+    return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + alpha + ')';
+  }
+
+  function draw() {
+    var f = fitCanvas(canvas);
+    if (!f) return;
+    var ctx = f.ctx, Wd = f.w, H = f.h;
+    ctx.clearRect(0, 0, Wd, H);
+
+    var pts = [], zmin = Infinity, zmax = -Infinity;
+    for (var i = 0; i <= GRID; i++) {
+      pts[i] = [];
+      for (var j = 0; j <= GRID; j++) {
+        var a = -R + 2 * R * i / GRID, b = -R + 2 * R * j / GRID, z = loss(a, b);
+        zmin = Math.min(zmin, z); zmax = Math.max(zmax, z);
+        var q = project(a, b, z, Wd, H); q.z = z; pts[i].push(q);
+      }
+    }
+    var tris = [];
+    for (var ti = 0; ti < GRID; ti++) {
+      for (var tj = 0; tj < GRID; tj++) {
+        var p00 = pts[ti][tj], p10 = pts[ti + 1][tj], p01 = pts[ti][tj + 1], p11 = pts[ti + 1][tj + 1];
+        tris.push({ p: [p00, p10, p01], z: (p00.z + p10.z + p01.z) / 3, d: (p00.depth + p10.depth + p01.depth) / 3 });
+        tris.push({ p: [p10, p11, p01], z: (p10.z + p11.z + p01.z) / 3, d: (p10.depth + p11.depth + p01.depth) / 3 });
+      }
+    }
+    tris.sort(function(x, y) { return x.d - y.d; });
+    tris.forEach(function(t) {
+      ctx.beginPath(); ctx.moveTo(t.p[0].x, t.p[0].y); ctx.lineTo(t.p[1].x, t.p[1].y); ctx.lineTo(t.p[2].x, t.p[2].y); ctx.closePath();
+      ctx.fillStyle = heightColor(t.z, zmin, zmax, 0.9); ctx.fill();
+      ctx.strokeStyle = 'rgba(8,12,24,0.35)'; ctx.lineWidth = 0.5; ctx.stroke();
+    });
+
+    // Axes labels at the near corner
+    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
+    var lx = project(R + 0.35, -R, zmin, Wd, H), ly = project(-R, R + 0.35, zmin, Wd, H);
+    ctx.fillText('w₁', lx.x, lx.y); ctx.fillText('w₂', ly.x, ly.y);
+
+    // The 1D slice (w2 = 0.15) that the one-weight descent lives on
+    ctx.strokeStyle = 'rgba(245,166,35,0.55)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    for (var k = 0; k <= 60; k++) {
+      var sa = -R + 2 * R * k / 60, sq = project(sa, START[1], loss(sa, START[1]) + 0.02, Wd, H);
+      if (k === 0) ctx.moveTo(sq.x, sq.y); else ctx.lineTo(sq.x, sq.y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+
+    function drawPath(path, color, upto) {
+      ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.beginPath();
+      for (var m = 0; m <= upto; m++) {
+        var q = project(path[m][0], path[m][1], loss(path[m][0], path[m][1]) + 0.03, Wd, H);
+        if (m === 0) ctx.moveTo(q.x, q.y); else ctx.lineTo(q.x, q.y);
+      }
+      ctx.stroke();
+      var e = path[upto], qe = project(e[0], e[1], loss(e[0], e[1]) + 0.03, Wd, H);
+      ctx.beginPath(); ctx.arc(qe.x, qe.y, 7, 0, 6.2832);
+      ctx.fillStyle = color; ctx.fill(); ctx.strokeStyle = TEXT; ctx.lineWidth = 1.5; ctx.stroke();
+    }
+    drawPath(path1, ORANGE, state.t);
+    drawPath(path2, GREEN, state.t);
+
+    ctx.fillStyle = TEXT; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('step ' + state.t + ' of ' + STEPS, 12, 20);
+    ctx.fillStyle = ORANGE; ctx.fillText('one weight: L = ' + loss(path1[state.t][0], path1[state.t][1]).toFixed(2), 12, 40);
+    ctx.fillStyle = GREEN; ctx.fillText('two weights: L = ' + loss(path2[state.t][0], path2[state.t][1]).toFixed(2), 12, 58);
+  }
+  return { resize: draw, setView: function(az, el) { state.az = az; state.el = el; draw(); }, setT: function(t) { state.t = t; draw(); } };
 };
 
 // =====================================================================

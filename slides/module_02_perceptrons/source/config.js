@@ -491,26 +491,6 @@
       arrow2D(ctx, cur, down, STEP, 4.5, null);
     }
 
-    function drawLegend(ctx, W, H) {
-      ctx.save();
-      ctx.font = "12px Inter, sans-serif";
-      ctx.textAlign = "left";
-      var items = [
-        [STEP, "next step: downhill"],
-        [STEP, "trail: steps so far"]
-      ];
-      var x = 10;
-      items.forEach(function(it) {
-        ctx.fillStyle = it[0];
-        ctx.fillRect(x, H - 18, 14, 3);
-        x += 18;
-        ctx.fillStyle = TEXT;
-        ctx.fillText(it[1], x, H - 13);
-        x += ctx.measureText(it[1]).width + 16;
-      });
-      ctx.restore();
-    }
-
     function drawSurface(ctx, W, H) {
       var grid = 36;
       var pts = [];
@@ -713,7 +693,6 @@
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      drawLegend(ctx, W, H);
       updateEquation(curL, localG);
     }
 

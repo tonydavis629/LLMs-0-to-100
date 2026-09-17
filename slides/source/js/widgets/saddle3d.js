@@ -35,7 +35,6 @@ INTERACTIVE_WIDGETS.saddle3d = function(host) {
       '<div class="mlp-canvas-wrap"><canvas class="mlp-canvas"></canvas></div>' +
       '<div class="mlp-controls">' +
         '<div class="expl-datasets"><button class="expl-ds-btn saddle-play">Run descent</button><button class="expl-ds-btn saddle-reset">Reset</button><button class="expl-ds-btn saddle-view">Reset view</button></div>' +
-        '<p class="mlp-readout">Same start, same rule. <span style="color:#f5a623">One weight</span> stops behind the hill. <span style="color:#3fb950">Two weights</span> go around it.</p>' +
       '</div>' +
     '</div>';
   var canvas = host.querySelector('.mlp-canvas');
@@ -129,10 +128,23 @@ INTERACTIVE_WIDGETS.saddle3d = function(host) {
       ctx.strokeStyle = 'rgba(8,12,24,0.35)'; ctx.lineWidth = 0.5; ctx.stroke();
     });
 
-    // Axes labels at the near corner
-    ctx.fillStyle = MUTED; ctx.font = '13px Inter, sans-serif'; ctx.textAlign = 'center';
-    var lx = project(R + 0.35, -R, zmin, Wd, H), ly = project(-R, R + 0.35, zmin, Wd, H);
+    // Axis lines along the two base edges that meet at the nearest corner,
+    // with w1 / w2 labels at the midpoints of those edges
+    var zb = zmin - 0.15, near = null;
+    [[-R, -R], [R, -R], [R, R], [-R, R]].forEach(function(c) {
+      var q = project(c[0], c[1], zb, Wd, H);
+      if (!near || q.depth > near.depth) near = { a: c[0], b: c[1], depth: q.depth };
+    });
+    var c0 = project(near.a, near.b, zb, Wd, H);
+    var ea = project(-near.a, near.b, zb, Wd, H), eb = project(near.a, -near.b, zb, Wd, H);
+    ctx.strokeStyle = MUTED; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(ea.x, ea.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(eb.x, eb.y); ctx.stroke();
+    ctx.fillStyle = TEXT; ctx.font = '15px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    var sb = near.b > 0 ? 1 : -1, sa = near.a > 0 ? 1 : -1;
+    var lx = project(0, near.b + sb * 0.4, zb, Wd, H), ly = project(near.a + sa * 0.4, 0, zb, Wd, H);
     ctx.fillText('w₁', lx.x, lx.y); ctx.fillText('w₂', ly.x, ly.y);
+    ctx.textBaseline = 'alphabetic';
 
     // The 1D slice (w2 = 0.15) that the one-weight descent lives on
     ctx.strokeStyle = 'rgba(245,166,35,0.55)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]);

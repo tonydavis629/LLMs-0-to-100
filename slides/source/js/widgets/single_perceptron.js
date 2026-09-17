@@ -5,7 +5,7 @@
 INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
   var GREEN = '#3fb950', RED = '#e74c3c', MUTED = '#8892a4',
       LINEC = '#2a3450', TEXT = '#e8eaf0', PRIMARY = '#4a9eff', SECONDARY = '#f5a623';
-  var state = { dataset: 'linear', w1: 0.5, w2: 0.5, b: -0.5, sample: { x: 0.78, y: 0.78 } };
+  var state = { dataset: 'linear', w1: 0.5, w2: 0.5, b: -0.5 };
 
   function mulberry32(a) {
     return function() {
@@ -73,7 +73,6 @@ INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
     btn.dataset.ds = name;
     btn.addEventListener('click', function() {
       state.dataset = name;
-      state.sample = name === 'xor' ? { x: 0.82, y: 0.82 } : { x: 0.78, y: 0.78 };
       updateUI(); draw();
     });
     dsEl.appendChild(btn);
@@ -240,16 +239,6 @@ INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
       }
     });
 
-    var sample = state.sample;
-    var h = score(sample.x, sample.y);
-    var yhat = probability(sample.x, sample.y);
-    var sx = ox + sample.x * side, sy = oy + (1 - sample.y) * side;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.arc(sx, sy, 8, 0, 6.2832); ctx.stroke();
-    ctx.fillStyle = yhat >= 0.5 ? GREEN : RED;
-    ctx.beginPath(); ctx.arc(sx, sy, 4, 0, 6.2832); ctx.fill();
-
     // Frame
     ctx.strokeStyle = LINEC; ctx.lineWidth = 1;
     ctx.strokeRect(ox, oy, side, side);
@@ -261,15 +250,10 @@ INTERACTIVE_WIDGETS.singlePerceptron = function(host) {
     var correct = 0;
     data.forEach(function(p) { if (predict(p.x, p.y) === p.cls) correct++; });
     var acc = data.length ? correct / data.length : 0;
-    var colorWord = yhat >= 0.5 ? 'green' : 'red';
     readout.innerHTML =
-      'x=(' + sample.x.toFixed(2) + ', ' + sample.y.toFixed(2) + ') → h = ' +
-      state.w1.toFixed(1) + '·' + sample.x.toFixed(2) +
-      signed(state.w2) + '·' + sample.y.toFixed(2) +
-      signed(state.b) + ' = ' + h.toFixed(2) +
-      ', y=sigmoid(h)=' + yhat.toFixed(2) + (yhat >= 0.5 ? ' ≥ 0.5' : ' < 0.5') +
-      ' ⇒ <strong>' + colorWord + '</strong> | Accuracy: <strong>' +
-      (acc * 100).toFixed(0) + '%</strong>';
+      'h = ' + state.w1.toFixed(1) + '·x₁' + signed(state.w2) + '·x₂' + signed(state.b) +
+      ' &nbsp; <span style="color:' + GREEN + '">green</span>: sigmoid(h) ≥ 0.5' +
+      ' | Accuracy: <strong>' + (acc * 100).toFixed(0) + '%</strong>';
   }
 
   buildSliders();
