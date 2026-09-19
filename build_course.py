@@ -111,7 +111,9 @@ def expand_component(name: str, attrs: dict[str, str], body: str) -> str:
         trimmed = trim_blank_lines(body)
         # Long cumulative outputs need a tighter type scale to stay on the slide.
         dense = " dense" if trimmed.count("\n") + 1 > 16 else ""
-        pre_body = trimmed.replace("\n", "&#10;")
+        # Double-escape the newlines: the <textarea> decodes one layer, and a raw
+        # blank line would let markdown split the <pre> into paragraphs.
+        pre_body = trimmed.replace("\n", "&amp;#10;")
         lines = [
             f'<section id="{attrs["id"]}">',
             f'  <h2>{attrs["title"]}</h2>',

@@ -1,8 +1,9 @@
-"""Loading the real GPT-2 checkpoint, provided for you.
+"""Loading the real GPT-2 checkpoint and tokenizer, provided for you.
 
-You do NOT need to edit this file. It downloads the official GPT-2 small
-weights from HuggingFace and copies each tensor into the matching layer of
-the model you assembled in `exercise.py`.
+You do NOT need to edit this file. It fetches the official GPT-2 small
+weights from HuggingFace (downloaded on the first run, then read from the
+local cache) and copies each tensor into the matching layer of the model
+you assembled in `exercise.py`.
 """
 
 from __future__ import annotations
@@ -11,18 +12,43 @@ import torch
 import torch.nn as nn
 
 
-def load_gpt2_weights(model: nn.Module) -> None:
+def _quiet_huggingface() -> None:
+    """Hide HuggingFace's progress bars and notices so the runner output stays readable."""
+    from huggingface_hub.utils import logging as hub_logging
+    from transformers.utils import logging as hf_logging
+
+    hub_logging.set_verbosity_error()
+    hf_logging.set_verbosity_error()
+    hf_logging.disable_progress_bar()
+
+
+def load_tokenizer():
+    """Return the GPT-2 byte-pair-encoding tokenizer from HuggingFace."""
+    from transformers import GPT2Tokenizer
+
+    _quiet_huggingface()
+    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    tokenizer.pad_token = tokenizer.eos_token
+    return tokenizer
+
+
+def load_gpt2_weights(model: nn.Module) -> nn.Module:
     """Load pretrained GPT-2 small weights into the custom model.
 
-    This function downloads the official GPT-2 weights from HuggingFace,
+    This function fetches the official GPT-2 weights from HuggingFace,
     then copies each tensor into the matching layer of the custom model.
 
     Args:
         model: Your GPT2Model instance from exercise.py (already initialized).
+
+    Returns:
+        HuggingFace's own GPT2LMHeadModel with the same weights, which the
+        runner uses as a reference to check your model against.
     """
     from transformers import GPT2LMHeadModel
 
-    print("Downloading GPT-2 weights from HuggingFace ...")
+    print("Loading GPT-2 small weights from HuggingFace (downloaded on the first run) ...")
+    _quiet_huggingface()
     pretrained = GPT2LMHeadModel.from_pretrained("gpt2")
     pretrained_sd = pretrained.state_dict()
 
@@ -94,3 +120,4 @@ def load_gpt2_weights(model: nn.Module) -> None:
     # from new_sd; keep the one the model built for itself.
     model.load_state_dict(new_sd, strict=False)
     print(f"Loaded {len(new_sd)} parameter tensors from pretrained GPT-2.")
+    return pretrained.eval()

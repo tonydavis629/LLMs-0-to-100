@@ -1198,7 +1198,6 @@
 
 Module 8: Multimodal Models
 
-Beyond text sequences
 
 ---
 
@@ -2395,15 +2394,52 @@ Align image embeddings with NanoGPT
 
 - Open `module_08_multimodal/exercise.py` and fill in the eight `NotImplementedError` lines
 - Everything else is provided: dataset, encoders, NanoGPT, projector, ops, runner
-- Run after each step; unfinished steps are skipped automatically
+- Run after each step to see which steps pass
 
 ```bash
-# Build a tiny vision-language model on synthetic shapes
+# Run every step; each is tagged CORRECT, INCORRECT, or INCOMPLETE
 cd exercises
 uv run python module_08_multimodal/src/main.py
+
+# Run a single step (1-8)
+uv run python module_08_multimodal/src/main.py --step 4
 ```
 
 Model weights live in `data/instruct_model.pt`. <!-- .element: class="text-md" style="margin-top: 22px;" -->
+
+---
+
+<!-- .slide: id="exercise-results" -->
+
+## Reading the Results
+
+For each step the runner prints what your code produced (tensor shapes, training progress, generated captions), then runs the step's **tests** from `tests/`. Each test calls your function on small tensors whose correct answer is known. <!-- .element: class="text-lg" -->
+
+- **CORRECT**: every test for the step passed
+- **INCORRECT**: your code ran but a test failed; the expected and actual values are printed beneath
+- **INCOMPLETE**: the function still raises `NotImplementedError`, or the step needs an earlier one that does
+
+The tag sits on the step's header line. A tensor can have the right shape and still hold the wrong numbers, so the tests check values as well as shapes. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+
+---
+
+<section id="exercise-results-example">
+  <h2>What an INCORRECT Step Looks Like</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output" style="max-width: 1000px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_08_multimodal/src/main.py --step 1</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: patchify() ===</span> <span class="t-fail">INCORRECT</span>&amp;#10;Dataset: 340 training + 60 held-out scenes; sample grid in output/sample_scenes.png&amp;#10;Images (340, 3, 32, 32) -&gt; patches (340, 16, 3, 8, 8)&amp;#10;  each 32 x 32 image is now a sequence of 16 patches of 8 x 8 pixels&amp;#10;  <span class="t-fail">INCORRECT</span>  patches come in row-major order: 4 x 4 image 0-15 gives [[0,1],[4,5]], [[2,3],[6,7]], ...&amp;#10;             expected the first two patches [[[0, 1], [4, 5]], [[2, 3], [6, 7]]]&amp;#10;             got [[[0, 1], [2, 3]], [[4, 5], [6, 7]]]&amp;#10;             (did you permute the two grid axes next to the batch before the last reshape?)&amp;#10;  <span class="success">CORRECT</span>    returns (B, N, C, P, P): a 2 x 3 x 8 x 8 batch with P=4 gives (2, 4, 3, 4, 4)&amp;#10;  <span class="t-fail">INCORRECT</span>  un-patchifying a random 2 x 3 x 4 x 6 batch gives back the original images&amp;#10;             the patches do not reassemble into the input images&amp;#10;             (check the permute: the grid rows H/P come before the grid columns W/P)</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Here <code>patchify()</code> skipped the permute and reshaped straight to <code>(B, N, C, P, P)</code>. The shape is right, so the runner's shape line looks fine, but each patch is a strip of whole pixel rows. In the first test the first patch came back as the top row of the image, and the message points at the missing permute.</p>
+  </div>
+</section>
 
 ---
 
@@ -2418,6 +2454,8 @@ Model weights live in `data/instruct_model.pt`. <!-- .element: class="text-md" s
 </div>
 
 The payoff: the **same** prompt "describe the image" returns a **different, correct** caption per image. Proof the model uses the image, not language priors. <!-- .element: class="text-lg" -->
+
+Each step is one line to fill in, and every step has its own tests in `tests/`. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -2438,8 +2476,21 @@ Two colored shapes per scene (one above the other), a caption, and derived quest
 ## Step 1: patchify()
 
 ```python
-def patchify(images, patch_size):
-    """Split each image into a grid of non-overlapping square patches."""
+def patchify(images: torch.Tensor, patch_size: int) -> torch.Tensor:
+    """Split each image into a grid of non-overlapping square patches.
+
+    An image is (C, H, W); a transformer wants a *sequence*. We cut the image into
+    (H/P) x (W/P) patches and lay them out in row-major order, so the 2-D picture
+    becomes a 1-D list of patches — the visual analog of splitting text into tokens.
+    (The provided `src/ops.py` then flattens, projects, and adds positions for you.)
+
+    Args:
+        images: batch of images, shape (B, C, H, W).
+        patch_size: side length P of each square patch.
+
+    Returns:
+        Patches of shape (B, N, C, P, P) where N = (H/P) * (W/P).
+    """
     B, C, H, W = images.shape
     # TODO: Reshape (B, C, H, W) into (B, N, C, P, P) patches with N = (H/P)*(W/P).
     raise NotImplementedError("TODO: split each image into a sequence of patches")
@@ -2472,8 +2523,18 @@ return (
 ## Step 2: pool_patches()
 
 ```python
-def pool_patches(patch_embeds):
-    """Pool the patch sequence into a single image embedding."""
+def pool_patches(patch_embeds: torch.Tensor) -> torch.Tensor:
+    """Pool the patch sequence into a single image embedding.
+
+    After the provided transformer has mixed information across patches, we collapse
+    the sequence to one vector that summarizes the whole image (used for retrieval).
+
+    Args:
+        patch_embeds: shape (B, N, D_EMBED).
+
+    Returns:
+        One image embedding per image, shape (B, D_EMBED).
+    """
     # TODO: Average the patch embeddings over the patch (sequence) dimension.
     raise NotImplementedError("TODO: pool the patch sequence into one image embedding")
 ```
@@ -2496,13 +2557,43 @@ return patch_embeds.mean(dim=1)
 
 ---
 
+<section id="exercise-output-vision">
+  <h2>Part 1: One Embedding per Image</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 1000px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_08_multimodal/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: patchify() ===</span> <span class="success">CORRECT</span>&amp;#10;Dataset: 340 training + 60 held-out scenes; sample grid in output/sample_scenes.png&amp;#10;Images (340, 3, 32, 32) -&gt; patches (340, 16, 3, 8, 8)&amp;#10;  each 32 x 32 image is now a sequence of 16 patches of 8 x 8 pixels&amp;#10;  <span class="success">CORRECT</span>    patches come in row-major order: 4 x 4 image 0-15 gives [[0,1],[4,5]], [[2,3],[6,7]], ...&amp;#10;  <span class="success">CORRECT</span>    returns (B, N, C, P, P): a 2 x 3 x 8 x 8 batch with P=4 gives (2, 4, 3, 4, 4)&amp;#10;  <span class="success">CORRECT</span>    un-patchifying a random 2 x 3 x 4 x 6 batch gives back the original images&amp;#10;&amp;#10;<span class="header">=== Step 2: pool_patches() ===</span> <span class="success">CORRECT</span>&amp;#10;Vision tower (113,472 parameters, not trained yet) on 340 images:&amp;#10;  patchify (Step 1)             (340, 16, 3, 8, 8)&amp;#10;  flatten each patch            (340, 16, 192)&amp;#10;  project, add positions, mix   (340, 16, 64)&amp;#10;  pool (Step 2)                 <span class="success">(340, 64)</span>: one embedding per image&amp;#10;  <span class="success">CORRECT</span>    averages the patches: [1,2,3] and [3,4,5] pool to [2, 3, 4]&amp;#10;  <span class="success">CORRECT</span>    returns one vector per image: (B, N, D) = (2, 16, 64) gives (2, 64)&amp;#10;  <span class="success">CORRECT</span>    pools each image separately: patches [0,0],[2,2] -&gt; [1,1] and [10,10],[20,20] -&gt; [15,15]&amp;#10;&amp;#10;<span class="header">=== Step 3: l2_normalize() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: L2-normalize the embeddings</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Each 32&times;32 image becomes 16 patch tokens, and pooling turns the mixed patches into one 64-number embedding per image. The tower is still untrained; Step 5 trains it.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step3" -->
 
 ## Step 3: l2_normalize()
 
 ```python
-def l2_normalize(embeddings):
-    """L2-normalize each embedding to unit length (dot product becomes cosine)."""
+def l2_normalize(embeddings: torch.Tensor) -> torch.Tensor:
+    """L2-normalize each embedding to unit length.
+
+    On the unit sphere, a dot product IS the cosine similarity, so normalizing before
+    comparing makes the similarity depend on direction (meaning) rather than length.
+
+    Args:
+        embeddings: shape (B, D).
+
+    Returns:
+        Unit-length embeddings, shape (B, D).
+    """
     # TODO: Return the embeddings scaled to unit L2 norm along the last dimension.
     raise NotImplementedError("TODO: L2-normalize the embeddings")
 ```
@@ -2530,8 +2621,22 @@ return F.normalize(embeddings, dim=-1)
 ## Step 4: similarity_matrix()
 
 ```python
-def similarity_matrix(image_embeds, text_embeds, temperature):
-    """Build the batch image-text similarity matrix, scaled by temperature."""
+def similarity_matrix(
+    image_embeds: torch.Tensor, text_embeds: torch.Tensor, temperature: float
+) -> torch.Tensor:
+    """Build the batch image-text similarity matrix, scaled by temperature.
+
+    Entry (i, j) is the similarity between image i and caption j. Dividing by a small
+    temperature sharpens the distribution before the softmax in the loss.
+
+    Args:
+        image_embeds: unit image embeddings, shape (B, D).
+        text_embeds: unit text embeddings, shape (B, D).
+        temperature: scalar > 0.
+
+    Returns:
+        Similarity logits of shape (B, B); row i indexes images, column j captions.
+    """
     # TODO: Return the matrix of image-text dot products, divided by temperature.
     raise NotImplementedError("TODO: build the image-text similarity matrix")
 ```
@@ -2559,8 +2664,20 @@ return image_embeds @ text_embeds.t() / temperature
 ## Step 5: clip_loss()
 
 ```python
-def clip_loss(logits):
-    """Symmetric CLIP contrastive loss: cross-entropy in both directions."""
+def clip_loss(logits: torch.Tensor) -> torch.Tensor:
+    """Symmetric CLIP contrastive loss: cross-entropy in both directions.
+
+    For a batch of B matched pairs, the correct caption for image i is caption i (the
+    diagonal), and the correct image for caption j is image j. So the targets are just
+    0..B-1: cross-entropy over rows is image->text retrieval, over columns is
+    text->image retrieval, and CLIP averages the two.
+
+    Args:
+        logits: similarity matrix, shape (B, B).
+
+    Returns:
+        A scalar loss.
+    """
     # TODO: Average row-wise (image->text) and column-wise (text->image) cross-entropy
     #       against the diagonal targets 0..B-1.
     raise NotImplementedError("TODO: build the symmetric CLIP contrastive loss")
@@ -2588,7 +2705,7 @@ return 0.5 * (F.cross_entropy(logits, labels) + F.cross_entropy(logits.t(), labe
 <section id="exercise-output-clip">
   <h2>Part 2: The Contrastive Loss Falls, Retrieval Climbs</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
+    <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2596,10 +2713,10 @@ return 0.5 * (F.cross_entropy(logits, labels) + F.cross_entropy(logits.t(), labe
         <span class="terminal-title">uv run python module_08_multimodal/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">MODULE 8: Align image embeddings with NanoGPT</span>&#10;Dataset: 340 train + 60 held-out scenes&#10;Image: 3 x 32 x 32   Patch: 8 x 8   Visual tokens per image: 16&#10;Vision encoder params: 113,472   Text encoder params: 107,072&#10;Language model params: 818,560   Projector params: 33,280&#10;&#10;<span class="header">PHASE 1: CLIP-style image-text alignment</span>&#10;  Held-out retrieval accuracy before training: 1.7%  (chance is ~1/64)&#10;  step    1   contrastive loss  3.468   batch retrieval acc  3.1%&#10;  step  100   contrastive loss  0.371   batch retrieval acc 78.1%&#10;  step  250   contrastive loss  0.143   batch retrieval acc 90.6%&#10;  step  400   contrastive loss  0.477   batch retrieval acc 68.8%&#10;  <span class="success">Held-out retrieval accuracy after training:  76.7%</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: patchify() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: pool_patches() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: l2_normalize() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">  after normalizing:  1.000 to 1.000</span>&amp;#10;<span class="header">=== Step 4: similarity_matrix() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">  Retrieval accuracy before training: 1.7%  (chance is 1/60)</span>&amp;#10;&amp;#10;<span class="header">=== Step 5: clip_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;CLIP training: 400 steps of 32 image-caption pairs&amp;#10;  step    1   contrastive loss  3.468   batch retrieval acc  3.1%&amp;#10;  step   50   contrastive loss  0.626   batch retrieval acc 75.0%&amp;#10;  step  100   contrastive loss  0.371   batch retrieval acc 78.1%&amp;#10;  <span class="skipped">...</span>&amp;#10;  step  400   contrastive loss  0.477   batch retrieval acc 68.8%&amp;#10;  <span class="success">Held-out retrieval accuracy: 1.7% before training, 76.7% after</span>&amp;#10;  Saved retrieval heatmap to output/retrieval_heatmap.png&amp;#10;  <span class="success">CORRECT</span>    a uniform 4 x 4 matrix (no idea which caption matches) gives ln 4 = 1.386&amp;#10;  <span class="success">CORRECT</span>    a strong diagonal, 10 * identity(3), gives nearly zero loss (about 0.0001)&amp;#10;  <span class="success">CORRECT</span>    is symmetric: an uneven 3 x 3 matrix and its transpose give the same loss&amp;#10;  <span class="success">CORRECT</span>    equals the mean of F.cross_entropy over rows and over columns (random 5 x 5 logits)&amp;#10;  <span class="success">CORRECT</span>    held-out retrieval accuracy climbs above 50% after training (chance is 1/60)&amp;#10;&amp;#10;<span class="header">=== Step 6: image_to_prefix() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: project the image embedding into visual prefix tokens</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">From 1.7% (chance is 1/64) to 76.7% held-out retrieval. The loss is the same cross-entropy as Module 5, but the classes are the other captions in the batch.</p>
+    <p class="text-lg terminal-caption">From 1.7% (chance is 1/60) to 76.7% held-out retrieval. The loss is Module 5's cross-entropy, with the other captions in the batch as the classes. The last test requires retrieval above 50%.</p>
   </div>
 </section>
 
@@ -2622,8 +2739,24 @@ Rows are images, columns are captions. The **bright diagonal** is each image mat
 ## Step 6: image_to_prefix()
 
 ```python
-def image_to_prefix(image_embeds, to_prefix, prefix_len):
-    """Project one image embedding into prefix_len visual prefix vectors."""
+def image_to_prefix(
+    image_embeds: torch.Tensor, to_prefix: torch.nn.Linear, prefix_len: int
+) -> torch.Tensor:
+    """Project one image embedding into `prefix_len` visual prefix vectors.
+
+    The language model's tokens live at a different (wider) width than the image
+    embedding. The projector maps the pooled image vector to prefix_len * d_llm
+    numbers, which we reshape into prefix_len vectors — the "visual tokens" that will
+    sit in front of the text. (The provided `concat_visual_prefix` then prepends them.)
+
+    Args:
+        image_embeds: pooled image embeddings, shape (B, D_EMBED).
+        to_prefix: the provided Linear(D_EMBED -> prefix_len * d_llm).
+        prefix_len: number of visual prefix vectors, K.
+
+    Returns:
+        Visual prefix embeddings of shape (B, prefix_len, d_llm).
+    """
     # TODO: Apply to_prefix, then reshape the output into (B, prefix_len, d_llm).
     raise NotImplementedError("TODO: project the image embedding into visual prefix tokens")
 ```
@@ -2651,8 +2784,22 @@ return to_prefix(image_embeds).view(image_embeds.shape[0], prefix_len, -1)
 ## Step 7: captioning_loss()
 
 ```python
-def captioning_loss(logits, targets, mask):
-    """Masked next-token loss over the response tokens only (Module 6, with an image)."""
+def captioning_loss(logits: torch.Tensor, targets: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+    """Masked next-token loss over the response tokens only.
+
+    This is exactly Module 6's masked SFT loss, now with an image condition in the
+    prefix. We score next-token prediction only where the target is a response token
+    (the mask), so the model is trained to *answer*, not to echo the prompt or the
+    visual prefix.
+
+    Args:
+        logits: next-token logits, shape (T, vocab_size).
+        targets: the token id to predict at each position, shape (T,).
+        mask: True at response positions, shape (T,).
+
+    Returns:
+        A scalar cross-entropy loss over the masked positions.
+    """
     # TODO: Cross-entropy between the logits and targets at the masked positions only.
     raise NotImplementedError("TODO: build the masked captioning loss")
 ```
@@ -2675,13 +2822,43 @@ return F.cross_entropy(logits[mask], targets[mask])
 
 ---
 
+<section id="exercise-output-bridge-train">
+  <h2>Part 3: Training the Bridge</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 1000px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_08_multimodal/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: patchify() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 5: clip_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">  Held-out retrieval accuracy: 1.7% before training, 76.7% after</span>&amp;#10;&amp;#10;<span class="header">=== Step 6: image_to_prefix() ===</span> <span class="success">CORRECT</span>&amp;#10;Projector: Linear(64 -&gt; 4 x 128), 33,280 parameters&amp;#10;  image embedding (1, 64) -&gt; visual prefix (1, 4, 128)&amp;#10;  prompt 'describe the image' as token embeddings (1, 21, 128)&amp;#10;  prefix + prompt, the language model's input (1, 25, 128)&amp;#10;  <span class="success">CORRECT</span>    returns (B, prefix_len, d_llm): 2 embeddings, K=4, Linear(8 -&gt; 64) give (2, 4, 16)&amp;#10;  <span class="success">CORRECT</span>    applies the projector, weights and bias: matches the Linear computed by hand&amp;#10;  <span class="success">CORRECT</span>    prefix vector k is slice k of the output: [0..11], K=3 gives [0..3], [4..7], [8..11]&amp;#10;&amp;#10;<span class="header">=== Step 7: captioning_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;Bridge training: 400 steps of 16 examples (a caption and 4 questions per scene)&amp;#10;  step    1   captioning loss  8.901&amp;#10;  step   50   captioning loss  0.216&amp;#10;  <span class="skipped">...</span>&amp;#10;  step  400   captioning loss  <span class="success">0.009</span>&amp;#10;  <span class="success">CORRECT</span>    averages -log p(target) over the response only: p = 0.5 and 0.75 give 0.490&amp;#10;  <span class="success">CORRECT</span>    scrambling the logits at masked-out positions leaves the loss unchanged&amp;#10;  <span class="success">CORRECT</span>    matches F.cross_entropy with the prompt positions set to ignore_index (random 6 x 10)&amp;#10;  <span class="success">CORRECT</span>    bridge training takes the captioning loss from about 9 to under 0.1 (last 50 steps)&amp;#10;&amp;#10;<span class="header">=== Step 8: greedy_next_token() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: greedily pick the next token</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Four visual tokens at the language model's width sit in front of the 21 prompt tokens. The captioning loss falls from 8.9 to 0.009, and it scores only the response tokens.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step8" -->
 
 ## Step 8: greedy_next_token()
 
 ```python
-def greedy_next_token(logits):
-    """Pick the most likely next token from the last position's logits."""
+def greedy_next_token(logits: torch.Tensor) -> torch.Tensor:
+    """Pick the most likely next token from the last position's logits.
+
+    Used to generate a caption or answer one token at a time from the image-conditioned
+    prompt, so we can check whether the answer changes when the image changes.
+
+    Args:
+        logits: model logits, shape (B, T, vocab_size).
+
+    Returns:
+        The argmax token id at the final position, shape (B,).
+    """
     # TODO: Return the argmax over the vocabulary at the final sequence position.
     raise NotImplementedError("TODO: greedily pick the next token")
 ```
@@ -2707,7 +2884,7 @@ return logits[:, -1, :].argmax(dim=-1)
 <section id="exercise-output-bridge">
   <h2>Part 3: The Answer Follows the Image</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output dense">
+    <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2715,10 +2892,10 @@ return logits[:, -1, :].argmax(dim=-1)
         <span class="terminal-title">uv run python module_08_multimodal/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">PHASE 2: bridge the image into the language model</span>&#10;  Before bridge training (projector is random), 'describe the image' gives:&#10;    image['red triangle above blue triangle'] -&gt; 'tookn'&#10;    image['blue triangle above green triangle'] -&gt; 'toomme'&#10;    image['red square above red circle'] -&gt; 'toomb'&#10;&#10;  step    1   captioning loss  8.901&#10;  step  200   captioning loss  0.142&#10;  step  400   captioning loss  0.009&#10;&#10;<span class="header">AFTER BRIDGE TRAINING: does the answer follow the image?</span>&#10;  <span class="success">Held-out caption exact-match accuracy: 52/60 = 86.7%</span>&#10;&#10;  Same prompt, different images (the grounding test):&#10;    describe -&gt; 'red triangle above blue triangle'   (correct)&#10;    describe -&gt; 'blue triangle above green triangle'   (correct)&#10;    describe -&gt; 'red square above red circle'   (correct)&#10;&#10;  Grounded visual questions on one held-out image:&#10;    what color is on top?      -&gt; 'red'        (correct)&#10;    what shape is on bottom?   -&gt; 'triangle'   (correct)</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: patchify() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 7: captioning_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;&amp;#10;<span class="header">=== Step 8: greedy_next_token() ===</span> <span class="success">CORRECT</span>&amp;#10;Before bridge training (projector is random), 'describe the image' gives:&amp;#10;    image['red triangle above blue triangle'] -&gt; <span class="t-fail">'tookn'</span>&amp;#10;    image['blue triangle above green triangle'] -&gt; <span class="t-fail">'toomme'</span>&amp;#10;    image['red square above red circle'] -&gt; <span class="t-fail">'toomb'</span>&amp;#10;&amp;#10;After bridge training, held-out caption exact-match: <span class="success">52/60 = 86.7%</span>&amp;#10;&amp;#10;Same prompt, different images (the grounding test):&amp;#10;    describe -&gt; 'red triangle above blue triangle'    (correct)&amp;#10;    describe -&gt; 'blue triangle above green triangle'  (correct)&amp;#10;    describe -&gt; 'red square above red circle'         (correct)&amp;#10;&amp;#10;Grounded visual questions on one held-out image:&amp;#10;    what color is on top?      -&gt; 'red'      (correct)&amp;#10;    <span class="skipped">...</span>&amp;#10;    what shape is on bottom?   -&gt; 'triangle' (correct)&amp;#10;  <span class="success">CORRECT</span>    uses the last position: logits [0,5,1] then [2,0,9] give token 2&amp;#10;  <span class="success">CORRECT</span>    returns one token id per sequence: a (2, 3, 5) batch gives shape (2,)&amp;#10;  <span class="success">CORRECT</span>    returns integer token ids (torch.long), not logit values&amp;#10;  <span class="success">CORRECT</span>    held-out caption exact-match is at least 50% (the scenes were never trained on)&amp;#10;  <span class="success">CORRECT</span>    the same prompt returns a different caption for each of the 3 demo images</pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Held-out captions are 87% exact-match, and the SAME prompt returns a different, correct caption per image. The model is reading the image, not guessing from priors.</p>
+    <p class="text-lg terminal-caption">Held-out captions are 87% exact-match, and the same prompt returns a different, correct caption for each image. The last test checks that the captions differ: the model reads the image instead of guessing from priors.</p>
   </div>
 </section>
 
@@ -3008,6 +3185,193 @@ window.ASSET_BASE = "module_08_multimodal/";
 
   <!-- Shared deck logic for every module -->
   <script>
+// =====================================================================
+// CLUSTER_MLP — a small real ReLU MLP trained in the browser (seeded, so
+// the result is repeatable), plus a marching-squares contour helper.
+// Used by the "Clusters" tab of the mlpBoundary widget: four green
+// clusters on a red background. Each hidden neuron's zero-line in input
+// space is a straight line for layer 1 and a piecewise-linear curve for
+// deeper layers; the final boundary is the output neuron's zero-line.
+// =====================================================================
+var CLUSTER_MLP = (function() {
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(rnd) {
+    var u = 1 - rnd(), v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2831853 * v);
+  }
+  var CENTERS = [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+
+  function generateData() {
+    var rnd = mulberry32(7);
+    var pts = [];
+    CENTERS.forEach(function(c) {
+      for (var i = 0; i < 22; i++) {
+        pts.push({ x: c[0] + gauss(rnd) * 0.045, y: c[1] + gauss(rnd) * 0.045, cls: 1 });
+      }
+    });
+    var reds = 0;
+    while (reds < 150) {
+      var x = 0.03 + rnd() * 0.94, y = 0.03 + rnd() * 0.94;
+      var near = CENTERS.some(function(c) { return Math.hypot(x - c[0], y - c[1]) < 0.17; });
+      if (near) continue;
+      pts.push({ x: x, y: y, cls: 0 });
+      reds++;
+    }
+    return pts;
+  }
+
+  // ---- network: [2 -> W]*D (ReLU) -> 1 (sigmoid), full-batch Adam ----
+  function makeNet(width, depth, seed) {
+    var rnd = mulberry32(seed);
+    var layers = [];
+    var fanIn = 2;
+    for (var d = 0; d < depth; d++) {
+      layers.push(initLayer(fanIn, width, rnd));
+      fanIn = width;
+    }
+    layers.push(initLayer(fanIn, 1, rnd));
+    return { width: width, depth: depth, layers: layers };
+  }
+  function initLayer(nIn, nOut, rnd) {
+    var W = [], b = [];
+    var scale = Math.sqrt(2 / nIn);
+    for (var o = 0; o < nOut; o++) {
+      var row = [];
+      for (var i = 0; i < nIn; i++) row.push(gauss(rnd) * scale);
+      W.push(row);
+      b.push(gauss(rnd) * 0.1);
+    }
+    return { W: W, b: b, mW: zeros(nOut, nIn), vW: zeros(nOut, nIn), mb: new Array(nOut).fill(0), vb: new Array(nOut).fill(0) };
+  }
+  function zeros(r, c) {
+    var a = [];
+    for (var i = 0; i < r; i++) a.push(new Array(c).fill(0));
+    return a;
+  }
+
+  // Forward pass returning every layer's pre-activations and activations.
+  // Inputs are centered so the first layer's lines can pass near the middle.
+  function forward(net, x, y) {
+    var act = [x - 0.5, y - 0.5];
+    var pres = [], acts = [act];
+    for (var l = 0; l < net.layers.length; l++) {
+      var L = net.layers[l];
+      var pre = [], out = [];
+      var last = l === net.layers.length - 1;
+      for (var o = 0; o < L.W.length; o++) {
+        var s = L.b[o];
+        for (var i = 0; i < act.length; i++) s += L.W[o][i] * act[i];
+        pre.push(s);
+        out.push(last ? s : (s > 0 ? s : 0));
+      }
+      pres.push(pre); acts.push(out); act = out;
+    }
+    return { pres: pres, acts: acts, logit: act[0] };
+  }
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function trainSteps(net, data, steps, lr) {
+    var b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    net.t = net.t || 0;
+    for (var s = 0; s < steps; s++) {
+      net.t++;
+      var grads = net.layers.map(function(L) {
+        return { W: zeros(L.W.length, L.W[0].length), b: new Array(L.W.length).fill(0) };
+      });
+      for (var n = 0; n < data.length; n++) {
+        var p = data[n];
+        var f = forward(net, p.x, p.y);
+        var delta = [sigmoid(f.logit) - p.cls];
+        for (var l = net.layers.length - 1; l >= 0; l--) {
+          var L = net.layers[l], inp = f.acts[l], g = grads[l];
+          var prev = new Array(inp.length).fill(0);
+          for (var o = 0; o < L.W.length; o++) {
+            g.b[o] += delta[o];
+            for (var i = 0; i < inp.length; i++) {
+              g.W[o][i] += delta[o] * inp[i];
+              prev[i] += delta[o] * L.W[o][i];
+            }
+          }
+          if (l > 0) {
+            for (var k = 0; k < prev.length; k++) if (f.pres[l - 1][k] <= 0) prev[k] = 0;
+          }
+          delta = prev;
+        }
+      }
+      var N = data.length;
+      var c1 = 1 - Math.pow(b1, net.t), c2 = 1 - Math.pow(b2, net.t);
+      net.layers.forEach(function(L, l) {
+        var g = grads[l];
+        for (var o = 0; o < L.W.length; o++) {
+          for (var i = 0; i < L.W[o].length; i++) {
+            var gw = g.W[o][i] / N;
+            L.mW[o][i] = b1 * L.mW[o][i] + (1 - b1) * gw;
+            L.vW[o][i] = b2 * L.vW[o][i] + (1 - b2) * gw * gw;
+            L.W[o][i] -= lr * (L.mW[o][i] / c1) / (Math.sqrt(L.vW[o][i] / c2) + eps);
+          }
+          var gb = g.b[o] / N;
+          L.mb[o] = b1 * L.mb[o] + (1 - b1) * gb;
+          L.vb[o] = b2 * L.vb[o] + (1 - b2) * gb * gb;
+          L.b[o] -= lr * (L.mb[o] / c1) / (Math.sqrt(L.vb[o] / c2) + eps);
+        }
+      });
+    }
+  }
+
+  function accuracy(net, data) {
+    var ok = 0;
+    data.forEach(function(p) { if ((forward(net, p.x, p.y).logit > 0 ? 1 : 0) === p.cls) ok++; });
+    return ok / data.length;
+  }
+
+  // Train with a few seeds and keep the best, so each (width, depth)
+  // shows what that architecture can do rather than one unlucky init.
+  function train(data, width, depth, opts) {
+    opts = opts || {};
+    var seeds = opts.seeds || 4, steps = opts.steps || 400, lr = opts.lr || 0.03;
+    var best = null;
+    for (var s = 0; s < seeds; s++) {
+      var net = makeNet(width, depth, 1000 + s * 17 + width * 3 + depth * 101);
+      trainSteps(net, data, steps, lr);
+      var acc = accuracy(net, data);
+      if (!best || acc > best.acc) best = { net: net, acc: acc };
+    }
+    return best;
+  }
+
+  // ---- marching squares: zero-contour of a scalar field on a grid ----
+  function contour(field, n) {
+    // field[i][j] sampled at x=i/n, y=j/n for i,j in 0..n
+    var segs = [];
+    function lerp(a, b, va, vb) { return a + (0 - va) / (vb - va) * (b - a); }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var v00 = field[i][j], v10 = field[i + 1][j], v01 = field[i][j + 1], v11 = field[i + 1][j + 1];
+        var x0 = i / n, x1 = (i + 1) / n, y0 = j / n, y1 = (j + 1) / n;
+        var pts = [];
+        if ((v00 > 0) !== (v10 > 0)) pts.push([lerp(x0, x1, v00, v10), y0]);
+        if ((v10 > 0) !== (v11 > 0)) pts.push([x1, lerp(y0, y1, v10, v11)]);
+        if ((v01 > 0) !== (v11 > 0)) pts.push([lerp(x0, x1, v01, v11), y1]);
+        if ((v00 > 0) !== (v01 > 0)) pts.push([x0, lerp(y0, y1, v00, v01)]);
+        if (pts.length === 2) segs.push([pts[0], pts[1]]);
+        else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+      }
+    }
+    return segs;
+  }
+
+  return { generateData: generateData, train: train, forward: forward, accuracy: accuracy, contour: contour, sigmoid: sigmoid };
+}());
+if (typeof module !== "undefined" && module.exports) module.exports = CLUSTER_MLP;
+
+
 // =====================================================================
 // Core deck infrastructure: Manim steppers, Reveal.js init, syntax
 // highlighting, interactive widget plumbing, and per-module hooks.

@@ -17,7 +17,7 @@ visible in three stages:
           tokens and train the model to caption and answer (steps 6-8). The payoff:
           the answer changes when the image changes.
 
-Run after each step; unfinished steps are skipped automatically:
+Run after each step; each step is tagged CORRECT, INCORRECT, or INCOMPLETE:
     uv run python module_08_multimodal/src/main.py
 """
 

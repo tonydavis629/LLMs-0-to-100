@@ -15,11 +15,11 @@ sample &rarr; score &rarr; advantage &rarr; update cycle, a **reward curve that 
 and a held-out accuracy that rises &mdash; driven by **reward**, not imitation.
 
 The starting policy is an instruct model that can *partly* reverse strings. Its
-argmax (greedy) answer is often right, but its sampling distribution is broad, so
-**sampled** completions are correct only about a fifth of the time. GRPO **sharpens**
-that distribution: sampled accuracy climbs from roughly 20% to about 90%. This is the
-module's thesis in miniature &mdash; RL concentrates probability on reasoning the model
-could already occasionally produce.
+argmax (greedy) answer is right on 22.5% of the held-out prompts, and its sampling
+distribution is broad, so **sampled** completions are correct only 15.9% of the time.
+GRPO **sharpens** that distribution: held-out sampled accuracy climbs to 73.1% and
+greedy accuracy to 92.5%. This is the module's thesis in miniature: RL
+concentrates probability on reasoning the model could already occasionally produce.
 
 ## Setup
 
@@ -31,16 +31,36 @@ uv sync
 
 ## Running
 
-```bash
-uv run python exercises/module_07_rl/src/main.py
+From the `exercises/` directory:
+
+```
+uv run python module_07_rl/src/main.py
 ```
 
-The runner detects which steps you have implemented and skips the rest, so you can
-fill in one step at a time and re-run immediately. It prints the held-out accuracy
-**before** (sampled and greedy), the mean reward at each checkpoint during training,
-the held-out accuracy **after**, and a sample completion before and after. It also
-saves a **reward-curve image** to `output/reward_curve.png`.
+The runner goes through the ten steps in order. Each step's header line carries a tag, and the step's output follows: what your function produced on the real model (a sampled group, its rewards and advantages, a completion mask, per-token log-probs), then one line per test from `tests/`. The tags are:
 
+| Tag | Meaning |
+|-----|---------|
+| `CORRECT` | every test for the step passed |
+| `INCORRECT` | your code ran but a test failed; the expected and actual values are printed under it |
+| `INCOMPLETE` | the function still raises `NotImplementedError` |
+
+```
+=== Step 4: group_relative_advantages() === CORRECT
+Rewards for the Step 1 group: [ 0.00,  0.00,  0.00,  0.00,  1.00,  0.00,  1.00,  0.00]
+Advantages:                   [-0.54, -0.54, -0.54, -0.54, +1.62, -0.54, +1.62, -0.54]
+  CORRECT    rewards [1, 0, 1, 0] give [0.866, -0.866, 0.866, -0.866] (mean 0.5, std 0.577)
+  CORRECT    advantages have mean 0 and std 1 within a group: rewards [1, 0, 0, 0, 1, 0, 0, 0]
+  CORRECT    a group where every reward ties gives all-zero advantages, not NaN: [1, 1, 1, 1]
+```
+
+After Step 10 comes the payoff, `GRPO training (Steps 1-10 together)`, which needs all ten steps. It prints the held-out accuracy **before** training (sampled and greedy), the mean group reward every 20 steps, the held-out accuracy **after**, and the example prompt's greedy answer before and after. It saves a **reward-curve image** to `output/reward_curve.png`, then its tests check that the reward climbed and held-out accuracy rose. Training takes a few minutes on a laptop CPU, and a progress line shows the current step while it runs.
+
+Run a single step with `--step` (1 to 10, or `train` for the training run):
+
+```
+uv run python module_07_rl/src/main.py --step 4
+```
 
 `exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
 
@@ -68,8 +88,11 @@ only one expression or one short block.
 
 The model (`src/model.py`), tokenizer (`src/tokenizer.py`), data (`src/data.py`),
 plotting (`src/visualization.py`), and runner (`src/main.py`) are all provided. The
-runner orchestrates the loop and calls the functions you write. You only edit
-`exercise.py`.
+runner orchestrates the loop and calls the functions you write. The tests live in
+`tests/`, one file per step (`test_step1_sample_group.py` through
+`test_step10_mean_reward.py`, plus `test_training.py` for the training run). Each calls
+your function on small tensors with a known answer, so you can read the test for the
+step you are on to see exactly what is expected. You only edit `exercise.py`.
 
 ## Data
 

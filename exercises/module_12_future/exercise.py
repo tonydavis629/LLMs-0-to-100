@@ -13,7 +13,7 @@ the RNNs the transformer replaced in Module 4 and costs O(n) with a fixed-size
 state. Step 6 checks they agree. Step 7 times them, so the cost claim stops
 being a claim.
 
-Run after each step; unfinished steps are skipped automatically:
+Run after each step. The runner tags every step CORRECT, INCORRECT, or INCOMPLETE:
     uv run python module_12_future/src/main.py
 """
 

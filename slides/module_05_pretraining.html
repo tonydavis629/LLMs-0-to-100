@@ -1130,7 +1130,6 @@
 
 Module 5: Pretraining
 
-How random weights become useful weights
 
 ---
 
@@ -2512,18 +2511,53 @@ Pretraining NanoGPT
 
 ## Running the Exercise
 
-Open `module_05_pretraining/exercise.py` and fill in the `NotImplementedError` lines. The model is provided; you write the training loop. Run after each step; unfinished steps are skipped. <!-- .element: class="text-lg" -->
+Open `module_05_pretraining/exercise.py` and fill in the `NotImplementedError` lines. The model is provided; you write the training loop. Run after each step. Step 7 trains for 2,000 steps, which takes several minutes on a laptop CPU, and saves a loss-curve image to `output/`. <!-- .element: class="text-lg" -->
 
 ```bash
-# Train the tiny model on the bundled Shakespeare corpus
+# Run every step; each is tagged CORRECT, INCORRECT, or INCOMPLETE
 cd exercises
 uv run python module_05_pretraining/src/main.py
+
+# Run a single step (1, 2, 3, 4, 5, 7, 8, or 10)
+uv run python module_05_pretraining/src/main.py --step 4
 
 # Single-batch sanity check: the loss should crater toward zero
 uv run python module_05_pretraining/src/main.py --overfit
 ```
 
-The runner prints the model and dataset size, a sample before training, the loss at each checkpoint, the final perplexity and bits per token, a sample after training, and saves a loss-curve image. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+---
+
+<!-- .slide: id="exercise-results" -->
+
+## Reading the Results
+
+For each step the runner prints what your code produced, then runs the step's **tests** from `tests/`. Each test calls your function on a tiny tensor whose correct answer is known. <!-- .element: class="text-lg" -->
+
+- **CORRECT**: every test for the step passed
+- **INCORRECT**: your code ran but a test failed; the expected and actual values are printed beneath
+- **INCOMPLETE**: the function still raises `NotImplementedError`, or it needs an earlier step you have not finished
+
+The tag sits on the step's header line, with the output and the individual test results after it. A falling loss is not proof that a step is right, so check the tags. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+
+---
+
+<section id="exercise-results-example">
+  <h2>What an INCORRECT Step Looks Like</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_05_pretraining/src/main.py --step 3</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="skipped">...</span>&amp;#10;<span class="header">=== Step 3: get_batch() ===</span> <span class="t-fail">INCORRECT</span>&amp;#10;  One batch: x has shape (32, 128), y has shape (32, 128)&amp;#10;  x[0][:24] = ' guess who caused your f'&amp;#10;  y[0][:24] = ' guess who caused your f'&amp;#10;  <span class="success">CORRECT</span>    x and y both have shape (batch_size, block_size): (3, 4) here&amp;#10;  <span class="t-fail">INCORRECT</span>  on data = 0, 1, ..., 99 every target is its input plus one (y = x + 1)&amp;#10;             x[0] = [44, 45, 46, 47]&amp;#10;             got y[0] = [44, 45, 46, 47], expected [45, 46, 47, 48]&amp;#10;  <span class="t-fail">INCORRECT</span>  shortest stream: 0..4 with block_size 4 gives x = [0,1,2,3], y = [1,2,3,4]&amp;#10;             got x = [[0, 1, 2, 3]], y = [[0, 1, 2, 3]]</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Here <code>get_batch()</code> built <code>y</code> with the same slice as <code>x</code>, so every target equals its input. The shape test still passes. The shift test prints <code>x[0]</code>, the <code>y[0]</code> it got, and the <code>y[0]</code> it expected. Training on these batches would still drive the loss down, because the model only has to copy its input.</p>
+  </div>
+</section>
 
 ---
 
@@ -2557,6 +2591,8 @@ The architecture is fixed (the Module 4 model, scaled down). You implement the *
 
 </div>
 
+Each blank is one line or a short block, and every step has its own tests in `tests/`. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+
 ---
 
 <!-- .slide: id="exercise-step1" -->
@@ -2565,7 +2601,15 @@ The architecture is fixed (the Module 4 model, scaled down). You implement the *
 
 ```python
 def encode(text: str, stoi: dict[str, int]) -> torch.Tensor:
-    """Turn a string into a 1-D LongTensor of token IDs."""
+    """Turn a string into a 1-D LongTensor of token IDs.
+
+    Args:
+        text: The raw text.
+        stoi: A "string-to-index" map from each character to its integer ID.
+
+    Returns:
+        A 1-D tensor of dtype torch.long with one ID per character.
+    """
     # TODO: Return a 1-D LongTensor with one integer ID per character in `text`.
     raise NotImplementedError("TODO: encode text into a LongTensor of token IDs")
 ```
@@ -2595,7 +2639,15 @@ return torch.tensor([stoi[c] for c in text], dtype=torch.long)
 ```python
 def train_val_split(data: torch.Tensor,
                     val_fraction: float = 0.1) -> tuple[torch.Tensor, torch.Tensor]:
-    """Split a 1-D token stream into a training prefix and a validation suffix."""
+    """Split a 1-D token stream into a training prefix and a validation suffix.
+
+    Args:
+        data: The full 1-D tensor of token IDs.
+        val_fraction: Fraction of tokens to hold out for validation.
+
+    Returns:
+        (train_data, val_data) as two 1-D tensors.
+    """
     # TODO: Return (train_data, val_data): the first (1 - val_fraction) of the
     #       tokens for training, and the remaining tail for validation.
     raise NotImplementedError("TODO: split the token stream into train and validation")
@@ -2623,7 +2675,7 @@ return data[:n_train], data[n_train:]
 <section id="exercise-output-12">
   <h2>Steps 1&ndash;2: Data</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
+    <div class="terminal-output dense" style="max-width: 920px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2631,10 +2683,10 @@ return data[:n_train], data[n_train:]
         <span class="terminal-title">uv run python module_05_pretraining/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">MODEL</span>&#10;TinyGPT: 4 layers, 4 heads, width 128, context 128&#10;<span class="success">Parameters:  818,048</span>&#10;&#10;<span class="header">STEP 1: Encode text into token IDs</span>&#10;<span class="success">Encoded 1,115,394 tokens. First 20 IDs: [18, 47, 56, 57, 58, 1, 15, ...]</span>&#10;&#10;<span class="header">STEP 2: Train / validation split</span>&#10;<span class="success">Train tokens: 1,003,854   Validation tokens: 111,540</span></pre>
+        <pre class="terminal-pre">Corpus:      tinyshakespeare.txt  (1,115,394 characters)&amp;#10;Vocabulary:  65 unique characters&amp;#10;TinyGPT:     4 layers, 4 heads, width 128, context 128&amp;#10;Parameters:  818,048&amp;#10;&amp;#10;<span class="header">=== Step 1: encode() ===</span> <span class="success">CORRECT</span>&amp;#10;  Encoded 1,115,394 tokens. First 20 IDs: [18, 47, 56, 57, 58, 1, 15, 47, 58, 47, 64, 43, 52, 10, 0, 14, 43, 44, 53, 56]&amp;#10;  <span class="success">CORRECT</span>    looks up every character: 'abca' with a=0, b=1, c=2 gives [0, 1, 2, 0]&amp;#10;  <span class="success">CORRECT</span>    returns a 1-D torch.long tensor (the dtype nn.Embedding needs)&amp;#10;  <span class="success">CORRECT</span>    round trip: decoding the IDs of the first 1,000 characters gives the text back&amp;#10;&amp;#10;<span class="header">=== Step 2: train_val_split() ===</span> <span class="success">CORRECT</span>&amp;#10;  Train tokens: 1,003,854   Validation tokens: 111,540&amp;#10;  <span class="success">CORRECT</span>    0..9 with val_fraction=0.2 gives train [0..7] and validation [8, 9]&amp;#10;  <span class="success">CORRECT</span>    the default val_fraction=0.1 splits 100 tokens into 90 and 10&amp;#10;  <span class="success">CORRECT</span>    train + validation is the original stream: nothing lost, repeated, or shuffled&amp;#10;&amp;#10;<span class="header">=== Step 3: get_batch() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: build the shifted target batch y</span>&amp;#10;&amp;#10;<span class="header">=== Step 4: compute_loss() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: cross-entropy loss from logits and targets</span>&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">A 1.1M-character corpus, 65 distinct characters, encoded and split. The model has 818K parameters.</p>
+    <p class="text-lg terminal-caption">A 1.1M-character corpus with 65 distinct characters, encoded and split 90/10. The model has 818K parameters. Every later step is tagged INCOMPLETE with the TODO it is waiting on.</p>
   </div>
 </section>
 
@@ -2680,7 +2732,15 @@ y = torch.stack([data[i + 1 : i + 1 + block_size] for i in ix])
 
 ```python
 def compute_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
-    """Average cross-entropy between predicted logits and the true next tokens."""
+    """Average cross-entropy between predicted logits and the true next tokens.
+
+    Args:
+        logits: Model outputs, shape (batch, time, vocab_size).
+        targets: True next-token IDs, shape (batch, time).
+
+    Returns:
+        A scalar loss tensor (negative log-likelihood averaged over all tokens).
+    """
     batch_size, seq_len, vocab_size = logits.shape
     # TODO: Return the average cross-entropy between logits and targets.
     raise NotImplementedError("TODO: cross-entropy loss from logits and targets")
@@ -2741,17 +2801,61 @@ loss.backward()
 
 ---
 
+<section id="exercise-output-35">
+  <h2>Steps 3&ndash;5: Batches, Loss, One Step</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_05_pretraining/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: encode() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: train_val_split() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 3: get_batch() ===</span> <span class="success">CORRECT</span>&amp;#10;  One batch: x has shape (32, 128), y has shape (32, 128)&amp;#10;  x[0][:24] = ' guess who caused your f'&amp;#10;  y[0][:24] = 'guess who caused your fa'&amp;#10;  <span class="success">CORRECT</span>    x and y both have shape (batch_size, block_size): (3, 4) here&amp;#10;  <span class="success">CORRECT</span>    on data = 0, 1, ..., 99 every target is its input plus one (y = x + 1)&amp;#10;  <span class="success">CORRECT</span>    shortest stream: 0..4 with block_size 4 gives x = [0,1,2,3], y = [1,2,3,4]&amp;#10;&amp;#10;<span class="header">=== Step 4: compute_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;  Untrained model on 8 x 128 characters: loss 4.1857 nats&amp;#10;  A uniform guess over 65 characters costs ln 65 = 4.1744 nats&amp;#10;  <span class="success">CORRECT</span>    equal logits over 3 tokens cost ln 3 = 1.0986 nats&amp;#10;  <span class="success">CORRECT</span>    averages over positions: surprises ln 3 and ln 2 give 0.8959&amp;#10;  <span class="success">CORRECT</span>    matches -log_softmax at the true token, averaged, on a random (2, 4, 4) batch&amp;#10;  <span class="success">CORRECT</span>    returns a 0-dim tensor that autograd can backpropagate through&amp;#10;&amp;#10;<span class="header">=== Step 5: train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;  Five train_step() calls on one batch of 8 x 128 characters:&amp;#10;  loss 4.1860 -&gt; 3.8484 -&gt; 3.5361 -&gt; 3.3830 -&gt; 3.2890&amp;#10;  <span class="success">CORRECT</span>    returns the batch loss as a float: ln 5 = 1.6094 for a table of zeros&amp;#10;  <span class="success">CORRECT</span>    one SGD step (lr 0.5) moves the weights exactly as backward() + step() should&amp;#10;  <span class="success">CORRECT</span>    clears old gradients first: a leftover .grad of 100 does not leak into the step&amp;#10;&amp;#10;<span class="header">=== Step 7: estimate_loss() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: accumulate the batch loss into total</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption"><code>y</code> is <code>x</code> shifted by one character. Untrained, the loss is near ln 65: a uniform guess.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step7" -->
 
 ## Step 7: estimate_loss()
 
 ```python
+@torch.no_grad()
+def estimate_loss(
+    model: torch.nn.Module,
+    data: torch.Tensor,
+    block_size: int,
+    batch_size: int,
+    n_batches: int,
+    generator: torch.Generator | None = None,
+) -> float:
+    """Average the loss over several random batches (a less noisy estimate).
+
+    Args:
+        model: The model to evaluate.
+        data: The token stream to sample evaluation batches from.
+        block_size: Context length.
+        batch_size: Examples per batch.
+        n_batches: How many batches to average over.
+        generator: Optional RNG for reproducible sampling.
+
+    Returns:
+        The mean loss across the batches, as a float.
+    """
+    model.eval()
     total = 0.0
     for _ in range(n_batches):
         x, y = get_batch(data, block_size, batch_size, generator)
         logits = model(x)
         # TODO: Add this batch's loss (as a Python float) to `total`.
         raise NotImplementedError("TODO: accumulate the batch loss into total")
+    model.train()
     return total / n_batches
 ```
 
@@ -2773,13 +2877,44 @@ total += compute_loss(logits, y).item()
 
 ---
 
+<section id="exercise-output-train">
+  <h2>Step 7: The Pretraining Run</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_05_pretraining/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: encode() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: train_val_split() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: get_batch() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: compute_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 7: estimate_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;Pretraining for 2,000 steps (warmup + cosine learning rate from src/schedules.py):&amp;#10;  step         lr     train       val&amp;#10;     0   3.00e-05    4.1816    4.1803&amp;#10;   250   2.96e-03    2.2870    2.3055&amp;#10;   500   2.72e-03    1.8689    1.9827&amp;#10;   750   2.29e-03    1.6868    1.8527&amp;#10;  1000   1.76e-03    1.5905    1.7748&amp;#10;  1250   1.21e-03    1.5325    1.7299&amp;#10;  1500   7.36e-04    1.4845    1.6649&amp;#10;  1750   4.14e-04    1.4398    1.6254&amp;#10;  2000   3.00e-04    1.4379    1.6373&amp;#10;Saved loss curve to module_05_pretraining/output/loss_curve.png&amp;#10;  <span class="success">CORRECT</span>    a uniform model scores ln 5 = 1.6094 on every batch, so the average is ln 5&amp;#10;  <span class="success">CORRECT</span>    matches the mean of compute_loss(logits, y) over the same 3 seeded batches&amp;#10;  <span class="success">CORRECT</span>    returns a plain Python float&amp;#10;  <span class="success">CORRECT</span>    pretraining lowers the validation loss from about ln 65 = 4.17 to under 2.0</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Loss falls from 4.18, a uniform guess, to 1.44 on train and 1.64 on validation. The last test checks the run itself.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step8" -->
 
 ## Step 8: loss_to_perplexity_and_bits()
 
 ```python
 def loss_to_perplexity_and_bits(loss: float) -> tuple[float, float]:
-    """Convert an average cross-entropy loss (in nats) into two readouts."""
+    """Convert an average cross-entropy loss (in nats) into two readouts.
+
+    Perplexity is exp(loss): roughly the effective number of equally likely
+    next-token choices. Bits per token is loss / ln(2): the same loss expressed
+    in Shannon's units, i.e. the average number of bits to encode each token.
+
+    Args:
+        loss: Average cross-entropy loss in nats.
+
+    Returns:
+        (perplexity, bits_per_token).
+    """
     # TODO: Return (perplexity, bits_per_token) from the average loss (in nats).
     raise NotImplementedError("TODO: perplexity and bits per token")
 ```
@@ -2795,10 +2930,32 @@ def loss_to_perplexity_and_bits(loss: float) -> tuple[float, float]:
 **Answer:**
 
 ```python
-return math.exp(loss), loss / math.log(2)
+perplexity = math.exp(loss)
+bits_per_token = loss / math.log(2)
+return perplexity, bits_per_token
 ```
 
 </div>
+
+---
+
+<section id="exercise-output-step8">
+  <h2>Step 8: Perplexity and Bits</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_05_pretraining/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="skipped">...</span>&amp;#10;<span class="header">=== Step 5: train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 7: estimate_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;  2000   3.00e-04    1.4379    1.6373&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 8: loss_to_perplexity_and_bits() ===</span> <span class="success">CORRECT</span>&amp;#10;  Validation loss, read three ways:&amp;#10;                            nats   perplexity   bits/token&amp;#10;  uniform over 65 chars   4.1744        65.00       6.0224&amp;#10;  before training         4.1803        65.38       6.0309&amp;#10;  after training          1.6373         5.14       2.3621&amp;#10;  <span class="success">CORRECT</span>    uniform over 65 characters: loss ln 65 gives perplexity 65 and 6.0224 bits&amp;#10;  <span class="success">CORRECT</span>    a loss of 0 (a perfect model) gives perplexity 1 and 0 bits&amp;#10;  <span class="success">CORRECT</span>    a loss of 1 nat gives perplexity e = 2.7183 and 1 / ln 2 = 1.4427 bits</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Before training the model is as unsure as a uniform guess over 65 characters. After 2,000 steps its perplexity is 5.14, and it needs 2.36 bits per character instead of 6.03.</p>
+  </div>
+</section>
 
 ---
 
@@ -2836,10 +2993,10 @@ next_id = torch.multinomial(probs, num_samples=1, generator=generator)
 
 ---
 
-<section id="exercise-output-train">
-  <h2>Full Run: Loss Falling</h2>
+<section id="exercise-output-step10">
+  <h2>Step 10: Before and After Training</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
+    <div class="terminal-output dense" style="max-width: 920px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2847,10 +3004,10 @@ next_id = torch.multinomial(probs, num_samples=1, generator=generator)
         <span class="terminal-title">uv run python module_05_pretraining/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">TRAINING</span>&#10;  step         lr     train       val&#10;     0   3.00e-05    4.1816    4.1803&#10;   250   2.96e-03    2.2870    2.3055&#10;   500   2.72e-03    1.8689    1.9827&#10;  1000   1.76e-03    1.5905    1.7748&#10;  1500   7.36e-04    1.4845    1.6649&#10;  2000   3.00e-04    1.4379    1.6373&#10;&#10;<span class="header">STEP 8: Perplexity and bits per token</span>&#10;<span class="success">Final validation loss: 1.6373 nats</span>&#10;<span class="success">Perplexity (exp loss): 5.14   (effective next-char choices)</span>&#10;<span class="success">Bits per token (loss / ln 2): 2.3621</span></pre>
+        <pre class="terminal-pre"><span class="skipped">...</span>&amp;#10;<span class="header">=== Step 7: estimate_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 8: loss_to_perplexity_and_bits() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 10: generate() ===</span> <span class="success">CORRECT</span>&amp;#10;  Sample before training (random weights):&amp;#10;    -pzlYaS ;czdeCpwEiT,YzrzlG3-aYeNB&amp;#10;    ijbo&amp;#10;    Lzzj$KUKS-A.U FisdJ'G HTobPPW;,Ue$zOAnsz-imHzPAkfEfYYgS;RTNBE:myOzk. qVh -LLcJJlZHPXBvZLUofg<span class="skipped">...</span>&amp;#10;  Sample after training (2,000 steps):&amp;#10;    FRIAR LAURENCE:&amp;#10;    What do tongue the cLARENCE:&amp;#10;    Your felsed hath you seed heart of me.&amp;#10;&amp;#10;    FRIAR MARGARET:&amp;#10;    Pray, good Jint:&amp;#10;    And face where comman, I field I will be you wede no&amp;#10;    To die.&amp;#10;    <span class="skipped">...</span>&amp;#10;  <span class="success">CORRECT</span>    appends max_new_tokens tokens: a 2-token seed plus 5 new gives shape (1, 7)&amp;#10;  <span class="success">CORRECT</span>    at temperature 0.01 it matches argmax: the counting table gives 0 1 2 3 4 0 1&amp;#10;  <span class="success">CORRECT</span>    samples in proportion: a token with probability 0.6 comes up about 60% of the time&amp;#10;  <span class="success">CORRECT</span>    the same generator seed gives the same sample twice</pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Training loss falls from 4.18 to ~1.44; validation tracks it. Final perplexity 5.14, bits per token 2.36.</p>
+    <p class="text-lg terminal-caption">The same seeded generator, before and after 2,000 steps. Every step is now CORRECT.</p>
   </div>
 </section>
 
@@ -2859,7 +3016,7 @@ next_id = torch.multinomial(probs, num_samples=1, generator=generator)
 <section id="exercise-output-overfit">
   <h2>Sanity Check: Overfit One Batch</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
+    <div class="terminal-output dense" style="max-width: 920px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2867,10 +3024,10 @@ next_id = torch.multinomial(probs, num_samples=1, generator=generator)
         <span class="terminal-title">uv run python module_05_pretraining/src/main.py --overfit</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">OVERFIT ONE BATCH (sanity check)</span>&#10;Training repeatedly on ONE batch of shape (8, 128) for 300 steps:&#10;  step      loss&#10;     0    4.1782&#10;    50    2.4023&#10;   100    1.1647&#10;   150    0.3843&#10;   200    0.2334&#10;   300    0.0704</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: encode() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: train_val_split() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: get_batch() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: compute_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Sanity check: overfit one batch (Steps 3-5 together) ===</span> <span class="success">CORRECT</span>&amp;#10;Training repeatedly on ONE batch of shape (8, 128) for 300 steps:&amp;#10;  step      loss&amp;#10;     0    4.1782&amp;#10;    50    2.4023&amp;#10;   100    1.1647&amp;#10;   150    0.3843&amp;#10;   200    0.2334&amp;#10;   250    0.1421&amp;#10;   300    0.0704&amp;#10;  <span class="success">CORRECT</span>    training on one fixed batch drives its loss from about 4.18 to under 0.5</pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">On a single fixed batch the loss craters from 4.18 toward zero: the loop is wired correctly.</p>
+    <p class="text-lg terminal-caption">With <code>--overfit</code>, Steps 1&ndash;5 run as usual, then one fixed batch replaces the full run. Its loss craters from 4.18 toward zero: the loop is wired correctly.</p>
   </div>
 </section>
 
@@ -3378,6 +3535,193 @@ window.ASSET_BASE = "module_05_pretraining/";
 
   <!-- Shared deck logic for every module -->
   <script>
+// =====================================================================
+// CLUSTER_MLP — a small real ReLU MLP trained in the browser (seeded, so
+// the result is repeatable), plus a marching-squares contour helper.
+// Used by the "Clusters" tab of the mlpBoundary widget: four green
+// clusters on a red background. Each hidden neuron's zero-line in input
+// space is a straight line for layer 1 and a piecewise-linear curve for
+// deeper layers; the final boundary is the output neuron's zero-line.
+// =====================================================================
+var CLUSTER_MLP = (function() {
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(rnd) {
+    var u = 1 - rnd(), v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2831853 * v);
+  }
+  var CENTERS = [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+
+  function generateData() {
+    var rnd = mulberry32(7);
+    var pts = [];
+    CENTERS.forEach(function(c) {
+      for (var i = 0; i < 22; i++) {
+        pts.push({ x: c[0] + gauss(rnd) * 0.045, y: c[1] + gauss(rnd) * 0.045, cls: 1 });
+      }
+    });
+    var reds = 0;
+    while (reds < 150) {
+      var x = 0.03 + rnd() * 0.94, y = 0.03 + rnd() * 0.94;
+      var near = CENTERS.some(function(c) { return Math.hypot(x - c[0], y - c[1]) < 0.17; });
+      if (near) continue;
+      pts.push({ x: x, y: y, cls: 0 });
+      reds++;
+    }
+    return pts;
+  }
+
+  // ---- network: [2 -> W]*D (ReLU) -> 1 (sigmoid), full-batch Adam ----
+  function makeNet(width, depth, seed) {
+    var rnd = mulberry32(seed);
+    var layers = [];
+    var fanIn = 2;
+    for (var d = 0; d < depth; d++) {
+      layers.push(initLayer(fanIn, width, rnd));
+      fanIn = width;
+    }
+    layers.push(initLayer(fanIn, 1, rnd));
+    return { width: width, depth: depth, layers: layers };
+  }
+  function initLayer(nIn, nOut, rnd) {
+    var W = [], b = [];
+    var scale = Math.sqrt(2 / nIn);
+    for (var o = 0; o < nOut; o++) {
+      var row = [];
+      for (var i = 0; i < nIn; i++) row.push(gauss(rnd) * scale);
+      W.push(row);
+      b.push(gauss(rnd) * 0.1);
+    }
+    return { W: W, b: b, mW: zeros(nOut, nIn), vW: zeros(nOut, nIn), mb: new Array(nOut).fill(0), vb: new Array(nOut).fill(0) };
+  }
+  function zeros(r, c) {
+    var a = [];
+    for (var i = 0; i < r; i++) a.push(new Array(c).fill(0));
+    return a;
+  }
+
+  // Forward pass returning every layer's pre-activations and activations.
+  // Inputs are centered so the first layer's lines can pass near the middle.
+  function forward(net, x, y) {
+    var act = [x - 0.5, y - 0.5];
+    var pres = [], acts = [act];
+    for (var l = 0; l < net.layers.length; l++) {
+      var L = net.layers[l];
+      var pre = [], out = [];
+      var last = l === net.layers.length - 1;
+      for (var o = 0; o < L.W.length; o++) {
+        var s = L.b[o];
+        for (var i = 0; i < act.length; i++) s += L.W[o][i] * act[i];
+        pre.push(s);
+        out.push(last ? s : (s > 0 ? s : 0));
+      }
+      pres.push(pre); acts.push(out); act = out;
+    }
+    return { pres: pres, acts: acts, logit: act[0] };
+  }
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function trainSteps(net, data, steps, lr) {
+    var b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    net.t = net.t || 0;
+    for (var s = 0; s < steps; s++) {
+      net.t++;
+      var grads = net.layers.map(function(L) {
+        return { W: zeros(L.W.length, L.W[0].length), b: new Array(L.W.length).fill(0) };
+      });
+      for (var n = 0; n < data.length; n++) {
+        var p = data[n];
+        var f = forward(net, p.x, p.y);
+        var delta = [sigmoid(f.logit) - p.cls];
+        for (var l = net.layers.length - 1; l >= 0; l--) {
+          var L = net.layers[l], inp = f.acts[l], g = grads[l];
+          var prev = new Array(inp.length).fill(0);
+          for (var o = 0; o < L.W.length; o++) {
+            g.b[o] += delta[o];
+            for (var i = 0; i < inp.length; i++) {
+              g.W[o][i] += delta[o] * inp[i];
+              prev[i] += delta[o] * L.W[o][i];
+            }
+          }
+          if (l > 0) {
+            for (var k = 0; k < prev.length; k++) if (f.pres[l - 1][k] <= 0) prev[k] = 0;
+          }
+          delta = prev;
+        }
+      }
+      var N = data.length;
+      var c1 = 1 - Math.pow(b1, net.t), c2 = 1 - Math.pow(b2, net.t);
+      net.layers.forEach(function(L, l) {
+        var g = grads[l];
+        for (var o = 0; o < L.W.length; o++) {
+          for (var i = 0; i < L.W[o].length; i++) {
+            var gw = g.W[o][i] / N;
+            L.mW[o][i] = b1 * L.mW[o][i] + (1 - b1) * gw;
+            L.vW[o][i] = b2 * L.vW[o][i] + (1 - b2) * gw * gw;
+            L.W[o][i] -= lr * (L.mW[o][i] / c1) / (Math.sqrt(L.vW[o][i] / c2) + eps);
+          }
+          var gb = g.b[o] / N;
+          L.mb[o] = b1 * L.mb[o] + (1 - b1) * gb;
+          L.vb[o] = b2 * L.vb[o] + (1 - b2) * gb * gb;
+          L.b[o] -= lr * (L.mb[o] / c1) / (Math.sqrt(L.vb[o] / c2) + eps);
+        }
+      });
+    }
+  }
+
+  function accuracy(net, data) {
+    var ok = 0;
+    data.forEach(function(p) { if ((forward(net, p.x, p.y).logit > 0 ? 1 : 0) === p.cls) ok++; });
+    return ok / data.length;
+  }
+
+  // Train with a few seeds and keep the best, so each (width, depth)
+  // shows what that architecture can do rather than one unlucky init.
+  function train(data, width, depth, opts) {
+    opts = opts || {};
+    var seeds = opts.seeds || 4, steps = opts.steps || 400, lr = opts.lr || 0.03;
+    var best = null;
+    for (var s = 0; s < seeds; s++) {
+      var net = makeNet(width, depth, 1000 + s * 17 + width * 3 + depth * 101);
+      trainSteps(net, data, steps, lr);
+      var acc = accuracy(net, data);
+      if (!best || acc > best.acc) best = { net: net, acc: acc };
+    }
+    return best;
+  }
+
+  // ---- marching squares: zero-contour of a scalar field on a grid ----
+  function contour(field, n) {
+    // field[i][j] sampled at x=i/n, y=j/n for i,j in 0..n
+    var segs = [];
+    function lerp(a, b, va, vb) { return a + (0 - va) / (vb - va) * (b - a); }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var v00 = field[i][j], v10 = field[i + 1][j], v01 = field[i][j + 1], v11 = field[i + 1][j + 1];
+        var x0 = i / n, x1 = (i + 1) / n, y0 = j / n, y1 = (j + 1) / n;
+        var pts = [];
+        if ((v00 > 0) !== (v10 > 0)) pts.push([lerp(x0, x1, v00, v10), y0]);
+        if ((v10 > 0) !== (v11 > 0)) pts.push([x1, lerp(y0, y1, v10, v11)]);
+        if ((v01 > 0) !== (v11 > 0)) pts.push([lerp(x0, x1, v01, v11), y1]);
+        if ((v00 > 0) !== (v01 > 0)) pts.push([x0, lerp(y0, y1, v00, v01)]);
+        if (pts.length === 2) segs.push([pts[0], pts[1]]);
+        else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+      }
+    }
+    return segs;
+  }
+
+  return { generateData: generateData, train: train, forward: forward, accuracy: accuracy, contour: contour, sigmoid: sigmoid };
+}());
+if (typeof module !== "undefined" && module.exports) module.exports = CLUSTER_MLP;
+
+
 // =====================================================================
 // Core deck infrastructure: Manim steppers, Reveal.js init, syntax
 // highlighting, interactive widget plumbing, and per-module hooks.

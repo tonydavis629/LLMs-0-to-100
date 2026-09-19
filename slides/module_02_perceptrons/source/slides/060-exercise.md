@@ -79,6 +79,10 @@ return sigmoid(X @ weights + bias)
 def binary_cross_entropy(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
     """Compute the binary cross-entropy loss: -[y log(p) + (1 - y) log(1 - p)].
 
+    This is Shannon's entropy used as a loss: it measures how surprised we are
+    by the prediction given the true label. It works elementwise, so it accepts
+    a single sample or a whole batch.
+
     Args:
         y_true: True label(s), 0 or 1 (scalar or tensor).
         y_pred: Predicted probability/probabilities in (0, 1).
@@ -110,11 +114,19 @@ return -(y_true * torch.log(y_pred) + (1 - y_true) * torch.log(1 - y_pred))
 def compute_gradients(
     X: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """For ONE sample, sigmoid + BCE collapse to dL/dz = y_pred - y_true, so
+    """Compute gradients of the BCE loss w.r.t. the neuron's weights and bias.
+
+    For ONE sample, sigmoid + BCE collapse to dL/dz = y_pred - y_true, so
         dL/dw_j = (y_pred - y_true) * x_j     (error times that weight's input)
         dL/db   = (y_pred - y_true)
-    The batch loss is a mean, so average over the n samples: for weight j,
-    sum error_i * x_ij over every sample i, then divide by n. No loop needed.
+
+    Args:
+        X: Input batch, shape (n_samples, 2).
+        y_true: True labels, shape (n_samples,).
+        y_pred: Predicted probabilities, shape (n_samples,).
+
+    Returns:
+        (dw, db): gradient w.r.t. weights (shape (2,)) and bias (scalar tensor).
     """
     error = y_pred - y_true  # How far each prediction is from its label
     n = X.shape[0]  # Number of samples in the batch
@@ -146,6 +158,9 @@ def update_parameters(
     learning_rate: float,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Update the weights and bias with one gradient-descent step.
+
+    Gradient descent moves each parameter a small step in the negative
+    gradient direction (downhill on the loss surface).
 
     Args:
         weights: Current weight vector, shape (2,).
@@ -218,7 +233,11 @@ No line separates XOR, so the neuron predicts 0.5 for everything. The fix: a **h
 :::step id="exercise-step6-code" title="Step 6: relu()"
 ```python
 def relu(z: torch.Tensor) -> torch.Tensor:
-    """The ReLU activation: max(0, z).
+    """The ReLU (Rectified Linear Unit) activation: max(0, z).
+
+    Keeps positive values unchanged and clamps negatives to zero. It is cheap
+    and avoids the vanishing-gradient problem, so it dominates the HIDDEN
+    layers of modern networks.
 
     Args:
         z: A tensor of pre-activation values (any shape).

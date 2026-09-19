@@ -267,12 +267,22 @@ Module 9 section h practices applied to serving.
 ## Exercise numbers
 
 All terminal output in the exercise walkthrough is captured from real runs of
-the bundled solution on an Apple-silicon MacBook against Ollama 0.1.48
-serving qwen2.5:0.5b-instruct with OLLAMA_NUM_PARALLEL=8 (protocol printed by
-the runner: temperature 0.7, 120-token budget, 80 in the benchmark). The
-stage 1 tables are pure arithmetic from `data/models.json` (parameter counts
-and attention shapes from the Qwen2.5 and Llama 3 model cards) and
-`data/machines.json` (bandwidths as cited above). The stage 4 curve (110 →
-269 total tok/s from 1 to 8 concurrent streams, per-stream 115 → 35) is one
-representative run; exact numbers vary by machine and load, which the deck
-notes by presenting them as measurements, not constants.
+the bundled solution (spliced into the skeleton one step at a time for the
+progressive slides) on an Apple M2 Pro MacBook Pro against Ollama 0.1.48
+serving qwen2.5:0.5b-instruct with OLLAMA_NUM_PARALLEL=8. The protocol is set
+at the top of `src/main.py`: temperature 0.7, a 120-token budget per request,
+80 in the benchmark. The Step 1-3 tables are pure arithmetic from
+`data/models.json` (parameter counts and attention shapes from the Qwen2.5 and
+Llama 3 model cards) and `data/machines.json` (bandwidths as cited above). The
+Step 8 curve (115 → 253 total tok/s from 1 to 8 concurrent streams, per-stream
+121 → 33) is one representative run; exact numbers vary by machine and load,
+which the deck notes by presenting them as measurements, not constants.
+
+The CORRECT / INCORRECT / INCOMPLETE tag on each step comes from the tests in
+`exercises/module_10_deployment/tests/`, one file per step. They use inputs
+small enough to check by hand (7B parameters at 16 bits is 14e9 bytes; Llama 3
+8B's KV cache is 2 × 32 × 8 × 128 × 2 = 131,072 bytes per token) and synthetic
+responses, stream lines, and timestamps, so none of them needs a server. The
+INCORRECT example slide is a real run with `latency_stats()` deliberately
+changed to count every streamed token in the decode rate, including the first
+one, which arrives at the end of prefill.

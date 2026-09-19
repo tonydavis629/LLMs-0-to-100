@@ -1,5 +1,4 @@
 :::divider id="title" title="LLMs 0 to 100" sub="Module 1: Course Introduction"
-From Shannon to ChatGPT
 :::
 
 ---

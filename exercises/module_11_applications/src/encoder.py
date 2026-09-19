@@ -30,7 +30,8 @@ import numpy as np
 import torch
 from transformers import AutoModel, AutoTokenizer, logging as hf_logging
 
-hf_logging.set_verbosity_error()  # silence the checkpoint-loading progress noise
+hf_logging.set_verbosity_error()  # silence the checkpoint-loading warnings
+hf_logging.disable_progress_bar()  # and the "Loading weights" progress bar
 
 BATCH_SIZE = 16      # articles per forward pass; padding within a batch only
 MAX_TOKENS = 256     # longest article is ~100 tokens, so nothing is truncated

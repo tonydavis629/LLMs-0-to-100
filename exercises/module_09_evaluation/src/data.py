@@ -111,7 +111,7 @@ def reverse_splits(seed: int = 0) -> dict[str, list[str]]:
 
 
 # ---------------------------------------------------------------------------
-# Training data (used only by solution/src/make_checkpoints.py)
+# Training data (used only by src/make_checkpoints.py)
 # ---------------------------------------------------------------------------
 
 

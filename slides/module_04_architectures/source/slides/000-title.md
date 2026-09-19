@@ -1,5 +1,4 @@
 :::divider id="title" title="LLMs 0 to 100" sub="Module 4: LLM Architectures"
-From the Transformer to GPT-2
 :::
 
 ---

@@ -19,7 +19,7 @@ have checked yourself, then times both forms so the complexity claim stops being
 a claim.
 
 The last line of the timing table is the one worth staring at. At short
-sequences the recurrent form is roughly ten times slower than either parallel
+sequences the recurrent form is seven to eight times slower than either parallel
 form, and by 8192 tokens it is the fastest of the three. Linear beats quadratic
 eventually rather than immediately, which is easy to forget when reading a
 complexity bound.
@@ -34,23 +34,47 @@ uv sync
 
 ## Running
 
+From the `exercises/` folder:
+
 ```bash
-uv run python exercises/module_12_future/src/main.py
+uv run python module_12_future/src/main.py
 ```
 
-The runner detects which steps you have implemented and skips the rest, so you
-can fill in one function at a time and re-run immediately. The parallel form
-comes alive after step 3, the recurrent form joins after step 5, the equivalence
-check after step 6, and the timing sweep after step 7.
+The runner goes through the steps in order. Each step's header line carries a
+tag, and the step's output follows: what your code computed, then one line per
+test from `tests/`. The tags are:
 
-It prints the equivalence check first, then a timing table across sequence
-lengths from 512 to 8192, then the fitted exponent of each cost curve, and saves
-a log-log plot to `output/attention_scaling.png`.
-
-
-`exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
+| Tag | Meaning |
+|-----|---------|
+| `CORRECT` | every test for the step passed |
+| `INCORRECT` | your code ran but a test failed; the expected and actual values are printed under it |
+| `INCOMPLETE` | the function still raises `NotImplementedError`, or the step's demo needs an earlier step you have not written yet |
 
 ```
+=== Step 5: recurrent_step_output() === CORRECT
+  recurrent form: 256 tokens one at a time, output shape (256, 64)
+  parallel vs recurrent    max difference = 3.58e-07
+  CORRECT    q=[1,2], S=[[1,0,2],[3,1,0]], z=[2,1] gives [7,2,2] / 4 = [1.75, 0.5, 0.5]
+  CORRECT    after one token the output is that token's value: v=[3, -1, 4] comes back out
+  CORRECT    matches the parallel form row by row on a random 6-token sequence
+```
+
+Step 3 compares the parallel form with softmax attention, step 5 compares the
+recurrent form with the parallel form, and step 6 uses your `outputs_match()` to
+decide whether the two forms agree. Step 7 prints a timing table across sequence
+lengths from 512 to 8192 and the fitted exponent of each cost curve, then saves a
+log-log plot to `output/attention_scaling.png`.
+
+Run a single step with `--step` (1 to 7):
+
+```bash
+uv run python module_12_future/src/main.py --step 5
+```
+
+`exercise.py` at the module root is the only file you edit. Everything already
+written for you lives in `src/`. Run the finished answers with `--solution`:
+
+```bash
 uv run python module_12_future/src/main.py --solution
 ```
 
@@ -63,6 +87,12 @@ one short expression, marked with a `# TODO` describing what to return and a
 Everything in `src/` is provided plumbing: the softmax attention baseline, the
 loop that drives your per-token functions across a sequence, the random input
 generator, and the plotting.
+
+The tests live in `tests/`, one file per step (`test_step1_feature_map.py`
+through `test_step7_time_forward.py`). Each calls your function on small tensors
+with a known answer, so you can read the test for the step you are on to see
+exactly what is expected. The Step 3 tests swap in known-good versions of Steps 1
+and 2 while they run, so they judge only your Step 3 line.
 
 ## The steps
 

@@ -243,6 +243,11 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 ### Exercise Structure
 - The single student-facing file is `exercises/module_03_attention/exercise.py`. Steps: (1) `make_token_vectors` (provided), (2) `TinyAttentionLayer.compute_qkv`, (3) `TinyAttentionLayer.raw_attention_scores`, (4) `TinyAttentionLayer.scaled_softmax`, (5) `TinyAttentionLayer.attention_output`, (6) `TinyAttentionLayer.causal_mask`, (7) `TinyAttentionLayer.masked_attention` (provided, uses the earlier methods), (8) `add_positional_embeddings`, extra credit `kv_cache_step`.
 
+### Tests
+- Each step has its own test file in `exercises/module_03_attention/tests/`, and the runner tags every step CORRECT, INCORRECT, or INCOMPLETE. The tests call the student's function on small hand-computed inputs and compare against PyTorch's `torch.nn.functional.scaled_dot_product_attention`, which computes $\mathrm{softmax}(QK^\top/\sqrt{d_k})V$ (with `is_causal=True` for the masked version and for the KV-cache check).
+- A mask that leaves the allowed entries at 1 instead of 0 still gives correct attention weights, because softmax is unchanged when the same constant is added to every entry in a row. The Step 6 tests check the mask itself for this reason; the Step 7 tests, which check only the resulting weights and outputs, pass either way.
+- The "What an INCORRECT Step Looks Like" slide comes from a real run with the $1/\sqrt{d_k}$ division removed from `scaled_softmax()`. With $d_k = 4$ and scores $[2, 0]$ the correct weights are $\mathrm{softmax}([1, 0]) = [0.731, 0.269]$; without the scaling they are $\mathrm{softmax}([2, 0]) = [0.881, 0.119]$.
+
 ### Parameters
 - `vocab_size = 10`, `d_model = 8`, `d_k = 4`, `seq_len = 5`
 - Token IDs: `[2, 5, 1, 8, 3]` (fixed for reproducibility)

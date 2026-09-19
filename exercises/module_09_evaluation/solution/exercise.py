@@ -13,7 +13,7 @@ one every model release has to answer: which of these two is better, and better 
 what? The per-task table at the end is the whole point &mdash; the RL model wins the
 task it was trained on, and the average alone would hide what that cost.
 
-Run after each step; unfinished steps are skipped automatically:
+Run after each step; each one is tagged CORRECT, INCORRECT, or INCOMPLETE:
     uv run python module_09_evaluation/src/main.py
 """
 

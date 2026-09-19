@@ -1234,7 +1234,6 @@
 
 Module 9: Evaluation and Benchmarking
 
-How do we know whether a model is any good?
 
 ---
 
@@ -2380,17 +2379,54 @@ Build a small benchmark suite and score two models
 
 ## Running the Exercise
 
-Fill in the eight `NotImplementedError` lines in `module_09_evaluation/exercise.py`. Everything else (checkpoints, tokenizer, sampler, data, plotting, runner) is provided. Run after each step; unfinished steps are skipped. <!-- .element: class="text-lg" -->
+Fill in the eight `NotImplementedError` lines in `module_09_evaluation/exercise.py`, the only file you edit. Everything else (checkpoints, tokenizer, sampler, data, plotting, runner) is provided in `src/`. Run after each step. <!-- .element: class="text-lg" -->
 
 ```bash
-# Score the Module 6 instruct model against the Module 7 GRPO model
+# Run every step; each is tagged CORRECT, INCORRECT, or INCOMPLETE
 cd exercises
 uv run python module_09_evaluation/src/main.py
+
+# Run a single step (1-8)
+uv run python module_09_evaluation/src/main.py --step 4
 ```
 
-Both checkpoints ship with the repo, trained for this module by `solution/src/make_checkpoints.py` from the Module 5 base model. <!-- .element: class="text-md" style="margin-top: 22px;" -->
+Both checkpoints ship with the repo, trained for this module by `src/make_checkpoints.py` from the Module 5 base model. <!-- .element: class="text-md" style="margin-top: 22px;" -->
 
-The runner prints the **protocol**, then perplexity, per-task tables (exact match, F1, pass@1, pass@5), multiple choice, and the suite score. It saves a bar chart to `output/task_comparison.png`. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+A full run prints the **protocol** first, then perplexity, per-task tables (exact match, F1, pass@1, pass@5), multiple choice, and the suite score. Step 6 saves a bar chart to `output/task_comparison.png`. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+
+---
+
+<!-- .slide: id="exercise-results" -->
+
+## Reading the Results
+
+For each step the runner prints what your metric reports about the two models, then runs the step's **tests** from `tests/`. Each test calls your function on small inputs whose correct answer is known. <!-- .element: class="text-lg" -->
+
+- **CORRECT**: every test for the step passed
+- **INCORRECT**: your code ran but a test failed; the expected and actual values are printed beneath
+- **INCOMPLETE**: the function still raises `NotImplementedError`, or it needs an earlier step that does
+
+The tag sits on the step's header line. A metric can print believable numbers on real model output and still be wrong, so trust the tests, not the table. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+
+---
+
+<section id="exercise-results-example">
+  <h2>What an INCORRECT Step Looks Like</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output" style="max-width: 980px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_09_evaluation/src/main.py --step 4</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 4: token_f1() ===</span> <span class="t-fail">INCORRECT</span>&amp;#10;  Generating 50 greedy + 250 sampled answers per model...&amp;#10;  Greedy answers that earn partial credit (F1 between 0 and 1):&amp;#10;    [qa] 'opposite of day?'   want 'it is night'&amp;#10;        rl       'it is cold'                 0.67&amp;#10;  <span class="success">CORRECT</span>    partial credit: 'it is bluu' against 'it is blue' has P = R = 2/3, so F1 = 0.667&amp;#10;  <span class="t-fail">INCORRECT</span>  P and R differ: 'blue' against 'it is blue' has P = 1, R = 1/3, so F1 = 0.5&amp;#10;             expected 0.5000, got 0.6667 (that is the arithmetic mean; F1 is the harmonic mean)&amp;#10;  <span class="success">CORRECT</span>    a correct answer scores 1.0: 'It is blue.' against 'it is blue'</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Here <code>token_f1()</code> returned the arithmetic mean <code>(precision + recall) / 2</code>. On the one real case precision equals recall, so both means give 0.67 and the output looks fine. The test with P = 1 and R = 1/3 catches it and names the mistake.</p>
+  </div>
+</section>
 
 ---
 
@@ -2409,7 +2445,7 @@ Both checkpoints are finished:
 
 **You write the metrics**
 
-Perplexity, normalization, exact match, token F1, likelihood-scored multiple choice, pass@k, per-task accuracy, suite average. Each is one line.
+Perplexity, normalization, exact match, token F1, likelihood-scored multiple choice, pass@k, per-task accuracy, suite average. Each is one line, and every step has its own tests in `tests/`.
 
 </div>
 
@@ -2418,7 +2454,7 @@ Perplexity, normalization, exact match, token F1, likelihood-scored multiple cho
 **The payoff is the table**
 
 - RL model wins its trained task by 17 points
-- Loses 50 to 75 points on the other three
+- Loses 25 to 75 points on the other three
 - Perplexity calls it the **better** model
 - Multiple choice cannot see the problem at all
 
@@ -2453,7 +2489,20 @@ One built-in trap: `uppercase`, `repeat`, and `reverse` use words that appear no
 
 ```python
 def perplexity(mean_token_loss: float) -> float:
-    """Convert an average per-token cross-entropy loss (in nats) into perplexity."""
+    """Convert an average per-token cross-entropy loss (in nats) into perplexity.
+
+    This is the base-model metric from Module 5, and the only number in this suite
+    that needs no labels at all: just held-out text and the model's own loss on it.
+    Perplexity is the model's average branching factor &mdash; roughly, how many
+    equally likely tokens it is choosing among at each position. Lower is better,
+    and a perplexity of 1.0 would mean the model was never surprised.
+
+    Args:
+        mean_token_loss: Average -log p(token) over the held-out tokens, in nats.
+
+    Returns:
+        The perplexity as a plain float.
+    """
     # TODO: Return the perplexity that corresponds to this average loss.
     raise NotImplementedError("TODO: convert average token loss into perplexity")
 ```
@@ -2479,7 +2528,7 @@ return math.exp(mean_token_loss)
 <section id="exercise-output-1">
   <h2>After Step 1: The Protocol, Then One Number</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output dense">
+    <div class="terminal-output dense" style="max-width: 920px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2487,7 +2536,7 @@ return math.exp(mean_token_loss)
         <span class="terminal-title">uv run python module_09_evaluation/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">MODULE 9: evaluating two finished checkpoints</span>&#10;Models under test&#10;  instruct  data/instruct_model.pt   Module 6: multi-task SFT&#10;  rl        data/rl_model.pt         Module 7: GRPO on `reverse` only&#10;&#10;Protocol&#10;  chat template     &lt;|user|&gt; PROMPT &lt;|end|&gt; &lt;|assistant|&gt; ANSWER &lt;|end|&gt;&#10;  normalization     lowercase, strip punctuation, collapse whitespace&#10;  generation budget 14 tokens    context 128&#10;  decoding          greedy for exact match and F1; 5 samples at temperature 0.8&#10;  seed              1337 (per case, so both models see the same draws)&#10;  suite             50 generated cases across 4 tasks, 16 multiple-choice questions&#10;  held-out text     3,916 characters, never seen in training&#10;&#10;<span class="header">1. PERPLEXITY ON HELD-OUT TEXT</span>&#10;    model          loss (nats)    perplexity&#10;    instruct            7.5941       1986.48&#10;    <span class="success">rl                  7.3773       1599.26</span>&#10;&#10;<span class="skipped">2. TASK SUITE  [skipped: implement normalize_answer() and exact_match()]</span>&#10;<span class="skipped">3. MULTIPLE CHOICE  [skipped: implement score_multiple_choice()]</span>&#10;<span class="skipped">4. SUITE SCORE  [skipped: implement task_accuracy() and suite_score()]</span></pre>
+        <pre class="terminal-pre"><span class="header">MODULE 9: evaluating two finished checkpoints</span>&amp;#10;<span class="skipped">...</span>&amp;#10;Protocol&amp;#10;  chat template     &lt;|user|&gt; PROMPT &lt;|end|&gt; &lt;|assistant|&gt; ANSWER &lt;|end|&gt;&amp;#10;  normalization     lowercase, strip punctuation, collapse whitespace&amp;#10;  generation budget 14 tokens    context 128&amp;#10;  decoding          greedy for exact match and F1&amp;#10;                    5 samples at temperature 0.8 for pass@k&amp;#10;  seed              1337 (per case, so both models see the same draws)&amp;#10;  suite             50 generated cases across 4 tasks, 16 multiple-choice questions&amp;#10;  held-out text     3,916 characters, never seen in training&amp;#10;&amp;#10;<span class="header t-green">=== Step 1: perplexity() ===</span> <span class="success">CORRECT</span>&amp;#10;    model          loss (nats)    perplexity&amp;#10;    instruct            7.5941       1986.48&amp;#10;    <span class="success">rl                  7.3773       1599.26</span>&amp;#10;  Lower is better. This says nothing about whether either model&amp;#10;  follows instructions, which is exactly its limitation.&amp;#10;  <span class="success">CORRECT</span>    a loss of 0 nats (never surprised) gives perplexity 1.0&amp;#10;  <span class="success">CORRECT</span>    a loss of ln 2 = 0.693 nats (a coin flip per token) gives perplexity 2.0&amp;#10;  <span class="success">CORRECT</span>    a loss of ln 27 = 3.296 nats (uniform over 27 characters) gives perplexity 27.0&amp;#10;&amp;#10;<span class="header">=== Step 2: normalize_answer() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: collapse the whitespace in the normalized answer</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">The protocol is printed before any score. Note the result: the RL model has LOWER perplexity, which is about to turn out to mean nothing.</p>
@@ -2502,7 +2551,16 @@ return math.exp(mean_token_loss)
 
 ```python
 def normalize_answer(text: str) -> str:
-    """Put a generated answer into the canonical form that scoring compares."""
+    """Put a generated answer into the canonical form that scoring compares.
+
+    "4", " 4 ", and "4." are the same answer and three different strings, so every
+    benchmark ships a normalization step before it compares anything. Without one,
+    exact match measures formatting instead of correctness. The first two lines are
+    provided; you write the whitespace rule.
+
+    Returns:
+        The normalized string.
+    """
     lowered = text.lower()
     stripped = "".join(ch for ch in lowered if ch not in string.punctuation)
     # TODO: Return `stripped` with leading and trailing whitespace removed and every
@@ -2534,7 +2592,15 @@ return " ".join(stripped.split())
 
 ```python
 def exact_match(prediction: str, answers: list[str]) -> float:
-    """Score 1.0 if the normalized prediction equals any acceptable answer, else 0.0."""
+    """Score 1.0 if the normalized prediction equals any acceptable answer, else 0.0.
+
+    Benchmarks carry a *list* of acceptable answers because more than one string can
+    be right ("it is blue" and "blue"). Exact match is the most transparent metric
+    there is, and the most brittle: one extra word and a correct answer scores zero.
+
+    Returns:
+        1.0 or 0.0.
+    """
     # TODO: Return 1.0 when the normalized prediction matches any normalized
     #       acceptable answer, otherwise 0.0.
     raise NotImplementedError("TODO: score the prediction against the acceptable answers")
@@ -2559,16 +2625,55 @@ return float(any(normalized == normalize_answer(answer) for answer in answers))
 
 ---
 
+<section id="exercise-output-cases">
+  <h2>After Step 3: One Case Per Task</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_09_evaluation/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: perplexity() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: normalize_answer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 3: exact_match() ===</span> <span class="success">CORRECT</span>&amp;#10;  Generating 50 greedy + 250 sampled answers per model...&amp;#10;  Greedy answers that match exactly: instruct 42/50, rl 33/50&amp;#10;  One case per task, with its exact-match score:&amp;#10;    [uppercase] 'uppercase: metric'   want 'METRIC'&amp;#10;        instruct 'METRIC'                     <span class="success">1.0</span>&amp;#10;        rl       'METRCI'                     <span class="t-fail">0.0</span>&amp;#10;    [repeat] 'repeat: task'   want 'task'&amp;#10;        instruct 'task'                       <span class="success">1.0</span>&amp;#10;        rl       'taskto'                     <span class="t-fail">0.0</span>&amp;#10;    [reverse] 'reverse: bamkf'   want 'fkmab'&amp;#10;        instruct 'fkmaq'                      <span class="t-fail">0.0</span>&amp;#10;        rl       'fkmab'                      <span class="success">1.0</span>&amp;#10;    [qa] 'opposite of up?'   want 'it is down'&amp;#10;        instruct 'it is down'                 <span class="success">1.0</span>&amp;#10;        rl       'utripso&lt;|user|&gt;&lt;|user|...'  <span class="t-fail">0.0</span>&amp;#10;  <span class="success">CORRECT</span>    formatting does not count: ' Blue. ' against ['blue'] scores 1.0&amp;#10;  <span class="success">CORRECT</span>    any acceptable answer counts: 'it is blue' against ['blue', 'It is blue.'] scores 1.0&amp;#10;  <span class="success">CORRECT</span>    an extra word scores zero: 'it is blue' against ['blue'] scores 0.0&amp;#10;  <span class="success">CORRECT</span>    returns the float 1.0 or 0.0, not True or False&amp;#10;&amp;#10;<span class="header">=== Step 4: token_f1() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: combine precision and recall into F1</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Actual output. The cases show how the RL model fails: swapped letters, run-on answers, no English.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step4" -->
 
 ## Step 4: token_f1()
 
 ```python
 def token_f1(prediction: str, reference: str) -> float:
-    """Token-level F1 between a prediction and one reference answer."""
+    """Token-level F1 between a prediction and one reference answer.
+
+    F1 gives partial credit where exact match gives none: "it is bluu" shares two of
+    its three tokens with "it is blue", which is worth more than zero. Precision is
+    the fraction of predicted tokens that are correct, recall the fraction of
+    reference tokens that were produced, and F1 is their harmonic mean &mdash; the
+    information-retrieval metric that entered question answering through SQuAD.
+
+    Everything up to the harmonic mean is provided.
+
+    Returns:
+        A score in [0.0, 1.0].
+    """
     predicted_tokens = normalize_answer(prediction).split()
     reference_tokens = normalize_answer(reference).split()
+    if not predicted_tokens or not reference_tokens:
+        return float(predicted_tokens == reference_tokens)
+
+    # Counter intersection counts each shared token no more times than it appears
+    # in both sides, so repeating a word cannot inflate the overlap.
     shared = sum((Counter(predicted_tokens) & Counter(reference_tokens)).values())
+    if shared == 0:
+        return 0.0
     precision = shared / len(predicted_tokens)
     recall = shared / len(reference_tokens)
     # TODO: Return the F1 score: the harmonic mean of precision and recall.
@@ -2593,13 +2698,44 @@ return 2 * precision * recall / (precision + recall)
 
 ---
 
+<section id="exercise-output-f1">
+  <h2>After Step 4: Partial Credit</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_09_evaluation/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: perplexity() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: normalize_answer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: exact_match() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 4: token_f1() ===</span> <span class="success">CORRECT</span>&amp;#10;  Greedy answers that earn partial credit (F1 between 0 and 1):&amp;#10;    [qa] 'opposite of day?'   want 'it is night'&amp;#10;        rl       'it is cold'                 <span class="t-yellow">0.67</span>&amp;#10;  <span class="success">CORRECT</span>    partial credit: 'it is bluu' against 'it is blue' has P = R = 2/3, so F1 = 0.667&amp;#10;  <span class="success">CORRECT</span>    P and R differ: 'blue' against 'it is blue' has P = 1, R = 1/3, so F1 = 0.5&amp;#10;  <span class="success">CORRECT</span>    a correct answer scores 1.0: 'It is blue.' against 'it is blue'&amp;#10;&amp;#10;<span class="header">=== Step 5: task_accuracy() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: average the per-case scores within each task</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Actual output. Exact match scores the RL model's wrong answer 0. F1 gives it two thirds credit for the shared words 'it is', which come from the answer template, not the fact.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step5" -->
 
 ## Step 5: task_accuracy()
 
 ```python
 def task_accuracy(scores_by_task: dict[str, list[float]]) -> dict[str, float]:
-    """Average each task's per-case scores into one number per task."""
+    """Average each task's per-case scores into one number per task.
+
+    Keeping the breakdown is the habit this whole exercise is arguing for. An
+    aggregate can hide a total regression on one task inside a small overall gain,
+    and only the per-task view shows it.
+
+    Args:
+        scores_by_task: Task name -> the list of per-case scores for that task.
+
+    Returns:
+        Task name -> mean score.
+    """
     # TODO: Return a dict mapping each task to the mean of its scores.
     raise NotImplementedError("TODO: average the per-case scores within each task")
 ```
@@ -2622,13 +2758,42 @@ return {task: sum(scores) / len(scores) for task, scores in scores_by_task.items
 
 ---
 
+<section id="exercise-output-2">
+  <h2>After Step 5: The Per-Task Tables</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_09_evaluation/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: perplexity() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: normalize_answer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: exact_match() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: token_f1() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 5: task_accuracy() ===</span> <span class="success">CORRECT</span>&amp;#10;  EXACT MATCH (greedy decoding)&amp;#10;  The strictest metric: the normalized answer must equal an acceptable answer.&amp;#10;    task          cases    instruct        rl      diff&amp;#10;    uppercase        10       80.0%     30.0%    <span class="t-fail">-50.0%</span>&amp;#10;    repeat            8      100.0%     25.0%    <span class="t-fail">-75.0%</span>&amp;#10;    reverse          24       75.0%     91.7%    <span class="success">+16.7%</span>&amp;#10;    qa                8      100.0%     75.0%    <span class="t-fail">-25.0%</span>&amp;#10;&amp;#10;  TOKEN F1 (greedy decoding)&amp;#10;  Partial credit for overlapping tokens; equals exact match on one-word answers.&amp;#10;    task          cases    instruct        rl      diff&amp;#10;    uppercase        10       80.0%     30.0%    <span class="t-fail">-50.0%</span>&amp;#10;    repeat            8      100.0%     25.0%    <span class="t-fail">-75.0%</span>&amp;#10;    reverse          24       75.0%     91.7%    <span class="success">+16.7%</span>&amp;#10;    qa                8      100.0%     83.3%    <span class="t-fail">-16.7%</span>&amp;#10;  <span class="success">CORRECT</span>    averages within each task: qa [1, 0, 1, 1] gives 0.75, repeat [0, 1] gives 0.5&amp;#10;  <span class="success">CORRECT</span>    works on partial-credit scores: qa [0.5, 1.0, 0.0] gives 0.5&amp;#10;  <span class="success">CORRECT</span>    each task is divided by its own case count: 24 right of 24 is 1.0, 0 of 8 is 0.0&amp;#10;&amp;#10;<span class="header">=== Step 6: suite_score() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: average the per-task scores into the suite score</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Actual output. RL gains 16.7 points on reverse, the task it trained on, and loses on the other three.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step6" -->
 
 ## Step 6: suite_score()
 
 ```python
 def suite_score(per_task: dict[str, float]) -> float:
-    """Average the per-task scores into the single headline number."""
+    """Average the per-task scores into the single headline number.
+
+    Note what this choice does: averaging the four *task* scores weights every task
+    equally, while averaging all 50 *cases* would let the task with the most cases
+    dominate. Neither is more correct, but they give different numbers on the same
+    model, which is the whole reason a benchmark has to publish its protocol.
+
+    Returns:
+        The mean of the per-task scores.
+    """
     # TODO: Return the mean of the per-task scores.
     raise NotImplementedError("TODO: average the per-task scores into the suite score")
 ```
@@ -2651,10 +2816,10 @@ return sum(per_task.values()) / len(per_task)
 
 ---
 
-<section id="exercise-output-2">
-  <h2>After Step 6: The Report Appears</h2>
+<section id="exercise-output-suite">
+  <h2>After Step 6: The Headline Number</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output dense">
+    <div class="terminal-output dense" style="max-width: 920px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2662,30 +2827,10 @@ return sum(per_task.values()) / len(per_task)
         <span class="terminal-title">uv run python module_09_evaluation/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">2. TASK SUITE</span>&#10;  Generating 50 greedy + 250 sampled answers per model...&#10;&#10;  EXACT MATCH (greedy decoding)&#10;    task          cases    instruct        rl      diff&#10;    uppercase        10       80.0%     30.0%    <span class="t-fail">-50.0%</span>&#10;    repeat            8      100.0%     25.0%    <span class="t-fail">-75.0%</span>&#10;    reverse          24       75.0%     91.7%    <span class="success">+16.7%</span>&#10;    qa                8      100.0%     75.0%    <span class="t-fail">-25.0%</span>&#10;&#10;  TOKEN F1 (greedy decoding)&#10;    task          cases    instruct        rl      diff&#10;    uppercase        10       80.0%     30.0%    <span class="t-fail">-50.0%</span>&#10;    repeat            8      100.0%     25.0%    <span class="t-fail">-75.0%</span>&#10;    reverse          24       75.0%     91.7%    <span class="success">+16.7%</span>&#10;    qa                8      100.0%     83.3%    <span class="t-fail">-16.7%</span>&#10;&#10;<span class="header">4. SUITE SCORE</span>&#10;    instruct       88.8%   (mean of the four task scores)&#10;    rl             55.4%   (mean of the four task scores)&#10;  Overall difference: <span class="t-fail">-33.3%</span>&#10;  Read the per-task table above before believing that number.</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: perplexity() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: normalize_answer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: exact_match() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: token_f1() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: task_accuracy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 6: suite_score() ===</span> <span class="success">CORRECT</span>&amp;#10;    instruct       88.8%   (mean of the four task scores)&amp;#10;    rl             55.4%   (mean of the four task scores)&amp;#10;  Overall difference: <span class="t-fail">-33.3%</span>&amp;#10;  Averaging all 50 cases instead gives instruct 84.0%, rl 66.0% (<span class="t-fail">-18.0%</span>).&amp;#10;  Read the per-task table before believing either number.&amp;#10;  Saved chart to output/task_comparison.png&amp;#10;  <span class="success">CORRECT</span>    the instruct model's four task scores (80%, 100%, 75%, 100%) average to 0.8875&amp;#10;  <span class="success">CORRECT</span>    one task at 1.0 and one at 0.0 give 0.5&amp;#10;  <span class="success">CORRECT</span>    a one-task suite scores the same as its task: {'qa': 0.25} gives 0.25&amp;#10;&amp;#10;<span class="header">=== Step 7: score_multiple_choice() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: choose the option with the best per-token log-probability</span>&amp;#10;&amp;#10;<span class="header">=== Step 8: pass_at_k() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: compute the pass@k estimate</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Actual output. Steps 2-4 produce the per-case scores, step 5 groups them by task, step 6 averages them. Read the headline number last.</p>
-  </div>
-</section>
-
----
-
-<section id="exercise-output-cases">
-  <h2>The Same Run, One Case Per Task</h2>
-  <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
-      <div class="terminal-bar">
-        <span class="terminal-dot red"></span>
-        <span class="terminal-dot yellow"></span>
-        <span class="terminal-dot green"></span>
-        <span class="terminal-title">uv run python module_09_evaluation/src/main.py</span>
-      </div>
-      <div class="terminal-body">
-        <pre class="terminal-pre">  Sample cases (greedy), one per task:&#10;    [uppercase] 'uppercase: metric'   want 'METRIC'&#10;        instruct 'METRIC'&#10;        rl       'METRCI'&#10;    [repeat]    'repeat: task'        want 'task'&#10;        instruct 'task'&#10;        rl       'taskto'&#10;    [reverse]   'reverse: bamkf'      want 'fkmab'&#10;        instruct 'fkmaq'&#10;        rl       'fkmab'&#10;    [qa]        'opposite of up?'     want 'it is down'&#10;        instruct 'it is down'&#10;        rl       'utripso&lt;|user|&gt;&lt;|user|...'</pre>
-      </div>
-    </div>
-    <p class="text-lg terminal-caption">Actual output. Keeping the per-case generations, not just the averages, is where a number turns into a diagnosis: the RL model transposes characters, runs past its answer, and on the last case produces nothing resembling English.</p>
+    <p class="text-lg terminal-caption">Actual output. Averaging the four task scores puts the gap at 33.3 points; averaging all 50 cases puts it at 18.0, because <code>reverse</code> has 24 of the cases. Same answers, same metric, two protocols.</p>
   </div>
 </section>
 
@@ -2697,7 +2842,21 @@ return sum(per_task.values()) / len(per_task)
 
 ```python
 def score_multiple_choice(option_log_probs: list[float], option_lengths: list[int]) -> int:
-    """Pick the option the model finds most likely, per token."""
+    """Pick the option the model finds most likely, per token.
+
+    This is how MMLU, HellaSwag, and ARC are actually run: nothing is generated. The
+    runner scores each candidate answer under the model and hands you its total
+    log-probability and its length in tokens. Dividing by the length is what makes
+    the comparison fair &mdash; every extra token adds another negative number, so
+    total log-probability systematically prefers the shortest option.
+
+    Args:
+        option_log_probs: Total log-probability of each option, one per option.
+        option_lengths: Number of scored tokens in each option, same order.
+
+    Returns:
+        The index of the chosen option.
+    """
     # TODO: Return the index of the option with the highest AVERAGE log-probability
     #       per token (total log-probability divided by number of tokens).
     raise NotImplementedError("TODO: choose the option with the best per-token log-probability")
@@ -2722,13 +2881,53 @@ return max(range(len(option_log_probs)),
 
 ---
 
+<section id="exercise-output-mc">
+  <h2>After Step 7: Multiple Choice</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_09_evaluation/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: perplexity() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: normalize_answer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: exact_match() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: token_f1() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: task_accuracy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: suite_score() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 7: score_multiple_choice() ===</span> <span class="success">CORRECT</span>&amp;#10;    instruct     16/16   100.0%&amp;#10;    rl           16/16   100.0%&amp;#10;  Chance is 25%. Nothing was generated: each option was scored under&amp;#10;  the model and the highest per-token log-probability won.&amp;#10;  <span class="success">CORRECT</span>    equal lengths: totals [-4, -2, -6] over 2 tokens each pick option 1&amp;#10;  <span class="success">CORRECT</span>    divides by length: [-3, -8] over [1, 4] tokens picks option 1 (-2.0 beats -3.0)&amp;#10;  <span class="success">CORRECT</span>    four options: [-9, -6, -12, -7] over [3, 2, 3, 4] tokens pick option 3&amp;#10;&amp;#10;<span class="header">=== Step 8: pass_at_k() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: compute the pass@k estimate</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Actual output. Both models pick the right option on all 16 questions. Likelihood scoring never asks a model to write anything, so it cannot see the RL model's broken generations.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step8" -->
 
 ## Step 8: pass_at_k()
 
 ```python
 def pass_at_k(n: int, c: int, k: int) -> float:
-    """Probability that at least one of k draws from n samples is correct."""
+    """Probability that at least one of k draws from n samples is correct.
+
+    From the HumanEval paper. Sampling n completions and observing c correct ones,
+    the unbiased estimate of pass@k is one minus the probability that a random
+    k-subset misses every correct sample:
+
+        pass@k = 1 - C(n - c, k) / C(n, k)
+
+    pass@1 is the ordinary accuracy of a single sample. Large-k pass@k asks a
+    different question: is the right answer anywhere in the model's distribution?
+    Module 7's headline claim &mdash; that RL sharpens the distribution rather than
+    expanding it &mdash; is exactly a claim about the gap between these two.
+
+    Args:
+        n: Total samples drawn for this case.
+        c: How many of them were correct.
+        k: Budget of attempts to score.
+
+    Returns:
+        A probability in [0.0, 1.0].
+    """
     if n - c < k:
         return 1.0  # too few wrong samples to fill a k-subset: some draw must hit
     # TODO: Return the pass@k estimate from the formula above.
@@ -2754,9 +2953,9 @@ return 1.0 - math.comb(n - c, k) / math.comb(n, k)
 ---
 
 <section id="exercise-output-3">
-  <h2>After Steps 7 and 8: Two More Benchmarks</h2>
+  <h2>After Step 8: pass@1 and pass@5</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output dense">
+    <div class="terminal-output dense" style="max-width: 920px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2764,10 +2963,10 @@ return 1.0 - math.comb(n - c, k) / math.comb(n, k)
         <span class="terminal-title">uv run python module_09_evaluation/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre">  pass@1 (sampled at temperature 0.8)&#10;    task          cases    instruct        rl      diff&#10;    uppercase        10       68.0%     28.0%    <span class="t-fail">-40.0%</span>&#10;    repeat            8       92.5%     22.5%    <span class="t-fail">-70.0%</span>&#10;    reverse          24       73.3%     87.5%    <span class="success">+14.2%</span>&#10;    qa                8      100.0%     70.0%    <span class="t-fail">-30.0%</span>&#10;&#10;  pass@5 (sampled at temperature 0.8)&#10;    task          cases    instruct        rl      diff&#10;    uppercase        10       80.0%     30.0%    <span class="t-fail">-50.0%</span>&#10;    repeat            8      100.0%     37.5%    <span class="t-fail">-62.5%</span>&#10;    reverse          24       79.2%     95.8%    <span class="success">+16.7%</span>&#10;    qa                8      100.0%    100.0%     <span class="t-cyan">+0.0%</span>&#10;&#10;<span class="header">3. MULTIPLE CHOICE, SCORED BY LIKELIHOOD</span>&#10;    instruct     16/16   100.0%&#10;    rl           16/16   100.0%&#10;  Chance is 25%. Nothing was generated: each option was scored under&#10;  the model and the highest per-token log-probability won.</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: perplexity() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: normalize_answer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: exact_match() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: token_f1() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: task_accuracy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: suite_score() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 7: score_multiple_choice() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 8: pass_at_k() ===</span> <span class="success">CORRECT</span>&amp;#10;  pass@1 (sampled at temperature 0.8)&amp;#10;  Accuracy of a single sampled answer, estimated from N=5 samples per case.&amp;#10;    task          cases    instruct        rl      diff&amp;#10;    uppercase        10       68.0%     28.0%    <span class="t-fail">-40.0%</span>&amp;#10;    repeat            8       92.5%     22.5%    <span class="t-fail">-70.0%</span>&amp;#10;    reverse          24       73.3%     87.5%    <span class="success">+14.2%</span>&amp;#10;    qa                8      100.0%     70.0%    <span class="t-fail">-30.0%</span>&amp;#10;&amp;#10;  pass@5 (sampled at temperature 0.8)&amp;#10;  Is the right answer anywhere in the model's distribution across 5 tries?&amp;#10;    task          cases    instruct        rl      diff&amp;#10;    uppercase        10       80.0%     30.0%    <span class="t-fail">-50.0%</span>&amp;#10;    repeat            8      100.0%     37.5%    <span class="t-fail">-62.5%</span>&amp;#10;    reverse          24       79.2%     95.8%    <span class="success">+16.7%</span>&amp;#10;    qa                8      100.0%    100.0%     <span class="t-cyan">+0.0%</span>&amp;#10;  <span class="success">CORRECT</span>    pass@1 is plain accuracy: n=5, c=2, k=1 gives 2/5 = 0.4&amp;#10;  <span class="success">CORRECT</span>    n=5, c=2, k=3 gives 1 - C(3,3)/C(5,3) = 1 - 1/10 = 0.9&amp;#10;  <span class="success">CORRECT</span>    no correct samples scores 0.0 at any k: n=5, c=0, k=5&amp;#10;  <span class="success">CORRECT</span>    agrees with counting every k-subset of n=6 samples, for every c and k</pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Actual output, appended to the report above. Three benchmarks, three different stories about the same two checkpoints.</p>
+    <p class="text-lg terminal-caption">Actual output. Three benchmarks, three different stories about the same two checkpoints.</p>
   </div>
 </section>
 
@@ -2851,7 +3050,7 @@ The two rightmost bars are the headline number. The four to their left are why i
 
 - **Prompt sensitivity.** Change the chat template in `_prefix_ids()` and re-run. Report how far the scores move on identical weights.
 - **Contamination check.** Search the finetuning pairs for each evaluation prompt and count the exact overlaps. Then re-run with `qa` excluded and watch the headline number change.
-- **Length normalization.** Score the multiple-choice set with **total** log-probability instead of the per-token average, and explain which options newly win.
+- **Length normalization.** Score the multiple-choice set with **total** log-probability instead of the per-token average. Both models still get 16/16 here: explain why, then add a question where the two methods disagree.
 - **Bootstrap confidence interval.** Resample the 50 cases 1,000 times and report the 5th and 95th percentiles of the accuracy difference. Is the `repeat` gap larger than the noise on eight cases?
 - **Judge order bias.** Write a rule-based judge that prefers the longer answer, score the answer pairs in both orders, and count the flips.
 - **pass@k curve.** Raise `N_SAMPLES` to 20 and plot pass@k for k = 1, 2, 5, 10, 20 on the reverse task. <!-- .element: class="text-lg" style="margin-top: 8px;" -->
@@ -3291,6 +3490,193 @@ window.ASSET_BASE = "module_09_evaluation/";
 
   <!-- Shared deck logic for every module -->
   <script>
+// =====================================================================
+// CLUSTER_MLP — a small real ReLU MLP trained in the browser (seeded, so
+// the result is repeatable), plus a marching-squares contour helper.
+// Used by the "Clusters" tab of the mlpBoundary widget: four green
+// clusters on a red background. Each hidden neuron's zero-line in input
+// space is a straight line for layer 1 and a piecewise-linear curve for
+// deeper layers; the final boundary is the output neuron's zero-line.
+// =====================================================================
+var CLUSTER_MLP = (function() {
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(rnd) {
+    var u = 1 - rnd(), v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2831853 * v);
+  }
+  var CENTERS = [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+
+  function generateData() {
+    var rnd = mulberry32(7);
+    var pts = [];
+    CENTERS.forEach(function(c) {
+      for (var i = 0; i < 22; i++) {
+        pts.push({ x: c[0] + gauss(rnd) * 0.045, y: c[1] + gauss(rnd) * 0.045, cls: 1 });
+      }
+    });
+    var reds = 0;
+    while (reds < 150) {
+      var x = 0.03 + rnd() * 0.94, y = 0.03 + rnd() * 0.94;
+      var near = CENTERS.some(function(c) { return Math.hypot(x - c[0], y - c[1]) < 0.17; });
+      if (near) continue;
+      pts.push({ x: x, y: y, cls: 0 });
+      reds++;
+    }
+    return pts;
+  }
+
+  // ---- network: [2 -> W]*D (ReLU) -> 1 (sigmoid), full-batch Adam ----
+  function makeNet(width, depth, seed) {
+    var rnd = mulberry32(seed);
+    var layers = [];
+    var fanIn = 2;
+    for (var d = 0; d < depth; d++) {
+      layers.push(initLayer(fanIn, width, rnd));
+      fanIn = width;
+    }
+    layers.push(initLayer(fanIn, 1, rnd));
+    return { width: width, depth: depth, layers: layers };
+  }
+  function initLayer(nIn, nOut, rnd) {
+    var W = [], b = [];
+    var scale = Math.sqrt(2 / nIn);
+    for (var o = 0; o < nOut; o++) {
+      var row = [];
+      for (var i = 0; i < nIn; i++) row.push(gauss(rnd) * scale);
+      W.push(row);
+      b.push(gauss(rnd) * 0.1);
+    }
+    return { W: W, b: b, mW: zeros(nOut, nIn), vW: zeros(nOut, nIn), mb: new Array(nOut).fill(0), vb: new Array(nOut).fill(0) };
+  }
+  function zeros(r, c) {
+    var a = [];
+    for (var i = 0; i < r; i++) a.push(new Array(c).fill(0));
+    return a;
+  }
+
+  // Forward pass returning every layer's pre-activations and activations.
+  // Inputs are centered so the first layer's lines can pass near the middle.
+  function forward(net, x, y) {
+    var act = [x - 0.5, y - 0.5];
+    var pres = [], acts = [act];
+    for (var l = 0; l < net.layers.length; l++) {
+      var L = net.layers[l];
+      var pre = [], out = [];
+      var last = l === net.layers.length - 1;
+      for (var o = 0; o < L.W.length; o++) {
+        var s = L.b[o];
+        for (var i = 0; i < act.length; i++) s += L.W[o][i] * act[i];
+        pre.push(s);
+        out.push(last ? s : (s > 0 ? s : 0));
+      }
+      pres.push(pre); acts.push(out); act = out;
+    }
+    return { pres: pres, acts: acts, logit: act[0] };
+  }
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function trainSteps(net, data, steps, lr) {
+    var b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    net.t = net.t || 0;
+    for (var s = 0; s < steps; s++) {
+      net.t++;
+      var grads = net.layers.map(function(L) {
+        return { W: zeros(L.W.length, L.W[0].length), b: new Array(L.W.length).fill(0) };
+      });
+      for (var n = 0; n < data.length; n++) {
+        var p = data[n];
+        var f = forward(net, p.x, p.y);
+        var delta = [sigmoid(f.logit) - p.cls];
+        for (var l = net.layers.length - 1; l >= 0; l--) {
+          var L = net.layers[l], inp = f.acts[l], g = grads[l];
+          var prev = new Array(inp.length).fill(0);
+          for (var o = 0; o < L.W.length; o++) {
+            g.b[o] += delta[o];
+            for (var i = 0; i < inp.length; i++) {
+              g.W[o][i] += delta[o] * inp[i];
+              prev[i] += delta[o] * L.W[o][i];
+            }
+          }
+          if (l > 0) {
+            for (var k = 0; k < prev.length; k++) if (f.pres[l - 1][k] <= 0) prev[k] = 0;
+          }
+          delta = prev;
+        }
+      }
+      var N = data.length;
+      var c1 = 1 - Math.pow(b1, net.t), c2 = 1 - Math.pow(b2, net.t);
+      net.layers.forEach(function(L, l) {
+        var g = grads[l];
+        for (var o = 0; o < L.W.length; o++) {
+          for (var i = 0; i < L.W[o].length; i++) {
+            var gw = g.W[o][i] / N;
+            L.mW[o][i] = b1 * L.mW[o][i] + (1 - b1) * gw;
+            L.vW[o][i] = b2 * L.vW[o][i] + (1 - b2) * gw * gw;
+            L.W[o][i] -= lr * (L.mW[o][i] / c1) / (Math.sqrt(L.vW[o][i] / c2) + eps);
+          }
+          var gb = g.b[o] / N;
+          L.mb[o] = b1 * L.mb[o] + (1 - b1) * gb;
+          L.vb[o] = b2 * L.vb[o] + (1 - b2) * gb * gb;
+          L.b[o] -= lr * (L.mb[o] / c1) / (Math.sqrt(L.vb[o] / c2) + eps);
+        }
+      });
+    }
+  }
+
+  function accuracy(net, data) {
+    var ok = 0;
+    data.forEach(function(p) { if ((forward(net, p.x, p.y).logit > 0 ? 1 : 0) === p.cls) ok++; });
+    return ok / data.length;
+  }
+
+  // Train with a few seeds and keep the best, so each (width, depth)
+  // shows what that architecture can do rather than one unlucky init.
+  function train(data, width, depth, opts) {
+    opts = opts || {};
+    var seeds = opts.seeds || 4, steps = opts.steps || 400, lr = opts.lr || 0.03;
+    var best = null;
+    for (var s = 0; s < seeds; s++) {
+      var net = makeNet(width, depth, 1000 + s * 17 + width * 3 + depth * 101);
+      trainSteps(net, data, steps, lr);
+      var acc = accuracy(net, data);
+      if (!best || acc > best.acc) best = { net: net, acc: acc };
+    }
+    return best;
+  }
+
+  // ---- marching squares: zero-contour of a scalar field on a grid ----
+  function contour(field, n) {
+    // field[i][j] sampled at x=i/n, y=j/n for i,j in 0..n
+    var segs = [];
+    function lerp(a, b, va, vb) { return a + (0 - va) / (vb - va) * (b - a); }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var v00 = field[i][j], v10 = field[i + 1][j], v01 = field[i][j + 1], v11 = field[i + 1][j + 1];
+        var x0 = i / n, x1 = (i + 1) / n, y0 = j / n, y1 = (j + 1) / n;
+        var pts = [];
+        if ((v00 > 0) !== (v10 > 0)) pts.push([lerp(x0, x1, v00, v10), y0]);
+        if ((v10 > 0) !== (v11 > 0)) pts.push([x1, lerp(y0, y1, v10, v11)]);
+        if ((v01 > 0) !== (v11 > 0)) pts.push([lerp(x0, x1, v01, v11), y1]);
+        if ((v00 > 0) !== (v01 > 0)) pts.push([x0, lerp(y0, y1, v00, v01)]);
+        if (pts.length === 2) segs.push([pts[0], pts[1]]);
+        else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+      }
+    }
+    return segs;
+  }
+
+  return { generateData: generateData, train: train, forward: forward, accuracy: accuracy, contour: contour, sigmoid: sigmoid };
+}());
+if (typeof module !== "undefined" && module.exports) module.exports = CLUSTER_MLP;
+
+
 // =====================================================================
 // Core deck infrastructure: Manim steppers, Reveal.js init, syntax
 // highlighting, interactive widget plumbing, and per-module hooks.

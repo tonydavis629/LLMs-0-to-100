@@ -1070,7 +1070,6 @@
 
 Module 1: Course Introduction
 
-From Shannon to ChatGPT
 
 ---
 
@@ -1906,7 +1905,7 @@ The tag sits on the step's header line; the generated text and the individual te
         <span class="terminal-title">uv run python module_01_introduction/src/main.py --step 3</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 3: char_unigram() ===</span> <span class="t-fail">INCORRECT</span>&#10;[v&#10;*_ljnn?zt&#10;w[g!osd‘t*vf’z‘xoùs-rj‘) ]“’yit[lly0“tyxuhw‘iyy&#10;  <span class="success">CORRECT</span>    returns exactly as many characters as requested&#10;  <span class="success">CORRECT</span>    only produces characters that appear in the training text&#10;  <span class="t-fail">INCORRECT</span>  samples in proportion to frequency (9 a's : 1 b gives ~90% a)&#10;             expected about 90% 'a', got 50% (did you pass weights=weights to random.choices?)</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 3: char_unigram() ===</span> <span class="t-fail">INCORRECT</span>&amp;#10;[v&amp;#10;*_ljnn?zt&amp;#10;w[g!osd‘t*vf’z‘xoùs-rj‘) ]“’yit[lly0“tyxuhw‘iyy&amp;#10;  <span class="success">CORRECT</span>    returns exactly as many characters as requested&amp;#10;  <span class="success">CORRECT</span>    only produces characters that appear in the training text&amp;#10;  <span class="t-fail">INCORRECT</span>  samples in proportion to frequency (9 a's : 1 b gives ~90% a)&amp;#10;             expected about 90% 'a', got 50% (did you pass weights=weights to random.choices?)</pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Here <code>char_unigram()</code> forgot the weights, so every character came out equally often. The failing test says what it expected, what it got, and where to look.</p>
@@ -2002,7 +2001,7 @@ return "\n".join(lines[start_idx:end_idx])
         <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&#10;<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&#10;  <span class="success">CORRECT</span>    the Project Gutenberg header is removed&#10;  <span class="success">CORRECT</span>    the Project Gutenberg license footer is removed&#10;  <span class="success">CORRECT</span>    the book runs from the title page to THE END&#10;&#10;<span class="header">=== Step 2: char_uniform() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: return a random string of the given length</span>&#10;&#10;<span class="header">=== Step 3: char_unigram() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: return a frequency-weighted random string</span>&#10;&#10;<span class="header">=== Step 4: build_char_ngram_model() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: set context and next_char from text[i:]</span>&#10;&#10;<span class="header">=== Step 5: word_unigram() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: return frequency-weighted random words</span>&#10;&#10;<span class="header">=== Step 6: build_word_ngram_model() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: set context and next_word from words[i:]</span>&#10;&#10;<span class="header">=== Extra Credit: cross_entropy() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">needs Step 4 (build_char_ngram_model) to build the models it scores</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="success">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&amp;#10;  <span class="success">CORRECT</span>    the Project Gutenberg header is removed&amp;#10;  <span class="success">CORRECT</span>    the Project Gutenberg license footer is removed&amp;#10;  <span class="success">CORRECT</span>    the book runs from the title page to THE END&amp;#10;&amp;#10;<span class="header">=== Step 2: char_uniform() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: return a random string of the given length</span>&amp;#10;&amp;#10;<span class="header">=== Step 3: char_unigram() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: return a frequency-weighted random string</span>&amp;#10;&amp;#10;<span class="header">=== Step 4: build_char_ngram_model() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: set context and next_char from text[i:]</span>&amp;#10;&amp;#10;<span class="header">=== Step 5: word_unigram() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: return frequency-weighted random words</span>&amp;#10;&amp;#10;<span class="header">=== Step 6: build_word_ngram_model() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: set context and next_word from words[i:]</span>&amp;#10;&amp;#10;<span class="header">=== Extra Credit: cross_entropy() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">needs Step 4 (build_char_ngram_model) to build the models it scores</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Step 1 passes its three tests. Every later step is tagged INCOMPLETE with the TODO it is waiting on.</p>
@@ -2078,7 +2077,7 @@ return "".join(random.choices(alphabet, k=length))
         <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&#10;&#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&#10;pdxvbjivfqzoybrrbgjmjedbrdiuijygra sxlvewsfhbyasanasrbagcdlaibntnpt&#10;  <span class="success">CORRECT</span>    returns exactly as many characters as requested&#10;  <span class="success">CORRECT</span>    uses only the letters a-z and space&#10;  <span class="success">CORRECT</span>    every character is about equally common (z as often as e)&#10;&#10;<span class="header">=== Step 3: char_unigram() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: return a frequency-weighted random string</span>&#10;&#10;<span class="skipped">...</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&amp;#10;&amp;#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&amp;#10;pdxvbjivfqzoybrrbgjmjedbrdiuijygra sxlvewsfhbyasanasrbagcdlaibntnpt&amp;#10;  <span class="success">CORRECT</span>    returns exactly as many characters as requested&amp;#10;  <span class="success">CORRECT</span>    uses only the letters a-z and space&amp;#10;  <span class="success">CORRECT</span>    every character is about equally common (z as often as e)&amp;#10;&amp;#10;<span class="header">=== Step 3: char_unigram() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: return a frequency-weighted random string</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Pure noise. Rare letters appear as often as common ones, which is exactly what the third check confirms.</p>
@@ -2157,7 +2156,7 @@ return "".join(random.choices(chars, weights=weights, k=length))
         <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">rqfdpqnzejwixfbxwmqegqlsogsm fmrhrbpzygktimnmqqryowwicwnoieqk</span>&#10;&#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&#10; wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met&#10;  <span class="success">CORRECT</span>    returns exactly as many characters as requested&#10;  <span class="success">CORRECT</span>    only produces characters that appear in the training text&#10;  <span class="success">CORRECT</span>    samples in proportion to frequency (9 a's : 1 b gives ~90% a)&#10;&#10;<span class="header">=== Step 4: build_char_ngram_model() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: set context and next_char from text[i:]</span>&#10;&#10;<span class="skipped">...</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&amp;#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">rqfdpqnzejwixfbxwmqegqlsogsm fmrhrbpzygktimnmqqryowwicwnoieqk</span>&amp;#10;&amp;#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&amp;#10; wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met&amp;#10;  <span class="success">CORRECT</span>    returns exactly as many characters as requested&amp;#10;  <span class="success">CORRECT</span>    only produces characters that appear in the training text&amp;#10;  <span class="success">CORRECT</span>    samples in proportion to frequency (9 a's : 1 b gives ~90% a)&amp;#10;&amp;#10;<span class="header">=== Step 4: build_char_ngram_model() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: set context and next_char from text[i:]</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Spaces and <strong>e</strong> dominate now, but letters still appear in random order. The third test trains on a 9:1 text and confirms the 90/10 split.</p>
@@ -2287,7 +2286,7 @@ next_char = text[i + n - 1]
         <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">otsfyup sszaiuenfz ptaeaejtjilonpdw ohegksbswbutbndrngennjzd</span>&#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray"> wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met</span>&#10;&#10;<span class="header t-yellow">=== Step 4: build_char_ngram_model() ===</span> <span class="success">CORRECT</span>&#10;--- bigram (n=2) ---&#10;emofithan’” anghallit quspehisima ttoute or it,” alkid d ana&#10;--- trigram (n=3) ---&#10;yn’t she dioug the make a&#10;doicedly, voisaid, “don ey all v. “it, an’t ask they everep,&#10;  <span class="success">CORRECT</span>    bigram counts for 'abab' are a->b twice and b->a once&#10;  <span class="success">CORRECT</span>    trigram contexts are 2 characters long ('abcabd' gives ab->c, ab->d, ...)&#10;  <span class="success">CORRECT</span>    in Alice, the most common character after 'q' is 'u'&#10;&#10;<span class="header">=== Step 5: word_unigram() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: return frequency-weighted random words</span>&#10;&#10;<span class="skipped">...</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&amp;#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">otsfyup sszaiuenfz ptaeaejtjilonpdw ohegksbswbutbndrngennjzd</span>&amp;#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray"> wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met</span>&amp;#10;&amp;#10;<span class="header t-yellow">=== Step 4: build_char_ngram_model() ===</span> <span class="success">CORRECT</span>&amp;#10;--- bigram (n=2) ---&amp;#10;emofithan’” anghallit quspehisima ttoute or it,” alkid d ana&amp;#10;--- trigram (n=3) ---&amp;#10;yn’t she dioug the make a&amp;#10;doicedly, voisaid, “don ey all v. “it, an’t ask they everep,&amp;#10;  <span class="success">CORRECT</span>    bigram counts for 'abab' are a->b twice and b->a once&amp;#10;  <span class="success">CORRECT</span>    trigram contexts are 2 characters long ('abcabd' gives ab->c, ab->d, ...)&amp;#10;  <span class="success">CORRECT</span>    in Alice, the most common character after 'q' is 'u'&amp;#10;&amp;#10;<span class="header">=== Step 5: word_unigram() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: return frequency-weighted random words</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">One fill-in and both the bigram and trigram models produce text. The tests build tiny models from &quot;abab&quot; and &quot;abcabd&quot; where the right counts are known.</p>
@@ -2383,7 +2382,7 @@ return " ".join(random.choices(word_list, weights=weights, k=length))
         <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">hvxsycxjgcgkpqxzwowhftedcvygtdxxyveowzqallqdvpum ebxmwueehljtcz</span>&#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray"> wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met</span>&#10;<span class="header t-yellow">=== Step 4: build_char_ngram_model() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">emofithan’” anghallit quspehisima ttoute or it,” alkid d ana</span>&#10;&#10;<span class="header t-green">=== Step 5: word_unigram() ===</span> <span class="success">CORRECT</span>&#10;so the of trial: look and late, as some voice, rabbit solemnly sage,&#10;  <span class="success">CORRECT</span>    returns exactly as many words as requested, separated by spaces&#10;  <span class="success">CORRECT</span>    only produces words that appear in the training text&#10;  <span class="success">CORRECT</span>    samples in proportion to frequency (9 the : 1 cat gives ~90% the)&#10;&#10;<span class="header">=== Step 6: build_word_ngram_model() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">TODO: set context and next_word from words[i:]</span>&#10;&#10;<span class="skipped">...</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&amp;#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">hvxsycxjgcgkpqxzwowhftedcvygtdxxyveowzqallqdvpum ebxmwueehljtcz</span>&amp;#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray"> wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met</span>&amp;#10;<span class="header t-yellow">=== Step 4: build_char_ngram_model() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">emofithan’” anghallit quspehisima ttoute or it,” alkid d ana</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 5: word_unigram() ===</span> <span class="success">CORRECT</span>&amp;#10;so the of trial: look and late, as some voice, rabbit solemnly sage,&amp;#10;  <span class="success">CORRECT</span>    returns exactly as many words as requested, separated by spaces&amp;#10;  <span class="success">CORRECT</span>    only produces words that appear in the training text&amp;#10;  <span class="success">CORRECT</span>    samples in proportion to frequency (9 the : 1 cat gives ~90% the)&amp;#10;&amp;#10;<span class="header">=== Step 6: build_word_ngram_model() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: set context and next_word from words[i:]</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Real words in a random order. The tests mirror Step 3, with words in place of characters.</p>
@@ -2443,7 +2442,7 @@ next_word = words[i + n - 1]
         <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">gjliuzsopn jgzwwodhgxloqputeou rhnckckecvrgueuhycmfvwwnhu gft</span>&#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray"> wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met</span>&#10;<span class="header t-yellow">=== Step 4: build_char_ngram_model() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">emofithan’” anghallit quspehisima ttoute or it,” alkid d ana</span>&#10;<span class="header t-green">=== Step 5: word_unigram() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">so the of trial: look and late, as some voice, rabbit solemnly sage,</span>&#10;&#10;<span class="header t-cyan">=== Step 6: build_word_ngram_model() ===</span> <span class="success">CORRECT</span>&#10;--- bigram (n=2) ---&#10;it!” said the patriotic archbishop of the cat, “a dog’s not remember&#10;--- trigram (n=3) ---&#10;to take &#95;more&#95; than nothing.” “nobody asked &#95;your&#95; opinion,” said al&#10;  <span class="success">CORRECT</span>    bigram contexts are 1-word tuples ('the cat the dog the cat')&#10;  <span class="success">CORRECT</span>    trigram contexts are 2-word tuples&#10;  <span class="success">CORRECT</span>    in Alice, the most common word after 'the white' is 'rabbit'&#10;&#10;<span class="header">=== Extra Credit: cross_entropy() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">Extra credit: implement cross_entropy()</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&amp;#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">gjliuzsopn jgzwwodhgxloqputeou rhnckckecvrgueuhycmfvwwnhu gft</span>&amp;#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray"> wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met</span>&amp;#10;<span class="header t-yellow">=== Step 4: build_char_ngram_model() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">emofithan’” anghallit quspehisima ttoute or it,” alkid d ana</span>&amp;#10;<span class="header t-green">=== Step 5: word_unigram() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">so the of trial: look and late, as some voice, rabbit solemnly sage,</span>&amp;#10;&amp;#10;<span class="header t-cyan">=== Step 6: build_word_ngram_model() ===</span> <span class="success">CORRECT</span>&amp;#10;--- bigram (n=2) ---&amp;#10;it!” said the patriotic archbishop of the cat, “a dog’s not remember&amp;#10;--- trigram (n=3) ---&amp;#10;to take &#95;more&#95; than nothing.” “nobody asked &#95;your&#95; opinion,” said al&amp;#10;  <span class="success">CORRECT</span>    bigram contexts are 1-word tuples ('the cat the dog the cat')&amp;#10;  <span class="success">CORRECT</span>    trigram contexts are 2-word tuples&amp;#10;  <span class="success">CORRECT</span>    in Alice, the most common word after 'the white' is 'rabbit'&amp;#10;&amp;#10;<span class="header">=== Extra Credit: cross_entropy() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">Extra credit: implement cross_entropy()</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Coherent phrases, sometimes entire sentences lifted from Alice in Wonderland. A list instead of a tuple as the context would crash here, and the runner would report that too.</p>
@@ -2463,7 +2462,7 @@ next_word = words[i + n - 1]
         <span class="terminal-title">uv run python module_01_introduction/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-fg">gjliuzsopn jgzwwodhgxloqputeou rhnckckecvrgueuhycmfvwwnhu gft</span>&#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-fg"> wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met</span>&#10;<span class="header t-yellow">=== Step 4: build_char_ngram_model() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-fg">emofithan’” anghallit quspehisima ttoute or it,” alkid d ana</span>&#10;<span class="t-fg">yn’t she dioug the make a</span>&#10;<span class="header t-green">=== Step 5: word_unigram() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-fg">so the of trial: look and late, as some voice, rabbit solemnly sage,</span>&#10;<span class="header t-cyan">=== Step 6: build_word_ngram_model() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-fg">it!” said the patriotic archbishop of the cat, “a dog’s not remember</span>&#10;<span class="t-fg">to take &#95;more&#95; than nothing.” “nobody asked &#95;your&#95; opinion,” said al</span>&#10;<span class="header">=== Extra Credit: cross_entropy() ===</span> <span class="skipped">INCOMPLETE</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header t-red">=== Step 2: char_uniform() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-fg">gjliuzsopn jgzwwodhgxloqputeou rhnckckecvrgueuhycmfvwwnhu gft</span>&amp;#10;<span class="header t-orange">=== Step 3: char_unigram() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-fg"> wgm oetgtee ,nei mae  tyah hur esseaca e ”yie f t o yae met</span>&amp;#10;<span class="header t-yellow">=== Step 4: build_char_ngram_model() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-fg">emofithan’” anghallit quspehisima ttoute or it,” alkid d ana</span>&amp;#10;<span class="t-fg">yn’t she dioug the make a</span>&amp;#10;<span class="header t-green">=== Step 5: word_unigram() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-fg">so the of trial: look and late, as some voice, rabbit solemnly sage,</span>&amp;#10;<span class="header t-cyan">=== Step 6: build_word_ngram_model() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-fg">it!” said the patriotic archbishop of the cat, “a dog’s not remember</span>&amp;#10;<span class="t-fg">to take &#95;more&#95; than nothing.” “nobody asked &#95;your&#95; opinion,” said al</span>&amp;#10;<span class="header">=== Extra Credit: cross_entropy() ===</span> <span class="skipped">INCOMPLETE</span></pre>
       </div>
     </div>
   </div>
@@ -2492,6 +2491,16 @@ This one is a whole function, not a single line. <!-- .element: class="text-lg" 
 
 ```python
 def cross_entropy(text: str, model: dict[str, Counter]) -> float:
+    """Compute the cross-entropy of text under a character n-gram model.
+
+    Cross-entropy = -(1/N) * sum(log2(P(c_i | context_i)))
+
+    For unseen contexts or characters, use a small smoothing probability
+    of 1e-6 to avoid log(0).
+
+    Returns:
+        The cross-entropy in bits per character.
+    """
     # TODO: Average -log2(P(next_char | context)) over every position in text
     raise NotImplementedError("Extra credit: implement cross_entropy()")
 ```
@@ -2548,7 +2557,7 @@ return total_bits / count if count else 0.0
         <span class="terminal-title">uv run python module_01_introduction/src/main.py --step ec</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&#10;&#10;<span class="header t-blue">=== Extra Credit: cross_entropy() ===</span> <span class="success">CORRECT</span>&#10;Train on the first 90% of Alice, score the held-out last 10%:&#10;&#10;  order   bits/char   perplexity&#10;  n=1        4.437        21.65&#10;  n=2        3.458        10.99&#10;  n=3        2.845         7.18&#10;  n=4        3.123         8.71&#10;  n=5        4.678        25.61&#10;&#10;  <span class="success">CORRECT</span>    a model that predicts every character perfectly scores 0 bits&#10;  <span class="success">CORRECT</span>    a 50/50 guess costs exactly 1 bit per character&#10;  <span class="success">CORRECT</span>    an unseen character is smoothed to 1e-6 (about 19.93 bits)&#10;  <span class="success">CORRECT</span>    on held-out Alice, bits/char drops from unigram to bigram to trigram</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: load_text() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">Loaded 144603 characters from module_01_introduction/data/alice.txt</span>&amp;#10;&amp;#10;<span class="header t-blue">=== Extra Credit: cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;Train on the first 90% of Alice, score the held-out last 10%:&amp;#10;&amp;#10;  order   bits/char   perplexity&amp;#10;  n=1        4.437        21.65&amp;#10;  n=2        3.458        10.99&amp;#10;  n=3        2.845         7.18&amp;#10;  n=4        3.123         8.71&amp;#10;  n=5        4.678        25.61&amp;#10;&amp;#10;  <span class="success">CORRECT</span>    a model that predicts every character perfectly scores 0 bits&amp;#10;  <span class="success">CORRECT</span>    a 50/50 guess costs exactly 1 bit per character&amp;#10;  <span class="success">CORRECT</span>    an unseen character is smoothed to 1e-6 (about 19.93 bits)&amp;#10;  <span class="success">CORRECT</span>    on held-out Alice, bits/char drops from unigram to bigram to trigram</pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Trigrams win. At n=4 and n=5 most held-out contexts were never seen in training, so the 1e-6 fallback fires often and perplexity climbs. That is data sparsity, the wall that stopped n-gram models.</p>
@@ -2839,6 +2848,193 @@ window.MODULE_CONFIG = {
 
   <!-- Shared deck logic for every module -->
   <script>
+// =====================================================================
+// CLUSTER_MLP — a small real ReLU MLP trained in the browser (seeded, so
+// the result is repeatable), plus a marching-squares contour helper.
+// Used by the "Clusters" tab of the mlpBoundary widget: four green
+// clusters on a red background. Each hidden neuron's zero-line in input
+// space is a straight line for layer 1 and a piecewise-linear curve for
+// deeper layers; the final boundary is the output neuron's zero-line.
+// =====================================================================
+var CLUSTER_MLP = (function() {
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(rnd) {
+    var u = 1 - rnd(), v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2831853 * v);
+  }
+  var CENTERS = [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+
+  function generateData() {
+    var rnd = mulberry32(7);
+    var pts = [];
+    CENTERS.forEach(function(c) {
+      for (var i = 0; i < 22; i++) {
+        pts.push({ x: c[0] + gauss(rnd) * 0.045, y: c[1] + gauss(rnd) * 0.045, cls: 1 });
+      }
+    });
+    var reds = 0;
+    while (reds < 150) {
+      var x = 0.03 + rnd() * 0.94, y = 0.03 + rnd() * 0.94;
+      var near = CENTERS.some(function(c) { return Math.hypot(x - c[0], y - c[1]) < 0.17; });
+      if (near) continue;
+      pts.push({ x: x, y: y, cls: 0 });
+      reds++;
+    }
+    return pts;
+  }
+
+  // ---- network: [2 -> W]*D (ReLU) -> 1 (sigmoid), full-batch Adam ----
+  function makeNet(width, depth, seed) {
+    var rnd = mulberry32(seed);
+    var layers = [];
+    var fanIn = 2;
+    for (var d = 0; d < depth; d++) {
+      layers.push(initLayer(fanIn, width, rnd));
+      fanIn = width;
+    }
+    layers.push(initLayer(fanIn, 1, rnd));
+    return { width: width, depth: depth, layers: layers };
+  }
+  function initLayer(nIn, nOut, rnd) {
+    var W = [], b = [];
+    var scale = Math.sqrt(2 / nIn);
+    for (var o = 0; o < nOut; o++) {
+      var row = [];
+      for (var i = 0; i < nIn; i++) row.push(gauss(rnd) * scale);
+      W.push(row);
+      b.push(gauss(rnd) * 0.1);
+    }
+    return { W: W, b: b, mW: zeros(nOut, nIn), vW: zeros(nOut, nIn), mb: new Array(nOut).fill(0), vb: new Array(nOut).fill(0) };
+  }
+  function zeros(r, c) {
+    var a = [];
+    for (var i = 0; i < r; i++) a.push(new Array(c).fill(0));
+    return a;
+  }
+
+  // Forward pass returning every layer's pre-activations and activations.
+  // Inputs are centered so the first layer's lines can pass near the middle.
+  function forward(net, x, y) {
+    var act = [x - 0.5, y - 0.5];
+    var pres = [], acts = [act];
+    for (var l = 0; l < net.layers.length; l++) {
+      var L = net.layers[l];
+      var pre = [], out = [];
+      var last = l === net.layers.length - 1;
+      for (var o = 0; o < L.W.length; o++) {
+        var s = L.b[o];
+        for (var i = 0; i < act.length; i++) s += L.W[o][i] * act[i];
+        pre.push(s);
+        out.push(last ? s : (s > 0 ? s : 0));
+      }
+      pres.push(pre); acts.push(out); act = out;
+    }
+    return { pres: pres, acts: acts, logit: act[0] };
+  }
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function trainSteps(net, data, steps, lr) {
+    var b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    net.t = net.t || 0;
+    for (var s = 0; s < steps; s++) {
+      net.t++;
+      var grads = net.layers.map(function(L) {
+        return { W: zeros(L.W.length, L.W[0].length), b: new Array(L.W.length).fill(0) };
+      });
+      for (var n = 0; n < data.length; n++) {
+        var p = data[n];
+        var f = forward(net, p.x, p.y);
+        var delta = [sigmoid(f.logit) - p.cls];
+        for (var l = net.layers.length - 1; l >= 0; l--) {
+          var L = net.layers[l], inp = f.acts[l], g = grads[l];
+          var prev = new Array(inp.length).fill(0);
+          for (var o = 0; o < L.W.length; o++) {
+            g.b[o] += delta[o];
+            for (var i = 0; i < inp.length; i++) {
+              g.W[o][i] += delta[o] * inp[i];
+              prev[i] += delta[o] * L.W[o][i];
+            }
+          }
+          if (l > 0) {
+            for (var k = 0; k < prev.length; k++) if (f.pres[l - 1][k] <= 0) prev[k] = 0;
+          }
+          delta = prev;
+        }
+      }
+      var N = data.length;
+      var c1 = 1 - Math.pow(b1, net.t), c2 = 1 - Math.pow(b2, net.t);
+      net.layers.forEach(function(L, l) {
+        var g = grads[l];
+        for (var o = 0; o < L.W.length; o++) {
+          for (var i = 0; i < L.W[o].length; i++) {
+            var gw = g.W[o][i] / N;
+            L.mW[o][i] = b1 * L.mW[o][i] + (1 - b1) * gw;
+            L.vW[o][i] = b2 * L.vW[o][i] + (1 - b2) * gw * gw;
+            L.W[o][i] -= lr * (L.mW[o][i] / c1) / (Math.sqrt(L.vW[o][i] / c2) + eps);
+          }
+          var gb = g.b[o] / N;
+          L.mb[o] = b1 * L.mb[o] + (1 - b1) * gb;
+          L.vb[o] = b2 * L.vb[o] + (1 - b2) * gb * gb;
+          L.b[o] -= lr * (L.mb[o] / c1) / (Math.sqrt(L.vb[o] / c2) + eps);
+        }
+      });
+    }
+  }
+
+  function accuracy(net, data) {
+    var ok = 0;
+    data.forEach(function(p) { if ((forward(net, p.x, p.y).logit > 0 ? 1 : 0) === p.cls) ok++; });
+    return ok / data.length;
+  }
+
+  // Train with a few seeds and keep the best, so each (width, depth)
+  // shows what that architecture can do rather than one unlucky init.
+  function train(data, width, depth, opts) {
+    opts = opts || {};
+    var seeds = opts.seeds || 4, steps = opts.steps || 400, lr = opts.lr || 0.03;
+    var best = null;
+    for (var s = 0; s < seeds; s++) {
+      var net = makeNet(width, depth, 1000 + s * 17 + width * 3 + depth * 101);
+      trainSteps(net, data, steps, lr);
+      var acc = accuracy(net, data);
+      if (!best || acc > best.acc) best = { net: net, acc: acc };
+    }
+    return best;
+  }
+
+  // ---- marching squares: zero-contour of a scalar field on a grid ----
+  function contour(field, n) {
+    // field[i][j] sampled at x=i/n, y=j/n for i,j in 0..n
+    var segs = [];
+    function lerp(a, b, va, vb) { return a + (0 - va) / (vb - va) * (b - a); }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var v00 = field[i][j], v10 = field[i + 1][j], v01 = field[i][j + 1], v11 = field[i + 1][j + 1];
+        var x0 = i / n, x1 = (i + 1) / n, y0 = j / n, y1 = (j + 1) / n;
+        var pts = [];
+        if ((v00 > 0) !== (v10 > 0)) pts.push([lerp(x0, x1, v00, v10), y0]);
+        if ((v10 > 0) !== (v11 > 0)) pts.push([x1, lerp(y0, y1, v10, v11)]);
+        if ((v01 > 0) !== (v11 > 0)) pts.push([lerp(x0, x1, v01, v11), y1]);
+        if ((v00 > 0) !== (v01 > 0)) pts.push([x0, lerp(y0, y1, v00, v01)]);
+        if (pts.length === 2) segs.push([pts[0], pts[1]]);
+        else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+      }
+    }
+    return segs;
+  }
+
+  return { generateData: generateData, train: train, forward: forward, accuracy: accuracy, contour: contour, sigmoid: sigmoid };
+}());
+if (typeof module !== "undefined" && module.exports) module.exports = CLUSTER_MLP;
+
+
 // =====================================================================
 // Core deck infrastructure: Manim steppers, Reveal.js init, syntax
 // highlighting, interactive widget plumbing, and per-module hooks.

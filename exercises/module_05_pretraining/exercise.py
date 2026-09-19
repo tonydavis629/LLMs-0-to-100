@@ -6,8 +6,8 @@ The model architecture is provided (src/model.py) — your job is the PRETRAININ
 LOOP that turns random weights into useful ones.
 
 Fill in each line marked with `raise NotImplementedError(...)`. Each blank needs
-only one expression or one short block. Run after each step; the runner skips any
-step you have not finished yet:
+only one expression or one short block. Run after each step; the runner tags each
+step CORRECT, INCORRECT, or INCOMPLETE and runs its tests from tests/:
 
     uv run python module_05_pretraining/src/main.py
 """

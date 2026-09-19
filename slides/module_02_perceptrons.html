@@ -3274,6 +3274,10 @@ return sigmoid(X @ weights + bias)
 def binary_cross_entropy(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
     """Compute the binary cross-entropy loss: -[y log(p) + (1 - y) log(1 - p)].
 
+    This is Shannon's entropy used as a loss: it measures how surprised we are
+    by the prediction given the true label. It works elementwise, so it accepts
+    a single sample or a whole batch.
+
     Args:
         y_true: True label(s), 0 or 1 (scalar or tensor).
         y_pred: Predicted probability/probabilities in (0, 1).
@@ -3315,11 +3319,19 @@ return -(y_true * torch.log(y_pred) + (1 - y_true) * torch.log(1 - y_pred))
 def compute_gradients(
     X: torch.Tensor, y_true: torch.Tensor, y_pred: torch.Tensor
 ) -> tuple[torch.Tensor, torch.Tensor]:
-    """For ONE sample, sigmoid + BCE collapse to dL/dz = y_pred - y_true, so
+    """Compute gradients of the BCE loss w.r.t. the neuron's weights and bias.
+
+    For ONE sample, sigmoid + BCE collapse to dL/dz = y_pred - y_true, so
         dL/dw_j = (y_pred - y_true) * x_j     (error times that weight's input)
         dL/db   = (y_pred - y_true)
-    The batch loss is a mean, so average over the n samples: for weight j,
-    sum error_i * x_ij over every sample i, then divide by n. No loop needed.
+
+    Args:
+        X: Input batch, shape (n_samples, 2).
+        y_true: True labels, shape (n_samples,).
+        y_pred: Predicted probabilities, shape (n_samples,).
+
+    Returns:
+        (dw, db): gradient w.r.t. weights (shape (2,)) and bias (scalar tensor).
     """
     error = y_pred - y_true  # How far each prediction is from its label
     n = X.shape[0]  # Number of samples in the batch
@@ -3361,6 +3373,9 @@ def update_parameters(
     learning_rate: float,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Update the weights and bias with one gradient-descent step.
+
+    Gradient descent moves each parameter a small step in the negative
+    gradient direction (downhill on the loss surface).
 
     Args:
         weights: Current weight vector, shape (2,).
@@ -3405,7 +3420,7 @@ return (weights - learning_rate * dw, bias - learning_rate * db)
         <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: forward() ===</span> <span class="success">CORRECT</span>&#10;<span class="header">=== Step 2: binary_cross_entropy() ===</span> <span class="success">CORRECT</span>&#10;<span class="header">=== Step 3: compute_gradients() ===</span> <span class="success">CORRECT</span>&#10;<span class="header">=== Step 4: update_parameters() ===</span> <span class="success">CORRECT</span>&#10;<span class="skipped">  ...</span>&#10;&#10;<span class="header t-green">=== Step 5: train the single neuron (Steps 1-4 together) ===</span> <span class="success">CORRECT</span>&#10;Linear data: 150 samples from linear_separable.csv&#10;  Epoch  20/100  loss=0.0753&#10;  <span class="skipped">...</span>&#10;  Epoch 100/100  loss=0.0391&#10;  Final weights: [2.4276, 1.7352], bias: 0.1047&#10;  <span class="success">Accuracy: 149/150 (99.3%)</span>&#10;XOR data: 160 samples from non_linear_separable.csv&#10;  Epoch  20/100  loss=0.6926&#10;  <span class="skipped">...</span>&#10;  Epoch 100/100  loss=0.6926&#10;  Final weights: [0.0070, -0.0399], bias: -0.0016&#10;  <span class="t-fail">Accuracy: 80/160 (50.0%)</span>&#10;  <span class="success">CORRECT</span>    linear data: accuracy is at least 95%&#10;  <span class="success">CORRECT</span>    linear data: the loss falls to under a quarter of its starting value&#10;  <span class="success">CORRECT</span>    XOR data: the loss is stuck at ln 2 = 0.693, the cost of a coin flip&#10;  <span class="success">CORRECT</span>    XOR data: accuracy is no better than chance (a single neuron is a linear classifier)&#10;<span class="header">=== Step 6: relu() ===</span> <span class="skipped">INCOMPLETE</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: forward() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: binary_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: compute_gradients() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: update_parameters() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 5: train the single neuron (Steps 1-4 together) ===</span> <span class="success">CORRECT</span>&amp;#10;Linear data: 150 samples from linear_separable.csv&amp;#10;  Epoch  20/100  loss=0.0753&amp;#10;  <span class="skipped">...</span>&amp;#10;  Epoch 100/100  loss=0.0391&amp;#10;  Final weights: [2.4276, 1.7352], bias: 0.1047&amp;#10;  <span class="success">Accuracy: 149/150 (99.3%)</span>&amp;#10;XOR data: 160 samples from non_linear_separable.csv&amp;#10;  Epoch  20/100  loss=0.6926&amp;#10;  <span class="skipped">...</span>&amp;#10;  Epoch 100/100  loss=0.6926&amp;#10;  Final weights: [0.0070, -0.0399], bias: -0.0016&amp;#10;  <span class="t-fail">Accuracy: 80/160 (50.0%)</span>&amp;#10;  <span class="success">CORRECT</span>    linear data: accuracy is at least 95%&amp;#10;  <span class="success">CORRECT</span>    linear data: the loss falls to under a quarter of its starting value&amp;#10;  <span class="success">CORRECT</span>    XOR data: the loss is stuck at ln 2 = 0.693, the cost of a coin flip&amp;#10;  <span class="success">CORRECT</span>    XOR data: accuracy is no better than chance (a single neuron is a linear classifier)&amp;#10;<span class="header">=== Step 6: relu() ===</span> <span class="skipped">INCOMPLETE</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">99.3% on linear data, but only 50% on XOR. Step 5 tests for that failure: a correct single neuron <em>must</em> get stuck at ln 2 here.</p>
@@ -3436,7 +3451,11 @@ No line separates XOR, so the neuron predicts 0.5 for everything. The fix: a **h
 
 ```python
 def relu(z: torch.Tensor) -> torch.Tensor:
-    """The ReLU activation: max(0, z).
+    """The ReLU (Rectified Linear Unit) activation: max(0, z).
+
+    Keeps positive values unchanged and clamps negatives to zero. It is cheap
+    and avoids the vanishing-gradient problem, so it dominates the HIDDEN
+    layers of modern networks.
 
     Args:
         z: A tensor of pre-activation values (any shape).
@@ -3514,7 +3533,7 @@ return sigmoid(self.output(h))
         <span class="terminal-title">uv run python module_02_perceptrons/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header t-green">=== Step 5: train the single neuron (Steps 1-4 together) ===</span> <span class="success">CORRECT</span>&#10;  <span class="t-gray">Accuracy: 149/150 (99.3%)</span>&#10;  <span class="t-gray">Accuracy: 80/160 (50.0%)</span>&#10;<span class="header t-yellow">=== Step 6: relu() ===</span> <span class="success">CORRECT</span>&#10;  <span class="success">CORRECT</span>    negatives become 0 and positives pass through: [-2,-0.5,0,0.5,2] -> [0,0,0,0.5,2]&#10;  <span class="success">CORRECT</span>    works elementwise on a matrix and keeps its shape&#10;  <span class="success">CORRECT</span>    lets gradients through where z > 0 and blocks them where z < 0&#10;&#10;<span class="header t-cyan">=== Step 7: MLP.forward() ===</span> <span class="success">CORRECT</span>&#10;  Epoch 100/500  loss=0.0217&#10;  <span class="skipped">...</span>&#10;  Epoch 500/500  loss=0.0042&#10;  <span class="success">Accuracy: 160/160 (100.0%)</span>&#10;  Saved comparison plot to output/step7_comparison.png&#10;  Saved MLP loss plot to output/step7_mlp_loss.png&#10;  <span class="success">CORRECT</span>    returns one probability per sample, shape (n_samples, 1)&#10;  <span class="success">CORRECT</span>    every output is strictly between 0 and 1&#10;  <span class="success">CORRECT</span>    equals sigmoid(output(relu(hidden(x)))) using the model's own layers&#10;  <span class="success">CORRECT</span>    XOR data: the MLP reaches at least 95% accuracy where the single neuron got 50%&#10;&#10;<span class="header">=== Extra Credit: SGD.step() ===</span> <span class="skipped">INCOMPLETE</span>&#10;  <span class="skipped">Extra credit: implement the optimizer step</span></pre>
+        <pre class="terminal-pre"><span class="header t-green">=== Step 5: train the single neuron (Steps 1-4 together) ===</span> <span class="success">CORRECT</span>&amp;#10;  <span class="t-gray">Accuracy: 149/150 (99.3%)</span>&amp;#10;  <span class="t-gray">Accuracy: 80/160 (50.0%)</span>&amp;#10;<span class="header t-yellow">=== Step 6: relu() ===</span> <span class="success">CORRECT</span>&amp;#10;  <span class="success">CORRECT</span>    negatives become 0 and positives pass through: [-2,-0.5,0,0.5,2] -> [0,0,0,0.5,2]&amp;#10;  <span class="success">CORRECT</span>    works elementwise on a matrix and keeps its shape&amp;#10;  <span class="success">CORRECT</span>    lets gradients through where z > 0 and blocks them where z < 0&amp;#10;&amp;#10;<span class="header t-cyan">=== Step 7: MLP.forward() ===</span> <span class="success">CORRECT</span>&amp;#10;  Epoch 100/500  loss=0.0217&amp;#10;  <span class="skipped">...</span>&amp;#10;  Epoch 500/500  loss=0.0042&amp;#10;  <span class="success">Accuracy: 160/160 (100.0%)</span>&amp;#10;  Saved comparison plot to output/step7_comparison.png&amp;#10;  Saved MLP loss plot to output/step7_mlp_loss.png&amp;#10;  <span class="success">CORRECT</span>    returns one probability per sample, shape (n_samples, 1)&amp;#10;  <span class="success">CORRECT</span>    every output is strictly between 0 and 1&amp;#10;  <span class="success">CORRECT</span>    equals sigmoid(output(relu(hidden(x)))) using the model's own layers&amp;#10;  <span class="success">CORRECT</span>    XOR data: the MLP reaches at least 95% accuracy where the single neuron got 50%&amp;#10;&amp;#10;<span class="header">=== Extra Credit: SGD.step() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">Extra credit: implement the optimizer step</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">100% &mdash; the ReLU hidden layer lets the MLP learn a non-linear boundary the single neuron could not. The forward-pass test recomputes the output from the model's own layers.</p>
@@ -3632,7 +3651,7 @@ with torch.no_grad():
         <span class="terminal-title">uv run python module_02_perceptrons/src/main.py --step ec</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header t-blue">=== Extra Credit: SGD.step() ===</span> <span class="success">CORRECT</span>&#10;  Epoch 100/500  loss=0.0217&#10;  Epoch 200/500  loss=0.0107&#10;  Epoch 300/500  loss=0.0071&#10;  Epoch 400/500  loss=0.0053&#10;  Epoch 500/500  loss=0.0042&#10;  <span class="success">Accuracy: 160/160 (100.0%)</span>&#10;  <span class="success">CORRECT</span>    one step: p=[1,2], grad=[0.5,-1], lr=0.1 gives [0.95, 2.1]&#10;  <span class="success">CORRECT</span>    updates the parameter tensor in place (the model keeps pointing at it)&#10;  <span class="success">CORRECT</span>    matches torch.optim.SGD after one step on an nn.Linear layer&#10;  <span class="success">CORRECT</span>    the MLP trained with your optimizer reaches at least 95% on XOR</pre>
+        <pre class="terminal-pre"><span class="header t-blue">=== Extra Credit: SGD.step() ===</span> <span class="success">CORRECT</span>&amp;#10;  Epoch 100/500  loss=0.0217&amp;#10;  Epoch 200/500  loss=0.0107&amp;#10;  Epoch 300/500  loss=0.0071&amp;#10;  Epoch 400/500  loss=0.0053&amp;#10;  Epoch 500/500  loss=0.0042&amp;#10;  <span class="success">Accuracy: 160/160 (100.0%)</span>&amp;#10;  <span class="success">CORRECT</span>    one step: p=[1,2], grad=[0.5,-1], lr=0.1 gives [0.95, 2.1]&amp;#10;  <span class="success">CORRECT</span>    updates the parameter tensor in place (the model keeps pointing at it)&amp;#10;  <span class="success">CORRECT</span>    matches torch.optim.SGD after one step on an nn.Linear layer&amp;#10;  <span class="success">CORRECT</span>    the MLP trained with your optimizer reaches at least 95% on XOR</pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Identical loss curve to Step 7: your three lines do exactly what torch.optim.SGD does.</p>

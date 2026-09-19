@@ -24,25 +24,43 @@ uv sync
 
 ## Running
 
-```bash
-uv run python exercises/module_05_pretraining/src/main.py
-```
-
-The runner detects which steps you have implemented and skips the rest, so you can
-fill in one step at a time and re-run immediately. It prints the model and dataset
-size, a sample before training, the loss at each checkpoint, the final perplexity
-and bits per token, a sample after training, and saves a loss-curve image to
-`output/`.
-
-There is also a single-batch sanity check:
+From the `exercises/` folder:
 
 ```bash
-uv run python exercises/module_05_pretraining/src/main.py --overfit
+uv run python module_05_pretraining/src/main.py
 ```
 
-This trains repeatedly on one small batch; the loss should crater toward zero,
-confirming the model and optimizer can fit data (i.e. the loop is wired correctly).
+The runner goes through the steps in order. Each step's header line carries a tag, and the step's output follows: what your code produced, then one line per test. The tests live in `tests/`, one file per step. The tags are:
 
+| Tag | Meaning |
+|-----|---------|
+| `CORRECT` | every test for the step passed |
+| `INCORRECT` | your code ran but a test failed; the expected and actual values are printed under it |
+| `INCOMPLETE` | the function still raises `NotImplementedError` |
+
+```
+=== Step 3: get_batch() === CORRECT
+  One batch: x has shape (32, 128), y has shape (32, 128)
+  x[0][:24] = ' guess who caused your f'
+  y[0][:24] = 'guess who caused your fa'
+  CORRECT    x and y both have shape (batch_size, block_size): (3, 4) here
+  CORRECT    on data = 0, 1, ..., 99 every target is its input plus one (y = x + 1)
+  CORRECT    shortest stream: 0..4 with block_size 4 gives x = [0,1,2,3], y = [1,2,3,4]
+```
+
+Run a single step with `--step` (1, 2, 3, 4, 5, 7, 8, or 10). Steps 1 and 2 always run first, because the other steps need the token streams they build:
+
+```bash
+uv run python module_05_pretraining/src/main.py --step 4
+```
+
+Step 7 runs the full pretraining loop once Steps 3 to 5 work: 2,000 optimizer steps, which take several minutes on a laptop CPU. It prints the train and validation loss every 250 steps and saves a loss-curve image to `output/`. Steps 8 and 10 then use the trained model. Step 8 reads its validation loss as perplexity and bits per token, and Step 10 prints a text sample from before and after training.
+
+There is also a single-batch sanity check. It runs Steps 1 to 5, then trains on one small batch over and over in place of the full run. The loss should fall toward zero, which shows the model and optimizer can fit data and the loop is wired correctly:
+
+```bash
+uv run python module_05_pretraining/src/main.py --overfit
+```
 
 `exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. The learning-rate schedule (`lr_at_step()`) is provided in `src/schedules.py`. Run the finished answers with `--solution`:
 

@@ -13,8 +13,8 @@ on. You do it in three stages.
    Transformer recipe in miniature.
 2. **CLIP-style alignment.** Train an image encoder and a text encoder so that each
    image sits close to its own caption and far from the others, using a symmetric
-   contrastive loss (steps 3&ndash;5). Retrieval accuracy climbs from chance (`~1/64`)
-   toward `1.0`.
+   contrastive loss (steps 3&ndash;5). Held-out retrieval accuracy climbs from chance
+   (`1/60`) toward `1.0`.
 3. **The bridge.** Project the image embedding into the language model's hidden width
    as a few **visual prefix tokens** (step 6), prepend them to the text-token
    embeddings, and finetune so the model **captions** the image and **answers
@@ -36,25 +36,48 @@ uv sync
 
 ## Running
 
+From the `exercises/` directory:
+
 ```bash
-uv run python exercises/module_08_multimodal/src/main.py
+uv run python module_08_multimodal/src/main.py
 ```
 
-The runner detects which steps you have implemented and skips the rest, so you can fill
-in one step at a time and re-run immediately. It prints the dataset size, image
-resolution, patch size, number of visual tokens per image, model parameter counts, the
-contrastive loss and retrieval accuracy during CLIP training, the held-out retrieval
-accuracy before and after, the captioning loss during bridge training, and a set of
-image-conditioned generations. It also saves two figures to `output/`:
+The runner goes through the eight steps in order. Each step's header line carries a tag, and the step's output follows: what your code produced (tensor shapes, training progress, generated captions), then one line per test from `tests/`. The tags are:
 
-- `sample_scenes.png` &mdash; a grid of synthetic scenes with their captions.
-- `retrieval_heatmap.png` &mdash; the image-text similarity matrix (a bright diagonal
-  means retrieval works).
+| Tag | Meaning |
+|-----|---------|
+| `CORRECT` | every test for the step passed |
+| `INCORRECT` | your code ran but a test failed; the expected and actual values are printed under it |
+| `INCOMPLETE` | the function still raises `NotImplementedError` |
 
+```
+=== Step 4: similarity_matrix() === CORRECT
+Similarity matrix of the 60 held-out images x 60 captions: shape (60, 60)
+  Retrieval accuracy before training: 1.7%  (chance is 1/60)
+  CORRECT    rows are images: images [[1,0],[0,1]] x captions [[1,0],[1,0]] give [[1,1],[0,0]]
+  CORRECT    divides by the temperature: temperature 0.5 doubles every entry to [[2,2],[0,0]]
+  CORRECT    entry (i, j) is cosine(image i, caption j) / T on random unit vectors (T=0.07)
+```
+
+Most steps run the earlier ones to produce their output: Step 5 runs the CLIP training, Step 7 the bridge training, and Step 8 captions the held-out images. If an earlier step is unfinished, the step names it instead of running, for example `needs Step 1 (patchify) to run the contrastive training loop`.
+
+Run a single step with `--step` (1 to 8):
+
+```bash
+uv run python module_08_multimodal/src/main.py --step 3
+```
+
+`--step 7` and `--step 8` first run the training they depend on without printing it, so they take about as long as a full run.
+
+The runner saves two figures to `output/`:
+
+- `sample_scenes.png`: a grid of synthetic scenes with their captions.
+- `retrieval_heatmap.png`: the image-text similarity matrix after CLIP training
+  (a bright diagonal means retrieval works).
 
 `exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
 
-```
+```bash
 uv run python module_08_multimodal/src/main.py --solution
 ```
 
@@ -74,7 +97,12 @@ only one expression or one short line.
 | 7 | `captioning_loss()` | Masked next-token loss over the response tokens only |
 | 8 | `greedy_next_token()` | Argmax the last position to decode one token |
 
-Steps 1&ndash;5 unlock the CLIP alignment phase; steps 6&ndash;8 unlock the bridge.
+Steps 1&ndash;5 build and train the CLIP alignment; steps 6&ndash;8 build and train the bridge.
+The tests live in `tests/`, one file per step (`test_step1_patchify.py` through
+`test_step8_greedy_next_token.py`). Each calls your function on small tensors with a
+known answer, so you can read the test for the step you are on to see exactly what is
+expected. Steps 5, 7, and 8 also check the training results (held-out retrieval,
+captioning loss, and held-out caption accuracy).
 
 The provided `src/ops.py` supplies the smaller mechanical steps around these
 (`flatten_patches`, `project_patches`, `add_position_embeddings`, `encode_text`,

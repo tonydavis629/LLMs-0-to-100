@@ -50,9 +50,7 @@ class TinyAttentionLayer:
     def causal_mask(self, seq_len: int) -> torch.Tensor:
         """Create a causal mask for autoregressive attention."""
         allowed = torch.tril(torch.ones(seq_len, seq_len))
-        mask = allowed.masked_fill(allowed == 0, float("-inf"))
-        mask = mask.masked_fill(mask == 1, 0.0)
-        return mask
+        return allowed.masked_fill(allowed == 0, float("-inf")).masked_fill(allowed == 1, 0.0)
 
     def masked_attention(self, X: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         """Compute scaled dot-product attention with a causal mask."""

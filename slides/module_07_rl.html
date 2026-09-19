@@ -1174,7 +1174,6 @@
 
 Module 7: Reinforcement Learning Post-Training
 
-From imitation to feedback
 
 ---
 
@@ -3001,20 +3000,62 @@ GRPO with a verifiable reward
 
 ## Running the Exercise
 
-Open `module_07_rl/exercise.py` and fill in the ten `NotImplementedError` lines.
+Open `module_07_rl/exercise.py`, the only file you edit, and fill in the ten `NotImplementedError` lines. The model, sampler, tokenizer, task data, and runner are provided.
 
-- Provided: model, sampler, tokenizer, task data, runner
-- Run after each step; unfinished steps are skipped automatically
+<!-- .element: class="text-lg" -->
 
 ```bash
-# Improve the instruct model with GRPO on a verifiable reverse task
+# Run every step; each is tagged CORRECT, INCORRECT, or INCOMPLETE
 cd exercises
 uv run python module_07_rl/src/main.py
+
+# Run a single step (1-10, or train for the GRPO training run)
+uv run python module_07_rl/src/main.py --step 4
 ```
 
-`data/instruct_model.pt` ships with the repo: the Module 6 result, built for you by `solution/src/make_instruct_checkpoint.py`. Nothing is downloaded. <!-- .element: class="text-md" style="margin-top: 22px;" -->
+`data/instruct_model.pt` ships with the repo: the Module 6 result, built for you by `src/make_instruct_checkpoint.py`. Nothing is downloaded.
 
-The runner prints held-out accuracy **before and after** (sampled and greedy), mean reward at each checkpoint, a sample completion before and after, and saves a **reward-curve image**. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+<!-- .element: class="text-md" style="margin-top: 22px;" -->
+
+After Step 10 the runner trains the policy with GRPO. It prints held-out accuracy **before and after** (sampled and greedy) and the mean reward every 20 steps, and it saves a **reward-curve image**.
+
+<!-- .element: class="text-lg" style="margin-top: 12px;" -->
+
+---
+
+<!-- .slide: id="exercise-results" -->
+
+## Reading the Results
+
+For each step the runner prints what your function produced on the real model (a sampled group, its rewards and advantages, a mask, per-token log-probs), then runs the step's **tests** from `tests/`. Each test calls your function on small tensors whose correct answer is known.
+
+<!-- .element: class="text-lg" -->
+
+- **CORRECT**: every test for the step passed
+- **INCORRECT**: your code ran but a test failed; the expected and actual values are printed beneath
+- **INCOMPLETE**: the function still raises `NotImplementedError`
+
+The tag sits on the step's header line. Policy-gradient bugs rarely crash: the reward curve just stalls or falls, and you notice minutes into training. The tests catch sign and masking mistakes in seconds. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+
+---
+
+<section id="exercise-results-example">
+  <h2>What an INCORRECT Step Looks Like</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output" style="max-width: 1000px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_07_rl/src/main.py --step 7</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 7: pg_loss() ===</span> <span class="t-fail">INCORRECT</span>&amp;#10;  <span class="t-fail">INCORRECT</span>  log-probs [-1, -2, -3], mask [F, T, T], advantage 2 give loss 10.0&amp;#10;             expected 10.0, got -10.0000 (optimizers minimize, so negate: -advantage * sum)&amp;#10;  <span class="t-fail">INCORRECT</span>  descent raises a winner's log-probs: advantage 2 gives d loss / d log p = [0, -2, -2]&amp;#10;             expected [0.0, -2.0, -2.0], got [0.0, 2.0, 2.0] (descent would push the winner's tokens down)&amp;#10;  <span class="success">CORRECT</span>    masked prompt positions contribute nothing to the loss</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Here <code>pg_loss()</code> dropped the minus sign. The mask is right, so that test passes, but the loss and its gradient both come out with the wrong sign: a descent step would lower the winner's log-probs. The first message says where to look.</p>
+  </div>
+</section>
 
 ---
 
@@ -3042,7 +3083,7 @@ The runner prints held-out accuracy **before and after** (sampled and greedy), m
 
 **Ten one-line steps**
 
-Sample a group, write the verifier, score the group, standardize advantages, mask the completion, gather log-probs, build the policy-gradient loss, add the KL penalty, take a step, track reward.
+Sample a group, write the verifier, score the group, standardize advantages, mask the completion, gather log-probs, build the policy-gradient loss, add the KL penalty, take a step, track reward. Every step has its own tests in `tests/`.
 
 </div>
 
@@ -3055,10 +3096,27 @@ Sample a group, write the verifier, score the group, standardize advantages, mas
 ## Step 1: sample_group()
 
 ```python
-def sample_group(policy, prompt_ids, group_size, max_new_tokens,
-                 block_size, temperature, generate_fn, generator):
-    """Draw group_size completions for one prompt from the policy."""
-    # TODO: Return a list of group_size completions, each from generate_fn(policy,
+def sample_group(
+    policy,
+    prompt_ids: torch.Tensor,
+    group_size: int,
+    max_new_tokens: int,
+    block_size: int,
+    temperature: float,
+    generate_fn,
+    generator: torch.Generator,
+) -> list[torch.Tensor]:
+    """Draw `group_size` completions for one prompt from the policy.
+
+    GRPO scores a whole *group* of samples against each other, so the first move is
+    to generate several completions for the same prompt. `generate_fn` is the
+    provided sampler; call it once per group member, each at `temperature` so the
+    group is diverse. Each call returns shape (1, L); take row [0].
+
+    Returns:
+        A list of `group_size` tensors, each the full prompt+completion ids of one sample.
+    """
+    # TODO: Return a list of `group_size` completions, each from generate_fn(policy,
     #       prompt_ids, max_new_tokens, block_size, temperature=temperature,
     #       generator=generator)[0].
     raise NotImplementedError("TODO: sample a group of completions from the policy")
@@ -3092,7 +3150,11 @@ return [
 
 ```python
 def verifiable_reward(response: str, target: str) -> float:
-    """Return 1.0 if the response exactly matches the answer, else 0.0."""
+    """Return 1.0 if the response exactly matches the verified answer, else 0.0.
+
+    This is the whole point of RLVR: no human label and no learned reward model, just
+    a deterministic check. For "reverse: cat" the runner passes target="tac".
+    """
     # TODO: Return 1.0 when response equals target, otherwise 0.0.
     raise NotImplementedError("TODO: return 1.0 for an exact match else 0.0")
 ```
@@ -3120,8 +3182,12 @@ return 1.0 if response == target else 0.0
 ## Step 3: score_group()
 
 ```python
-def score_group(responses, target) -> torch.Tensor:
-    """Apply the verifiable reward to every completion."""
+def score_group(responses: list[str], target: str) -> torch.Tensor:
+    """Apply the verifiable reward to every completion, returning a reward vector.
+
+    Returns:
+        A 1-D float tensor of length G holding each completion's reward.
+    """
     # TODO: Return a tensor of verifiable_reward(r, target) for each r in responses.
     raise NotImplementedError("TODO: score every completion into a reward vector")
 ```
@@ -3149,8 +3215,18 @@ return torch.tensor([verifiable_reward(r, target) for r in responses])
 ## Step 4: group_relative_advantages()
 
 ```python
-def group_relative_advantages(rewards, eps=1e-6) -> torch.Tensor:
-    """Standardize the group's rewards: (r - mean) / (std + eps)."""
+def group_relative_advantages(rewards: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
+    """Standardize the group's rewards into advantages: (r - mean) / (std + eps).
+
+    The group mean is GRPO's baseline (the role PPO's value network plays): a
+    completion is "good" only relative to its peers on the same prompt. Subtracting
+    the mean keeps the gradient unbiased while cutting variance; dividing by the std
+    keeps the update scale stable. The eps avoids a divide-by-zero when every
+    completion scored the same.
+
+    Returns:
+        A 1-D tensor of advantages, shape (G,).
+    """
     # TODO: Return (rewards - mean) / (std + eps).
     raise NotImplementedError("TODO: standardize rewards into group-relative advantages")
 ```
@@ -3173,13 +3249,43 @@ return (rewards - rewards.mean()) / (rewards.std() + eps)
 
 ---
 
+<section id="exercise-output-group">
+  <h2>Steps 1&ndash;4: One Group, Scored</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 1000px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_07_rl/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: sample_group() ===</span> <span class="success">CORRECT</span>&amp;#10;Held-out prompt 'reverse: jphkq'; the verifier wants 'qkhpj'&amp;#10;A group of G=8 completions sampled at temperature 1.0:&amp;#10;  'qkhpV'  'qkhpp'  'qkhpq'  'qkhpb'  <span class="success">'qkhpj'</span>  'qkhpp'  <span class="success">'qkhpj'</span>  'qkhpq'&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 2: verifiable_reward() ===</span> <span class="success">CORRECT</span>&amp;#10;The starting model's greedy answers on 4 held-out prompts:&amp;#10;  'reverse: jphkq' -&gt; 'qkhpj'  want 'qkhpj'  reward 1.0&amp;#10;  'reverse: sukgh' -&gt; 'hgkuk'  want 'hgkus'  reward 0.0&amp;#10;  'reverse: nlfqb' -&gt; 'bqfnl'  want 'bqfln'  reward 0.0&amp;#10;  'reverse: gzyps' -&gt; 'spyzg'  want 'spyzg'  reward 1.0&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 3: score_group() ===</span> <span class="success">CORRECT</span>&amp;#10;Rewards for the Step 1 group: [0, 0, 0, 0, 1, 0, 1, 0]&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header t-green">=== Step 4: group_relative_advantages() ===</span> <span class="success">CORRECT</span>&amp;#10;Rewards for the Step 1 group: [ 0.00,  0.00,  0.00,  0.00,  1.00,  0.00,  1.00,  0.00]&amp;#10;Advantages:                   [-0.54, -0.54, -0.54, -0.54, <span class="success">+1.62</span>, -0.54, <span class="success">+1.62</span>, -0.54]&amp;#10;  <span class="success">CORRECT</span>    rewards [1, 0, 1, 0] give [0.866, -0.866, 0.866, -0.866] (mean 0.5, std 0.577)&amp;#10;  <span class="success">CORRECT</span>    advantages have mean 0 and std 1 within a group: rewards [1, 0, 0, 0, 1, 0, 0, 0]&amp;#10;  <span class="success">CORRECT</span>    a group where every reward ties gives all-zero advantages, not NaN: [1, 1, 1, 1]&amp;#10;&amp;#10;<span class="header">=== Step 5: completion_mask() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: build the completion mask over target positions</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">The greedy answer to 'jphkq' is right, yet only two of eight samples verify. The group mean is 0.25, so each winner gets advantage +1.62 and each loser -0.54. The rare successes are pushed up hard and the failures are pushed down gently.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step5" -->
 
 ## Step 5: completion_mask()
 
 ```python
-def completion_mask(prompt_len, seq_len) -> torch.Tensor:
-    """True at the next-token positions that predict generated tokens."""
+def completion_mask(prompt_len: int, seq_len: int) -> torch.Tensor:
+    """Mark which next-token-prediction positions belong to the completion.
+
+    A sequence is prompt + completion. We score predictions at positions 0..seq_len-2
+    (each predicts the next token). Position t predicts token t+1, which is a
+    generated token only when t + 1 >= prompt_len. So positions t >= prompt_len - 1
+    are completion positions; the rest are prompt context we must NOT train on. This
+    is the credit-assignment mask, the RL cousin of Module 6's loss mask.
+
+    Returns:
+        A 1-D bool tensor of length seq_len - 1, True at completion positions.
+    """
     # TODO: Return a bool tensor of length seq_len - 1 that is True at positions
     #       t >= prompt_len - 1 and False elsewhere.
     raise NotImplementedError("TODO: build the completion mask over target positions")
@@ -3208,8 +3314,21 @@ return torch.arange(seq_len - 1) >= (prompt_len - 1)
 ## Step 6: gather_token_log_probs()
 
 ```python
-def gather_token_log_probs(logits, target_ids) -> torch.Tensor:
-    """Log-prob the model assigns to each actually-taken token."""
+def gather_token_log_probs(logits: torch.Tensor, target_ids: torch.Tensor) -> torch.Tensor:
+    """Log-probability the model assigns to each actually-taken token.
+
+    Softmax the logits into a distribution, take the log, then pick out the entry for
+    the token that was really sampled at each position. The runner calls this twice
+    per completion: once on the policy (with gradients) and once on the frozen
+    reference (under no_grad). Same gather, different model.
+
+    Args:
+        logits: Model outputs for the input positions, shape (T, vocab_size).
+        target_ids: The token id actually taken at each position, shape (T,).
+
+    Returns:
+        A 1-D tensor of per-token log-probabilities, shape (T,).
+    """
     # TODO: Return the log-probability of each target token: log_softmax the logits
     #       over the vocab dimension, then gather the entry at each target id.
     raise NotImplementedError("TODO: gather the per-token log-probabilities")
@@ -3231,6 +3350,26 @@ return log_probs.gather(-1, target_ids.unsqueeze(-1)).squeeze(-1)
 ```
 
 </div>
+
+---
+
+<section id="exercise-output-mask">
+  <h2>Steps 5&ndash;6: Mask and Log-Probs</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense" style="max-width: 1000px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_07_rl/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: sample_group() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: verifiable_reward() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: score_group() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: group_relative_advantages() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== Step 5: completion_mask() ===</span> <span class="success">CORRECT</span>&amp;#10;Greedy answer to 'reverse: sukgh': 'hgkuk' + &lt;|end|&gt;, so 17 prompt tokens + 6 generated&amp;#10;Mask over the 22 next-token positions: 0000000000000000<span class="success">111111</span>&amp;#10;  <span class="success">CORRECT</span>    prompt_len=3, seq_len=6 gives [F, F, T, T, T]: position t predicts token t + 1&amp;#10;  <span class="success">CORRECT</span>    returns a bool tensor of length seq_len - 1: prompt_len=4, seq_len=10 gives length 9&amp;#10;  <span class="success">CORRECT</span>    one True per generated token: prompt_len=17, seq_len=23 has 6 True positions&amp;#10;&amp;#10;<span class="header t-cyan">=== Step 6: gather_token_log_probs() ===</span> <span class="success">CORRECT</span>&amp;#10;Log-prob of each token of the greedy answer to 'reverse: sukgh' (want 'hgkus'):&amp;#10;  h -0.00   g -0.00   k -0.00   u -0.42   <span class="t-fail">k -1.00</span>   &lt;|end|&gt; 0.00&amp;#10;  <span class="success">CORRECT</span>    logits [[0, 0, 0], [0, ln 2, 0]] with targets [2, 1] give [ln 1/3, ln 1/2] = [-1.099, -0.693]&amp;#10;  <span class="success">CORRECT</span>    returns one log-prob per position: logits (5, 69) and targets (5,) give shape (5,)&amp;#10;  <span class="success">CORRECT</span>    matches -F.cross_entropy(logits, targets, reduction='none') on random (5, 69) logits&amp;#10;&amp;#10;<span class="header">=== Step 7: pg_loss() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: build the advantage-weighted policy-gradient loss</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Sixteen positions predict prompt tokens and are masked out; the six that predict the answer are trained on. The model is sure of 'hgk', less sure of 'u', and picks the wrong final 'k' with log-prob -1.00 (probability 0.37).</p>
+  </div>
+</section>
 
 ---
 
@@ -3267,8 +3406,17 @@ $$\mathcal L_{\text{PG}} = -\textcolor{#50c878}{A_i} \sum_t \textcolor{#4a9eff}{
 ## Step 7: pg_loss()
 
 ```python
-def pg_loss(token_log_probs, advantage, mask) -> torch.Tensor:
-    """Advantage-weighted negative log-prob over the completion tokens."""
+def pg_loss(token_log_probs: torch.Tensor, advantage: float, mask: torch.Tensor) -> torch.Tensor:
+    """Advantage-weighted negative log-probability over the completion tokens.
+
+    REINFORCE in one line: push up the log-prob of a completion in proportion to its
+    advantage. A positive advantage (better than the group) makes the loss reward
+    raising those tokens' probability; a negative advantage pushes them down. The
+    mask restricts the sum to generated tokens. We negate because optimizers minimize.
+
+    Returns:
+        A scalar loss tensor for this completion.
+    """
     # TODO: Return -advantage times the sum of the masked per-token log-probs.
     raise NotImplementedError("TODO: build the advantage-weighted policy-gradient loss")
 ```
@@ -3296,8 +3444,21 @@ return -advantage * (token_log_probs * mask).sum()
 ## Step 8: kl_penalty()
 
 ```python
-def kl_penalty(policy_log_probs, ref_log_probs, mask) -> torch.Tensor:
-    """A per-token estimate of KL(policy || reference) over the completion."""
+def kl_penalty(
+    policy_log_probs: torch.Tensor,
+    ref_log_probs: torch.Tensor,
+    mask: torch.Tensor,
+) -> torch.Tensor:
+    """A per-token estimate of KL(policy || reference) over the completion tokens.
+
+    The reward only says "produce correct answers"; nothing stops the policy from
+    drifting into degenerate text that happens to score. The KL term is the leash:
+    summed over the generated tokens, log pi_policy - log pi_ref measures how far the
+    policy has moved from the frozen reference, and the runner scales it by beta.
+
+    Returns:
+        A scalar KL estimate for this completion.
+    """
     # TODO: Return the sum over masked positions of (policy_log_probs - ref_log_probs).
     raise NotImplementedError("TODO: build the KL-to-reference penalty")
 ```
@@ -3358,8 +3519,12 @@ loss.backward()
 ## Step 10: mean_reward()
 
 ```python
-def mean_reward(rewards) -> float:
-    """Average reward over a vector of rewards, as a plain float."""
+def mean_reward(rewards: torch.Tensor) -> float:
+    """Average reward over a vector of rewards, as a plain float.
+
+    The runner records this each step to plot the reward curve, and reuses it on the
+    held-out prompts to report before/after accuracy.
+    """
     # TODO: Return the mean of rewards as a Python float.
     raise NotImplementedError("TODO: return the mean reward as a float")
 ```
@@ -3385,7 +3550,7 @@ return rewards.mean().item()
 <section id="exercise-output-before">
   <h2>Before GRPO</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
+    <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -3393,10 +3558,10 @@ return rewards.mean().item()
         <span class="terminal-title">uv run python module_07_rl/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">MODULE 7: GRPO with a verifiable reward</span>&#10;TinyGPT: 4 layers, 4 heads, width 128&#10;Policy parameters: 818,560   (reference is a frozen copy)&#10;Task: reverse a string, verified by a Python function (no reward model)&#10;Train prompts: 256   Held-out prompts: 40&#10;Group size G=8, temperature=1.0, beta(KL)=0.01, lr=0.0001&#10;&#10;<span class="header">BEFORE GRPO</span>&#10;  Held-out accuracy, sampled (temp 1.0): 15.9%   &lt;- what GRPO optimizes&#10;  Held-out accuracy, greedy (argmax):     22.5%&#10;  sample: 'reverse: sukgh' -&gt; 'hgkuk'  (want 'hgkus': wrong)</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: sample_group() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: verifiable_reward() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: score_group() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: group_relative_advantages() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: completion_mask() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: gather_token_log_probs() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 7: pg_loss() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 8: kl_penalty() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 9: grpo_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 10: mean_reward() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header t-green">=== GRPO training (Steps 1-10 together) ===</span> <span class="success">CORRECT</span>&amp;#10;TinyGPT: 4 layers, 4 heads, width 128, 818,560 parameters (the reference is a frozen copy)&amp;#10;Task: reverse a string, verified by a Python function (no reward model)&amp;#10;Train prompts: 256   Held-out prompts: 40&amp;#10;Group size G=8, temperature=1.0, beta(KL)=0.01, lr=0.0001&amp;#10;&amp;#10;Before GRPO:&amp;#10;  Held-out accuracy, sampled (temp 1.0): 15.9%   &lt;- what GRPO optimizes&amp;#10;  Held-out accuracy, greedy (argmax):     22.5%&amp;#10;  <span class="t-fail">sample: 'reverse: sukgh' -&gt; 'hgkuk'  (want 'hgkus': wrong)</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">The argmax is wrong here, and sampled completions verify only 16% of the time. The reward is a Python function, not a learned model.</p>
+    <p class="text-lg terminal-caption">All ten steps pass their tests, so training starts. Sampled completions verify only 15.9% of the time, and the argmax gets 'sukgh' wrong. The reward is a Python function, not a learned model.</p>
   </div>
 </section>
 
@@ -3405,7 +3570,7 @@ return rewards.mean().item()
 <section id="exercise-output-after">
   <h2>The Reward Climbs, the Policy Improves</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
+    <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -3413,10 +3578,10 @@ return rewards.mean().item()
         <span class="terminal-title">uv run python module_07_rl/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">GRPO TRAINING</span>&#10;  step   mean reward&#10;    20         0.147&#10;    80         0.280&#10;   140         0.452&#10;   200         0.655&#10;   260         0.717&#10;   320         0.839&#10;   380         0.912&#10;   400         0.955&#10;&#10;<span class="header">AFTER GRPO</span>&#10;  <span class="success">Held-out accuracy, sampled (temp 1.0): 73.1%   (was 15.9%)</span>&#10;  <span class="success">Held-out accuracy, greedy (argmax):     92.5%   (was 22.5%)</span>&#10;  <span class="success">sample: 'reverse: sukgh' -&gt; 'hgkus'  (want 'hgkus': correct)</span></pre>
+        <pre class="terminal-pre"><span class="header t-green">=== GRPO training (Steps 1-10 together) ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;  step   mean reward&amp;#10;    20         0.147&amp;#10;    40         0.172&amp;#10;    60         0.270&amp;#10;<span class="skipped">   ...</span>&amp;#10;   200         0.655&amp;#10;<span class="skipped">   ...</span>&amp;#10;   360         0.875&amp;#10;   380         0.912&amp;#10;   400         0.955&amp;#10;&amp;#10;After GRPO:&amp;#10;  <span class="success">Held-out accuracy, sampled (temp 1.0): 73.1%   (was 15.9%)</span>&amp;#10;  <span class="success">Held-out accuracy, greedy (argmax):     92.5%   (was 22.5%)</span>&amp;#10;  <span class="success">sample: 'reverse: sukgh' -&gt; 'hgkus'  (want 'hgkus': correct)</span>&amp;#10;  Reward curve saved to output/reward_curve.png&amp;#10;  <span class="success">CORRECT</span>    the mean group reward climbs by at least 0.3 from the first checkpoint to the last&amp;#10;  <span class="success">CORRECT</span>    held-out sampled accuracy rises by at least 20 points&amp;#10;  <span class="success">CORRECT</span>    held-out greedy accuracy does not fall</pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Sampled accuracy rises from 16% to 73% and greedy from 22% to 92%, driven by reward, not imitation. The same prompt now reverses correctly.</p>
+    <p class="text-lg terminal-caption">Sampled accuracy rises from 15.9% to 73.1% and greedy from 22.5% to 92.5%, driven by reward, not imitation. The same prompt now reverses correctly, and the training tests check that the reward curve climbed.</p>
   </div>
 </section>
 
@@ -3913,6 +4078,193 @@ window.ASSET_BASE = "module_07_rl/";
 
   <!-- Shared deck logic for every module -->
   <script>
+// =====================================================================
+// CLUSTER_MLP — a small real ReLU MLP trained in the browser (seeded, so
+// the result is repeatable), plus a marching-squares contour helper.
+// Used by the "Clusters" tab of the mlpBoundary widget: four green
+// clusters on a red background. Each hidden neuron's zero-line in input
+// space is a straight line for layer 1 and a piecewise-linear curve for
+// deeper layers; the final boundary is the output neuron's zero-line.
+// =====================================================================
+var CLUSTER_MLP = (function() {
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(rnd) {
+    var u = 1 - rnd(), v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2831853 * v);
+  }
+  var CENTERS = [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+
+  function generateData() {
+    var rnd = mulberry32(7);
+    var pts = [];
+    CENTERS.forEach(function(c) {
+      for (var i = 0; i < 22; i++) {
+        pts.push({ x: c[0] + gauss(rnd) * 0.045, y: c[1] + gauss(rnd) * 0.045, cls: 1 });
+      }
+    });
+    var reds = 0;
+    while (reds < 150) {
+      var x = 0.03 + rnd() * 0.94, y = 0.03 + rnd() * 0.94;
+      var near = CENTERS.some(function(c) { return Math.hypot(x - c[0], y - c[1]) < 0.17; });
+      if (near) continue;
+      pts.push({ x: x, y: y, cls: 0 });
+      reds++;
+    }
+    return pts;
+  }
+
+  // ---- network: [2 -> W]*D (ReLU) -> 1 (sigmoid), full-batch Adam ----
+  function makeNet(width, depth, seed) {
+    var rnd = mulberry32(seed);
+    var layers = [];
+    var fanIn = 2;
+    for (var d = 0; d < depth; d++) {
+      layers.push(initLayer(fanIn, width, rnd));
+      fanIn = width;
+    }
+    layers.push(initLayer(fanIn, 1, rnd));
+    return { width: width, depth: depth, layers: layers };
+  }
+  function initLayer(nIn, nOut, rnd) {
+    var W = [], b = [];
+    var scale = Math.sqrt(2 / nIn);
+    for (var o = 0; o < nOut; o++) {
+      var row = [];
+      for (var i = 0; i < nIn; i++) row.push(gauss(rnd) * scale);
+      W.push(row);
+      b.push(gauss(rnd) * 0.1);
+    }
+    return { W: W, b: b, mW: zeros(nOut, nIn), vW: zeros(nOut, nIn), mb: new Array(nOut).fill(0), vb: new Array(nOut).fill(0) };
+  }
+  function zeros(r, c) {
+    var a = [];
+    for (var i = 0; i < r; i++) a.push(new Array(c).fill(0));
+    return a;
+  }
+
+  // Forward pass returning every layer's pre-activations and activations.
+  // Inputs are centered so the first layer's lines can pass near the middle.
+  function forward(net, x, y) {
+    var act = [x - 0.5, y - 0.5];
+    var pres = [], acts = [act];
+    for (var l = 0; l < net.layers.length; l++) {
+      var L = net.layers[l];
+      var pre = [], out = [];
+      var last = l === net.layers.length - 1;
+      for (var o = 0; o < L.W.length; o++) {
+        var s = L.b[o];
+        for (var i = 0; i < act.length; i++) s += L.W[o][i] * act[i];
+        pre.push(s);
+        out.push(last ? s : (s > 0 ? s : 0));
+      }
+      pres.push(pre); acts.push(out); act = out;
+    }
+    return { pres: pres, acts: acts, logit: act[0] };
+  }
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function trainSteps(net, data, steps, lr) {
+    var b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    net.t = net.t || 0;
+    for (var s = 0; s < steps; s++) {
+      net.t++;
+      var grads = net.layers.map(function(L) {
+        return { W: zeros(L.W.length, L.W[0].length), b: new Array(L.W.length).fill(0) };
+      });
+      for (var n = 0; n < data.length; n++) {
+        var p = data[n];
+        var f = forward(net, p.x, p.y);
+        var delta = [sigmoid(f.logit) - p.cls];
+        for (var l = net.layers.length - 1; l >= 0; l--) {
+          var L = net.layers[l], inp = f.acts[l], g = grads[l];
+          var prev = new Array(inp.length).fill(0);
+          for (var o = 0; o < L.W.length; o++) {
+            g.b[o] += delta[o];
+            for (var i = 0; i < inp.length; i++) {
+              g.W[o][i] += delta[o] * inp[i];
+              prev[i] += delta[o] * L.W[o][i];
+            }
+          }
+          if (l > 0) {
+            for (var k = 0; k < prev.length; k++) if (f.pres[l - 1][k] <= 0) prev[k] = 0;
+          }
+          delta = prev;
+        }
+      }
+      var N = data.length;
+      var c1 = 1 - Math.pow(b1, net.t), c2 = 1 - Math.pow(b2, net.t);
+      net.layers.forEach(function(L, l) {
+        var g = grads[l];
+        for (var o = 0; o < L.W.length; o++) {
+          for (var i = 0; i < L.W[o].length; i++) {
+            var gw = g.W[o][i] / N;
+            L.mW[o][i] = b1 * L.mW[o][i] + (1 - b1) * gw;
+            L.vW[o][i] = b2 * L.vW[o][i] + (1 - b2) * gw * gw;
+            L.W[o][i] -= lr * (L.mW[o][i] / c1) / (Math.sqrt(L.vW[o][i] / c2) + eps);
+          }
+          var gb = g.b[o] / N;
+          L.mb[o] = b1 * L.mb[o] + (1 - b1) * gb;
+          L.vb[o] = b2 * L.vb[o] + (1 - b2) * gb * gb;
+          L.b[o] -= lr * (L.mb[o] / c1) / (Math.sqrt(L.vb[o] / c2) + eps);
+        }
+      });
+    }
+  }
+
+  function accuracy(net, data) {
+    var ok = 0;
+    data.forEach(function(p) { if ((forward(net, p.x, p.y).logit > 0 ? 1 : 0) === p.cls) ok++; });
+    return ok / data.length;
+  }
+
+  // Train with a few seeds and keep the best, so each (width, depth)
+  // shows what that architecture can do rather than one unlucky init.
+  function train(data, width, depth, opts) {
+    opts = opts || {};
+    var seeds = opts.seeds || 4, steps = opts.steps || 400, lr = opts.lr || 0.03;
+    var best = null;
+    for (var s = 0; s < seeds; s++) {
+      var net = makeNet(width, depth, 1000 + s * 17 + width * 3 + depth * 101);
+      trainSteps(net, data, steps, lr);
+      var acc = accuracy(net, data);
+      if (!best || acc > best.acc) best = { net: net, acc: acc };
+    }
+    return best;
+  }
+
+  // ---- marching squares: zero-contour of a scalar field on a grid ----
+  function contour(field, n) {
+    // field[i][j] sampled at x=i/n, y=j/n for i,j in 0..n
+    var segs = [];
+    function lerp(a, b, va, vb) { return a + (0 - va) / (vb - va) * (b - a); }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var v00 = field[i][j], v10 = field[i + 1][j], v01 = field[i][j + 1], v11 = field[i + 1][j + 1];
+        var x0 = i / n, x1 = (i + 1) / n, y0 = j / n, y1 = (j + 1) / n;
+        var pts = [];
+        if ((v00 > 0) !== (v10 > 0)) pts.push([lerp(x0, x1, v00, v10), y0]);
+        if ((v10 > 0) !== (v11 > 0)) pts.push([x1, lerp(y0, y1, v10, v11)]);
+        if ((v01 > 0) !== (v11 > 0)) pts.push([lerp(x0, x1, v01, v11), y1]);
+        if ((v00 > 0) !== (v01 > 0)) pts.push([x0, lerp(y0, y1, v00, v01)]);
+        if (pts.length === 2) segs.push([pts[0], pts[1]]);
+        else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+      }
+    }
+    return segs;
+  }
+
+  return { generateData: generateData, train: train, forward: forward, accuracy: accuracy, contour: contour, sigmoid: sigmoid };
+}());
+if (typeof module !== "undefined" && module.exports) module.exports = CLUSTER_MLP;
+
+
 // =====================================================================
 // Core deck infrastructure: Manim steppers, Reveal.js init, syntax
 // highlighting, interactive widget plumbing, and per-module hooks.

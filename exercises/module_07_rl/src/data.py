@@ -6,7 +6,7 @@ The task is string reversal: a prompt "reverse: abcde" has the verified answer
 Python function (your `verifiable_reward`), which is the whole idea of RLVR.
 
 This module is the single source of truth for the word splits, so the instruct
-checkpoint (trained by solution/src/make_instruct_checkpoint.py) and the RL prompts
+checkpoint (trained by src/make_instruct_checkpoint.py) and the RL prompts
 never overlap:
 
   - SFT words   : used only to finetune the instruct model (held out from RL)

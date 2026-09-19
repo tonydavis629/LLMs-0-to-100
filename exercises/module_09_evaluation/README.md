@@ -27,17 +27,43 @@ uv sync
 
 ## Running
 
-```bash
-uv run python exercises/module_09_evaluation/src/main.py
+```
+cd exercises
+uv run python module_09_evaluation/src/main.py
 ```
 
-The runner detects which steps you have implemented and skips the rest, so you can
-fill in one metric at a time and re-run immediately. It prints the **protocol**
-first (template, decoding settings, seeds, sample count), then perplexity, then the
-per-task tables for exact match, F1, pass@1 and pass@5, then the multiple-choice
-result and the suite score. It saves a grouped bar chart to
-`output/task_comparison.png`.
+The runner first prints the **protocol** (models, chat template, normalization,
+generation budget, decoding settings, seed, suite size), because a score cannot be
+reproduced without it. Then it goes through the steps in order. Each step's header
+line carries a tag, and the step's output follows: what your metric reports about
+the two models, then one line per test from `tests/`. The tags are:
 
+| Tag | Meaning |
+|-----|---------|
+| `CORRECT` | every test for the step passed |
+| `INCORRECT` | your code ran but a test failed; the expected and actual values are printed under it |
+| `INCOMPLETE` | the function still raises `NotImplementedError` |
+
+```
+=== Step 4: token_f1() === CORRECT
+  Greedy answers that earn partial credit (F1 between 0 and 1):
+    [qa] 'opposite of day?'   want 'it is night'
+        rl       'it is cold'                 0.67
+  CORRECT    partial credit: 'it is bluu' against 'it is blue' has P = R = 2/3, so F1 = 0.667
+  CORRECT    P and R differ: 'blue' against 'it is blue' has P = 1, R = 1/3, so F1 = 0.5
+  CORRECT    a correct answer scores 1.0: 'It is blue.' against 'it is blue'
+```
+
+Run a single step with `--step` (1 to 8). A single-step run skips the protocol:
+
+```
+uv run python module_09_evaluation/src/main.py --step 4
+```
+
+The tests live in `tests/`, one file per step. Each calls your function on small
+inputs whose correct answer is known. Steps 3 to 8 share one generation pass (50
+greedy and 250 sampled answers per model), so the first of them to run takes a few
+seconds longer. Step 6 saves a grouped bar chart to `output/task_comparison.png`.
 
 `exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
 
@@ -104,8 +130,10 @@ generalization. The contamination extra credit makes this visible.
   evaluation prompt and count the exact overlaps. Every `qa` case will hit. Then
   re-run the suite with `qa` excluded and see what happens to the headline number.
 - **Length normalization.** Score the multiple-choice set with **total**
-  log-probability instead of the per-token average, and explain which options newly
-  win and why.
+  log-probability instead of the per-token average. On this set both models still
+  get 16/16. Print each option's token count and score to explain why, then add a
+  question whose wrong option is much shorter than the right one and see whether the
+  two methods still agree.
 - **Bootstrap confidence interval.** Resample the 50 cases with replacement 1000
   times, recompute the accuracy difference between the two models each time, and
   report the 5th and 95th percentiles. Decide whether the gap on any single task is

@@ -1185,7 +1185,6 @@
 
 Module 12: The Future of LLMs
 
-Open questions and cutting edge research
 
 ---
 
@@ -2556,15 +2555,52 @@ Build linear attention both ways, check they agree, and time them against softma
 
 - Open `module_12_future/exercise.py`, fill in the seven `NotImplementedError` lines
 - The softmax baseline, driver loop, random inputs, and plotting are provided
-- Run after each step; unfinished steps are skipped automatically
+- Run after each step to see which steps pass their tests
 
 ```bash
-# Linear attention, two ways
+# Run every step; each is tagged CORRECT, INCORRECT, or INCOMPLETE
 cd exercises
 uv run python module_12_future/src/main.py
+
+# Run a single step (1-7)
+uv run python module_12_future/src/main.py --step 5
 ```
 
-The parallel form runs after step 3, the recurrent form after step 5, the equivalence check after step 6, and the timing sweep after step 7. The runner saves a log-log cost plot to `output/attention_scaling.png`. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+Step 3 compares the parallel form with softmax attention, step 5 compares the recurrent form with the parallel form, and step 7 times all three and saves a log-log cost plot to `output/attention_scaling.png`. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+
+---
+
+<!-- .slide: id="exercise-results" -->
+
+## Reading the Results
+
+For each step the runner prints what your code computed, then runs the step's **tests** from `tests/`. Each test calls your function on small inputs whose correct answer is known. <!-- .element: class="text-lg" -->
+
+- **CORRECT**: every test for the step passed
+- **INCORRECT**: your code ran but a test failed, and the expected and actual values are printed beneath it
+- **INCOMPLETE**: the function still raises `NotImplementedError`, or the step's demo needs an earlier step you have not written yet
+
+The tag sits on the step's header line. The tests check only that step's own line, so a bug in Step 2 cannot fail the tests for Step 5. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+
+---
+
+<section id="exercise-results-example">
+  <h2>What an INCORRECT Step Looks Like</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output" style="max-width: 920px;">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_12_future/src/main.py --step 6</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 6: outputs_match() ===</span> <span class="t-fail">INCORRECT</span>&amp;#10;  parallel vs recurrent    max difference = 3.58e-07   <span class="t-fail">MISMATCH</span>&amp;#10;  linear   vs softmax      max difference = 1.38e+00   DIFFERENT&amp;#10;&amp;#10;  The first line is the theorem: the quadratic form and the RNN&amp;#10;  compute the same function, and differ only in floating-point noise.&amp;#10;  The second line is the caveat: linear attention is a DIFFERENT&amp;#10;  function from softmax attention, not an approximation of it.&amp;#10;  <span class="success">CORRECT</span>    a tensor matches itself&amp;#10;  <span class="t-fail">INCORRECT</span>  a gap below the tolerance still matches: [0, 0] vs [0, 0.00005] gives True&amp;#10;             expected True, got False (did you pass atol=tolerance?)&amp;#10;  <span class="success">CORRECT</span>    a gap above the tolerance does not: [0, 0] vs [0, 0.01] gives False&amp;#10;  <span class="t-fail">INCORRECT</span>  uses the tolerance it is given: a 0.05 gap matches when tolerance=0.1&amp;#10;             expected True, got False (did you use the tolerance argument?)</pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Here <code>outputs_match()</code> called <code>torch.allclose(a, b)</code> without <code>atol=tolerance</code>. The demo reports a MISMATCH that looks like a problem with the two forms. The failing tests point at the tolerance instead.</p>
+  </div>
+</section>
 
 ---
 
@@ -2589,12 +2625,14 @@ No dataset. Inputs are random tensors from a fixed seed: the measurement is abou
 
 **Check and time it**
 
-- Step 6: do the two agree? They do, to seven decimal places. That is the theorem
+- Step 6: do the two agree? They do, to within 3.6e-07. That is the theorem
 - Step 7: time both against softmax attention across sequence lengths
 
 </div>
 
 </div>
+
+Each blank is one line, and every step has its own tests in `tests/`. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -2604,7 +2642,26 @@ No dataset. Inputs are random tensors from a fixed seed: the measurement is abou
 
 ```python
 def feature_map(x: Tensor) -> Tensor:
-    """Map queries and keys into a space where every coordinate is positive."""
+    """Map queries and keys into a space where every coordinate is positive.
+
+    Softmax attention scores a query against a key with exp(q . k), and the
+    exponential guarantees two things: scores are never negative, and one large
+    score can dominate all the others. Linear attention throws the exponential
+    away, so it needs some other guarantee that scores stay positive. Without
+    it, a "weighted average" could have negative weights summing to near zero,
+    and the output would explode.
+
+    The standard choice is elu(x) + 1, which is smooth, always positive, and
+    close to x + 1 for positive inputs. Note what it does NOT do: it cannot make
+    one score dominate the way exp can. That lost sharpness is the price linear
+    attention pays, and section b of the lecture is about what it buys back.
+
+    Args:
+        x: A tensor of queries or keys, shape (n, d).
+
+    Returns:
+        A tensor of the same shape, every entry strictly positive.
+    """
     # TODO: Return elu(x) + 1, the positive feature map.
     raise NotImplementedError("TODO: return the positive feature map of x")
 ```
@@ -2635,7 +2692,28 @@ Softmax used `exp` to keep scores positive and to let one key dominate. This kee
 
 ```python
 def masked_scores(q_phi: Tensor, k_phi: Tensor) -> Tensor:
-    """Score every query against every key, then delete the future."""
+    """Score every query against every key, then delete the future.
+
+    This is the O(n^2) step: an n-by-n matrix where entry (i, j) says how much
+    query i cares about key j. It is the same shape as the score matrix in
+    Module 3, with one difference that matters enormously later: there is no
+    softmax. The entries are raw dot products of positive vectors, so they are
+    already positive, and nothing has normalized them yet.
+
+    Causal masking works differently without a softmax. In Module 3 you set
+    future entries to -inf so that exp() would send them to zero. Here there is
+    no exp, so you delete them by multiplying by zero instead.
+
+    Args:
+        q_phi: Feature-mapped queries, shape (n, d).
+        k_phi: Feature-mapped keys, shape (n, d).
+
+    Returns:
+        The causally masked score matrix, shape (n, n), with zeros above the
+        diagonal.
+    """
+    # The causal mask: entry (i, j) is 1.0 when j <= i (past and present) and
+    # 0.0 when j > i (the future). torch.tril keeps the lower triangle.
     n = q_phi.shape[-2]
     mask = torch.tril(torch.ones(n, n, dtype=q_phi.dtype, device=q_phi.device))
     # TODO: Return the masked scores: multiply q_phi by the transpose of k_phi
@@ -2670,10 +2748,29 @@ Note how the masking changed. Softmax attention sets future entries to $-\infty$
 
 ```python
 def parallel_linear_attention(Q: Tensor, K: Tensor, V: Tensor) -> Tensor:
-    """Compute linear attention the quadratic way, all positions at once."""
+    """Compute linear attention the quadratic way, all positions at once.
+
+    With the scores in hand this is the same weighted average of values that
+    Module 3 computed. The only wrinkle is normalization: softmax normalized
+    the weights for you, and here you have to do it by hand. Each row of the
+    score matrix must sum to 1 before it multiplies the values, or long rows
+    (later positions, which attend to more of the past) would produce larger
+    outputs than short ones purely because they have more terms.
+
+    Args:
+        Q: Queries, shape (n, d).
+        K: Keys, shape (n, d).
+        V: Values, shape (n, d_v).
+
+    Returns:
+        The attention output, shape (n, d_v).
+    """
+    # Feature-map the queries and keys (step 1), then score them (step 2).
     q_phi = feature_map(Q)
     k_phi = feature_map(K)
     scores = masked_scores(q_phi, k_phi)
+    # Each row's total weight. keepdim=True leaves it shaped (n, 1) so that it
+    # broadcasts cleanly across the value dimension when we divide.
     normalizer = scores.sum(dim=-1, keepdim=True)
     # TODO: Return the attention output: matrix multiply `scores` with V to get
     #       the weighted sum of values, then divide by `normalizer`.
@@ -2703,7 +2800,7 @@ Softmax normalized the weights for you. Here you do it by hand, or later positio
 <section id="exercise-output-1">
   <h2>After Step 3: The Parallel Form Runs</h2>
   <div class="content" style="justify-content: center;">
-    <div class="terminal-output">
+    <div class="terminal-output dense">
       <div class="terminal-bar">
         <span class="terminal-dot red"></span>
         <span class="terminal-dot yellow"></span>
@@ -2711,9 +2808,10 @@ Softmax normalized the weights for you. Here you do it by hand, or later positio
         <span class="terminal-title">uv run python module_12_future/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre">+=================================================================&#10;|  Module 12: Linear attention, two ways&#10;+=================================================================&#10;  Steps implemented: 3 of 7&#10;  Still to do: update_state, recurrent_step_output, outputs_match, time_forward&#10;&#10;+-- Do the two forms agree? ---------------------------------------&#10;  sequence length 256, head dimension 64&#10;&#10;  The parallel form runs. The recurrent form needs steps 4-5.&#10;&#10;+-- What does it cost? --------------------------------------------&#10;  Skipped: the timing sweep needs step 7.</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: feature_map() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 2: masked_scores() ===</span> <span class="success">CORRECT</span>&amp;#10;  4 tokens, q_phi = k_phi = [[1,1],[1,2],[2,1],[2,2]]&amp;#10;  row i is query i, column j is key j:&amp;#10;       2.0   0.0   0.0   0.0&amp;#10;       3.0   5.0   0.0   0.0&amp;#10;       3.0   4.0   5.0   0.0&amp;#10;       4.0   6.0   6.0   8.0&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 3: parallel_linear_attention() ===</span> <span class="success">CORRECT</span>&amp;#10;  parallel form: 256 tokens, head dimension 64, output shape (256, 64)&amp;#10;  linear vs softmax        max difference = 1.38e+00&amp;#10;  <span class="success">CORRECT</span>    equal scores give a running mean: Q=K=0, V=[1, 2, 6] gives [1, 1.5, 3]&amp;#10;  <span class="success">CORRECT</span>    returns one value-sized row per token: Q, K (5, 3) and V (5, 2) give (5, 2)&amp;#10;  <span class="success">CORRECT</span>    matches a token-by-token weighted average on a random 5-token input&amp;#10;&amp;#10;<span class="header">=== Step 4: update_state() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: return the updated (S, z) state</span>&amp;#10;&amp;#10;<span class="header">=== Step 5: recurrent_step_output() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: return this token's attention output</span>&amp;#10;<span class="skipped">  ...</span></pre>
       </div>
     </div>
+    <p class="text-lg terminal-caption">The masked scores are zero above the diagonal. The parallel form runs, and its output differs from softmax attention's by as much as 1.38, because linear attention is a different function.</p>
   </div>
 </section>
 
@@ -2725,7 +2823,29 @@ Softmax normalized the weights for you. Here you do it by hand, or later positio
 
 ```python
 def update_state(S: Tensor, z: Tensor, k_t_phi: Tensor, v_t: Tensor):
-    """Absorb one token into the running state."""
+    """Absorb one token into the running state.
+
+    This is the whole trick. Instead of storing every past key and value the
+    way a KV cache does (Module 10), keep one matrix S that accumulates the
+    outer products of keys and values, and one vector z that accumulates the
+    keys. Both have a fixed size that does not depend on how many tokens have
+    gone by, so a million-token conversation costs exactly as much memory as a
+    ten-token one.
+
+    That is also the catch, and it is worth sitting with: everything the model
+    will ever know about the past has to fit in S. A KV cache can reproduce any
+    earlier token exactly. This cannot, and that is why the recurrent models in
+    the lecture lag on exact-recall tasks.
+
+    Args:
+        S: The running state matrix, shape (d, d_v).
+        z: The running normalizer, shape (d,).
+        k_t_phi: This token's feature-mapped key, shape (d,).
+        v_t: This token's value, shape (d_v,).
+
+    Returns:
+        The updated (S, z) pair, same shapes as the inputs.
+    """
     # TODO: Return the updated state as a tuple (new_S, new_z). Add the outer
     #       product of `k_t_phi` and `v_t` to S, and add `k_t_phi` to z.
     raise NotImplementedError("TODO: return the updated (S, z) state")
@@ -2757,7 +2877,23 @@ This is the whole trick. `S` has a fixed size no matter how many tokens go by, s
 
 ```python
 def recurrent_step_output(q_t_phi: Tensor, S: Tensor, z: Tensor) -> Tensor:
-    """Read one token's output out of the running state."""
+    """Read one token's output out of the running state.
+
+    Reading is a single matrix-vector product against the state, with the same
+    normalization step 3 did by hand. The remarkable part is what is missing:
+    no loop over past tokens, no n-by-n matrix, no dependence on sequence
+    length at all. This is exactly the RNN read the transformer was supposed to
+    have made obsolete, and if step 6 passes it computes the same function as
+    the quadratic form above.
+
+    Args:
+        q_t_phi: This token's feature-mapped query, shape (d,).
+        S: The running state matrix, shape (d, d_v).
+        z: The running normalizer, shape (d,).
+
+    Returns:
+        This token's output vector, shape (d_v,).
+    """
     # TODO: Return this token's output: q_t_phi times S, divided by q_t_phi
     #       dotted with z.
     raise NotImplementedError("TODO: return this token's attention output")
@@ -2794,10 +2930,10 @@ Notice what is missing: no loop over past tokens, no $n \times n$ matrix, no dep
         <span class="terminal-title">uv run python module_12_future/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre">+=================================================================&#10;|  Module 12: Linear attention, two ways&#10;+=================================================================&#10;  Steps implemented: 5 of 7&#10;  Still to do: outputs_match, time_forward&#10;&#10;+-- Do the two forms agree? ---------------------------------------&#10;  sequence length 256, head dimension 64&#10;&#10;  parallel vs recurrent    max difference = 3.58e-07   (step 6 not implemented)&#10;  linear   vs softmax      max difference = 1.38e+00   DIFFERENT&#10;&#10;  The first line is the theorem: the quadratic form and the RNN&#10;  compute the same function, and differ only in floating-point noise.&#10;  The second line is the caveat: linear attention is a DIFFERENT&#10;  function from softmax attention, not an approximation of it.&#10;&#10;+-- What does it cost? --------------------------------------------&#10;  Skipped: the timing sweep needs step 7.</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: feature_map() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: masked_scores() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: parallel_linear_attention() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 4: update_state() ===</span> <span class="success">CORRECT</span>&amp;#10;  <span class="success">CORRECT</span>    first token from an empty state: k=[1,2], v=[3,4] gives S=[[3,4],[6,8]], z=[1,2]&amp;#10;  <span class="success">CORRECT</span>    adds to the state rather than replacing it: S and z start as all ones&amp;#10;  <span class="success">CORRECT</span>    10 tokens one at a time give S = K^T V and z = the sum of the keys&amp;#10;&amp;#10;<span class="header">=== Step 5: recurrent_step_output() ===</span> <span class="success">CORRECT</span>&amp;#10;  recurrent form: 256 tokens one at a time, output shape (256, 64)&amp;#10;  parallel vs recurrent    max difference = 3.58e-07&amp;#10;  <span class="success">CORRECT</span>    q=[1,2], S=[[1,0,2],[3,1,0]], z=[2,1] gives [7,2,2] / 4 = [1.75, 0.5, 0.5]&amp;#10;  <span class="success">CORRECT</span>    after one token the output is that token's value: v=[3, -1, 4] comes back out&amp;#10;  <span class="success">CORRECT</span>    matches the parallel form row by row on a random 6-token sequence&amp;#10;&amp;#10;<span class="header">=== Step 6: outputs_match() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: return whether a and b agree within tolerance</span>&amp;#10;&amp;#10;<span class="header">=== Step 7: time_forward() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: record this run's elapsed time</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Two completely different algorithms, agreeing to seven decimal places. That is the theorem.</p>
+    <p class="text-lg terminal-caption">Two different algorithms, run on the same 256 tokens, land within 3.58e-07 of each other. Step 6 decides whether that counts as a match.</p>
   </div>
 </section>
 
@@ -2809,7 +2945,22 @@ Notice what is missing: no loop over past tokens, no $n \times n$ matrix, no dep
 
 ```python
 def outputs_match(a: Tensor, b: Tensor, tolerance: float = 1e-4) -> bool:
-    """Check whether two tensors agree everywhere, up to floating-point noise."""
+    """Check whether two tensors agree everywhere, up to floating-point noise.
+
+    The two forms are algebraically identical but they do the arithmetic in a
+    different order, and floating-point addition is not associative, so the
+    results will differ in the last few decimal places. An exact `==` would
+    fail for uninteresting reasons. A tolerance check asks the question you
+    actually care about: are these the same function?
+
+    Args:
+        a: One tensor.
+        b: Another tensor of the same shape.
+        tolerance: How far apart two entries may be and still count as equal.
+
+    Returns:
+        True if every pair of entries is within `tolerance`.
+    """
     # TODO: Return True if a and b agree everywhere within `tolerance`.
     raise NotImplementedError("TODO: return whether a and b agree within tolerance")
 ```
@@ -2834,13 +2985,51 @@ Why a tolerance rather than `==`? The two forms are algebraically identical but 
 
 ---
 
+<section id="exercise-output-verdict">
+  <h2>After Step 6: The Verdict</h2>
+  <div class="content" style="justify-content: center;">
+    <div class="terminal-output dense">
+      <div class="terminal-bar">
+        <span class="terminal-dot red"></span>
+        <span class="terminal-dot yellow"></span>
+        <span class="terminal-dot green"></span>
+        <span class="terminal-title">uv run python module_12_future/src/main.py</span>
+      </div>
+      <div class="terminal-body">
+        <pre class="terminal-pre"><span class="header">=== Step 1: feature_map() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: masked_scores() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: parallel_linear_attention() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: update_state() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: recurrent_step_output() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 6: outputs_match() ===</span> <span class="success">CORRECT</span>&amp;#10;  parallel vs recurrent    max difference = 3.58e-07   <span class="success">MATCH</span>&amp;#10;  linear   vs softmax      max difference = 1.38e+00   DIFFERENT&amp;#10;&amp;#10;  The first line is the theorem: the quadratic form and the RNN&amp;#10;  compute the same function, and differ only in floating-point noise.&amp;#10;  The second line is the caveat: linear attention is a DIFFERENT&amp;#10;  function from softmax attention, not an approximation of it.&amp;#10;  <span class="success">CORRECT</span>    a tensor matches itself&amp;#10;  <span class="success">CORRECT</span>    a gap below the tolerance still matches: [0, 0] vs [0, 0.00005] gives True&amp;#10;  <span class="success">CORRECT</span>    a gap above the tolerance does not: [0, 0] vs [0, 0.01] gives False&amp;#10;  <span class="success">CORRECT</span>    uses the tolerance it is given: a 0.05 gap matches when tolerance=0.1&amp;#10;&amp;#10;<span class="header">=== Step 7: time_forward() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: record this run's elapsed time</span></pre>
+      </div>
+    </div>
+    <p class="text-lg terminal-caption">Two completely different algorithms, agreeing to within 3.6e-07. That is the theorem.</p>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="exercise-step7" -->
 
 ## Step 7: time_forward()
 
 ```python
 def time_forward(fn, repeats: int = 3) -> float:
-    """Time one forward pass, in milliseconds."""
+    """Time one forward pass, in milliseconds.
+
+    Complexity claims are theory until you measure them. The runner calls this
+    on each attention implementation at a range of sequence lengths, and the
+    resulting curves are the point of the whole exercise: one bends upward on a
+    log-log plot and one does not.
+
+    Two details make the measurement honest. The warm-up call absorbs one-time
+    costs like memory allocation, and taking the minimum of several runs rather
+    than the mean reports the cleanest run instead of the noisiest, since
+    background processes can only ever slow a run down.
+
+    Args:
+        fn: A zero-argument callable that runs one forward pass.
+        repeats: How many timed runs to take.
+
+    Returns:
+        The fastest run, in milliseconds.
+    """
     # Warm-up run, not timed: pays one-time allocation costs up front.
     fn()
     timings: list[float] = []
@@ -2883,7 +3072,7 @@ Two details make this honest: the warm-up absorbs one-time allocation costs, and
         <span class="terminal-title">uv run python module_12_future/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre">+-- What does it cost? --------------------------------------------&#10;              softmax       linear       linear&#10;       n     parallel     parallel    recurrent&#10;  +--------------------------------------------&#10;     512      0.68 ms      0.69 ms      5.25 ms&#10;    1024      2.02 ms      1.83 ms     10.62 ms&#10;    2048      3.77 ms      3.82 ms     21.45 ms&#10;    4096     18.55 ms     15.09 ms     42.42 ms&#10;    8192    107.35 ms     91.38 ms     87.52 ms&#10;&#10;+-- What are the exponents? ---------------------------------------&#10;  Fitted slope of log(time) against log(n). This IS the exponent in&#10;  the big-O: 2 means quadratic, 1 means linear.&#10;&#10;  softmax attention (parallel)     slope = 1.78&#10;  linear attention (parallel)      slope = 1.72&#10;  linear attention (recurrent)     slope = 1.01</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: feature_map() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: masked_scores() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: parallel_linear_attention() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: update_state() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: recurrent_step_output() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: outputs_match() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;<span class="header">=== Step 7: time_forward() ===</span> <span class="success">CORRECT</span>&amp;#10;              softmax       linear       linear&amp;#10;       n     parallel     parallel    recurrent&amp;#10;  +--------------------------------------------&amp;#10;     512      1.01 ms      0.83 ms      7.01 ms&amp;#10;    1024      3.09 ms      2.65 ms     13.94 ms&amp;#10;    2048      5.97 ms      5.51 ms     29.17 ms&amp;#10;    4096     27.82 ms     21.52 ms     53.68 ms&amp;#10;    8192    141.37 ms    128.66 ms    106.28 ms&amp;#10;  <span class="skipped">...</span>&amp;#10;  softmax attention (parallel)     slope = 1.74&amp;#10;  linear attention (parallel)      slope = 1.76&amp;#10;  linear attention (recurrent)     slope = 0.98&amp;#10;  <span class="skipped">...</span>&amp;#10;  Saved figure to output/attention_scaling.png&amp;#10;  <span class="success">CORRECT</span>    reports milliseconds: a 20 ms sleep measures at least 20&amp;#10;  <span class="success">CORRECT</span>    an empty function measures a small positive time (0 to 5 ms)&amp;#10;  <span class="success">CORRECT</span>    calls fn once to warm up and once per repeat: repeats=3 makes 4 calls</pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Read the last column downward, then read the slopes.</p>
@@ -2908,7 +3097,7 @@ On log-log axes a power law is a straight line whose slope is the exponent. Two 
 
 ## What the Crossover Means
 
-The recurrent form is **ten times slower** at 512 tokens and **faster** at 8192. Both facts matter.
+The recurrent form is **eight times slower** than the parallel linear form at 512 tokens and **faster** at 8192. Both facts matter.
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
@@ -3342,6 +3531,193 @@ window.ASSET_BASE = "module_12_future/";
 
   <!-- Shared deck logic for every module -->
   <script>
+// =====================================================================
+// CLUSTER_MLP — a small real ReLU MLP trained in the browser (seeded, so
+// the result is repeatable), plus a marching-squares contour helper.
+// Used by the "Clusters" tab of the mlpBoundary widget: four green
+// clusters on a red background. Each hidden neuron's zero-line in input
+// space is a straight line for layer 1 and a piecewise-linear curve for
+// deeper layers; the final boundary is the output neuron's zero-line.
+// =====================================================================
+var CLUSTER_MLP = (function() {
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function gauss(rnd) {
+    var u = 1 - rnd(), v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(6.2831853 * v);
+  }
+  var CENTERS = [[0.25, 0.25], [0.75, 0.25], [0.25, 0.75], [0.75, 0.75]];
+
+  function generateData() {
+    var rnd = mulberry32(7);
+    var pts = [];
+    CENTERS.forEach(function(c) {
+      for (var i = 0; i < 22; i++) {
+        pts.push({ x: c[0] + gauss(rnd) * 0.045, y: c[1] + gauss(rnd) * 0.045, cls: 1 });
+      }
+    });
+    var reds = 0;
+    while (reds < 150) {
+      var x = 0.03 + rnd() * 0.94, y = 0.03 + rnd() * 0.94;
+      var near = CENTERS.some(function(c) { return Math.hypot(x - c[0], y - c[1]) < 0.17; });
+      if (near) continue;
+      pts.push({ x: x, y: y, cls: 0 });
+      reds++;
+    }
+    return pts;
+  }
+
+  // ---- network: [2 -> W]*D (ReLU) -> 1 (sigmoid), full-batch Adam ----
+  function makeNet(width, depth, seed) {
+    var rnd = mulberry32(seed);
+    var layers = [];
+    var fanIn = 2;
+    for (var d = 0; d < depth; d++) {
+      layers.push(initLayer(fanIn, width, rnd));
+      fanIn = width;
+    }
+    layers.push(initLayer(fanIn, 1, rnd));
+    return { width: width, depth: depth, layers: layers };
+  }
+  function initLayer(nIn, nOut, rnd) {
+    var W = [], b = [];
+    var scale = Math.sqrt(2 / nIn);
+    for (var o = 0; o < nOut; o++) {
+      var row = [];
+      for (var i = 0; i < nIn; i++) row.push(gauss(rnd) * scale);
+      W.push(row);
+      b.push(gauss(rnd) * 0.1);
+    }
+    return { W: W, b: b, mW: zeros(nOut, nIn), vW: zeros(nOut, nIn), mb: new Array(nOut).fill(0), vb: new Array(nOut).fill(0) };
+  }
+  function zeros(r, c) {
+    var a = [];
+    for (var i = 0; i < r; i++) a.push(new Array(c).fill(0));
+    return a;
+  }
+
+  // Forward pass returning every layer's pre-activations and activations.
+  // Inputs are centered so the first layer's lines can pass near the middle.
+  function forward(net, x, y) {
+    var act = [x - 0.5, y - 0.5];
+    var pres = [], acts = [act];
+    for (var l = 0; l < net.layers.length; l++) {
+      var L = net.layers[l];
+      var pre = [], out = [];
+      var last = l === net.layers.length - 1;
+      for (var o = 0; o < L.W.length; o++) {
+        var s = L.b[o];
+        for (var i = 0; i < act.length; i++) s += L.W[o][i] * act[i];
+        pre.push(s);
+        out.push(last ? s : (s > 0 ? s : 0));
+      }
+      pres.push(pre); acts.push(out); act = out;
+    }
+    return { pres: pres, acts: acts, logit: act[0] };
+  }
+  function sigmoid(z) { return 1 / (1 + Math.exp(-z)); }
+
+  function trainSteps(net, data, steps, lr) {
+    var b1 = 0.9, b2 = 0.999, eps = 1e-8;
+    net.t = net.t || 0;
+    for (var s = 0; s < steps; s++) {
+      net.t++;
+      var grads = net.layers.map(function(L) {
+        return { W: zeros(L.W.length, L.W[0].length), b: new Array(L.W.length).fill(0) };
+      });
+      for (var n = 0; n < data.length; n++) {
+        var p = data[n];
+        var f = forward(net, p.x, p.y);
+        var delta = [sigmoid(f.logit) - p.cls];
+        for (var l = net.layers.length - 1; l >= 0; l--) {
+          var L = net.layers[l], inp = f.acts[l], g = grads[l];
+          var prev = new Array(inp.length).fill(0);
+          for (var o = 0; o < L.W.length; o++) {
+            g.b[o] += delta[o];
+            for (var i = 0; i < inp.length; i++) {
+              g.W[o][i] += delta[o] * inp[i];
+              prev[i] += delta[o] * L.W[o][i];
+            }
+          }
+          if (l > 0) {
+            for (var k = 0; k < prev.length; k++) if (f.pres[l - 1][k] <= 0) prev[k] = 0;
+          }
+          delta = prev;
+        }
+      }
+      var N = data.length;
+      var c1 = 1 - Math.pow(b1, net.t), c2 = 1 - Math.pow(b2, net.t);
+      net.layers.forEach(function(L, l) {
+        var g = grads[l];
+        for (var o = 0; o < L.W.length; o++) {
+          for (var i = 0; i < L.W[o].length; i++) {
+            var gw = g.W[o][i] / N;
+            L.mW[o][i] = b1 * L.mW[o][i] + (1 - b1) * gw;
+            L.vW[o][i] = b2 * L.vW[o][i] + (1 - b2) * gw * gw;
+            L.W[o][i] -= lr * (L.mW[o][i] / c1) / (Math.sqrt(L.vW[o][i] / c2) + eps);
+          }
+          var gb = g.b[o] / N;
+          L.mb[o] = b1 * L.mb[o] + (1 - b1) * gb;
+          L.vb[o] = b2 * L.vb[o] + (1 - b2) * gb * gb;
+          L.b[o] -= lr * (L.mb[o] / c1) / (Math.sqrt(L.vb[o] / c2) + eps);
+        }
+      });
+    }
+  }
+
+  function accuracy(net, data) {
+    var ok = 0;
+    data.forEach(function(p) { if ((forward(net, p.x, p.y).logit > 0 ? 1 : 0) === p.cls) ok++; });
+    return ok / data.length;
+  }
+
+  // Train with a few seeds and keep the best, so each (width, depth)
+  // shows what that architecture can do rather than one unlucky init.
+  function train(data, width, depth, opts) {
+    opts = opts || {};
+    var seeds = opts.seeds || 4, steps = opts.steps || 400, lr = opts.lr || 0.03;
+    var best = null;
+    for (var s = 0; s < seeds; s++) {
+      var net = makeNet(width, depth, 1000 + s * 17 + width * 3 + depth * 101);
+      trainSteps(net, data, steps, lr);
+      var acc = accuracy(net, data);
+      if (!best || acc > best.acc) best = { net: net, acc: acc };
+    }
+    return best;
+  }
+
+  // ---- marching squares: zero-contour of a scalar field on a grid ----
+  function contour(field, n) {
+    // field[i][j] sampled at x=i/n, y=j/n for i,j in 0..n
+    var segs = [];
+    function lerp(a, b, va, vb) { return a + (0 - va) / (vb - va) * (b - a); }
+    for (var i = 0; i < n; i++) {
+      for (var j = 0; j < n; j++) {
+        var v00 = field[i][j], v10 = field[i + 1][j], v01 = field[i][j + 1], v11 = field[i + 1][j + 1];
+        var x0 = i / n, x1 = (i + 1) / n, y0 = j / n, y1 = (j + 1) / n;
+        var pts = [];
+        if ((v00 > 0) !== (v10 > 0)) pts.push([lerp(x0, x1, v00, v10), y0]);
+        if ((v10 > 0) !== (v11 > 0)) pts.push([x1, lerp(y0, y1, v10, v11)]);
+        if ((v01 > 0) !== (v11 > 0)) pts.push([lerp(x0, x1, v01, v11), y1]);
+        if ((v00 > 0) !== (v01 > 0)) pts.push([x0, lerp(y0, y1, v00, v01)]);
+        if (pts.length === 2) segs.push([pts[0], pts[1]]);
+        else if (pts.length === 4) { segs.push([pts[0], pts[1]]); segs.push([pts[2], pts[3]]); }
+      }
+    }
+    return segs;
+  }
+
+  return { generateData: generateData, train: train, forward: forward, accuracy: accuracy, contour: contour, sigmoid: sigmoid };
+}());
+if (typeof module !== "undefined" && module.exports) module.exports = CLUSTER_MLP;
+
+
 // =====================================================================
 // Core deck infrastructure: Manim steppers, Reveal.js init, syntax
 // highlighting, interactive widget plumbing, and per-module hooks.

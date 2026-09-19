@@ -58,7 +58,7 @@ class FeedForward(nn.Module):
 
         approximate="tanh" matches the GELU variant GPT-2 was trained with.
         """
-        return self.fc2(self.dropout(F.gelu(self.fc1(x), approximate="tanh")))
+        return self.dropout(self.fc2(F.gelu(self.fc1(x), approximate="tanh")))
 
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,4 @@
 :::divider id="title" title="LLMs 0 to 100" sub="Module 3: Attention Mechanisms"
-From Fixed Windows to Learned Lookups
 :::
 
 ---

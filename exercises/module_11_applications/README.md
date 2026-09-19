@@ -29,17 +29,46 @@ uv sync
 ## Running
 
 ```bash
-uv run python exercises/module_11_applications/src/main.py
+cd exercises
+uv run python module_11_applications/src/main.py
 ```
 
-The runner detects which steps you have implemented and skips the rest, so you
-can fill in one function at a time and re-run immediately. The sparse retriever
-comes alive after step 5, the dense retriever joins after step 6, and the report
-appears after step 7. It prints two worked examples first (one keyword query, one
-paraphrase query, top-3 results each) so you see the failure modes concretely
-before any aggregate number, then the per-category table, and saves a grouped bar
-chart to `output/retrieval_comparison.png`.
+The runner goes through the seven steps in order. Each step's header line carries
+a tag, and the step's output follows: what your code produced on the real corpus,
+then one line per test from `tests/`. The tags are:
 
+| Tag | Meaning |
+|-----|---------|
+| `CORRECT` | every test for the step passed |
+| `INCORRECT` | your code ran but a test failed; the expected and actual values are printed under it |
+| `INCOMPLETE` | the function still raises `NotImplementedError` |
+
+```
+=== Step 4: cosine_similarity() === CORRECT
+Most similar of the 1128 article pairs, by TF-IDF cosine:
+    0.408  part-tn2210 and part-tn2211
+    0.384  art-driver-mac and art-driver-win
+    0.278  art-slow and adm-sleep
+  err-e341 against its own text pasted twice: 1.000 (length does not count)
+  CORRECT    parallel vectors score 1.0 whatever their lengths: [1, 2, 3] and [2, 4, 6]
+  CORRECT    perpendicular vectors score 0.0: [1, 0] and [0, 3]
+  CORRECT    hand-computed: [1, 2] and [3, 4] give 11 / (sqrt(5) x 5) = 0.9839
+  CORRECT    agrees with torch.nn.functional.cosine_similarity on random 384-dim vectors
+```
+
+Run a single step with `--step` (1 to 7):
+
+```
+uv run python module_11_applications/src/main.py --step 6
+```
+
+The sparse retriever answers its first queries at step 5: two worked examples,
+one keyword query and one paraphrase query, top 3 results each. Step 6 runs the
+same two queries through the dense retriever, so you see each one's failure mode
+before any aggregate number. Step 7 prints the per-category table and saves a
+grouped bar chart to `output/retrieval_comparison.png`. When a step's output
+needs an earlier step you have not finished, the step says which one it is
+waiting for.
 
 `exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
 
@@ -70,6 +99,14 @@ The corpus loader (`src/data.py`), the sentence encoder (`src/encoder.py`),
 plotting (`src/visualization.py`), and the runner (`src/main.py`) are all
 provided. You only edit `exercise.py`.
 
+The tests live in `tests/`, one file per step (`test_step1_tokenize.py` through
+`test_step7_metrics.py`). Each calls your function on small inputs with a known
+answer, such as a 3-document corpus for IDF or a ranking where the right answer
+sits in second place, so you can read the test for the step you are on to see
+exactly what is expected. The Step 6 tests also run the real encoder on one
+query twice, once alone and once padded inside a batch, and check that your
+pooling gives the same vector both times.
+
 ## Data
 
 - `data/articles.jsonl`: the corpus, 48 support articles, each
@@ -79,7 +116,7 @@ provided. You only edit `exercise.py`.
 - `data/queries.jsonl`: 30 labeled queries, each
   `{id, category, text, relevant_ids}`. Categories: `keyword` (the query contains
   an exact identifier), `paraphrase` (the query shares almost no vocabulary with
-  its answer article), `overlap` (the query reuses the article's own wording).
+  its answer article), `verbatim` (the query reuses the article's own wording).
 - `data/encoder/`: all-MiniLM-L6-v2, a 23M-parameter sentence encoder
   stored in fp16 (~44MB). It runs on CPU and loads entirely from these local
   files; the exercise needs no network access. The weights are a copy of
@@ -96,8 +133,8 @@ provided. You only edit `exercise.py`.
   with `count * (k1 + 1) / (count + k1)` for `k1 = 1.5`, so the tenth repetition
   of a term is worth less than the first. Compare against plain TF-IDF.
 - **Watch IDF zero a term out.** Add the term "printer" to a query and confirm it
-  changes almost nothing, then look up its IDF weight. A term in nearly every
-  document carries almost no information about which one you want.
+  changes almost nothing, then look up its IDF weight (Step 2 prints it). A term
+  found in 18 of the 48 articles says little about which one you want.
 - **RAG prompt assembly.** Format the top retrieved article and the query into a
   grounded prompt using Module 6's chat template (system instructions, then the
   article as context, then the user question). This is the exact seam where the

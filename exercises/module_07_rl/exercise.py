@@ -10,7 +10,8 @@ completions, score each with a Python verifier, turn rewards into group-relative
 advantages, and take one policy-gradient step that pushes up the winners and down the
 losers. The payoff is a reward curve that climbs and a held-out accuracy that rises.
 
-Run after each step; unfinished steps are skipped automatically:
+Run after each step. Every step is tagged CORRECT, INCORRECT, or INCOMPLETE, and
+the tests for each step live in tests/:
     uv run python module_07_rl/src/main.py
 """
 

@@ -10,7 +10,8 @@ Steps 4-8 build a real client for an OpenAI-compatible inference server: one
 request, then a streaming request with latency measurement, then a concurrency
 benchmark that makes batching visible.
 
-Run after each step; unfinished steps are skipped automatically:
+Run after each step; every step is tagged CORRECT, INCORRECT, or INCOMPLETE
+by its tests in tests/, which need no server:
     uv run python module_10_deployment/src/main.py
 """
 

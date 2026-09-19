@@ -8,8 +8,9 @@ the actual math.
 
   VisionEncoder  - patch projection, learned patch position embeddings, a small
                    provided transformer that mixes patches, and nothing else. Your
-                   steps do the patchify -> flatten -> project -> add-positions ->
-                   pool pipeline around it, producing one image embedding.
+                   Steps 1 and 2 (patchify, pool) and the ops in src/ops.py (flatten,
+                   project, add positions) form the pipeline around it, producing
+                   one image embedding.
   TextEncoder    - a tiny char-level transformer that pools a caption into an
                    embedding of the SAME width as the image embedding, so the two can
                    be compared in a shared space (this is the "text tower" of CLIP).
@@ -51,11 +52,11 @@ def _mixer_config(width: int, n_patches: int, n_layer: int, n_head: int) -> GPTC
 class VisionEncoder(nn.Module):
     """Turns an image into patch features and mixes them; your steps pool them.
 
-    Attributes used by the exercise steps:
-      patch_proj : Linear(PATCH_DIM -> D_EMBED)   (step 3 applies this)
-      pos_embed  : Parameter(1, N_PATCHES, D_EMBED)  (step 4 adds this)
+    Attributes used by the vision pipeline in src/main.py:
+      patch_proj : Linear(PATCH_DIM -> D_EMBED)   (ops.project_patches applies this)
+      pos_embed  : Parameter(1, N_PATCHES, D_EMBED)  (ops.add_position_embeddings adds this)
     `mix` is a provided self-attention stack that lets patches share information
-    before you pool them (step 5), so the pooled vector can encode relations like
+    before you pool them (Step 2), so the pooled vector can encode relations like
     "the top shape is a triangle", not just average color.
     """
 
@@ -112,7 +113,7 @@ class TextEncoder(nn.Module):
 
 
 class Projector(nn.Module):
-    """The multimodal bridge (PROVIDED parameters; step 11 uses `to_prefix`).
+    """The multimodal bridge (PROVIDED parameters; Step 6 uses `to_prefix`).
 
     `to_prefix` maps one pooled image embedding (D_EMBED) to PREFIX_LEN * d_llm
     numbers; your step reshapes those into PREFIX_LEN visual prefix vectors at the

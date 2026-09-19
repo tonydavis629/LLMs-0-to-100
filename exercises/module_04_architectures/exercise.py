@@ -159,11 +159,7 @@ class GPT2Model(nn.Module):
             Logits over the vocabulary, shape (batch_size, seq_len, vocab_size).
         """
         # TODO: embed -> run every block -> final layer norm -> LM head.
-        # HINT:
-        #   x = self.embed(token_ids)
-        #   for block in self.blocks:
-        #       x = block(x)
-        #   return self.lm_head(self.ln_f(x))
+        # HINT: embed first, then loop over self.blocks, then self.ln_f, then self.lm_head.
         raise NotImplementedError("TODO: full GPT-2 forward pass")
 
 
@@ -185,7 +181,7 @@ def greedy_decode(model: GPT2Model, tokenizer, prompt: str, max_new: int = 10) -
         The prompt plus the generated text as a single string.
     """
     model.eval()
-    # Encode the prompt into token IDs; unsqueeze to add a batch dimension of 1.
+    # Encode the prompt into token IDs, shape (1, seq_len): a batch of one.
     token_ids = tokenizer.encode(prompt, return_tensors="pt")
 
     with torch.no_grad():

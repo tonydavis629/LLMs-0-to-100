@@ -107,7 +107,7 @@ def plot_attention_comparison(
     fig.tight_layout()
     fig.savefig(filepath, dpi=150, bbox_inches="tight", facecolor=_BG)
     plt.close(fig)
-    print(f"Saved attention comparison to {_display_path(filepath)}")
+    print(f"  Saved attention comparison to {_display_path(filepath)}")
 
 
 def plot_positional_effect(
@@ -141,7 +141,7 @@ def plot_positional_effect(
     fig.tight_layout()
     fig.savefig(filepath, dpi=150, bbox_inches="tight", facecolor=_BG)
     plt.close(fig)
-    print(f"Saved positional effect to {_display_path(filepath)}")
+    print(f"  Saved positional effect to {_display_path(filepath)}")
 
 
 def plot_kv_cache_growth(
@@ -181,4 +181,4 @@ def plot_kv_cache_growth(
     fig.tight_layout()
     fig.savefig(filepath, dpi=150, bbox_inches="tight", facecolor=_BG)
     plt.close(fig)
-    print(f"Saved KV cache plot to {_display_path(filepath)}")
+    print(f"  Saved KV cache plot to {_display_path(filepath)}")

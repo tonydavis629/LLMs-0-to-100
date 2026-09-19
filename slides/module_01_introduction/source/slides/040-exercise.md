@@ -558,6 +558,16 @@ This one is a whole function, not a single line. <!-- .element: class="text-lg" 
 
 ```python
 def cross_entropy(text: str, model: dict[str, Counter]) -> float:
+    """Compute the cross-entropy of text under a character n-gram model.
+
+    Cross-entropy = -(1/N) * sum(log2(P(c_i | context_i)))
+
+    For unseen contexts or characters, use a small smoothing probability
+    of 1e-6 to avoid log(0).
+
+    Returns:
+        The cross-entropy in bits per character.
+    """
     # TODO: Average -log2(P(next_char | context)) over every position in text
     raise NotImplementedError("Extra credit: implement cross_entropy()")
 ```

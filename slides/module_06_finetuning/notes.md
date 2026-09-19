@@ -273,12 +273,20 @@ $$W' = W + \frac{\alpha}{r} BA, \qquad B \in \mathbb{R}^{d \times r}, \quad A \i
   masked cross-entropy, build the optimizer over adapters, the LoRA forward delta,
   freeze a base parameter, one SFT step, count trainable parameters, build the
   generation prompt, and merge the LoRA weight.
+- The runner tags every step CORRECT, INCORRECT, or INCOMPLETE. Each step has its
+  own test file in `tests/` that calls the student's function on small inputs with
+  hand-computed answers: for example, one SGD step (learning rate 1) on a zero
+  4-token embedding moves row 1 to $[-0.125, -0.125, 0.375, -0.125]$, since the
+  gradient of the mean cross-entropy at a position with uniform logits is
+  $(\tfrac{1}{4} - \text{onehot}(y)) / N$ over the $N = 2$ unmasked positions.
+  Some steps add one check on the real model, such as the trainable count equalling
+  the total size of the LoRA $A$ and $B$ matrices.
 - Captured run (seed 1337, rank 8, alpha 32, 1000 steps, ~350 toy pairs): the same
   prompt `uppercase: hello` flips from `'ers\nIn the father '` (base continues
   Shakespeare-style text, ignoring the instruction) to `'HELLO'` (finetuned answers
   it); 65,536 of 884,096 parameters are trainable (7.41%); the masked loss falls
   from ~6.1 to ~0.30; and the merge-equality check passes (max logit difference
-  ~1e-5). The "reverse" task is the hardest and is honestly presented as a minority
+  6.68e-06, float32 rounding). The "reverse" task is the hardest and is honestly presented as a minority
   case &mdash; a tiny model may not nail it.
 - Extra credit: full-FT vs LoRA (skip the freeze, compare counts/quality); vary the
   rank $r$; catastrophic-forgetting probe (a raw base-style prompt after

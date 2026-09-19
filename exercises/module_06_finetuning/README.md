@@ -25,21 +25,42 @@ uv sync
 
 ## Running
 
+From the `exercises/` directory:
+
 ```bash
-uv run python exercises/module_06_finetuning/src/main.py
+uv run python module_06_finetuning/src/main.py
 ```
 
-The runner detects which steps you have implemented and skips the rest, so you can
-fill in one step at a time and re-run immediately. It prints the base model's
-completion of a sample instruction (**before**), the trainable-vs-total parameter
-count, the finetuning loss, the finetuned completion of the same instruction
-(**after**), and a merge-equality check (the merged model must match the adapter
-model).
+The runner goes through the ten steps in order. Each step's header line carries a tag, and the step's output follows: what your code produced on the real model, then one line per test from `tests/`. The tags are:
 
+| Tag | Meaning |
+|-----|---------|
+| `CORRECT` | every test for the step passed |
+| `INCORRECT` | your code ran but a test failed; the expected and actual values are printed under it |
+| `INCOMPLETE` | the function still raises `NotImplementedError` |
+
+```
+=== Step 8: count_trainable_params() === CORRECT
+Trainable (LoRA adapters):  65,536
+Total (base + adapters):    884,096
+Fraction trainable:         7.41%
+  CORRECT    counts every element: nn.Linear(3, 2) has 2*3 + 2 = 8 trainable numbers
+  CORRECT    skips frozen tensors: a rank-2 adapter on a frozen 4 -> 3 layer gives 2*4 + 3*2 = 14
+  CORRECT    a fully frozen layer has 0 trainable parameters
+  CORRECT    real model: the count is exactly the LoRA A and B matrices, 65,536 numbers
+```
+
+Step 7 finetunes the model, which takes about two minutes on a laptop CPU. Every other step takes a few seconds. Run a single step with `--step` (1 to 10):
+
+```bash
+uv run python module_06_finetuning/src/main.py --step 3
+```
+
+Step 9 samples the base model and, if Step 7 finetuned it in the same run, the finetuned model too. Step 10 merges whatever adapters the run has trained. Run on their own, both steps note that nothing has been finetuned yet.
 
 `exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
 
-```
+```bash
 uv run python module_06_finetuning/src/main.py --solution
 ```
 
@@ -65,6 +86,13 @@ The model (`src/model.py`), tokenizer (`src/tokenizer.py`), dataset builder
 (`src/data.py`), and runner (`src/main.py`) are all provided. The LoRA injection,
 freezing loop, and merge loop live in `src/model.py` and call back into the three
 functions you write (steps 5, 6, 10). You only edit `exercise.py`.
+
+The tests live in `tests/`, one file per step (`test_step1_format_example.py`
+through `test_step10_merge.py`). Each calls your function on small, hand-made
+inputs with a known answer, so you can read the test for the step you are on to
+see exactly what is expected. Some steps add one check on the real model, such as
+the trainable-parameter count. The Step 7 tests use PyTorch's loss in place of
+your Step 3 function, so Step 7 is graded on its own.
 
 ## Data
 
