@@ -7,12 +7,12 @@
 
 ## The $O(n^2)$ Cost
 
-Attention builds an $n \times n$ score matrix: every token against every other token. That matrix is the bottleneck.
+Every token attends to every other token, so the attention map holds one weight per pair: $n \times n$ for a sequence of $n$ tokens. That matrix is the bottleneck.
 <div style="text-align: center; margin: 4px 0;">
 <svg viewBox="0 0 720 250" width="100%" style="max-height: 240px;">
   <!-- big n x n grid -->
-  <text x="170" y="22" fill="#8892a4" font-size="12" text-anchor="middle">n keys</text>
-  <text x="36" y="135" fill="#8892a4" font-size="12" text-anchor="middle" transform="rotate(-90 36 135)">n queries</text>
+  <text x="170" y="22" fill="#8892a4" font-size="12" text-anchor="middle">n tokens attended to</text>
+  <text x="36" y="135" fill="#8892a4" font-size="12" text-anchor="middle" transform="rotate(-90 36 135)">n tokens attending</text>
   <g>
     <rect x="60" y="36" width="200" height="200" fill="rgba(74,158,255,0.18)" stroke="#4a9eff" stroke-width="1.5"/>
     <!-- grid lines -->
@@ -24,7 +24,7 @@ Attention builds an $n \times n$ score matrix: every token against every other t
   </g>
   <!-- text panel -->
   <text x="320" y="70" fill="#e8eaf0" font-size="14">Compute: O(n&#178; &middot; d_k)</text>
-  <text x="320" y="100" fill="#e8eaf0" font-size="14">Memory: O(n&#178;)</text>
+  <text x="320" y="100" fill="#e8eaf0" font-size="14">Memory: O(n&#178;), whatever d_k is</text>
   <text x="320" y="140" fill="#f5a623" font-size="14">Double the context, and the</text>
   <text x="320" y="162" fill="#f5a623" font-size="14">attention cost quadruples.</text>
   <text x="320" y="200" fill="#8892a4" font-size="13">At 128K tokens, the matrix has</text>

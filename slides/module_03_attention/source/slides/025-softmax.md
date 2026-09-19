@@ -53,20 +53,13 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 
 ---
 
-<!-- .slide: id="softmax-interactive" -->
-
-:::interactive id="softmax-explorer" widget="softmaxExplorer" title="Logits to Probabilities (and Temperature)"
-:::
-
----
-
 <!-- .slide: id="softmax-temperature" -->
 
 ## Temperature
 
-Divide the logits by a **temperature** $T$ before softmax to control how peaked the distribution is:
+Same formula, with every logit divided by a **temperature** $T$ first. $T$ controls how peaked the distribution is, and $T = 1$ gives back plain softmax:
 
-$$p_i = \text{softmax}(z / T)_i$$
+$$\text{softmax}(z / T)_i = \frac{e^{z_i / T}}{\sum_j e^{z_j / T}}$$
 
 :::columns cols="3" gap="20px"
 **$T < 1$**
@@ -84,4 +77,11 @@ Flatter. Mass spreads to other tokens. More varied, riskier text.
 
 :::note
 Attention uses the same idea: dividing $QK^T$ by $\sqrt{d_k}$ is a fixed temperature that keeps softmax from saturating as dimension grows.
+:::
+
+---
+
+<!-- .slide: id="softmax-interactive" -->
+
+:::interactive id="softmax-explorer" widget="softmaxExplorer" title="Logits to Probabilities (and Temperature)"
 :::

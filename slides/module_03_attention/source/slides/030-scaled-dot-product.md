@@ -1,4 +1,4 @@
-:::divider id="divider-scaled-dot-product" title="Scaled Dot-Product Attention" sub="Compare, scale, normalize, retrieve"
+:::divider id="divider-scaled-dot-product" title="Scaled Dot-Product Attention" sub="The compare-and-retrieve layer, with scaling and softmax added"
 :::
 
 ---
@@ -51,37 +51,68 @@ Dividing by $\sqrt{d_k}$ keeps the dot-product variance roughly constant at any 
 
 ## From Scores to the Attention Map
 
-Apply the same softmax to the **scaled** scores, once per query. The weight from query $i$ to key $j$:
+$QK^T$ holds the raw scores. Divide by $\sqrt{d_k}$, then apply softmax to each row:
 
-$$\alpha_{ij} = \frac{\exp\left(\mathbf q_i \cdot \mathbf k_j / \sqrt{d_k}\right)}{\sum_{j'} \exp\left(\mathbf q_i \cdot \mathbf k_{j'} / \sqrt{d_k}\right)}$$
+$$A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)$$
 
-- Only new ingredient: the $\sqrt{d_k}$ divisor (a fixed temperature)
-- Each query $i$ produces one row $\alpha_{i\cdot}$
-- Stacked rows form the **attention map**
+- $QK^T$ is the $n \times n$ grid of scores from before: row $i$ compares token $i$'s query with every key
+- The only new ingredient is the $\sqrt{d_k}$ divisor, a fixed temperature
+- Softmax runs on each row separately, so every row of $A$ sums to 1
+- $A$ is the **attention map**
 
 ---
 
 <!-- .slide: id="attention-output" -->
 
-## The Attention Output
+## The Output for One Token
 
-The output for each token is a weighted average of the value vectors:
+Retrieve, for one token: token $i$ uses row $i$ of the attention map $A$ to average the rows of $V$.
 
-$$\mathbf o_i = \sum_j \alpha_{ij} \mathbf v_j$$
+$$\mathbf o_i = \sum_j A_{ij} \mathbf v_j$$
 
-:::columns cols="2" gap="30px"
-**Interpretation**
+<div style="text-align: center; margin: 4px 0;">
+<svg viewBox="0 0 880 212" width="100%" style="max-height: 200px;">
+  <text x="20" y="48" fill="#50c878" font-size="12" font-weight="600">j: token</text>
+  <text x="20" y="64" fill="#50c878" font-size="12" font-weight="600">attended to</text>
+  <text x="190" y="16" fill="#8892a4" font-size="11" text-anchor="middle">j = 1</text>
+  <rect x="145" y="24" width="90" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/>
+  <text x="190" y="41" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
+  <text x="190" y="57" fill="#50c878" font-size="11" text-anchor="middle">v<tspan dy="3" font-size="9">1</tspan></text>
+  <line x1="190" y1="88" x2="410" y2="158" stroke="#c792ea" stroke-width="2.2" opacity="0.48"/>
+  <text x="190" y="80" fill="#c792ea" font-size="11" text-anchor="middle">A<tspan dy="3" font-size="9">31</tspan><tspan dy="-3"> = 0.10</tspan></text>
+  <text x="315" y="16" fill="#8892a4" font-size="11" text-anchor="middle">j = 2</text>
+  <rect x="270" y="24" width="90" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/>
+  <text x="315" y="41" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">cat</text>
+  <text x="315" y="57" fill="#50c878" font-size="11" text-anchor="middle">v<tspan dy="3" font-size="9">2</tspan></text>
+  <line x1="315" y1="88" x2="425" y2="158" stroke="#c792ea" stroke-width="6.4" opacity="0.94"/>
+  <text x="315" y="80" fill="#c792ea" font-size="11" text-anchor="middle">A<tspan dy="3" font-size="9">32</tspan><tspan dy="-3"> = 0.45</tspan></text>
+  <text x="440" y="16" fill="#8892a4" font-size="11" text-anchor="middle">j = 3</text>
+  <rect x="395" y="24" width="90" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/>
+  <text x="440" y="41" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">sat</text>
+  <text x="440" y="57" fill="#50c878" font-size="11" text-anchor="middle">v<tspan dy="3" font-size="9">3</tspan></text>
+  <line x1="440" y1="88" x2="440" y2="158" stroke="#c792ea" stroke-width="4.0" opacity="0.68"/>
+  <text x="440" y="80" fill="#c792ea" font-size="11" text-anchor="middle">A<tspan dy="3" font-size="9">33</tspan><tspan dy="-3"> = 0.25</tspan></text>
+  <text x="565" y="16" fill="#8892a4" font-size="11" text-anchor="middle">j = 4</text>
+  <rect x="520" y="24" width="90" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/>
+  <text x="565" y="41" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">on</text>
+  <text x="565" y="57" fill="#50c878" font-size="11" text-anchor="middle">v<tspan dy="3" font-size="9">4</tspan></text>
+  <line x1="565" y1="88" x2="455" y2="158" stroke="#c792ea" stroke-width="1.6" opacity="0.41"/>
+  <text x="565" y="80" fill="#c792ea" font-size="11" text-anchor="middle">A<tspan dy="3" font-size="9">34</tspan><tspan dy="-3"> = 0.05</tspan></text>
+  <text x="690" y="16" fill="#8892a4" font-size="11" text-anchor="middle">j = 5</text>
+  <rect x="645" y="24" width="90" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/>
+  <text x="690" y="41" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">mat</text>
+  <text x="690" y="57" fill="#50c878" font-size="11" text-anchor="middle">v<tspan dy="3" font-size="9">5</tspan></text>
+  <line x1="690" y1="88" x2="470" y2="158" stroke="#c792ea" stroke-width="2.8" opacity="0.54"/>
+  <text x="690" y="80" fill="#c792ea" font-size="11" text-anchor="middle">A<tspan dy="3" font-size="9">35</tspan><tspan dy="-3"> = 0.15</tspan></text>
+  <rect x="340" y="160" width="200" height="40" rx="6" fill="rgba(63,185,80,0.15)" stroke="#3fb950" stroke-width="2"/>
+  <text x="440" y="185" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">o<tspan dy="3" font-size="10">3</tspan><tspan dy="-3">: new vector for "sat"</tspan></text>
+  <text x="20" y="176" fill="#3fb950" font-size="12" font-weight="600">i: token doing</text>
+  <text x="20" y="192" fill="#3fb950" font-size="12" font-weight="600">the attending (i = 3)</text>
+</svg>
+</div>
 
-- Each $\mathbf o_i$ is a mixture of all value vectors
-- The weights $\alpha_{ij}$ come from query-key compatibility
-- Strong attention to token $j$ means $\mathbf v_j$ dominates the output
-+++
-**Properties**
-
-- Different tokens can attend to different subsets of the sequence
-- The same token can be attended to by many others
-- The output dimension matches the value dimension, not the sequence length
-:::
+- $i$ is the token being updated; $j$ runs over every token it can attend to, itself included
+- $A_{ij}$ is how much token $i$ attends to token $j$, and $\mathbf v_j$ is row $j$ of $V$
 
 ---
 
@@ -89,60 +120,83 @@ $$\mathbf o_i = \sum_j \alpha_{ij} \mathbf v_j$$
 
 ## The Complete Formula
 
-Scaled dot-product attention in one line:
+**Scaled dot-product attention** (dot-product scores, divided by $\sqrt{d_k}$), for every token at once:
 
 $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V$$
 
-Compare, normalize, retrieve. No recurrence, no convolution, no fixed-size bottleneck. The model learns what to look at.
-
----
-
-<!-- .slide: id="transformer-stack-preview" -->
-
-## Where Attention Lives
-
-A transformer is a stack of identical blocks: attention, then an MLP, each adding its result back to its input.
-
-<div style="text-align: center; margin: 5px 0;">
-<svg viewBox="0 24 880 196" width="100%" style="max-height: 215px;">
-  <rect x="130" y="30" width="600" height="184" rx="8" fill="rgba(136,146,164,0.05)" stroke="#8892a4" stroke-width="1.3" stroke-dasharray="6 4"/>
-  <text x="146" y="54" fill="#8892a4" font-size="13" font-weight="600">one block</text>
-  <text x="714" y="54" fill="#c792ea" font-size="14" font-weight="600" text-anchor="end">repeated N times</text>
-  <rect x="16" y="162" width="72" height="36" rx="5" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
-  <text x="52" y="185" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">tokens</text>
-  <line x1="88" y1="180" x2="396" y2="180" stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrtsw)"/>
-  <line x1="424" y1="180" x2="676" y2="180" stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrtsw)"/>
-  <line x1="704" y1="180" x2="786" y2="180" stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrtsw)"/>
-  <text x="290" y="204" fill="#8892a4" font-size="12" text-anchor="middle">residual connection (input passes straight through)</text>
-  <path d="M190 180 L190 104 L230 104" fill="none" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrtsb)"/>
-  <rect x="232" y="78" width="140" height="52" rx="6" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/>
-  <text x="302" y="100" fill="#4a9eff" font-size="14" text-anchor="middle" font-weight="600">Attention</text>
-  <text x="302" y="119" fill="#8892a4" font-size="11" text-anchor="middle">tokens share information</text>
-  <path d="M372 104 L410 104 L410 166" fill="none" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrtsb)"/>
-  <circle cx="410" cy="180" r="13" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
-  <text x="410" y="186" fill="#e8eaf0" font-size="18" text-anchor="middle" font-weight="600">+</text>
-  <path d="M470 180 L470 104 L510 104" fill="none" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrtso)"/>
-  <rect x="512" y="78" width="140" height="52" rx="6" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/>
-  <text x="582" y="100" fill="#f5a623" font-size="14" text-anchor="middle" font-weight="600">MLP</text>
-  <text x="582" y="119" fill="#8892a4" font-size="11" text-anchor="middle">each token on its own</text>
-  <path d="M652 104 L690 104 L690 166" fill="none" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrtso)"/>
-  <circle cx="690" cy="180" r="13" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
-  <text x="690" y="186" fill="#e8eaf0" font-size="18" text-anchor="middle" font-weight="600">+</text>
-  <rect x="788" y="162" width="76" height="36" rx="5" fill="#0d1225" stroke="#3fb950" stroke-width="2"/>
-  <text x="826" y="185" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">output</text>
-  <defs>
-    <marker id="arrtsw" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#e8eaf0"/></marker>
-    <marker id="arrtsb" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4a9eff"/></marker>
-    <marker id="arrtso" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/></marker>
-  </defs>
+<div style="text-align: center; margin: 4px 0;">
+<svg viewBox="40 0 720 246" width="100%" style="max-height: 205px;">
+  <text x="210" y="16" fill="#c792ea" font-size="13" text-anchor="middle" font-weight="600">attention map A</text>
+  <text x="460" y="16" fill="#50c878" font-size="13" text-anchor="middle" font-weight="600">V: one row per token</text>
+  <text x="660" y="16" fill="#3fb950" font-size="13" text-anchor="middle" font-weight="600">output</text>
+  <text x="130" y="44" fill="#8892a4" font-size="11" text-anchor="middle">the</text>
+  <text x="170" y="44" fill="#8892a4" font-size="11" text-anchor="middle">cat</text>
+  <text x="210" y="44" fill="#8892a4" font-size="11" text-anchor="middle">sat</text>
+  <text x="250" y="44" fill="#8892a4" font-size="11" text-anchor="middle">on</text>
+  <text x="290" y="44" fill="#8892a4" font-size="11" text-anchor="middle">mat</text>
+  <text x="100" y="72" fill="#8892a4" font-size="12" text-anchor="end">the</text>
+  <rect x="110" y="52" width="40" height="30" fill="rgba(199,146,234,0.68)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="150" y="52" width="40" height="30" fill="rgba(199,146,234,0.46)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="190" y="52" width="40" height="30" fill="rgba(199,146,234,0.30)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="230" y="52" width="40" height="30" fill="rgba(199,146,234,0.23)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="270" y="52" width="40" height="30" fill="rgba(199,146,234,0.23)" stroke="#3a4258" stroke-width="1"/>
+  <text x="392" y="72" fill="#c792ea" font-size="11" text-anchor="end">0.10 &#215;</text>
+  <rect x="400" y="52" width="30" height="30" fill="rgba(80,200,120,0.80)" stroke="#50c878" stroke-width="1"/><rect x="430" y="52" width="30" height="30" fill="rgba(80,200,120,0.32)" stroke="#50c878" stroke-width="1"/><rect x="460" y="52" width="30" height="30" fill="rgba(80,200,120,0.48)" stroke="#50c878" stroke-width="1"/><text x="505" y="71" fill="#50c878" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="530" y="72" fill="#8892a4" font-size="11">the</text>
+  <rect x="600" y="52" width="30" height="30" fill="rgba(63,185,80,0.48)" stroke="#3a4258" stroke-width="1"/><rect x="630" y="52" width="30" height="30" fill="rgba(63,185,80,0.55)" stroke="#3a4258" stroke-width="1"/><rect x="660" y="52" width="30" height="30" fill="rgba(63,185,80,0.48)" stroke="#3a4258" stroke-width="1"/><text x="705" y="71" fill="#8892a4" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="100" y="102" fill="#8892a4" font-size="12" text-anchor="end">cat</text>
+  <rect x="110" y="82" width="40" height="30" fill="rgba(199,146,234,0.38)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="150" y="82" width="40" height="30" fill="rgba(199,146,234,0.60)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="190" y="82" width="40" height="30" fill="rgba(199,146,234,0.46)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="230" y="82" width="40" height="30" fill="rgba(199,146,234,0.23)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="270" y="82" width="40" height="30" fill="rgba(199,146,234,0.23)" stroke="#3a4258" stroke-width="1"/>
+  <text x="392" y="102" fill="#c792ea" font-size="11" text-anchor="end">0.45 &#215;</text>
+  <rect x="400" y="82" width="30" height="30" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1"/><rect x="430" y="82" width="30" height="30" fill="rgba(80,200,120,0.84)" stroke="#50c878" stroke-width="1"/><rect x="460" y="82" width="30" height="30" fill="rgba(80,200,120,0.40)" stroke="#50c878" stroke-width="1"/><text x="505" y="101" fill="#50c878" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="530" y="102" fill="#8892a4" font-size="11">cat</text>
+  <rect x="600" y="82" width="30" height="30" fill="rgba(63,185,80,0.35)" stroke="#3a4258" stroke-width="1"/><rect x="630" y="82" width="30" height="30" fill="rgba(63,185,80,0.64)" stroke="#3a4258" stroke-width="1"/><rect x="660" y="82" width="30" height="30" fill="rgba(63,185,80,0.51)" stroke="#3a4258" stroke-width="1"/><text x="705" y="101" fill="#8892a4" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="100" y="132" fill="#c792ea" font-size="12" text-anchor="end" font-weight="600">sat</text>
+  <rect x="110" y="112" width="40" height="30" fill="rgba(199,146,234,0.23)" stroke="#c792ea" stroke-width="1.5"/><text x="130" y="132" fill="#e8eaf0" font-size="11" text-anchor="middle">0.10</text>
+  <rect x="150" y="112" width="40" height="30" fill="rgba(199,146,234,0.76)" stroke="#c792ea" stroke-width="1.5"/><text x="170" y="132" fill="#e8eaf0" font-size="11" text-anchor="middle">0.45</text>
+  <rect x="190" y="112" width="40" height="30" fill="rgba(199,146,234,0.46)" stroke="#c792ea" stroke-width="1.5"/><text x="210" y="132" fill="#e8eaf0" font-size="11" text-anchor="middle">0.25</text>
+  <rect x="230" y="112" width="40" height="30" fill="rgba(199,146,234,0.16)" stroke="#c792ea" stroke-width="1.5"/><text x="250" y="132" fill="#e8eaf0" font-size="11" text-anchor="middle">0.05</text>
+  <rect x="270" y="112" width="40" height="30" fill="rgba(199,146,234,0.30)" stroke="#c792ea" stroke-width="1.5"/><text x="290" y="132" fill="#e8eaf0" font-size="11" text-anchor="middle">0.15</text>
+  <text x="392" y="132" fill="#c792ea" font-size="11" text-anchor="end">0.25 &#215;</text>
+  <rect x="400" y="112" width="30" height="30" fill="rgba(80,200,120,0.20)" stroke="#50c878" stroke-width="1"/><rect x="430" y="112" width="30" height="30" fill="rgba(80,200,120,0.72)" stroke="#50c878" stroke-width="1"/><rect x="460" y="112" width="30" height="30" fill="rgba(80,200,120,0.80)" stroke="#50c878" stroke-width="1"/><text x="505" y="131" fill="#50c878" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="530" y="132" fill="#8892a4" font-size="11">sat</text>
+  <rect x="600" y="112" width="30" height="30" fill="rgba(63,185,80,0.30)" stroke="#3fb950" stroke-width="1.5"/><rect x="630" y="112" width="30" height="30" fill="rgba(63,185,80,0.67)" stroke="#3fb950" stroke-width="1.5"/><rect x="660" y="112" width="30" height="30" fill="rgba(63,185,80,0.52)" stroke="#3fb950" stroke-width="1.5"/><text x="705" y="131" fill="#3fb950" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="100" y="162" fill="#8892a4" font-size="12" text-anchor="end">on</text>
+  <rect x="110" y="142" width="40" height="30" fill="rgba(199,146,234,0.23)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="150" y="142" width="40" height="30" fill="rgba(199,146,234,0.30)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="190" y="142" width="40" height="30" fill="rgba(199,146,234,0.53)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="230" y="142" width="40" height="30" fill="rgba(199,146,234,0.38)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="270" y="142" width="40" height="30" fill="rgba(199,146,234,0.46)" stroke="#3a4258" stroke-width="1"/>
+  <text x="392" y="162" fill="#c792ea" font-size="11" text-anchor="end">0.05 &#215;</text>
+  <rect x="400" y="142" width="30" height="30" fill="rgba(80,200,120,0.32)" stroke="#50c878" stroke-width="1"/><rect x="430" y="142" width="30" height="30" fill="rgba(80,200,120,0.80)" stroke="#50c878" stroke-width="1"/><rect x="460" y="142" width="30" height="30" fill="rgba(80,200,120,0.16)" stroke="#50c878" stroke-width="1"/><text x="505" y="161" fill="#50c878" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="530" y="162" fill="#8892a4" font-size="11">on</text>
+  <rect x="600" y="142" width="30" height="30" fill="rgba(63,185,80,0.38)" stroke="#3a4258" stroke-width="1"/><rect x="630" y="142" width="30" height="30" fill="rgba(63,185,80,0.59)" stroke="#3a4258" stroke-width="1"/><rect x="660" y="142" width="30" height="30" fill="rgba(63,185,80,0.52)" stroke="#3a4258" stroke-width="1"/><text x="705" y="161" fill="#8892a4" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="100" y="192" fill="#8892a4" font-size="12" text-anchor="end">mat</text>
+  <rect x="110" y="172" width="40" height="30" fill="rgba(199,146,234,0.30)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="150" y="172" width="40" height="30" fill="rgba(199,146,234,0.53)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="190" y="172" width="40" height="30" fill="rgba(199,146,234,0.30)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="230" y="172" width="40" height="30" fill="rgba(199,146,234,0.30)" stroke="#3a4258" stroke-width="1"/>
+  <rect x="270" y="172" width="40" height="30" fill="rgba(199,146,234,0.46)" stroke="#3a4258" stroke-width="1"/>
+  <text x="392" y="192" fill="#c792ea" font-size="11" text-anchor="end">0.15 &#215;</text>
+  <rect x="400" y="172" width="30" height="30" fill="rgba(80,200,120,0.64)" stroke="#50c878" stroke-width="1"/><rect x="430" y="172" width="30" height="30" fill="rgba(80,200,120,0.24)" stroke="#50c878" stroke-width="1"/><rect x="460" y="172" width="30" height="30" fill="rgba(80,200,120,0.56)" stroke="#50c878" stroke-width="1"/><text x="505" y="191" fill="#50c878" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="530" y="192" fill="#8892a4" font-size="11">mat</text>
+  <rect x="600" y="172" width="30" height="30" fill="rgba(63,185,80,0.39)" stroke="#3a4258" stroke-width="1"/><rect x="630" y="172" width="30" height="30" fill="rgba(63,185,80,0.59)" stroke="#3a4258" stroke-width="1"/><rect x="660" y="172" width="30" height="30" fill="rgba(63,185,80,0.48)" stroke="#3a4258" stroke-width="1"/><text x="705" y="191" fill="#8892a4" font-size="14" text-anchor="middle">&#8230;</text>
+  <text x="338" y="134" fill="#e8eaf0" font-size="20" text-anchor="middle">&#215;</text>
+  <text x="578" y="134" fill="#e8eaf0" font-size="20" text-anchor="middle">=</text>
+  <text x="60" y="238" fill="#8892a4" font-size="11">row = token attending, column = token attended to</text>
+  <text x="455" y="238" fill="#8892a4" font-size="11" text-anchor="middle">columns = value dims</text>
+  <text x="655" y="238" fill="#8892a4" font-size="11" text-anchor="middle">columns = value dims</text>
+  <text x="210" y="220" fill="#c792ea" font-size="13" text-anchor="middle" font-weight="600">n &#215; n</text>
+  <text x="445" y="220" fill="#50c878" font-size="13" text-anchor="middle" font-weight="600">n &#215; d<tspan dy="3" font-size="9">v</tspan></text>
+  <text x="645" y="220" fill="#3fb950" font-size="13" text-anchor="middle" font-weight="600">n &#215; d<tspan dy="3" font-size="9">v</tspan></text>
 </svg>
 </div>
 
-$$x \leftarrow x + \text{Attention}(x) \qquad\qquad x \leftarrow x + \text{MLP}(x)$$
-
-- **Attention** is the only place tokens exchange information; the **MLP** (Module 2) works on each token separately
-- With the residual connection, each layer only learns an update to its input
-- Module 4 builds the full block
+- One matrix product produces every output row at once. The highlighted row shows how each one is formed: rows of $V$ scaled by their weights, then added
+- Generating text only needs the last row to predict the next token (see the causal mask and KV cache sections)
 
 ---
 

@@ -36,27 +36,6 @@ The tag sits on the step's header line, and the matrices and individual test res
 
 ---
 
-:::terminal id="exercise-results-example" title="What an INCORRECT Step Looks Like" cmd="uv run python module_03_attention/src/main.py --step 4" maxw="960px" caption="Here <code>scaled_softmax()</code> skipped the division by &radic;d<sub>k</sub>. The weights still sum to 1, so that test passes. The hand-computed test expected 0.731, got 0.881, and asks whether you divided by sqrt(d_k)."
-<span class="header">=== Step 4: scaled_softmax() ===</span> <span class="t-fail">INCORRECT</span>
-  Weights (5, 5), row = query, column = key:
-            the     cat     sat      on     mat
-   the   0.2001  0.2000  0.2000  0.1999  0.1999
-   cat   0.2006  0.1989  0.1996  0.2006  0.2004
-   sat   0.1996  0.2003  0.2003  0.1999  0.1999
-    on   0.1994  0.2009  0.1999  0.1999  0.1999
-   mat   0.1996  0.2006  0.2001  0.1998  0.1999
-  Row sums: [1.0, 1.0, 1.0, 1.0, 1.0]
-  <span class="t-fail">INCORRECT</span>  d_k=4 divides by 2: scores [[2,0],[0,0]] give weights [[0.731,0.269],[0.5,0.5]]
-             expected [[0.7311, 0.2689], [0.5, 0.5]]
-             got      [[0.8808, 0.1192], [0.5, 0.5]] (did you divide by sqrt(d_k) before the softmax?)
-  <span class="success">CORRECT</span>    each query's weights over the keys sum to 1 (3 queries x 5 keys)
-  <span class="t-fail">INCORRECT</span>  matches the weights inside torch's F.scaled_dot_product_attention (4 tokens, d_k=4)
-             expected row 0 = [0.2441, 0.2207, 0.3027, 0.2325]
-             got      row 0 = [0.2346, 0.1918, 0.3608, 0.2128]
-:::
-
----
-
 <!-- .slide: id="exercise-overview" -->
 
 ## Exercise: Attention Mechanisms
@@ -113,8 +92,8 @@ return X @ self.W_Q, X @ self.W_K, X @ self.W_V
         Returns:
             Scores matrix, shape (seq_len, seq_len).
         """
-        # TODO: Compute the attention scores as the matrix product of Q and K^T.
-        raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
+        # TODO: Compute the attention scores that compare every query with every key.
+        raise NotImplementedError("TODO: compute raw attention scores")
 ```
 +++
 **Hint:** matrix-multiply `Q` by the transpose of `K` (the `.T` attribute transposes a 2D tensor).
@@ -266,7 +245,7 @@ return weights @ V
         raise NotImplementedError("TODO: create causal mask")
 ```
 +++
-**Hint:** use masked_fill twice: first replace 0s with -inf, then replace 1s with 0.0.
+**Hint:** masked_fill is a tensor method, so call it on allowed. Use it twice: first replace 0s with -inf, then replace 1s with 0.0.
 +++
 **Answer:**
 

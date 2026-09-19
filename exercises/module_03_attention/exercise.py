@@ -66,10 +66,10 @@ class TinyAttentionLayer:
         Returns:
             Scores matrix, shape (seq_len, seq_len).
         """
-        # TODO: Compute the attention scores as the matrix product of Q and K^T.
+        # TODO: Compute the attention scores that compare every query with every key.
         # HINT: matrix-multiply Q by the transpose of K (the .T attribute transposes a
         #       2D tensor).
-        raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
+        raise NotImplementedError("TODO: compute raw attention scores")
 
     def scaled_softmax(self, scores: torch.Tensor) -> torch.Tensor:
         """Scale scores by 1/sqrt(d_k) and apply softmax along the key dimension.
@@ -115,7 +115,8 @@ class TinyAttentionLayer:
         # Create a lower-triangular matrix: 1 means allowed, 0 means blocked.
         allowed = torch.tril(torch.ones(seq_len, seq_len))
         # TODO: Convert allowed positions to 0.0 and blocked positions to -inf.
-        # HINT: use masked_fill twice: first replace 0s with -inf, then replace 1s with 0.0.
+        # HINT: masked_fill is a tensor method, so call it on allowed. Use it twice: first
+        #       replace 0s with -inf, then replace 1s with 0.0.
         raise NotImplementedError("TODO: create causal mask")
 
     def masked_attention(self, X: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:

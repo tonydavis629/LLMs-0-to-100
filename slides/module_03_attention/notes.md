@@ -57,6 +57,17 @@ $$\text{score}(i, j) = \mathbf{q}_i \cdot \mathbf{k}_j$$
   3. **Retrieve:** multiply the normalized weights by $V$, producing a weighted sum of value vectors for every token.
 - The value matrix $V$ feeds the retrieve step directly. It is not itself the output; the output is produced only after the attention weights are applied to $V$.
 
+### Where Attention Lives: The Transformer Block
+- A transformer stacks $N$ identical blocks. Each block has two sublayers: an attention layer, which moves information between token positions, and a position-wise MLP (feed-forward network), which transforms each token independently with the same weights.
+- Each sublayer is wrapped in a residual connection, so the block computes
+
+$$x \leftarrow x + \text{Attention}(x), \qquad x \leftarrow x + \text{MLP}(x)$$
+
+- Residual connections were introduced for deep convolutional networks. The identity path means a sublayer only has to learn a correction to its input, and the gradient reaches early layers without passing through every nonlinearity, which is what makes stacks of dozens of blocks trainable.
+- The slide omits layer normalization, which the original transformer applies around each sublayer. Module 4 covers the full block.
+- **Reference:** Vaswani, A., et al. (2017). "Attention Is All You Need." *NeurIPS 2017*. Section 3.1 describes the stacked sublayers with residual connections.
+- **Reference:** He, K., Zhang, X., Ren, S., & Sun, J. (2016). "Deep Residual Learning for Image Recognition." *CVPR 2016*.
+
 ## Scaled Dot-Product Attention
 
 ### Why Scale by $\sqrt{d_k}$?
@@ -72,17 +83,10 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\righ
 - Each output token is a weighted average of value vectors, where the weights come from query-key compatibility.
 - If token $i$ attends strongly to token $j$, the output at position $i$ is dominated by $\mathbf{v}_j$.
 - The output dimension matches the value dimension ($d_k$), not the sequence length.
-
-### Where Attention Lives: The Transformer Block
-- A transformer stacks $N$ identical blocks. Each block has two sublayers: an attention layer, which moves information between token positions, and a position-wise MLP (feed-forward network), which transforms each token independently with the same weights.
-- Each sublayer is wrapped in a residual connection, so the block computes
-
-$$x \leftarrow x + \text{Attention}(x), \qquad x \leftarrow x + \text{MLP}(x)$$
-
-- Residual connections were introduced for deep convolutional networks. The identity path means a sublayer only has to learn a correction to its input, and the gradient reaches early layers without passing through every nonlinearity, which is what makes stacks of dozens of blocks trainable.
-- The slide omits layer normalization, which the original transformer applies around each sublayer. Module 4 covers the full block.
-- **Reference:** Vaswani, A., et al. (2017). "Attention Is All You Need." *NeurIPS 2017*. Section 3.1 describes the stacked sublayers with residual connections.
-- **Reference:** He, K., Zhang, X., Ren, S., & Sun, J. (2016). "Deep Residual Learning for Image Recognition." *CVPR 2016*.
+- Write the attention map as $A = \text{softmax}(QK^T/\sqrt{d_k})$, with softmax applied to each row. The per-token form $\mathbf o_i = \sum_j A_{ij} \mathbf v_j$ and the matrix form $AV$ are the same computation. Row $i$ of $A$ holds token $i$'s weights, and multiplying by $V$ makes row $i$ of the result equal to $\mathbf o_i$.
+- The two diagrams use the same example: token $i = 3$ ("sat") with weights $A_{3j} = (0.10, 0.45, 0.25, 0.05, 0.15)$ over the five tokens. These weights are illustrative, chosen to sum to 1, and are not output from a trained model. In the matrix picture the darkness of each cell of $V$ stands for an illustrative value, the weights appear as multipliers beside the rows, the shading of the highlighted output row is the actual weighted mix of those cell values, and that row is $0.10\,\mathbf v_1 + 0.45\,\mathbf v_2 + 0.25\,\mathbf v_3 + 0.05\,\mathbf v_4 + 0.15\,\mathbf v_5$.
+- Attention computes all $n$ output rows in one matrix product; nothing is produced row by row. This does not conflict with autoregressive generation. During training, a causal mask lets every position predict its own next token in the same pass, so all $n$ rows are used. During generation, only the last row feeds the next-token prediction, and the KV cache avoids recomputing the earlier rows at each step.
+- "Scaled dot-product attention" is the name given in Vaswani et al. (2017), Section 3.2.1. It names the scoring function: dot products divided by $\sqrt{d_k}$. The earlier additive attention of Bahdanau et al. (2014) scored each query-key pair with a small feed-forward network. Vaswani et al. note the two perform similarly for small $d_k$, while dot-product attention is faster in practice because it is a single matrix multiplication.
 
 ### Attention Beyond Text
 - The same mechanism operates on any sequence, including image patches. In a vision-language model, text tokens can attend to regions of an image, and the attention map highlights the regions the text refers to.
@@ -179,14 +183,14 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 - Softmax appears in two places in an LLM: **inside attention** (over the keys, so each query's weights sum to 1) and **at the output** (over the vocabulary, to produce the next-token distribution).
 
 ### Temperature
-- Dividing logits by a temperature $T$ before softmax controls how peaked the distribution is: $p_i = \text{softmax}(z / T)_i$.
+- Dividing logits by a temperature $T$ before softmax controls how peaked the distribution is: $\text{softmax}(z/T)_i = e^{z_i/T} / \sum_j e^{z_j/T}$. Setting $T = 1$ recovers the plain softmax above.
 - $T < 1$ sharpens the distribution (more deterministic); $T > 1$ flattens it (more diverse, riskier sampling); $T = 1$ leaves it unchanged.
 - The $1/\sqrt{d_k}$ scaling in attention is itself a fixed temperature that prevents the softmax from saturating as dimension grows.
 
 ## Memory and Compute Tradeoffs
 
 ### The $O(n^2)$ Cost
-- Attention creates an $n \times n$ score matrix for $n$ tokens.
+- Every token attends to every other token, so the attention map holds one weight per (query token, key token) pair: $n \times n$ for a sequence of $n$ tokens. The quadratic term comes from the number of token pairs, not from the size of the query and key vectors; $d_k$ does not appear in the memory cost.
 - **Compute:** $O(n^2 \cdot d_k)$ for the matrix multiplications.
 - **Memory:** $O(n^2)$ to store the attention weights.
 - Doubling the context length quadruples the attention cost.
@@ -257,7 +261,6 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 ### Tests
 - Each step has its own test file in `exercises/module_03_attention/tests/`, and the runner tags every step CORRECT, INCORRECT, or INCOMPLETE. The tests call the student's function on small hand-computed inputs and compare against PyTorch's `torch.nn.functional.scaled_dot_product_attention`, which computes $\mathrm{softmax}(QK^\top/\sqrt{d_k})V$ (with `is_causal=True` for the masked version and for the KV-cache check).
 - A mask that leaves the allowed entries at 1 instead of 0 still gives correct attention weights, because softmax is unchanged when the same constant is added to every entry in a row. The Step 6 tests check the mask itself for this reason; the Step 7 tests, which check only the resulting weights and outputs, pass either way.
-- The "What an INCORRECT Step Looks Like" slide comes from a real run with the $1/\sqrt{d_k}$ division removed from `scaled_softmax()`. With $d_k = 4$ and scores $[2, 0]$ the correct weights are $\mathrm{softmax}([1, 0]) = [0.731, 0.269]$; without the scaling they are $\mathrm{softmax}([2, 0]) = [0.881, 0.119]$.
 
 ### Parameters
 - `vocab_size = 10`, `d_model = 8`, `d_k = 4`, `seq_len = 5`

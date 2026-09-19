@@ -95,25 +95,49 @@ Language needs variable-length context, weight sharing across positions, and sel
 
 Recurrent models (RNNs, LSTMs) read tokens one at a time and compress everything seen so far into a **single hidden state vector**.
 <div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 150" width="100%" style="max-height: 140px;">
-  <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="20" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="55" y="72" fill="#e8eaf0">the</text>
-    <rect x="110" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="145" y="72" fill="#e8eaf0">cat</text>
-    <rect x="200" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="235" y="72" fill="#e8eaf0">sat</text>
-    <rect x="290" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="325" y="72" fill="#e8eaf0">on</text>
-    <rect x="380" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="415" y="72" fill="#e8eaf0">the</text>
-    <rect x="470" y="50" width="70" height="34" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="505" y="72" fill="#e8eaf0">mat</text>
-  </g>
-  <g stroke="#8892a4" stroke-width="1.5" marker-end="url(#arrb)">
-    <line x1="90" y1="67" x2="108" y2="67"/><line x1="180" y1="67" x2="198" y2="67"/>
-    <line x1="270" y1="67" x2="288" y2="67"/><line x1="360" y1="67" x2="378" y2="67"/>
-    <line x1="450" y1="67" x2="468" y2="67"/><line x1="540" y1="67" x2="600" y2="67"/>
-  </g>
-  <rect x="600" y="46" width="170" height="42" rx="6" fill="rgba(231,76,60,0.10)" stroke="#e74c3c" stroke-width="2"/>
-  <text x="685" y="64" fill="#e8eaf0" font-size="12" text-anchor="middle">one fixed-size</text>
-  <text x="685" y="80" fill="#e8eaf0" font-size="12" text-anchor="middle">hidden state</text>
-  <text x="685" y="118" fill="#e74c3c" font-size="12" text-anchor="middle">everything squeezed through here</text>
-  <defs><marker id="arrb" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
+<svg viewBox="0 0 880 190" width="100%" style="max-height: 190px;">
+  <text x="50" y="20" fill="#8892a4" font-size="12">the same RNN cell runs once per token; each step overwrites the hidden state: new h = f(old h, token)</text>
+  <rect x="50" y="146" width="80" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="90" y="167" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
+  <line x1="90" y1="146" x2="90" y2="98" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbb)"/>
+  <rect x="50" y="56" width="80" height="40" rx="6" fill="rgba(136,146,164,0.10)" stroke="#8892a4" stroke-width="1.5"/><text x="90" y="81" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">RNN</text>
+  <line x1="130" y1="76" x2="168" y2="76" stroke="#f5a623" stroke-width="1.8" marker-end="url(#arrbo)"/>
+  <text x="148" y="64" fill="#f5a623" font-size="14" text-anchor="middle" font-weight="600">h<tspan dy="4" font-size="10">1</tspan></text>
+  <rect x="170" y="146" width="80" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="210" y="167" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">cat</text>
+  <line x1="210" y1="146" x2="210" y2="98" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbb)"/>
+  <rect x="170" y="56" width="80" height="40" rx="6" fill="rgba(136,146,164,0.10)" stroke="#8892a4" stroke-width="1.5"/><text x="210" y="81" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">RNN</text>
+  <line x1="250" y1="76" x2="288" y2="76" stroke="#f5a623" stroke-width="1.8" marker-end="url(#arrbo)"/>
+  <text x="268" y="64" fill="#f5a623" font-size="14" text-anchor="middle" font-weight="600">h<tspan dy="4" font-size="10">2</tspan></text>
+  <rect x="290" y="146" width="80" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="330" y="167" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">sat</text>
+  <line x1="330" y1="146" x2="330" y2="98" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbb)"/>
+  <rect x="290" y="56" width="80" height="40" rx="6" fill="rgba(136,146,164,0.10)" stroke="#8892a4" stroke-width="1.5"/><text x="330" y="81" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">RNN</text>
+  <line x1="370" y1="76" x2="408" y2="76" stroke="#f5a623" stroke-width="1.8" marker-end="url(#arrbo)"/>
+  <text x="388" y="64" fill="#f5a623" font-size="14" text-anchor="middle" font-weight="600">h<tspan dy="4" font-size="10">3</tspan></text>
+  <rect x="410" y="146" width="80" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="450" y="167" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">on</text>
+  <line x1="450" y1="146" x2="450" y2="98" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbb)"/>
+  <rect x="410" y="56" width="80" height="40" rx="6" fill="rgba(136,146,164,0.10)" stroke="#8892a4" stroke-width="1.5"/><text x="450" y="81" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">RNN</text>
+  <line x1="490" y1="76" x2="528" y2="76" stroke="#f5a623" stroke-width="1.8" marker-end="url(#arrbo)"/>
+  <text x="508" y="64" fill="#f5a623" font-size="14" text-anchor="middle" font-weight="600">h<tspan dy="4" font-size="10">4</tspan></text>
+  <rect x="530" y="146" width="80" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="570" y="167" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">the</text>
+  <line x1="570" y1="146" x2="570" y2="98" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbb)"/>
+  <rect x="530" y="56" width="80" height="40" rx="6" fill="rgba(136,146,164,0.10)" stroke="#8892a4" stroke-width="1.5"/><text x="570" y="81" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">RNN</text>
+  <line x1="610" y1="76" x2="648" y2="76" stroke="#f5a623" stroke-width="1.8" marker-end="url(#arrbo)"/>
+  <text x="628" y="64" fill="#f5a623" font-size="14" text-anchor="middle" font-weight="600">h<tspan dy="4" font-size="10">5</tspan></text>
+  <rect x="650" y="146" width="80" height="32" rx="4" fill="#0d1225" stroke="#4a9eff" stroke-width="1.5"/><text x="690" y="167" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">mat</text>
+  <line x1="690" y1="146" x2="690" y2="98" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrbb)"/>
+  <rect x="650" y="56" width="80" height="40" rx="6" fill="rgba(136,146,164,0.10)" stroke="#8892a4" stroke-width="1.5"/><text x="690" y="81" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">RNN</text>
+  <line x1="10" y1="76" x2="48" y2="76" stroke="#f5a623" stroke-width="1.8" marker-end="url(#arrbo)"/>
+  <text x="28" y="64" fill="#f5a623" font-size="14" text-anchor="middle" font-weight="600">h<tspan dy="4" font-size="10">0</tspan></text>
+  <line x1="730" y1="76" x2="786" y2="76" stroke="#e74c3c" stroke-width="2" marker-end="url(#arrbr)"/>
+  <rect x="788" y="52" width="76" height="48" rx="6" fill="rgba(231,76,60,0.12)" stroke="#e74c3c" stroke-width="2"/>
+  <text x="824" y="82" fill="#e8eaf0" font-size="17" text-anchor="middle" font-weight="600">h<tspan dy="4" font-size="13">6</tspan></text>
+  <text x="826" y="124" fill="#e74c3c" font-size="12" text-anchor="middle">one fixed-size</text>
+  <text x="826" y="140" fill="#e74c3c" font-size="12" text-anchor="middle">vector holds the</text>
+  <text x="826" y="156" fill="#e74c3c" font-size="12" text-anchor="middle">whole sentence</text>
+  <defs>
+    <marker id="arrbb" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4a9eff"/></marker>
+    <marker id="arrbo" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/></marker>
+    <marker id="arrbr" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#e74c3c"/></marker>
+  </defs>
 </svg>
 </div>
 
