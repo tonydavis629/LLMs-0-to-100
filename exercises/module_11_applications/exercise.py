@@ -183,8 +183,8 @@ def rank_documents(query_vector: np.ndarray, doc_vectors: np.ndarray,
     scores = [cosine_similarity(query_vector, doc_vector)
               for doc_vector in doc_vectors]
     # TODO: Return the indices of the k highest scores, highest first.
-    # HINT: sorted(range(len(scores)), key=..., reverse=True) sorts document
-    #       indices by their score; slice the first k.
+    # HINT: sort the document indices (a range over scores) with sorted(), using each
+    #       index's score as the key, highest first; slice the first k.
     raise NotImplementedError("TODO: rank the documents and keep the top k")
 
 
@@ -217,8 +217,8 @@ def mean_pool(token_vectors: np.ndarray, attention_mask: np.ndarray) -> np.ndarr
     mask = attention_mask.astype(np.float64)[:, None]
     # TODO: Return the sum of the masked token vectors divided by the number
     #       of real tokens.
-    # HINT: (token_vectors * mask).sum(axis=0) sums the real token vectors;
-    #       mask.sum() counts the real tokens.
+    # HINT: multiplying by mask zeroes the padding rows; sum over the token axis, then
+    #       divide by the number of real tokens (the sum of mask).
     raise NotImplementedError("TODO: average the real token vectors")
 
 

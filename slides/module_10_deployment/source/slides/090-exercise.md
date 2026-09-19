@@ -355,7 +355,7 @@ def parse_stream_line(line: str) -> str | None:
     raise NotImplementedError("TODO: extract the token text from the chunk")
 ```
 +++
-**Hint:** `chunk["choices"][0]["delta"]` is a dict; `.get("content")` returns None on its own when the key is missing.
+**Hint:** walk into `"choices"`, element 0, then `"delta"`, which is a dict; its `.get` method returns None on its own when the key is missing.
 +++
 **Answer:**
 

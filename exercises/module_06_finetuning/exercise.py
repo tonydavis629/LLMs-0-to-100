@@ -71,8 +71,9 @@ def build_targets(ids: list[int], prompt_span: int) -> list[int]:
     # TODO: Return next-token targets: the first prompt_span - 1 positions are -100
     #       (ignored), the response targets are ids[prompt_span:], and the final
     #       position is -100 (no token follows the last one).
-    # HINT: [-100] * (prompt_span - 1) masks the prompt predictions; ids[prompt_span:]
-    #       are the response targets; append one more -100 for the final position.
+    # HINT: join three lists with +: prompt_span - 1 copies of -100 to mask the prompt
+    #       predictions, the ids from prompt_span onward as the response targets, and
+    #       one more -100 for the final position.
     raise NotImplementedError("TODO: build the masked next-token targets")
 
 
@@ -114,8 +115,8 @@ def build_optimizer(model: torch.nn.Module, lr: float) -> torch.optim.Optimizer:
         A torch.optim.Optimizer configured for the adapter parameters.
     """
     # TODO: Return an AdamW optimizer over only the trainable (requires_grad) params.
-    # HINT: collect [p for p in model.parameters() if p.requires_grad], then pass
-    #       that list to torch.optim.AdamW with lr=lr.
+    # HINT: filter model.parameters() down to those with requires_grad set, using a list
+    #       comprehension, then pass that list to torch.optim.AdamW with lr=lr.
     raise NotImplementedError("TODO: build AdamW over the trainable adapter params")
 
 

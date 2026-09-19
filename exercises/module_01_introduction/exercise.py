@@ -60,7 +60,8 @@ def char_uniform(length: int = 500) -> str:
     alphabet = list("abcdefghijklmnopqrstuvwxyz ")
 
     # TODO: Sample `length` random characters from alphabet and join them into a string
-    # HINT: random.choices(alphabet, k=length) returns a list; "".join(...) combines it
+    # HINT: random.choices can draw length characters from alphabet (its k argument) as
+    #       a list; join that list into one string.
     raise NotImplementedError("TODO: return a random string of the given length")
 
 

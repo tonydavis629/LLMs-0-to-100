@@ -395,7 +395,7 @@ def suite_score(per_task: dict[str, float]) -> float:
     raise NotImplementedError("TODO: average the per-task scores into the suite score")
 ```
 +++
-**Hint:** `per_task.values()` gives the scores; `sum(...) / len(...)`.
+**Hint:** average the dict's values: add them up and divide by the number of tasks.
 +++
 **Answer:**
 

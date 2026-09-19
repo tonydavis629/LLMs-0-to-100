@@ -310,7 +310,7 @@ def recurrent_step_output(q_t_phi: Tensor, S: Tensor, z: Tensor) -> Tensor:
     raise NotImplementedError("TODO: return this token's attention output")
 ```
 +++
-**Hint:** `@` handles both products here. `q_t_phi @ S` gives a vector, and `q_t_phi @ z` gives a single number to divide by.
+**Hint:** `@` handles both products here. The query against `S` gives a vector, and the query against `z` gives a single number to divide by.
 +++
 **Answer:**
 
@@ -372,7 +372,7 @@ def outputs_match(a: Tensor, b: Tensor, tolerance: float = 1e-4) -> bool:
     raise NotImplementedError("TODO: return whether a and b agree within tolerance")
 ```
 +++
-**Hint:** `torch.allclose(a, b, atol=...)` does exactly this.
+**Hint:** `torch.allclose` compares two tensors elementwise; its `atol` argument sets the tolerance.
 +++
 **Answer:**
 

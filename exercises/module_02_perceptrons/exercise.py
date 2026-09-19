@@ -96,7 +96,8 @@ def compute_gradients(
     db = error.mean()  # Bias gradient: the average error (provided for you)
     dw = None
     # TODO: Compute dw, the weight gradient, from X and error averaged over the batch
-    # HINT: X.T @ error weights each input column by its error; divide by n to average
+    # HINT: Transpose X so a matrix product with error sums over the samples, then
+    #       divide by n.
     raise NotImplementedError("TODO: compute dw")
     return (dw, db)
 
@@ -129,7 +130,8 @@ def update_parameters(
         (new_weights, new_bias): the updated parameters.
     """
     # TODO: Apply the gradient-descent update rule
-    # HINT: subtract learning_rate * dw from weights, and learning_rate * db from bias
+    # HINT: Move each parameter against its gradient: the step is the gradient scaled by
+    #       learning_rate.
     raise NotImplementedError("TODO: implement parameter update")
 
 
@@ -277,5 +279,6 @@ class SGD:
             None. Each parameter tensor is modified in place.
         """
         # TODO: update each parameter in place using its gradient p.grad (Step 4, for every tensor)
-        # HINT: inside `with torch.no_grad():`, loop over self.params and do `p -= self.lr * p.grad`
+        # HINT: Turn gradient tracking off with torch.no_grad(), then move every
+        #       parameter in self.params in place, against its .grad, scaled by self.lr.
         raise NotImplementedError("Extra credit: implement the optimizer step")

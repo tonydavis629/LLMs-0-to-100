@@ -2742,7 +2742,7 @@ def rank_documents(query_vector: np.ndarray, doc_vectors: np.ndarray,
 
 <div class="fragment hint-box">
 
-**Hint:** `sorted(range(len(scores)), key=..., reverse=True)` sorts document indices by their score; slice the first k.
+**Hint:** sort the document indices (a `range` over `scores`) with `sorted()`, using each index's score as the key, highest first; slice the first k.
 
 </div>
 
@@ -2814,7 +2814,7 @@ def mean_pool(token_vectors: np.ndarray, attention_mask: np.ndarray) -> np.ndarr
 
 <div class="fragment hint-box">
 
-**Hint:** `(token_vectors * mask).sum(axis=0)` sums the real token vectors; `mask.sum()` counts the real tokens.
+**Hint:** multiplying by `mask` zeroes the padding rows; sum over the token axis, then divide by the number of real tokens (the sum of `mask`).
 
 </div>
 

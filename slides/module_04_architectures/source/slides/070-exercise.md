@@ -279,7 +279,7 @@ Saved token probability plot to module&#95;04&#95;architectures/output/token&#95
     return tokenizer.decode(token_ids[0])
 ```
 +++
-**Hint:** use `torch.argmax(next_logits, dim=-1, keepdim=True)`.
+**Hint:** `torch.argmax` over the last dimension picks the highest logit; `keepdim=True` keeps the shape needed to append the token.
 +++
 **Answer:**
 

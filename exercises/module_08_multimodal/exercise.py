@@ -89,7 +89,7 @@ def l2_normalize(embeddings: torch.Tensor) -> torch.Tensor:
         Unit-length embeddings, shape (B, D).
     """
     # TODO: Return the embeddings scaled to unit L2 norm along the last dimension.
-    # HINT: F.normalize(embeddings, dim=-1).
+    # HINT: F.normalize does this in one call; normalize along the last dimension.
     raise NotImplementedError("TODO: L2-normalize the embeddings")
 
 
@@ -110,7 +110,8 @@ def similarity_matrix(
         Similarity logits of shape (B, B); row i indexes images, column j captions.
     """
     # TODO: Return the matrix of image-text dot products, divided by temperature.
-    # HINT: image_embeds @ text_embeds.t(), then divide by temperature.
+    # HINT: matrix-multiply the image embeddings by the transposed text embeddings, then
+    #       divide by temperature.
     raise NotImplementedError("TODO: build the image-text similarity matrix")
 
 
@@ -130,8 +131,8 @@ def clip_loss(logits: torch.Tensor) -> torch.Tensor:
     """
     # TODO: Average row-wise (image->text) and column-wise (text->image) cross-entropy
     #       against the diagonal targets 0..B-1.
-    # HINT: labels = torch.arange(B); F.cross_entropy(logits, labels) and the same on
-    #       logits.t(); average the two.
+    # HINT: row i's correct label is i, so torch.arange builds the labels; take
+    #       F.cross_entropy on logits and again on its transpose, then average the two.
     raise NotImplementedError("TODO: build the symmetric CLIP contrastive loss")
 
 
@@ -159,7 +160,8 @@ def image_to_prefix(
         Visual prefix embeddings of shape (B, prefix_len, d_llm).
     """
     # TODO: Apply to_prefix, then reshape the output into (B, prefix_len, d_llm).
-    # HINT: to_prefix(image_embeds).view(B, prefix_len, -1).
+    # HINT: pass the embeddings through to_prefix, then use .view to split the flat
+    #       output into prefix_len vectors per image (let -1 infer the last size).
     raise NotImplementedError("TODO: project the image embedding into visual prefix tokens")
 
 
@@ -197,5 +199,6 @@ def greedy_next_token(logits: torch.Tensor) -> torch.Tensor:
         The argmax token id at the final position, shape (B,).
     """
     # TODO: Return the argmax over the vocabulary at the final sequence position.
-    # HINT: logits[:, -1, :].argmax(dim=-1).
+    # HINT: slice out the last position along the sequence axis, then argmax over the
+    #       vocabulary dimension.
     raise NotImplementedError("TODO: greedily pick the next token")

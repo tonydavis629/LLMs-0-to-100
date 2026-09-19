@@ -192,7 +192,8 @@ def greedy_decode(model: GPT2Model, tokenizer, prompt: str, max_new: int = 10) -
             next_logits = logits[:, -1, :]
 
             # TODO: Pick the token with the highest logit (argmax).
-            # HINT: use torch.argmax(next_logits, dim=-1, keepdim=True)
+            # HINT: torch.argmax over the last dimension picks the highest logit;
+            #       keepdim=True keeps the shape needed to append the token.
             next_token = None
             if next_token is None:
                 raise NotImplementedError("TODO: greedy argmax next token")

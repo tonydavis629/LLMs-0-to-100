@@ -3462,7 +3462,7 @@ The shape of every tensor is checked before copying, and all 149 parameter tenso
 
 <div class="fragment hint-box">
 
-**Hint:** use `torch.argmax(next_logits, dim=-1, keepdim=True)`.
+**Hint:** `torch.argmax` over the last dimension picks the highest logit; `keepdim=True` keeps the shape needed to append the token.
 
 </div>
 

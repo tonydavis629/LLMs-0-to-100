@@ -195,8 +195,8 @@ def parse_stream_line(line: str) -> str | None:
     chunk = json.loads(payload)
     # TODO: Return the content string of the delta inside the first choice
     #       (and None if the delta has no "content" key).
-    # HINT: chunk["choices"][0]["delta"] is a dict; .get("content") returns
-    #       None on its own when the key is missing.
+    # HINT: walk into "choices", element 0, then "delta", which is a dict; its .get
+    #       method returns None on its own when the key is missing.
     raise NotImplementedError("TODO: extract the token text from the chunk")
 
 

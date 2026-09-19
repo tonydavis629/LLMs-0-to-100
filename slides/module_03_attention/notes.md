@@ -73,6 +73,17 @@ $$\text{Attention}(Q, K, V) = \text{softmax}\!\left(\frac{QK^T}{\sqrt{d_k}}\righ
 - If token $i$ attends strongly to token $j$, the output at position $i$ is dominated by $\mathbf{v}_j$.
 - The output dimension matches the value dimension ($d_k$), not the sequence length.
 
+### Where Attention Lives: The Transformer Block
+- A transformer stacks $N$ identical blocks. Each block has two sublayers: an attention layer, which moves information between token positions, and a position-wise MLP (feed-forward network), which transforms each token independently with the same weights.
+- Each sublayer is wrapped in a residual connection, so the block computes
+
+$$x \leftarrow x + \text{Attention}(x), \qquad x \leftarrow x + \text{MLP}(x)$$
+
+- Residual connections were introduced for deep convolutional networks. The identity path means a sublayer only has to learn a correction to its input, and the gradient reaches early layers without passing through every nonlinearity, which is what makes stacks of dozens of blocks trainable.
+- The slide omits layer normalization, which the original transformer applies around each sublayer. Module 4 covers the full block.
+- **Reference:** Vaswani, A., et al. (2017). "Attention Is All You Need." *NeurIPS 2017*. Section 3.1 describes the stacked sublayers with residual connections.
+- **Reference:** He, K., Zhang, X., Ren, S., & Sun, J. (2016). "Deep Residual Learning for Image Recognition." *CVPR 2016*.
+
 ### Attention Beyond Text
 - The same mechanism operates on any sequence, including image patches. In a vision-language model, text tokens can attend to regions of an image, and the attention map highlights the regions the text refers to.
 - **Reference:** Huang, Z., Zeng, Z., Liu, B., Fu, D., & Fu, J. (2020). "Pixel-BERT: Aligning Image Pixels with Text by Deep Multi-Modal Transformers." *arXiv:2004.00849*. (The attention-region visualization in the slides is from Pixel-BERT.)

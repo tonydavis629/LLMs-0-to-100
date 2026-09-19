@@ -194,7 +194,7 @@ def l2_normalize(embeddings: torch.Tensor) -> torch.Tensor:
     raise NotImplementedError("TODO: L2-normalize the embeddings")
 ```
 +++
-**Hint:** `F.normalize(embeddings, dim=-1)`.
+**Hint:** `F.normalize` does this in one call; normalize along the last dimension.
 +++
 **Answer:**
 
@@ -227,7 +227,7 @@ def similarity_matrix(
     raise NotImplementedError("TODO: build the image-text similarity matrix")
 ```
 +++
-**Hint:** `image_embeds @ text_embeds.t()`, then divide by `temperature`.
+**Hint:** matrix-multiply the image embeddings by the transposed text embeddings, then divide by `temperature`.
 +++
 **Answer:**
 
@@ -259,7 +259,7 @@ def clip_loss(logits: torch.Tensor) -> torch.Tensor:
     raise NotImplementedError("TODO: build the symmetric CLIP contrastive loss")
 ```
 +++
-**Hint:** `labels = torch.arange(B)`; `F.cross_entropy(logits, labels)` and the same on `logits.t()`; average the two.
+**Hint:** row i's correct label is i, so `torch.arange` builds the labels; take `F.cross_entropy` on `logits` and again on its transpose, then average the two.
 +++
 **Answer:**
 
@@ -338,7 +338,7 @@ def image_to_prefix(
     raise NotImplementedError("TODO: project the image embedding into visual prefix tokens")
 ```
 +++
-**Hint:** `to_prefix(image_embeds).view(B, prefix_len, -1)`.
+**Hint:** pass the embeddings through `to_prefix`, then use `.view` to split the flat output into `prefix_len` vectors per image (let `-1` infer the last size).
 +++
 **Answer:**
 
@@ -432,7 +432,7 @@ def greedy_next_token(logits: torch.Tensor) -> torch.Tensor:
     raise NotImplementedError("TODO: greedily pick the next token")
 ```
 +++
-**Hint:** `logits[:, -1, :].argmax(dim=-1)`.
+**Hint:** slice out the last position along the sequence axis, then `argmax` over the vocabulary dimension.
 +++
 **Answer:**
 

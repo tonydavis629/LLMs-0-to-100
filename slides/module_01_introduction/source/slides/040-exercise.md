@@ -172,7 +172,7 @@ Maximum entropy: **q**, **x**, **z** appear as often as **e** or **t**. The thir
     raise NotImplementedError("TODO: return a random string of the given length")
 ```
 +++
-**Hint:** `random.choices(alphabet, k=length)` returns a list; `"".join(...)` combines it.
+**Hint:** `random.choices` can draw `length` characters from `alphabet` (its `k` argument) as a list; join that list into one string.
 +++
 **Answer:** <!-- .element: class="text-lg" -->
 

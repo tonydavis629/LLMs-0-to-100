@@ -170,7 +170,7 @@ def suite_score(per_task: dict[str, float]) -> float:
         The mean of the per-task scores.
     """
     # TODO: Return the mean of the per-task scores.
-    # HINT: per_task.values() gives the scores; sum(...) / len(...).
+    # HINT: average the dict's values: add them up and divide by the number of tasks.
     raise NotImplementedError("TODO: average the per-task scores into the suite score")
 
 

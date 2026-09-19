@@ -58,7 +58,8 @@ def train_val_split(data: torch.Tensor,
     """
     # TODO: Return (train_data, val_data): the first (1 - val_fraction) of the
     #       tokens for training, and the remaining tail for validation.
-    # HINT: n_train = int(len(data) * (1 - val_fraction)), then slice data[:n_train] and data[n_train:].
+    # HINT: the split index is the training fraction of len(data), rounded down with
+    #       int(); slice up to it for train and from it onward for val.
     raise NotImplementedError("TODO: split the token stream into train and validation")
 
 
@@ -195,7 +196,8 @@ def estimate_loss(
         x, y = get_batch(data, block_size, batch_size, generator)
         logits = model(x)
         # TODO: Add this batch's loss (as a Python float) to `total`.
-        # HINT: compute_loss(logits, y) returns a tensor; use .item() to get a float.
+        # HINT: reuse compute_loss on this batch; it returns a tensor, and .item() turns
+        #       that into a float.
         raise NotImplementedError("TODO: accumulate the batch loss into total")
     model.train()
     return total / n_batches
@@ -220,7 +222,8 @@ def loss_to_perplexity_and_bits(loss: float) -> tuple[float, float]:
         (perplexity, bits_per_token).
     """
     # TODO: Return (perplexity, bits_per_token) from the average loss (in nats).
-    # HINT: perplexity = exp(loss); bits_per_token = loss / ln(2). Use math.exp and math.log.
+    # HINT: perplexity exponentiates the loss; dividing the loss by ln(2) converts nats
+    #       to bits. Use math.exp and math.log.
     raise NotImplementedError("TODO: perplexity and bits per token")
 
 

@@ -152,8 +152,9 @@ def gather_token_log_probs(logits: torch.Tensor, target_ids: torch.Tensor) -> to
     """
     # TODO: Return the log-probability of each target token: log_softmax the logits
     #       over the vocab dimension, then gather the entry at each target id.
-    # HINT: F.log_softmax(logits, dim=-1), then .gather(-1, target_ids.unsqueeze(-1))
-    #       and .squeeze(-1) to drop the gathered dimension.
+    # HINT: take F.log_softmax over the vocabulary dimension, then .gather along that
+    #       same dimension using target_ids; unsqueeze gives the index the extra dim
+    #       that gather needs, and squeeze drops it afterwards.
     raise NotImplementedError("TODO: gather the per-token log-probabilities")
 
 
@@ -246,5 +247,6 @@ def mean_reward(rewards: torch.Tensor) -> float:
     held-out prompts to report before/after accuracy.
     """
     # TODO: Return the mean of rewards as a Python float.
-    # HINT: rewards.mean() gives a tensor; .item() converts it to a float.
+    # HINT: averaging a tensor gives a one-element tensor; .item() converts it to a
+    #       float.
     raise NotImplementedError("TODO: return the mean reward as a float")

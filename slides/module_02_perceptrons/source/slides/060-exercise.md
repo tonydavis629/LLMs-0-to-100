@@ -176,7 +176,7 @@ def update_parameters(
     raise NotImplementedError("TODO: implement parameter update")
 ```
 +++
-**Hint:** Subtract `learning_rate * dw` from weights, `learning_rate * db` from bias.
+**Hint:** Move each parameter against its gradient: the step is the gradient scaled by `learning_rate`.
 +++
 **Answer:**
 
@@ -389,7 +389,7 @@ def step(self) -> None:
     raise NotImplementedError("Extra credit: implement the optimizer step")
 ```
 +++
-**Hint:** Inside `with torch.no_grad():`, loop over `self.params` and update each one in place with `p -= self.lr * p.grad`.
+**Hint:** Turn gradient tracking off with `torch.no_grad()`, then move every parameter in `self.params` in place, against its `.grad`, scaled by `self.lr`.
 +++
 **Answer:**
 

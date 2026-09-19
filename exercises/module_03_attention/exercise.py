@@ -52,7 +52,8 @@ class TinyAttentionLayer:
             (Q, K, V): Each tensor has shape (seq_len, d_k).
         """
         # TODO: Compute and return Q, K, V by multiplying X by this layer's W_Q, W_K, and W_V.
-        # HINT: use X @ self.W_Q, X @ self.W_K, and X @ self.W_V.
+        # HINT: matrix-multiply X by each of the layer's three weight matrices with the
+        #       @ operator.
         raise NotImplementedError("TODO: compute Q, K, V projections")
 
     def raw_attention_scores(self, Q: torch.Tensor, K: torch.Tensor) -> torch.Tensor:
@@ -66,7 +67,8 @@ class TinyAttentionLayer:
             Scores matrix, shape (seq_len, seq_len).
         """
         # TODO: Compute the attention scores as the matrix product of Q and K^T.
-        # HINT: use Q @ K.T (the .T attribute transposes a 2D tensor).
+        # HINT: matrix-multiply Q by the transpose of K (the .T attribute transposes a
+        #       2D tensor).
         raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
 
     def scaled_softmax(self, scores: torch.Tensor) -> torch.Tensor:
@@ -79,7 +81,8 @@ class TinyAttentionLayer:
             Attention weights, shape (seq_len, seq_len). Each row sums to 1.
         """
         # TODO: Scale the scores by 1/sqrt(d_k), then apply softmax along dim=-1.
-        # HINT: divide scores by (self.d_k ** 0.5), then call F.softmax(..., dim=-1).
+        # HINT: divide scores by the square root of self.d_k, then apply F.softmax along
+        #       the last dimension.
         raise NotImplementedError("TODO: apply scaled softmax to attention scores")
 
     def attention_output(self, weights: torch.Tensor, V: torch.Tensor) -> torch.Tensor:
@@ -93,7 +96,8 @@ class TinyAttentionLayer:
             Output tensor, shape (seq_len, d_k).
         """
         # TODO: Compute the weighted sum of values using the attention weights.
-        # HINT: use weights @ V (matrix multiply the weight matrix by the value matrix).
+        # HINT: matrix-multiply the weight matrix by the value matrix with the @
+        #       operator.
         raise NotImplementedError("TODO: compute attention output as weighted sum of values")
 
     def causal_mask(self, seq_len: int) -> torch.Tensor:
@@ -166,7 +170,8 @@ def add_positional_embeddings(X: torch.Tensor) -> torch.Tensor:
     P = torch.zeros_like(X)
 
     # TODO: Fill the even dimensions of P with sine values and the odd dimensions with cosine values, using the angles above.
-    # HINT: assign torch.sin(angles) to P[:, 0::2] and torch.cos(angles) to P[:, 1::2].
+    # HINT: even columns (slice 0::2) get the sine of angles; odd columns (slice 1::2)
+    #       get the cosine.
     raise NotImplementedError("TODO: fill sine and cosine positional dimensions")
 
     # Add position information to each token embedding.
@@ -205,7 +210,8 @@ def kv_cache_step(
             updated_values: Values with the new value appended, shape (n_cached+1, d_k).
     """
     # TODO: Project new_token through W_Q, W_K, and W_V.
-    # HINT: use new_token @ W_Q, new_token @ W_K, and new_token @ W_V.
+    # HINT: matrix-multiply new_token by each of the three weight matrices with the @
+    #       operator.
     new_query = None
     new_key = None
     new_value = None

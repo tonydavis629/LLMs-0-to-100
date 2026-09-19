@@ -97,6 +97,55 @@ Compare, normalize, retrieve. No recurrence, no convolution, no fixed-size bottl
 
 ---
 
+<!-- .slide: id="transformer-stack-preview" -->
+
+## Where Attention Lives
+
+A transformer is a stack of identical blocks: attention, then an MLP, each adding its result back to its input.
+
+<div style="text-align: center; margin: 5px 0;">
+<svg viewBox="0 24 880 196" width="100%" style="max-height: 215px;">
+  <rect x="130" y="30" width="600" height="184" rx="8" fill="rgba(136,146,164,0.05)" stroke="#8892a4" stroke-width="1.3" stroke-dasharray="6 4"/>
+  <text x="146" y="54" fill="#8892a4" font-size="13" font-weight="600">one block</text>
+  <text x="714" y="54" fill="#c792ea" font-size="14" font-weight="600" text-anchor="end">repeated N times</text>
+  <rect x="16" y="162" width="72" height="36" rx="5" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="52" y="185" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">tokens</text>
+  <line x1="88" y1="180" x2="396" y2="180" stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrtsw)"/>
+  <line x1="424" y1="180" x2="676" y2="180" stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrtsw)"/>
+  <line x1="704" y1="180" x2="786" y2="180" stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrtsw)"/>
+  <text x="290" y="204" fill="#8892a4" font-size="12" text-anchor="middle">residual connection (input passes straight through)</text>
+  <path d="M190 180 L190 104 L230 104" fill="none" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrtsb)"/>
+  <rect x="232" y="78" width="140" height="52" rx="6" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/>
+  <text x="302" y="100" fill="#4a9eff" font-size="14" text-anchor="middle" font-weight="600">Attention</text>
+  <text x="302" y="119" fill="#8892a4" font-size="11" text-anchor="middle">tokens share information</text>
+  <path d="M372 104 L410 104 L410 166" fill="none" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrtsb)"/>
+  <circle cx="410" cy="180" r="13" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="410" y="186" fill="#e8eaf0" font-size="18" text-anchor="middle" font-weight="600">+</text>
+  <path d="M470 180 L470 104 L510 104" fill="none" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrtso)"/>
+  <rect x="512" y="78" width="140" height="52" rx="6" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/>
+  <text x="582" y="100" fill="#f5a623" font-size="14" text-anchor="middle" font-weight="600">MLP</text>
+  <text x="582" y="119" fill="#8892a4" font-size="11" text-anchor="middle">each token on its own</text>
+  <path d="M652 104 L690 104 L690 166" fill="none" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrtso)"/>
+  <circle cx="690" cy="180" r="13" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="690" y="186" fill="#e8eaf0" font-size="18" text-anchor="middle" font-weight="600">+</text>
+  <rect x="788" y="162" width="76" height="36" rx="5" fill="#0d1225" stroke="#3fb950" stroke-width="2"/>
+  <text x="826" y="185" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">output</text>
+  <defs>
+    <marker id="arrtsw" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#e8eaf0"/></marker>
+    <marker id="arrtsb" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4a9eff"/></marker>
+    <marker id="arrtso" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/></marker>
+  </defs>
+</svg>
+</div>
+
+$$x \leftarrow x + \text{Attention}(x) \qquad\qquad x \leftarrow x + \text{MLP}(x)$$
+
+- **Attention** is the only place tokens exchange information; the **MLP** (Module 2) works on each token separately
+- With the residual connection, each layer only learns an update to its input
+- Module 4 builds the full block
+
+---
+
 <!-- .slide: id="attention-heatmap" -->
 
 :::interactive id="attn-heatmap" widget="attentionHeatmap" title="Attention as a Heatmap"

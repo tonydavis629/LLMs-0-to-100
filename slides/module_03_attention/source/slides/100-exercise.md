@@ -90,7 +90,7 @@ Add a causal mask to block future tokens, then add sinusoidal positional encodin
         raise NotImplementedError("TODO: compute Q, K, V projections")
 ```
 +++
-**Hint:** use X @ self.W_Q, X @ self.W_K, and X @ self.W_V.
+**Hint:** matrix-multiply `X` by each of the layer's three weight matrices with the `@` operator.
 +++
 **Answer:**
 
@@ -117,7 +117,7 @@ return X @ self.W_Q, X @ self.W_K, X @ self.W_V
         raise NotImplementedError("TODO: compute raw attention scores Q @ K^T")
 ```
 +++
-**Hint:** use Q @ K.T (the .T attribute transposes a 2D tensor).
+**Hint:** matrix-multiply `Q` by the transpose of `K` (the `.T` attribute transposes a 2D tensor).
 +++
 **Answer:**
 
@@ -173,7 +173,7 @@ return Q @ K.T
         raise NotImplementedError("TODO: apply scaled softmax to attention scores")
 ```
 +++
-**Hint:** divide scores by (self.d_k ** 0.5), then call F.softmax(..., dim=-1).
+**Hint:** divide `scores` by the square root of `self.d_k`, then apply `F.softmax` along the last dimension.
 +++
 **Answer:**
 
@@ -200,7 +200,7 @@ return F.softmax(scores / (self.d_k ** 0.5), dim=-1)
         raise NotImplementedError("TODO: compute attention output as weighted sum of values")
 ```
 +++
-**Hint:** use weights @ V (matrix multiply the weight matrix by the value matrix).
+**Hint:** matrix-multiply the weight matrix by the value matrix with the `@` operator.
 +++
 **Answer:**
 
@@ -333,7 +333,7 @@ return allowed.masked_fill(allowed == 0, float("-inf")).masked_fill(allowed == 1
     return X + P
 ```
 +++
-**Hint:** assign torch.sin(angles) to P[:, 0::2] and torch.cos(angles) to P[:, 1::2].
+**Hint:** even columns (slice `0::2`) get the sine of `angles`; odd columns (slice `1::2`) get the cosine.
 +++
 **Answer:**
 
