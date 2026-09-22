@@ -3,6 +3,21 @@
 
 ---
 
+<!-- .slide: id="scaled-softmax" -->
+
+## From Scores to the Attention Map
+
+$QK^T$ holds the raw scores. Divide by $\sqrt{d_k}$, then apply softmax to each row:
+
+$$A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)$$
+
+- $QK^T$ is the $n \times n$ grid of scores from before: row $i$ compares token $i$'s query with every key
+- The only new ingredient is the $\sqrt{d_k}$ divisor, a fixed temperature
+- Softmax runs on each row separately, so every row of $A$ sums to 1
+- $A$ is the **attention map**
+
+---
+
 <!-- .slide: id="scaling-problem" -->
 
 ## Why Scale by $\sqrt{d_k}$?
@@ -44,21 +59,6 @@ Large softmax inputs produce a **sharply peaked** output: one entry near 1, the 
 :::note
 Dividing by $\sqrt{d_k}$ keeps the dot-product variance roughly constant at any dimension. Gradients keep flowing.
 :::
-
----
-
-<!-- .slide: id="scaled-softmax" -->
-
-## From Scores to the Attention Map
-
-$QK^T$ holds the raw scores. Divide by $\sqrt{d_k}$, then apply softmax to each row:
-
-$$A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)$$
-
-- $QK^T$ is the $n \times n$ grid of scores from before: row $i$ compares token $i$'s query with every key
-- The only new ingredient is the $\sqrt{d_k}$ divisor, a fixed temperature
-- Softmax runs on each row separately, so every row of $A$ sums to 1
-- $A$ is the **attention map**
 
 ---
 
