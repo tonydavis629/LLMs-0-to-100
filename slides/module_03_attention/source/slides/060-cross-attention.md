@@ -22,26 +22,26 @@
   <text x="195" y="200" fill="#8892a4" font-size="12" text-anchor="middle">Q, K, V all from the</text>
   <text x="195" y="218" fill="#8892a4" font-size="12" text-anchor="middle">same sequence</text>
   <!-- divider -->
-  <line x1="410" y1="40" x2="410" y2="220" stroke="#2a3450" stroke-width="1"/>
+  <line x1="340" y1="40" x2="340" y2="220" stroke="#2a3450" stroke-width="1"/>
   <!-- Cross-attention panel -->
   <text x="615" y="22" fill="#50c878" font-size="14" text-anchor="middle" font-weight="600">Cross-Attention</text>
-  <!-- decoder row (queries) -->
-  <text x="455" y="62" fill="#8892a4" font-size="11" text-anchor="end">target side (Q)</text>
+  <!-- encoder row (keys/values), on top -->
+  <text x="455" y="62" fill="#8892a4" font-size="11" text-anchor="end">source side (K, V)</text>
   <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="470" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="507" y="67" fill="#e8eaf0">the</text>
-    <rect x="558" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="2.5"/><text x="595" y="67" fill="#e8eaf0">cat</text>
+    <rect x="470" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="507" y="67" fill="#e8eaf0">le</text>
+    <rect x="558" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/><text x="595" y="67" fill="#e8eaf0">chat</text>
+    <rect x="646" y="46" width="100" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="696" y="67" fill="#e8eaf0">sportif</text>
   </g>
-  <!-- encoder row (keys/values) -->
-  <text x="455" y="162" fill="#8892a4" font-size="11" text-anchor="end">source side (K, V)</text>
+  <!-- decoder row (queries), below, looking back up at the source -->
+  <text x="455" y="162" fill="#8892a4" font-size="11" text-anchor="end">target side (Q)</text>
   <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="470" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="507" y="167" fill="#e8eaf0">le</text>
-    <rect x="558" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/><text x="595" y="167" fill="#e8eaf0">chat</text>
-    <rect x="646" y="146" width="100" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="696" y="167" fill="#e8eaf0">sportif</text>
+    <rect x="470" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="507" y="167" fill="#e8eaf0">the</text>
+    <rect x="558" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="2.5"/><text x="595" y="167" fill="#e8eaf0">cat</text>
   </g>
   <!-- cross arrows: "cat" query attends to "chat" key -->
-  <line x1="595" y1="78" x2="595" y2="144" stroke="#50c878" stroke-width="3" marker-end="url(#arrcxgr)"/>
-  <line x1="595" y1="78" x2="515" y2="144" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
-  <line x1="595" y1="78" x2="690" y2="144" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
+  <line x1="595" y1="146" x2="595" y2="80" stroke="#50c878" stroke-width="3" marker-end="url(#arrcxgr)"/>
+  <line x1="595" y1="146" x2="515" y2="80" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
+  <line x1="595" y1="146" x2="690" y2="80" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
   <text x="615" y="210" fill="#8892a4" font-size="12" text-anchor="middle">Q from one sequence, K and V</text>
   <text x="615" y="228" fill="#8892a4" font-size="12" text-anchor="middle">from another ("cat" finds "chat")</text>
   <defs>

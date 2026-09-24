@@ -1776,8 +1776,9 @@ Turning scores into probabilities
 Softmax turns a vector of raw scores (**logits**) into a probability distribution:
 
 $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
+<div style="text-align: center; font-size: 0.4em; color: var(--text-color);"><em>i</em>: the option being scored &middot; <em>j</em>: runs over every option in the sum</div>
 <div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 185" width="100%" style="max-height: 165px;">
+<svg viewBox="0 0 820 185" width="100%" style="max-height: 140px;">
   <g font-size="12" text-anchor="middle" font-weight="600">
     <text x="145" y="22" fill="#f5a623">raw scores z</text>
     <text x="410" y="22" fill="#f5a623">positive scores e^z</text>
@@ -2361,53 +2362,86 @@ Several lookup patterns running in parallel
 
 ## Why Multiple Heads?
 
-One head = one weighted average per token. Splitting the feature dimension lets several lookup patterns run in parallel.
+One head = one weighted average per token. Project first, then split: each head gets its own 64 dimensions of $Q$, $K$, and $V$, so several lookup patterns run in parallel.
 <div style="text-align: center; margin: 4px 0;">
-<svg viewBox="0 0 880 300" width="100%" style="max-height: 290px;">
-  <text x="370" y="20" fill="#8892a4" font-size="12" text-anchor="middle">Each token is one embedding vector of size d_model</text>
-  <rect x="82" y="30" width="576" height="30" rx="3" fill="rgba(232,234,240,0.10)" stroke="#e8eaf0" stroke-width="1.6"/>
-  <text x="370" y="50" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">d_model = 512</text>
-  <line x1="82" y1="66" x2="82" y2="72" stroke="#8892a4" stroke-width="1"/>
-  <line x1="658" y1="66" x2="658" y2="72" stroke="#8892a4" stroke-width="1"/>
-  <line x1="82" y1="72" x2="658" y2="72" stroke="#8892a4" stroke-width="1"/>
-  <text x="370" y="86" fill="#8892a4" font-size="11" text-anchor="middle">512 features per token</text>
-  <line x1="370" y1="92" x2="370" y2="116" stroke="#8892a4" stroke-width="1.4" marker-end="url(#arrmhfirst)"/>
-  <text x="382" y="110" fill="#8892a4" font-size="11" text-anchor="start">split into H = 8 heads of d_k = 64</text>
-  <g font-size="10" text-anchor="middle" font-weight="600">
-    <rect x="82" y="120" width="576" height="30" fill="none" stroke="#e8eaf0" stroke-width="1.4"/>
-    <rect x="82" y="120" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="118" y="140" fill="#e8eaf0">64</text>
-    <rect x="154" y="120" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="190" y="140" fill="#e8eaf0">64</text>
-    <rect x="226" y="120" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="262" y="140" fill="#e8eaf0">64</text>
-    <rect x="298" y="120" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="334" y="140" fill="#e8eaf0">64</text>
-    <rect x="370" y="120" width="72" height="30" fill="rgba(74,158,255,0.30)" stroke="#0a0e1a"/><text x="406" y="140" fill="#e8eaf0">64</text>
-    <rect x="442" y="120" width="72" height="30" fill="rgba(245,166,35,0.30)" stroke="#0a0e1a"/><text x="478" y="140" fill="#e8eaf0">64</text>
-    <rect x="514" y="120" width="72" height="30" fill="rgba(80,200,120,0.30)" stroke="#0a0e1a"/><text x="550" y="140" fill="#e8eaf0">64</text>
-    <rect x="586" y="120" width="72" height="30" fill="rgba(199,146,234,0.30)" stroke="#0a0e1a"/><text x="622" y="140" fill="#e8eaf0">64</text>
+<svg viewBox="0 0 880 312" width="100%" style="max-height: 300px;">
+  <rect x="308" y="4" width="100" height="30" rx="5" fill="rgba(232,234,240,0.10)" stroke="#e8eaf0" stroke-width="1.6"/>
+  <text x="344" y="24" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">X</text><text x="374" y="24" fill="#8892a4" font-size="10" text-anchor="middle">n × 512</text>
+  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmhfirst)">
+    <line x1="358" y1="34" x2="286" y2="48"/>
+    <line x1="358" y1="34" x2="358" y2="48"/>
+    <line x1="358" y1="34" x2="430" y2="48"/>
+    <line x1="286" y1="84" x2="286" y2="96"/>
+    <line x1="358" y1="84" x2="358" y2="96"/>
+    <line x1="430" y1="84" x2="430" y2="96"/>
   </g>
-  <g stroke="#e8eaf0" stroke-width="1.2">
-    <line x1="154" y1="120" x2="154" y2="150"/><line x1="226" y1="120" x2="226" y2="150"/>
-    <line x1="298" y1="120" x2="298" y2="150"/><line x1="370" y1="120" x2="370" y2="150"/>
-    <line x1="442" y1="120" x2="442" y2="150"/><line x1="514" y1="120" x2="514" y2="150"/>
-    <line x1="586" y1="120" x2="586" y2="150"/>
+  <g text-anchor="middle" font-weight="600">
+    <rect x="254" y="50" width="64" height="34" rx="4" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/><text x="286" y="65" fill="#4a9eff" font-size="12">W<tspan dy="3" font-size="9">Q</tspan></text><text x="286" y="79" fill="#8892a4" font-size="9" font-weight="400">512 × 512</text>
+    <text x="286" y="108" fill="#4a9eff" font-size="11">Q <tspan fill="#8892a4" font-weight="400" font-size="10">n × 512</tspan></text>
+    <rect x="326" y="50" width="64" height="34" rx="4" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/><text x="358" y="65" fill="#f5a623" font-size="12">W<tspan dy="3" font-size="9">K</tspan></text><text x="358" y="79" fill="#8892a4" font-size="9" font-weight="400">512 × 512</text>
+    <text x="358" y="108" fill="#f5a623" font-size="11">K <tspan fill="#8892a4" font-weight="400" font-size="10">n × 512</tspan></text>
+    <rect x="398" y="50" width="64" height="34" rx="4" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/><text x="430" y="65" fill="#50c878" font-size="12">W<tspan dy="3" font-size="9">V</tspan></text><text x="430" y="79" fill="#8892a4" font-size="9" font-weight="400">512 × 512</text>
+    <text x="430" y="108" fill="#50c878" font-size="11">V <tspan fill="#8892a4" font-weight="400" font-size="10">n × 512</tspan></text>
   </g>
-  <text x="710" y="138" fill="#e8eaf0" font-size="12">Q, K, V grouped by slice</text>
-  <g stroke="#8892a4" stroke-width="1.1" marker-end="url(#arrmhfirst)">
-    <line x1="118" y1="150" x2="118" y2="184"/><line x1="190" y1="150" x2="190" y2="184"/>
-    <line x1="262" y1="150" x2="262" y2="184"/><line x1="334" y1="150" x2="334" y2="184"/>
-    <line x1="406" y1="150" x2="406" y2="184"/><line x1="478" y1="150" x2="478" y2="184"/>
-    <line x1="550" y1="150" x2="550" y2="184"/><line x1="622" y1="150" x2="622" y2="184"/>
+  <g font-size="11" text-anchor="middle">
+    <rect x="250" y="114" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="286" y="130" fill="#4a9eff">Q<tspan dy="3" font-size="8">1</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="250" y="138" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="286" y="154" fill="#4a9eff">Q<tspan dy="3" font-size="8">2</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="250" y="162" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="286" y="178" fill="#4a9eff">Q<tspan dy="3" font-size="8">3</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="250" y="186" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="286" y="202" fill="#4a9eff">Q<tspan dy="3" font-size="8">4</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="250" y="210" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="286" y="226" fill="#4a9eff">Q<tspan dy="3" font-size="8">5</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="250" y="234" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="286" y="250" fill="#4a9eff">Q<tspan dy="3" font-size="8">6</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="250" y="258" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="286" y="274" fill="#4a9eff">Q<tspan dy="3" font-size="8">7</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="250" y="282" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="286" y="298" fill="#4a9eff">Q<tspan dy="3" font-size="8">8</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="322" y="114" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="358" y="130" fill="#f5a623">K<tspan dy="3" font-size="8">1</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="322" y="138" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="358" y="154" fill="#f5a623">K<tspan dy="3" font-size="8">2</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="322" y="162" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="358" y="178" fill="#f5a623">K<tspan dy="3" font-size="8">3</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="322" y="186" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="358" y="202" fill="#f5a623">K<tspan dy="3" font-size="8">4</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="322" y="210" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="358" y="226" fill="#f5a623">K<tspan dy="3" font-size="8">5</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="322" y="234" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="358" y="250" fill="#f5a623">K<tspan dy="3" font-size="8">6</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="322" y="258" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="358" y="274" fill="#f5a623">K<tspan dy="3" font-size="8">7</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="322" y="282" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="358" y="298" fill="#f5a623">K<tspan dy="3" font-size="8">8</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="394" y="114" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="430" y="130" fill="#50c878">V<tspan dy="3" font-size="8">1</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="394" y="138" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="430" y="154" fill="#50c878">V<tspan dy="3" font-size="8">2</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="394" y="162" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="430" y="178" fill="#50c878">V<tspan dy="3" font-size="8">3</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="394" y="186" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="430" y="202" fill="#50c878">V<tspan dy="3" font-size="8">4</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="394" y="210" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="430" y="226" fill="#50c878">V<tspan dy="3" font-size="8">5</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="394" y="234" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="430" y="250" fill="#50c878">V<tspan dy="3" font-size="8">6</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="394" y="258" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="430" y="274" fill="#50c878">V<tspan dy="3" font-size="8">7</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="394" y="282" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="430" y="298" fill="#50c878">V<tspan dy="3" font-size="8">8</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+  </g>
+  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmhfirst)">
+    <line x1="466" y1="126" x2="494" y2="126"/>
+    <line x1="466" y1="150" x2="494" y2="150"/>
+    <line x1="466" y1="174" x2="494" y2="174"/>
+    <line x1="466" y1="198" x2="494" y2="198"/>
+    <line x1="466" y1="222" x2="494" y2="222"/>
+    <line x1="466" y1="246" x2="494" y2="246"/>
+    <line x1="466" y1="270" x2="494" y2="270"/>
+    <line x1="466" y1="294" x2="494" y2="294"/>
   </g>
   <g font-size="11" text-anchor="middle" font-weight="600">
-    <rect x="86" y="186" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="118" y="210" fill="#4a9eff">head 1</text>
-    <rect x="158" y="186" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="190" y="210" fill="#f5a623">head 2</text>
-    <rect x="230" y="186" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="262" y="210" fill="#50c878">head 3</text>
-    <rect x="302" y="186" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="334" y="210" fill="#c792ea">head 4</text>
-    <rect x="374" y="186" width="64" height="40" rx="5" fill="rgba(74,158,255,0.12)" stroke="#4a9eff"/><text x="406" y="210" fill="#4a9eff">head 5</text>
-    <rect x="446" y="186" width="64" height="40" rx="5" fill="rgba(245,166,35,0.12)" stroke="#f5a623"/><text x="478" y="210" fill="#f5a623">head 6</text>
-    <rect x="518" y="186" width="64" height="40" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878"/><text x="550" y="210" fill="#50c878">head 7</text>
-    <rect x="590" y="186" width="64" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea"/><text x="622" y="210" fill="#c792ea">head 8</text>
+    <rect x="496" y="116" width="100" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="546" y="130" fill="#e8eaf0">head 1</text>
+    <rect x="496" y="140" width="100" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="546" y="154" fill="#e8eaf0">head 2</text>
+    <rect x="496" y="164" width="100" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="546" y="178" fill="#e8eaf0">head 3</text>
+    <rect x="496" y="188" width="100" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="546" y="202" fill="#e8eaf0">head 4</text>
+    <rect x="496" y="212" width="100" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="546" y="226" fill="#e8eaf0">head 5</text>
+    <rect x="496" y="236" width="100" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="546" y="250" fill="#e8eaf0">head 6</text>
+    <rect x="496" y="260" width="100" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="546" y="274" fill="#e8eaf0">head 7</text>
+    <rect x="496" y="284" width="100" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="546" y="298" fill="#e8eaf0">head 8</text>
   </g>
-  <text x="440" y="262" fill="#8892a4" font-size="13" text-anchor="middle">The outputs are concatenated back to 512 dimensions, then a final projection mixes information across heads.</text>
+  <g font-size="12" text-anchor="end">
+    <text x="228" y="24" fill="#8892a4">input tokens</text>
+    <text x="228" y="60" fill="#e8eaf0">1. project with three matrices</text>
+    <text x="228" y="76" fill="#8892a4">same W's as single-head</text>
+    <text x="228" y="202" fill="#e8eaf0">2. cut each into 8 slices</text>
+    <text x="228" y="218" fill="#8892a4">64 of the 512 columns each</text>
+  </g>
+  <g font-size="12" text-anchor="start">
+    <text x="626" y="186" fill="#e8eaf0">3. head h attends with</text>
+    <text x="626" y="202" fill="#e8eaf0">its own row: Q<tspan dy="3" font-size="9">h</tspan><tspan dy="-3">, K</tspan><tspan dy="3" font-size="9">h</tspan><tspan dy="-3">, V</tspan><tspan dy="3" font-size="9">h</tspan></text>
+    <text x="626" y="226" fill="#8892a4">each slice is computed</text>
+    <text x="626" y="242" fill="#8892a4">from all 512 features of X</text>
+  </g>
   <defs><marker id="arrmhfirst" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
 </svg>
 </div>
@@ -2438,19 +2472,138 @@ The total width stays 512, divided across heads rather than copied per head.
 
 ## Multi-Head Mechanics
 
-Each head $h$ has its own projections and runs attention independently:
-
-$$\text{head}_h = \text{Attention}(XW_Q^h, XW_K^h, XW_V^h)$$
-
-Concatenate the heads, then project through $W_O$:
-
-$$\text{MultiHead}(X) = \text{Concat}(\text{head}_1, \ldots, \text{head}_H) W_O$$
-
-<div class="note">
-
-**Compute budget:** total projection size stays $d_{\text{model}}$. With 8 heads and $d_{\text{model}} = 512$, each head uses $d_k = 64$. Same compute as single-head, split into independent patterns.
-
+<div style="text-align: center; margin: 2px 0;">
+<svg viewBox="0 0 880 328" width="100%" style="max-height: 330px;">
+  <rect x="148" y="4" width="100" height="30" rx="5" fill="rgba(232,234,240,0.10)" stroke="#e8eaf0" stroke-width="1.6"/>
+  <text x="184" y="24" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">X</text><text x="214" y="24" fill="#8892a4" font-size="10" text-anchor="middle">n × 512</text>
+  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmhfull)">
+    <line x1="198" y1="34" x2="126" y2="48"/>
+    <line x1="198" y1="34" x2="198" y2="48"/>
+    <line x1="198" y1="34" x2="270" y2="48"/>
+    <line x1="126" y1="84" x2="126" y2="96"/>
+    <line x1="198" y1="84" x2="198" y2="96"/>
+    <line x1="270" y1="84" x2="270" y2="96"/>
+  </g>
+  <g text-anchor="middle" font-weight="600">
+    <rect x="94" y="50" width="64" height="34" rx="4" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/><text x="126" y="65" fill="#4a9eff" font-size="12">W<tspan dy="3" font-size="9">Q</tspan></text><text x="126" y="79" fill="#8892a4" font-size="9" font-weight="400">512 × 512</text>
+    <text x="126" y="108" fill="#4a9eff" font-size="11">Q <tspan fill="#8892a4" font-weight="400" font-size="10">n × 512</tspan></text>
+    <rect x="166" y="50" width="64" height="34" rx="4" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/><text x="198" y="65" fill="#f5a623" font-size="12">W<tspan dy="3" font-size="9">K</tspan></text><text x="198" y="79" fill="#8892a4" font-size="9" font-weight="400">512 × 512</text>
+    <text x="198" y="108" fill="#f5a623" font-size="11">K <tspan fill="#8892a4" font-weight="400" font-size="10">n × 512</tspan></text>
+    <rect x="238" y="50" width="64" height="34" rx="4" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/><text x="270" y="65" fill="#50c878" font-size="12">W<tspan dy="3" font-size="9">V</tspan></text><text x="270" y="79" fill="#8892a4" font-size="9" font-weight="400">512 × 512</text>
+    <text x="270" y="108" fill="#50c878" font-size="11">V <tspan fill="#8892a4" font-weight="400" font-size="10">n × 512</tspan></text>
+  </g>
+  <g font-size="11" text-anchor="middle">
+    <rect x="90" y="114" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="126" y="130" fill="#4a9eff">Q<tspan dy="3" font-size="8">1</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="90" y="138" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="126" y="154" fill="#4a9eff">Q<tspan dy="3" font-size="8">2</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="90" y="162" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="126" y="178" fill="#4a9eff">Q<tspan dy="3" font-size="8">3</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="90" y="186" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="126" y="202" fill="#4a9eff">Q<tspan dy="3" font-size="8">4</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="90" y="210" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="126" y="226" fill="#4a9eff">Q<tspan dy="3" font-size="8">5</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="90" y="234" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="126" y="250" fill="#4a9eff">Q<tspan dy="3" font-size="8">6</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="90" y="258" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="126" y="274" fill="#4a9eff">Q<tspan dy="3" font-size="8">7</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="90" y="282" width="72" height="24" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1"/><text x="126" y="298" fill="#4a9eff">Q<tspan dy="3" font-size="8">8</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="162" y="114" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="198" y="130" fill="#f5a623">K<tspan dy="3" font-size="8">1</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="162" y="138" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="198" y="154" fill="#f5a623">K<tspan dy="3" font-size="8">2</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="162" y="162" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="198" y="178" fill="#f5a623">K<tspan dy="3" font-size="8">3</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="162" y="186" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="198" y="202" fill="#f5a623">K<tspan dy="3" font-size="8">4</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="162" y="210" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="198" y="226" fill="#f5a623">K<tspan dy="3" font-size="8">5</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="162" y="234" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="198" y="250" fill="#f5a623">K<tspan dy="3" font-size="8">6</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="162" y="258" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="198" y="274" fill="#f5a623">K<tspan dy="3" font-size="8">7</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="162" y="282" width="72" height="24" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1"/><text x="198" y="298" fill="#f5a623">K<tspan dy="3" font-size="8">8</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="234" y="114" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="270" y="130" fill="#50c878">V<tspan dy="3" font-size="8">1</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="234" y="138" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="270" y="154" fill="#50c878">V<tspan dy="3" font-size="8">2</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="234" y="162" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="270" y="178" fill="#50c878">V<tspan dy="3" font-size="8">3</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="234" y="186" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="270" y="202" fill="#50c878">V<tspan dy="3" font-size="8">4</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="234" y="210" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="270" y="226" fill="#50c878">V<tspan dy="3" font-size="8">5</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="234" y="234" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="270" y="250" fill="#50c878">V<tspan dy="3" font-size="8">6</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="234" y="258" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="270" y="274" fill="#50c878">V<tspan dy="3" font-size="8">7</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+    <rect x="234" y="282" width="72" height="24" fill="rgba(80,200,120,0.10)" stroke="#50c878" stroke-width="1"/><text x="270" y="298" fill="#50c878">V<tspan dy="3" font-size="8">8</tspan><tspan dy="-3" fill="#8892a4" font-size="9">  n × 64</tspan></text>
+  </g>
+  <g fill="#8892a4" font-size="11" text-anchor="middle">
+    <text x="381" y="106">softmax(QKᵀ/√d<tspan dy="3" font-size="8">k</tspan><tspan dy="-3">)V</tspan></text>
+    <text x="476" y="106">head outputs</text>
+    <text x="591" y="106">concat</text>
+    <text x="591" y="322">n × 512</text>
+  </g>
+  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmhfull)">
+    <line x1="306" y1="126" x2="334" y2="126"/>
+    <line x1="306" y1="150" x2="334" y2="150"/>
+    <line x1="306" y1="174" x2="334" y2="174"/>
+    <line x1="306" y1="198" x2="334" y2="198"/>
+    <line x1="306" y1="222" x2="334" y2="222"/>
+    <line x1="306" y1="246" x2="334" y2="246"/>
+    <line x1="306" y1="270" x2="334" y2="270"/>
+    <line x1="306" y1="294" x2="334" y2="294"/>
+  </g>
+  <g font-size="11" text-anchor="middle" font-weight="600">
+    <rect x="336" y="116" width="90" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="381" y="130" fill="#e8eaf0">head 1</text>
+    <rect x="336" y="140" width="90" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="381" y="154" fill="#e8eaf0">head 2</text>
+    <rect x="336" y="164" width="90" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="381" y="178" fill="#e8eaf0">head 3</text>
+    <rect x="336" y="188" width="90" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="381" y="202" fill="#e8eaf0">head 4</text>
+    <rect x="336" y="212" width="90" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="381" y="226" fill="#e8eaf0">head 5</text>
+    <rect x="336" y="236" width="90" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="381" y="250" fill="#e8eaf0">head 6</text>
+    <rect x="336" y="260" width="90" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="381" y="274" fill="#e8eaf0">head 7</text>
+    <rect x="336" y="284" width="90" height="20" rx="4" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.1"/><text x="381" y="298" fill="#e8eaf0">head 8</text>
+  </g>
+  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmhfull)">
+    <line x1="426" y1="126" x2="444" y2="126"/>
+    <line x1="426" y1="150" x2="444" y2="150"/>
+    <line x1="426" y1="174" x2="444" y2="174"/>
+    <line x1="426" y1="198" x2="444" y2="198"/>
+    <line x1="426" y1="222" x2="444" y2="222"/>
+    <line x1="426" y1="246" x2="444" y2="246"/>
+    <line x1="426" y1="270" x2="444" y2="270"/>
+    <line x1="426" y1="294" x2="444" y2="294"/>
+  </g>
+  <g font-size="10" text-anchor="middle" fill="#e8eaf0">
+    <rect x="446" y="117" width="60" height="18" rx="3" fill="rgba(232,234,240,0.12)"/><text x="476" y="130">n × 64</text>
+    <rect x="446" y="141" width="60" height="18" rx="3" fill="rgba(232,234,240,0.12)"/><text x="476" y="154">n × 64</text>
+    <rect x="446" y="165" width="60" height="18" rx="3" fill="rgba(232,234,240,0.12)"/><text x="476" y="178">n × 64</text>
+    <rect x="446" y="189" width="60" height="18" rx="3" fill="rgba(232,234,240,0.12)"/><text x="476" y="202">n × 64</text>
+    <rect x="446" y="213" width="60" height="18" rx="3" fill="rgba(232,234,240,0.12)"/><text x="476" y="226">n × 64</text>
+    <rect x="446" y="237" width="60" height="18" rx="3" fill="rgba(232,234,240,0.12)"/><text x="476" y="250">n × 64</text>
+    <rect x="446" y="261" width="60" height="18" rx="3" fill="rgba(232,234,240,0.12)"/><text x="476" y="274">n × 64</text>
+    <rect x="446" y="285" width="60" height="18" rx="3" fill="rgba(232,234,240,0.12)"/><text x="476" y="298">n × 64</text>
+  </g>
+  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmhfull)">
+    <line x1="506" y1="126" x2="569" y2="126"/>
+    <line x1="506" y1="150" x2="569" y2="150"/>
+    <line x1="506" y1="174" x2="569" y2="174"/>
+    <line x1="506" y1="198" x2="569" y2="198"/>
+    <line x1="506" y1="222" x2="569" y2="222"/>
+    <line x1="506" y1="246" x2="569" y2="246"/>
+    <line x1="506" y1="270" x2="569" y2="270"/>
+    <line x1="506" y1="294" x2="569" y2="294"/>
+  </g>
+  <g stroke="#0a0e1a" stroke-width="1">
+    <rect x="571" y="114" width="40" height="24" fill="rgba(232,234,240,0.18)"/>
+    <rect x="571" y="138" width="40" height="24" fill="rgba(232,234,240,0.1)"/>
+    <rect x="571" y="162" width="40" height="24" fill="rgba(232,234,240,0.18)"/>
+    <rect x="571" y="186" width="40" height="24" fill="rgba(232,234,240,0.1)"/>
+    <rect x="571" y="210" width="40" height="24" fill="rgba(232,234,240,0.18)"/>
+    <rect x="571" y="234" width="40" height="24" fill="rgba(232,234,240,0.1)"/>
+    <rect x="571" y="258" width="40" height="24" fill="rgba(232,234,240,0.18)"/>
+    <rect x="571" y="282" width="40" height="24" fill="rgba(232,234,240,0.1)"/>
+  </g>
+  <rect x="571" y="114" width="40" height="192" fill="none" stroke="#e8eaf0" stroke-width="1.4"/>
+  <g stroke="#8892a4" stroke-width="1.2" marker-end="url(#arrmhfull)">
+    <line x1="611" y1="210" x2="644" y2="210"/>
+    <line x1="736" y1="210" x2="774" y2="210"/>
+  </g>
+  <rect x="646" y="182" width="90" height="56" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea" stroke-width="1.8"/>
+  <text x="691" y="208" fill="#c792ea" font-size="15" text-anchor="middle" font-weight="600">W<tspan dy="4" font-size="11">O</tspan></text>
+  <text x="691" y="226" fill="#8892a4" font-size="11" text-anchor="middle">512 × 512</text>
+  <text x="691" y="262" fill="#8892a4" font-size="11" text-anchor="middle">mixes information</text>
+  <text x="691" y="276" fill="#8892a4" font-size="11" text-anchor="middle">across heads</text>
+  <rect x="776" y="185" width="80" height="50" rx="5" fill="rgba(232,234,240,0.10)" stroke="#e8eaf0" stroke-width="1.6"/>
+  <text x="816" y="207" fill="#e8eaf0" font-size="13" text-anchor="middle" font-weight="600">output</text>
+  <text x="816" y="225" fill="#8892a4" font-size="11" text-anchor="middle">n × 512</text>
+  <defs><marker id="arrmhfull" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8892a4"/></marker></defs>
+</svg>
 </div>
+
+Slice $h$ of $Q$, $K$, $V$ is head $h$; $W_Q^h$ is the matching 64-column block of $W_Q$. $W_O$ mixes the concatenated heads:
+
+$$\begin{aligned} \text{head}_h &= \text{Attention}(XW_Q^h, XW_K^h, XW_V^h) \cr \text{MultiHead}(X) &= \text{Concat}(\text{head}_1, \ldots, \text{head}_H) W_O \end{aligned}$$
 
 ---
 
@@ -2482,26 +2635,26 @@ When queries and keys come from different places
   <text x="195" y="200" fill="#8892a4" font-size="12" text-anchor="middle">Q, K, V all from the</text>
   <text x="195" y="218" fill="#8892a4" font-size="12" text-anchor="middle">same sequence</text>
   <!-- divider -->
-  <line x1="410" y1="40" x2="410" y2="220" stroke="#2a3450" stroke-width="1"/>
+  <line x1="340" y1="40" x2="340" y2="220" stroke="#2a3450" stroke-width="1"/>
   <!-- Cross-attention panel -->
   <text x="615" y="22" fill="#50c878" font-size="14" text-anchor="middle" font-weight="600">Cross-Attention</text>
-  <!-- decoder row (queries) -->
-  <text x="455" y="62" fill="#8892a4" font-size="11" text-anchor="end">target side (Q)</text>
+  <!-- encoder row (keys/values), on top -->
+  <text x="455" y="62" fill="#8892a4" font-size="11" text-anchor="end">source side (K, V)</text>
   <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="470" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="507" y="67" fill="#e8eaf0">the</text>
-    <rect x="558" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="2.5"/><text x="595" y="67" fill="#e8eaf0">cat</text>
+    <rect x="470" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="507" y="67" fill="#e8eaf0">le</text>
+    <rect x="558" y="46" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/><text x="595" y="67" fill="#e8eaf0">chat</text>
+    <rect x="646" y="46" width="100" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="696" y="67" fill="#e8eaf0">sportif</text>
   </g>
-  <!-- encoder row (keys/values) -->
-  <text x="455" y="162" fill="#8892a4" font-size="11" text-anchor="end">source side (K, V)</text>
+  <!-- decoder row (queries), below, looking back up at the source -->
+  <text x="455" y="162" fill="#8892a4" font-size="11" text-anchor="end">target side (Q)</text>
   <g font-size="13" text-anchor="middle" font-weight="600">
-    <rect x="470" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="507" y="167" fill="#e8eaf0">le</text>
-    <rect x="558" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="2.5"/><text x="595" y="167" fill="#e8eaf0">chat</text>
-    <rect x="646" y="146" width="100" height="32" rx="4" fill="#0d1225" stroke="#f5a623" stroke-width="1.5"/><text x="696" y="167" fill="#e8eaf0">sportif</text>
+    <rect x="470" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="1.5"/><text x="507" y="167" fill="#e8eaf0">the</text>
+    <rect x="558" y="146" width="74" height="32" rx="4" fill="#0d1225" stroke="#50c878" stroke-width="2.5"/><text x="595" y="167" fill="#e8eaf0">cat</text>
   </g>
   <!-- cross arrows: "cat" query attends to "chat" key -->
-  <line x1="595" y1="78" x2="595" y2="144" stroke="#50c878" stroke-width="3" marker-end="url(#arrcxgr)"/>
-  <line x1="595" y1="78" x2="515" y2="144" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
-  <line x1="595" y1="78" x2="690" y2="144" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
+  <line x1="595" y1="146" x2="595" y2="80" stroke="#50c878" stroke-width="3" marker-end="url(#arrcxgr)"/>
+  <line x1="595" y1="146" x2="515" y2="80" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
+  <line x1="595" y1="146" x2="690" y2="80" stroke="#8892a4" stroke-width="1.2" opacity="0.5" marker-end="url(#arrcxg)"/>
   <text x="615" y="210" fill="#8892a4" font-size="12" text-anchor="middle">Q from one sequence, K and V</text>
   <text x="615" y="228" fill="#8892a4" font-size="12" text-anchor="middle">from another ("cat" finds "chat")</text>
   <defs>
@@ -2971,6 +3124,90 @@ Attention weights show where the model looks. High attention does not prove caus
 </div>
 
 Visualization suggests hypotheses; ablation confirms them.
+
+---
+
+<!-- .slide: id="full-picture" -->
+
+## Putting It Together
+
+Every piece from this module, in order: tokens in, next-token probabilities out.
+
+<div style="text-align: center; margin: 4px 0;">
+<svg viewBox="0 30 880 230" width="100%" style="max-height: 330px;">
+  <!-- block outline -->
+  <rect x="246" y="40" width="404" height="200" rx="8" fill="rgba(136,146,164,0.05)" stroke="#8892a4" stroke-width="1.3" stroke-dasharray="6 4"/>
+  <text x="260" y="60" fill="#8892a4" font-size="12" font-weight="600">transformer block</text>
+  <text x="636" y="60" fill="#c792ea" font-size="13" font-weight="600" text-anchor="end">× N</text>
+  <!-- input side -->
+  <rect x="4" y="128" width="62" height="44" rx="5" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="35" y="148" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">tokens</text>
+  <text x="35" y="164" fill="#8892a4" font-size="10" text-anchor="middle">n ids</text>
+  <rect x="84" y="128" width="80" height="44" rx="5" fill="rgba(232,234,240,0.08)" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="124" y="148" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">embed</text>
+  <text x="124" y="164" fill="#8892a4" font-size="10" text-anchor="middle">n × 512</text>
+  <rect x="164" y="196" width="72" height="40" rx="5" fill="rgba(199,146,234,0.12)" stroke="#c792ea" stroke-width="1.5"/>
+  <text x="200" y="213" fill="#c792ea" font-size="11" text-anchor="middle" font-weight="600">positional</text>
+  <text x="200" y="228" fill="#c792ea" font-size="11" text-anchor="middle" font-weight="600">encoding</text>
+  <circle cx="200" cy="150" r="12" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="200" y="156" fill="#e8eaf0" font-size="17" text-anchor="middle" font-weight="600">+</text>
+  <!-- main residual line -->
+  <g stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrfpw)">
+    <line x1="66" y1="150" x2="82" y2="150"/>
+    <line x1="164" y1="150" x2="186" y2="150"/>
+    <line x1="212" y1="150" x2="414" y2="150"/>
+    <line x1="440" y1="150" x2="604" y2="150"/>
+    <line x1="630" y1="150" x2="662" y2="150"/>
+  </g>
+  <line x1="200" y1="196" x2="200" y2="164" stroke="#c792ea" stroke-width="1.5" marker-end="url(#arrfpp)"/>
+  <text x="430" y="194" fill="#8892a4" font-size="11" text-anchor="middle">residual: x + sublayer(x)</text>
+  <!-- attention sublayer -->
+  <path d="M262 150 L262 90 L270 90" fill="none" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrfpb)"/>
+  <rect x="272" y="66" width="140" height="62" rx="6" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.5"/>
+  <text x="342" y="84" fill="#4a9eff" font-size="12" text-anchor="middle" font-weight="600">Multi-Head Attention</text>
+  <text x="342" y="102" fill="#e8eaf0" font-size="11" text-anchor="middle">softmax(QKᵀ/√d<tspan dy="3" font-size="8">k</tspan><tspan dy="-3">)V</tspan></text>
+  <text x="342" y="118" fill="#8892a4" font-size="10" text-anchor="middle">8 heads, causal mask</text>
+  <path d="M412 90 L428 90 L428 136" fill="none" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#arrfpb)"/>
+  <circle cx="428" cy="150" r="12" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="428" y="156" fill="#e8eaf0" font-size="17" text-anchor="middle" font-weight="600">+</text>
+  <text x="342" y="216" fill="#8892a4" font-size="11" text-anchor="middle">tokens share information</text>
+  <!-- MLP sublayer -->
+  <path d="M452 150 L452 90 L460 90" fill="none" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrfpo)"/>
+  <rect x="462" y="66" width="130" height="62" rx="6" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.5"/>
+  <text x="527" y="84" fill="#f5a623" font-size="13" text-anchor="middle" font-weight="600">MLP</text>
+  <text x="527" y="102" fill="#e8eaf0" font-size="11" text-anchor="middle">512 → 2048 → 512</text>
+  <text x="527" y="118" fill="#8892a4" font-size="10" text-anchor="middle">same weights per token</text>
+  <path d="M592 90 L618 90 L618 136" fill="none" stroke="#f5a623" stroke-width="1.5" marker-end="url(#arrfpo)"/>
+  <circle cx="618" cy="150" r="12" fill="#0d1225" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="618" y="156" fill="#e8eaf0" font-size="17" text-anchor="middle" font-weight="600">+</text>
+  <text x="527" y="216" fill="#8892a4" font-size="11" text-anchor="middle">each token on its own</text>
+  <!-- output side -->
+  <rect x="664" y="128" width="72" height="44" rx="5" fill="rgba(232,234,240,0.08)" stroke="#e8eaf0" stroke-width="1.5"/>
+  <text x="700" y="148" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">linear</text>
+  <text x="700" y="164" fill="#8892a4" font-size="10" text-anchor="middle">512 → vocab</text>
+  <line x1="736" y1="150" x2="752" y2="150" stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrfpw)"/>
+  <rect x="754" y="128" width="64" height="44" rx="5" fill="rgba(80,200,120,0.12)" stroke="#50c878" stroke-width="1.5"/>
+  <text x="786" y="148" fill="#50c878" font-size="12" text-anchor="middle" font-weight="600">softmax</text>
+  <text x="786" y="164" fill="#8892a4" font-size="10" text-anchor="middle">logits → p</text>
+  <line x1="818" y1="150" x2="832" y2="150" stroke="#e8eaf0" stroke-width="2" marker-end="url(#arrfpw)"/>
+  <g fill="#50c878">
+    <rect x="836" y="160" width="6" height="12"/><rect x="844" y="128" width="6" height="44"/>
+    <rect x="852" y="152" width="6" height="20"/><rect x="860" y="164" width="6" height="8"/>
+    <rect x="868" y="167" width="6" height="5"/>
+  </g>
+  <line x1="834" y1="172" x2="876" y2="172" stroke="#8892a4" stroke-width="1"/>
+  <text x="855" y="188" fill="#8892a4" font-size="10" text-anchor="middle">P(next</text>
+  <text x="855" y="200" fill="#8892a4" font-size="10" text-anchor="middle">token)</text>
+  <defs>
+    <marker id="arrfpw" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#e8eaf0"/></marker>
+    <marker id="arrfpb" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#4a9eff"/></marker>
+    <marker id="arrfpo" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f5a623"/></marker>
+    <marker id="arrfpp" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#c792ea"/></marker>
+  </defs>
+</svg>
+</div>
+
+Softmax appears twice: inside every attention head to turn scores into weights, and once at the end to turn logits into a distribution over the vocabulary. Layer normalization is omitted here; Module 4 builds the full block.
 
 ---
 

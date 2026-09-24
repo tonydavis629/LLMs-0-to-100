@@ -10,8 +10,9 @@
 Softmax turns a vector of raw scores (**logits**) into a probability distribution:
 
 $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
+<div style="text-align: center; font-size: 0.4em; color: var(--text-color);"><em>i</em>: the option being scored &middot; <em>j</em>: runs over every option in the sum</div>
 <div style="text-align: center; margin: 8px 0;">
-<svg viewBox="0 0 820 185" width="100%" style="max-height: 165px;">
+<svg viewBox="0 0 820 185" width="100%" style="max-height: 140px;">
   <g font-size="12" text-anchor="middle" font-weight="600">
     <text x="145" y="22" fill="#f5a623">raw scores z</text>
     <text x="410" y="22" fill="#f5a623">positive scores e^z</text>

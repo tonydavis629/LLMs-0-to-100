@@ -127,7 +127,12 @@ $$\text{head}_h = \text{Attention}(Q_h, K_h, V_h)$$
 
 $$\text{MultiHead}(Q, K, V) = \text{Concat}(\text{head}_1, \ldots, \text{head}_H) \, W_O$$
 
-- **Compute budget:** total projection size across all heads is typically kept equal to $d_{\text{model}}$. With 8 heads and $d_{\text{model}} = 512$, each head uses $d_k = 64$. Multi-head attention is not more expensive than single-head — it is the same compute, split into independent patterns.
+- **Compute budget:** total projection size across all heads is typically kept equal to $d_{\text{model}}$. With 8 heads and $d_{\text{model}} = 512$, each head uses $d_k = 64$. Multi-head attention costs the same as single-head attention with $d_k = 512$. The compute is the same, split into independent patterns.
+- **Project first, then split.** In practice $X$ ($n \times 512$) is multiplied by full $512 \times 512$ matrices $W_Q$, $W_K$, $W_V$, the same projections single-head attention uses. The resulting $Q$, $K$, $V$ ($n \times 512$ each) are then cut into 8 column blocks of $n \times 64$. Head $h$ uses block $h$ of each. This is equivalent to giving each head its own $W_Q^h$ ($512 \times 64$), the $h$-th 64-column block of $W_Q$. Every head reads all 512 input features; the input $X$ itself is never sliced. The "Why Multiple Heads?" and "Multi-Head Mechanics" diagrams draw the 8 slices stacked so each lines up with its head, but each slice is a block of columns, not rows.
+- **Why $W_O$.** With one head, $W_O$ is redundant because $A(XW_V)W_O = AX(W_VW_O)$ and it folds into $W_V$. With several heads, $\text{Concat}(\text{head}_1, \ldots, \text{head}_H)W_O = \sum_h \text{head}_h W_O^h$, where $W_O^h$ is the $h$-th 64-row block of $W_O$. Each head writes its 64 dimensions back into the full 512-dimensional space, and the contributions add. Without $W_O$, head 1 could only affect output features 0 to 63.
+- **Nesting heads adds nothing.** Splitting a head's 64 dimensions into sub-heads is the same as splitting $Q$ into more, narrower heads, and a sub-head projection composes with $W_Q^h$ into a single matrix. Stacking whole layers is different: the second layer's scores are computed on representations already mixed by the first layer's softmax weights, which enables two-hop patterns such as induction heads (Olsson et al., 2022, "In-context Learning and Induction Heads," Transformer Circuits Thread).
+- **Reference:** Bhojanapalli, S., et al. (2020). "Low-Rank Bottleneck in Multi-head Attention Models." *ICML 2020*. Too small a $d_k$ limits what each head can express.
+- **Reference:** Michel, P., Levy, O., & Neubig, G. (2019). "Are Sixteen Heads Really Better than One?" *NeurIPS 2019*.
 
 ## Cross Attention
 
@@ -252,6 +257,18 @@ $$\text{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}$$
 - However, high attention does not always prove causal importance. Attention is one of many operations in the network; the model may compensate through other pathways.
 - **Useful distinction:** visualization can suggest hypotheses, but ablation tests are needed for stronger claims.
 - **Reference:** Jain, S. & Wallace, B. C. (2019). "Attention is not Explanation." *NAACL*. Wiegreffe, S. & Pinter, Y. (2019). "Attention is not not Explanation." *EMNLP*.
+
+## Putting It Together
+
+### The Full Forward Pass
+- The closing diagram traces one forward pass of a decoder-only transformer. Token ids are mapped to vectors by an embedding table ($n \times 512$), a positional encoding is added, the result passes through $N$ identical blocks, and a final linear layer maps each 512-dim vector to one logit per vocabulary entry.
+- Each block applies multi-head attention and then a position-wise MLP. Each sublayer adds its output back to its input: $x \leftarrow x + \text{MultiHead}(x)$, then $x \leftarrow x + \text{MLP}(x)$.
+- The MLP widths ($512 \to 2048 \to 512$) are the base model sizes from Vaswani et al. ($d_{\text{model}} = 512$, $d_{ff} = 2048$, $h = 8$, $N = 6$).
+- Softmax appears in two places. Inside each head it normalizes the scaled scores $QK^T/\sqrt{d_k}$ into attention weights. After the final linear layer it turns the logits into a probability distribution over the next token.
+- The causal mask restricts each position to earlier positions, which is what lets the model train on next-token prediction for every position at once.
+- The diagram leaves out layer normalization, which the original transformer applies after each residual addition ("Add & Norm"). Most modern LLMs apply it before each sublayer instead. Module 4 covers both.
+- **Reference:** Vaswani, A., et al. (2017). "Attention Is All You Need." *NeurIPS 2017*. Section 3 and Table 3 (base model hyperparameters).
+- **Reference:** Radford, A., et al. (2018). "Improving Language Understanding by Generative Pre-Training." OpenAI. The decoder-only stack used by GPT models.
 
 ## Exercise Notes
 
