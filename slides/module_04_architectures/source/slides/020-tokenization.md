@@ -49,16 +49,19 @@ What should a language model read?
   </div>
   <div class="byte-arrow">&darr;</div>
   <div class="byte-lane">
-    <h3>Raw bytes: UTF-8, written in hex</h3>
-    <div class="byte-grid">
-      <span>54</span><span>68</span><span>65</span><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span><span>20</span><span>63</span><span>61</span><span>66</span><span class="mb">c3</span><span class="mb">a9</span>
+    <h3>UTF-8 bytes (hex)</h3>
+    <div class="byte-groups">
+      <div class="byte-group"><span>54</span><span>68</span><span>65</span></div>
+      <div class="byte-group"><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span></div>
+      <div class="byte-group"><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span></div>
+      <div class="byte-group"><span>20</span><span>63</span><span>61</span><span>66</span><span class="mb">c3</span><span class="mb">a9</span></div>
     </div>
-    <p class="byte-note">UTF-8 uses 1 byte for ASCII and 2 to 4 for other characters: <b class="mb-char">é</b> = <b class="mb-char">c3 a9</b>. There are only 256 possible bytes, so the base vocabulary is 256 symbols.</p>
+    <p class="byte-note">Text is stored as UTF-8 bytes; these are the bytes tokenization actually combines into tokens.</p>
   </div>
   <div class="byte-arrow">&darr;</div>
   <div class="byte-lane">
-    <h3>Learned token IDs (GPT-2)</h3>
-    <div class="token-strip token-strip-accent">
+    <h3>GPT-2 token IDs</h3>
+    <div class="token-ids">
       <span>464</span><span>2746</span><span>9743</span><span>40304</span>
     </div>
   </div>
@@ -114,11 +117,11 @@ What should a language model read?
 <p class="st-caption">Top: one chat turn in Llama 3's template. Bottom: a Llama 3.1 tool call. Orange tokens are reserved IDs that ordinary text never produces.</p>
 
 <table class="st-table">
-<tr><th>token (Llama 3.1)</th><th>what it does</th><th>ID</th><th>same idea elsewhere</th></tr>
+<tr><th>token (Llama 3.1)</th><th>what it does</th><th>ID</th><th>counterpart</th></tr>
 <tr><td><code class="st-tok">&lt;|begin_of_text|&gt;</code></td><td>start of every sequence (BOS)</td><td class="st-id">128000</td><td>BERT <code>[CLS]</code></td></tr>
-<tr><td><code class="st-tok">&lt;|end_of_text|&gt;</code></td><td>end of a document (EOS)</td><td class="st-id">128001</td><td>GPT-2 <code>&lt;|endoftext|&gt;</code></td></tr>
+<tr><td><code class="st-tok">&lt;|end_of_text|&gt;</code></td><td>end of a document (EOS)</td><td class="st-id">128001</td><td>BERT <code>[SEP]</code></td></tr>
 <tr><td><code class="st-tok">&lt;|start_header_id|&gt;</code></td><td>opens a role name: system, user, assistant, ipython</td><td class="st-id">128006</td><td>ChatML <code>&lt;|im_start|&gt;</code></td></tr>
-<tr><td><code class="st-tok">&lt;|end_header_id|&gt;</code></td><td>closes the role name</td><td class="st-id">128007</td><td>&mdash;</td></tr>
+<tr><td><code class="st-tok">&lt;|end_header_id|&gt;</code></td><td>closes the role name</td><td class="st-id">128007</td><td>newline in ChatML</td></tr>
 <tr><td><code class="st-tok">&lt;|eot_id|&gt;</code></td><td>end of turn: the model stops here</td><td class="st-id">128009</td><td>ChatML <code>&lt;|im_end|&gt;</code></td></tr>
 <tr><td><code class="st-tok">&lt;|python_tag|&gt;</code></td><td>the assistant starts a tool call</td><td class="st-id">128010</td><td>Qwen <code>&amp;lt;tool_call&amp;gt;</code></td></tr>
 <tr><td><code class="st-tok">&lt;|eom_id|&gt;</code></td><td>pause so the tool result can come back</td><td class="st-id">128008</td><td>Qwen <code>&amp;lt;/tool_call&amp;gt;</code></td></tr>
@@ -159,17 +162,11 @@ What should a language model read?
 
 ## Side Quest: Glitch Tokens
 
-The tokenizer and the model are trained **separately**, and that seam can crack:
-
-- A rare string earns a vocabulary entry in the tokenizer's data but rarely appears in the model's training data
-- Its embedding row gets almost no gradient and stays near random initialization
-- Classic case: <code>&nbsp;SolidGoldMagikarp</code>, a Reddit username; early GPT models refused it, swapped it, or produced garbage
+**Tokenization** generated a token for <code>&nbsp;SolidGoldMagikarp</code> (Reddit username, GPT-2 ID 33510), but **training** rarely saw it, so its embedding stayed near random.
 
 <div class="glitch-example">
   <div class="glitch-turn user"><span>Prompt</span>Please repeat the string "SolidGoldMagikarp" back to me.</div>
   <div class="glitch-turn model"><span>Early GPT</span>"distribute"</div>
 </div>
 
-A real exchange: the model swaps the glitch token for an unrelated word.
-
-These **under-trained tokens** (Land and Bartolo, 2024) prove the boundary: the model never sees `S-o-l-i-d-...`, only one token ID and its embedding vector.
+Asked to repeat it, the model has only a near-random vector to work from and emits an unrelated word (Land and Bartolo, 2024).

@@ -1218,6 +1218,54 @@
   color: var(--text-color);
 }
 
+.byte-groups {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.byte-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: 5px;
+  padding: 7px 5px;
+  border: 1.5px solid rgba(245, 166, 35, 0.48);
+  border-radius: 6px;
+  background: rgba(245, 166, 35, 0.12);
+}
+
+.byte-group span {
+  padding: 5px 7px;
+  border: 1px solid rgba(136, 146, 164, 0.35);
+  border-radius: 5px;
+  font-size: 12pt;
+  color: var(--text-color);
+}
+
+.byte-group span.mb {
+  color: var(--secondary-color);
+  font-weight: 600;
+  border-color: rgba(245, 166, 35, 0.48);
+}
+
+.token-ids {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.token-ids span {
+  padding: 7px 0;
+  border: 1px solid rgba(245, 166, 35, 0.48);
+  border-radius: 5px;
+  background: rgba(245, 166, 35, 0.12);
+  font-size: 14pt;
+  text-align: center;
+  color: var(--text-color);
+}
+
 .vocab-tradeoff,
 .token-practice-grid,
 .family-grid {
@@ -2207,6 +2255,21 @@
   max-width: 700px;
 }
 
+.cos-formula {
+  text-align: center;
+  margin: 10px 0 0;
+}
+
+.cos-formula .katex {
+  font-size: 22pt;
+}
+
+.cos-note {
+  font-size: 14pt;
+  color: var(--muted-color);
+  margin-left: 16px;
+}
+
 /* cosineDial widget: bottom center of the coordinates slide. */
 .reveal .interactive-host.cos-host {
   width: 700px;
@@ -2720,16 +2783,19 @@ What should a language model read?
   </div>
   <div class="byte-arrow">&darr;</div>
   <div class="byte-lane">
-    <h3>Raw bytes: UTF-8, written in hex</h3>
-    <div class="byte-grid">
-      <span>54</span><span>68</span><span>65</span><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span><span>20</span><span>63</span><span>61</span><span>66</span><span class="mb">c3</span><span class="mb">a9</span>
+    <h3>UTF-8 bytes (hex)</h3>
+    <div class="byte-groups">
+      <div class="byte-group"><span>54</span><span>68</span><span>65</span></div>
+      <div class="byte-group"><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span></div>
+      <div class="byte-group"><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span></div>
+      <div class="byte-group"><span>20</span><span>63</span><span>61</span><span>66</span><span class="mb">c3</span><span class="mb">a9</span></div>
     </div>
-    <p class="byte-note">UTF-8 uses 1 byte for ASCII and 2 to 4 for other characters: <b class="mb-char">é</b> = <b class="mb-char">c3 a9</b>. There are only 256 possible bytes, so the base vocabulary is 256 symbols.</p>
+    <p class="byte-note">Text is stored as UTF-8 bytes; these are the bytes tokenization actually combines into tokens.</p>
   </div>
   <div class="byte-arrow">&darr;</div>
   <div class="byte-lane">
-    <h3>Learned token IDs (GPT-2)</h3>
-    <div class="token-strip token-strip-accent">
+    <h3>GPT-2 token IDs</h3>
+    <div class="token-ids">
       <span>464</span><span>2746</span><span>9743</span><span>40304</span>
     </div>
   </div>
@@ -2785,11 +2851,11 @@ What should a language model read?
 <p class="st-caption">Top: one chat turn in Llama 3's template. Bottom: a Llama 3.1 tool call. Orange tokens are reserved IDs that ordinary text never produces.</p>
 
 <table class="st-table">
-<tr><th>token (Llama 3.1)</th><th>what it does</th><th>ID</th><th>same idea elsewhere</th></tr>
+<tr><th>token (Llama 3.1)</th><th>what it does</th><th>ID</th><th>counterpart</th></tr>
 <tr><td><code class="st-tok">&lt;|begin_of_text|&gt;</code></td><td>start of every sequence (BOS)</td><td class="st-id">128000</td><td>BERT <code>[CLS]</code></td></tr>
-<tr><td><code class="st-tok">&lt;|end_of_text|&gt;</code></td><td>end of a document (EOS)</td><td class="st-id">128001</td><td>GPT-2 <code>&lt;|endoftext|&gt;</code></td></tr>
+<tr><td><code class="st-tok">&lt;|end_of_text|&gt;</code></td><td>end of a document (EOS)</td><td class="st-id">128001</td><td>BERT <code>[SEP]</code></td></tr>
 <tr><td><code class="st-tok">&lt;|start_header_id|&gt;</code></td><td>opens a role name: system, user, assistant, ipython</td><td class="st-id">128006</td><td>ChatML <code>&lt;|im_start|&gt;</code></td></tr>
-<tr><td><code class="st-tok">&lt;|end_header_id|&gt;</code></td><td>closes the role name</td><td class="st-id">128007</td><td>&mdash;</td></tr>
+<tr><td><code class="st-tok">&lt;|end_header_id|&gt;</code></td><td>closes the role name</td><td class="st-id">128007</td><td>newline in ChatML</td></tr>
 <tr><td><code class="st-tok">&lt;|eot_id|&gt;</code></td><td>end of turn: the model stops here</td><td class="st-id">128009</td><td>ChatML <code>&lt;|im_end|&gt;</code></td></tr>
 <tr><td><code class="st-tok">&lt;|python_tag|&gt;</code></td><td>the assistant starts a tool call</td><td class="st-id">128010</td><td>Qwen <code>&amp;lt;tool_call&amp;gt;</code></td></tr>
 <tr><td><code class="st-tok">&lt;|eom_id|&gt;</code></td><td>pause so the tool result can come back</td><td class="st-id">128008</td><td>Qwen <code>&amp;lt;/tool_call&amp;gt;</code></td></tr>
@@ -2830,20 +2896,14 @@ What should a language model read?
 
 ## Side Quest: Glitch Tokens
 
-The tokenizer and the model are trained **separately**, and that seam can crack:
-
-- A rare string earns a vocabulary entry in the tokenizer's data but rarely appears in the model's training data
-- Its embedding row gets almost no gradient and stays near random initialization
-- Classic case: <code>&nbsp;SolidGoldMagikarp</code>, a Reddit username; early GPT models refused it, swapped it, or produced garbage
+**Tokenization** generated a token for <code>&nbsp;SolidGoldMagikarp</code> (Reddit username, GPT-2 ID 33510), but **training** rarely saw it, so its embedding stayed near random.
 
 <div class="glitch-example">
   <div class="glitch-turn user"><span>Prompt</span>Please repeat the string "SolidGoldMagikarp" back to me.</div>
   <div class="glitch-turn model"><span>Early GPT</span>"distribute"</div>
 </div>
 
-A real exchange: the model swaps the glitch token for an unrelated word.
-
-These **under-trained tokens** (Land and Bartolo, 2024) prove the boundary: the model never sees `S-o-l-i-d-...`, only one token ID and its embedding vector.
+Asked to repeat it, the model has only a near-random vector to work from and emits an unrelated word (Land and Bartolo, 2024).
 
 ---
 
@@ -3028,7 +3088,7 @@ A vector of $d$ numbers is a point in $d$-dimensional space.
 <line x1="70" y1="270" x2="150" y2="60" stroke="#4a9eff" stroke-width="2.6" marker-end="url(#eca)"></line><text x="158" y="60" text-anchor="start" font-size="16" fill="#4a9eff">Paris</text>
 <path d="M182.4,227.9 A120,120 0 0 0 176.6,215.0" fill="none" stroke="#f5a623" stroke-width="2"></path>
 <text x="196.35950130828536" y="227.41401831848134" text-anchor="start" font-size="15" fill="#f5a623">&#952; small</text>
-<text x="240" y="312" text-anchor="middle" font-size="15" fill="#8892a4">cos &#952; = a&#183;b / (&#8214;a&#8214; &#8214;b&#8214;): near 1 for cat and dog</text>
+<text x="240" y="312" text-anchor="middle" font-size="15" fill="#8892a4">near 1 for cat and dog</text>
 <text x="760" y="24" text-anchor="middle" font-size="18" fill="#e8eaf0">directions carry meaning</text>
 <line x1="580" y1="250" x2="830" y2="250" stroke="#2a3450" stroke-width="1.6" stroke-dasharray="5 4"></line>
 <line x1="650" y1="120" x2="900" y2="120" stroke="#2a3450" stroke-width="1.6" stroke-dasharray="5 4"></line>
@@ -3046,6 +3106,8 @@ A vector of $d$ numbers is a point in $d$-dimensional space.
 <text x="760" y="312" text-anchor="middle" font-size="15" fill="#8892a4">king &#8722; man + woman &#8776; queen (word2vec, Mikolov et al., 2013)</text>
 </svg>
 </div>
+
+<div class="cos-formula"><span class="cos-eq">$\textcolor{#f5a623}{\cos\theta} = \dfrac{a \cdot b}{\lVert a \rVert\,\lVert b \rVert}$</span><span class="cos-note">direction over magnitude</span></div>
 
 <div class="interactive-host cos-host" data-widget="cosineDial"></div>
 
@@ -4318,7 +4380,7 @@ Temperature $T$ scales logits before softmax. How does a very high temperature c
 
 # Questions?
 
-Next: Module 5 &mdash; Pretraining and Fine-Tuning
+Next: Module 5 &mdash; Pretraining
 
 
 ---

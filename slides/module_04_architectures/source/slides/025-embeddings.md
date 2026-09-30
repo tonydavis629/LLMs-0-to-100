@@ -170,7 +170,7 @@ A vector of $d$ numbers is a point in $d$-dimensional space.
 <line x1="70" y1="270" x2="150" y2="60" stroke="#4a9eff" stroke-width="2.6" marker-end="url(#eca)"></line><text x="158" y="60" text-anchor="start" font-size="16" fill="#4a9eff">Paris</text>
 <path d="M182.4,227.9 A120,120 0 0 0 176.6,215.0" fill="none" stroke="#f5a623" stroke-width="2"></path>
 <text x="196.35950130828536" y="227.41401831848134" text-anchor="start" font-size="15" fill="#f5a623">&#952; small</text>
-<text x="240" y="312" text-anchor="middle" font-size="15" fill="#8892a4">cos &#952; = a&#183;b / (&#8214;a&#8214; &#8214;b&#8214;): near 1 for cat and dog</text>
+<text x="240" y="312" text-anchor="middle" font-size="15" fill="#8892a4">near 1 for cat and dog</text>
 <text x="760" y="24" text-anchor="middle" font-size="18" fill="#e8eaf0">directions carry meaning</text>
 <line x1="580" y1="250" x2="830" y2="250" stroke="#2a3450" stroke-width="1.6" stroke-dasharray="5 4"></line>
 <line x1="650" y1="120" x2="900" y2="120" stroke="#2a3450" stroke-width="1.6" stroke-dasharray="5 4"></line>
@@ -188,6 +188,8 @@ A vector of $d$ numbers is a point in $d$-dimensional space.
 <text x="760" y="312" text-anchor="middle" font-size="15" fill="#8892a4">king &#8722; man + woman &#8776; queen (word2vec, Mikolov et al., 2013)</text>
 </svg>
 </div>
+
+<div class="cos-formula"><span class="cos-eq">$\textcolor{#f5a623}{\cos\theta} = \dfrac{a \cdot b}{\lVert a \rVert\,\lVert b \rVert}$</span><span class="cos-note">direction over magnitude</span></div>
 
 <div class="interactive-host cos-host" data-widget="cosineDial"></div>
 
