@@ -2085,6 +2085,288 @@
   line-height: 1.35 !important;
 }
 
+/* MoE routing diagram (inline SVG). */
+.moe-svg {
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.moe-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Cross-entropy training preview: per-position loss columns. */
+.ce-grid {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 16px;
+  margin: 10px 0 0;
+}
+
+.ce-col,
+.ce-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 120px;
+}
+
+.ce-labels {
+  align-items: flex-end;
+  width: 150px;
+  color: var(--muted-color);
+  font-size: 13pt;
+}
+
+.ce-bar-wrap {
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.ce-labels .ce-bar-wrap {
+  align-items: flex-end;
+}
+
+.ce-labels em {
+  font-style: normal;
+  margin-bottom: 40px;
+}
+
+.ce-bar-wrap b {
+  display: block;
+  width: 46px;
+  background: rgba(245, 166, 35, 0.55);
+  border: 1px solid #f5a623;
+  border-radius: 4px 4px 0 0;
+}
+
+.ce-loss {
+  color: var(--secondary-color);
+  font-size: 13pt;
+  margin-bottom: 4px;
+}
+
+.ce-p {
+  color: var(--muted-color);
+  font-size: 12pt;
+  height: 22px;
+}
+
+.ce-tok {
+  height: 38px;
+  line-height: 36px;
+  font-size: 15pt;
+  color: var(--text-color);
+}
+
+.ce-col .ce-tok {
+  width: 110px;
+  border-radius: var(--box-radius);
+  text-align: center;
+}
+
+.ce-col .ce-input {
+  background: rgba(74, 158, 255, 0.12);
+  border: 1px solid rgba(74, 158, 255, 0.55);
+}
+
+.ce-col .ce-target {
+  background: rgba(245, 166, 35, 0.12);
+  border: 1px solid rgba(245, 166, 35, 0.6);
+}
+
+.ce-arrow {
+  color: var(--muted-color);
+  font-size: 14pt;
+  height: 18px;
+  line-height: 18px;
+}
+
+/* Embedding matrix and coordinate diagrams (inline SVG). */
+.emb-svg {
+  width: 100%;
+  max-width: 980px;
+  margin: 4px auto 0;
+}
+
+.emb-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.emb-svg.emb-svg-compact {
+  max-width: 700px;
+}
+
+/* cosineDial widget: bottom center of the coordinates slide. */
+.reveal .interactive-host.cos-host {
+  width: 700px;
+  max-width: 700px;
+  height: 250px;
+  margin: 4px auto 0;
+}
+
+.cos-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #0d1225;
+  border: 1px solid var(--line-color);
+  border-radius: var(--box-radius);
+  cursor: grab;
+  touch-action: none;
+}
+
+/* Special tokens slide: token strip plus a role table. */
+.st-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  margin: 6px auto 0;
+  max-width: 1120px;
+}
+
+.st-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(74, 158, 255, 0.10);
+  border: 1px solid rgba(74, 158, 255, 0.45);
+  color: var(--text-color);
+}
+
+.st-chip b {
+  font-weight: 500;
+  font-size: 13pt;
+  font-family: var(--code-font, monospace);
+  white-space: nowrap;
+}
+
+.st-chip i {
+  font-style: normal;
+  font-size: 10pt;
+  color: var(--muted-color);
+}
+
+.st-chip.special {
+  background: rgba(245, 166, 35, 0.14);
+  border-color: rgba(245, 166, 35, 0.7);
+}
+
+.st-chip.special b {
+  color: var(--secondary-color);
+}
+
+.reveal .st-caption {
+  text-align: center;
+  font-size: 13pt;
+  color: var(--muted-color);
+  margin: 8px 0 10px;
+}
+
+.reveal table.st-table {
+  font-size: 13pt;
+  margin: 0 auto;
+  border-collapse: collapse;
+  color: var(--text-color);
+}
+
+.reveal table.st-table th {
+  color: var(--muted-color);
+  font-weight: 500;
+  text-align: left;
+  padding: 3px 12px;
+  border-bottom: 1px solid var(--line-color);
+}
+
+.reveal table.st-table td {
+  padding: 4px 12px;
+  border-bottom: 1px solid rgba(42, 52, 80, 0.6);
+  vertical-align: top;
+}
+
+.reveal table.st-table td:first-child {
+  color: var(--secondary-color);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.reveal table.st-table code {
+  font-size: 11.5pt;
+  color: var(--text-color);
+  background: none;
+}
+
+.reveal .slides table.st-table th,
+.reveal .slides table.st-table td {
+  font-size: 12.5pt !important;
+  line-height: 1.3;
+}
+
+.reveal .slides table.st-table code {
+  font-size: 11pt !important;
+}
+
+.byte-grid span.mb {
+  border-color: rgba(245, 166, 35, 0.8);
+  color: var(--secondary-color);
+}
+
+.mb-char {
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+.reveal .byte-note {
+  font-size: 12.5pt;
+  color: var(--muted-color);
+  margin: 6px 0 0;
+  text-align: center;
+}
+
+.st-strip.st-strip-tool {
+  margin-top: 8px;
+}
+
+.reveal .slides table.st-table code.st-tok {
+  color: var(--secondary-color);
+  font-family: var(--code-font, monospace);
+  white-space: nowrap;
+}
+
+.reveal .slides table.st-table td:first-child {
+  color: var(--text-color);
+  font-weight: 400;
+}
+
+.reveal .slides table.st-table td.st-id {
+  font-family: var(--code-font, monospace);
+  color: var(--muted-color);
+  text-align: right;
+}
+
+.reveal .slides table.st-table td,
+.reveal .slides table.st-table th {
+  padding: 3px 12px;
+}
+
+.reveal .slides table.st-table code {
+  font-family: var(--code-font, monospace);
+  font-size: 11.5pt !important;
+}
+
   </style>
 </head>
 <body>
@@ -2327,6 +2609,14 @@ Each fix answers one RNN limitation from the previous slide.
 
 ---
 
+<section id="parallel-forward-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="parallel-forward" preload="auto"></video>
+  </div>
+</section>
+
+---
+
 <!-- .slide: id="transformer-architecture" -->
 
 ## The Transformer Architecture
@@ -2342,6 +2632,18 @@ Each fix answers one RNN limitation from the previous slide.
 </div>
 
 The paper used the full encoder-decoder. We will follow the same building blocks through a single decoder stack.
+
+---
+
+<!-- .slide: id="decoder-only-arch" -->
+
+## The Decoder-Only Architecture
+
+<div class="decoder-svg">
+<svg viewBox="0 0 560 463" role="img" aria-label="Decoder-only transformer stack from raw text up to next-token probabilities, with residual connections around each sub-layer"><rect x="98" y="141" width="304" height="181" rx="10" fill="rgba(74,158,255,0.03)" stroke="rgba(74,158,255,0.5)" stroke-width="1.2" stroke-dasharray="5 4"></rect><defs><marker id="da" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="da2" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4a9eff"></path></marker></defs><rect x="120" y="12" width="260" height="28" rx="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" stroke-width="1.3"></rect><text x="250" y="30" text-anchor="middle" font-size="14" fill="#e8eaf0">Next-token probabilities</text><line x1="250" y1="55" x2="250" y2="41" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="55" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="73" text-anchor="middle" font-size="14" fill="#e8eaf0">Softmax</text><line x1="250" y1="98" x2="250" y2="84" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="98" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="110" text-anchor="middle" font-size="14" fill="#e8eaf0">Unembedding</text><text x="250" y="124" text-anchor="middle" font-size="10" fill="#8892a4">linear: model dim &#8594; vocabulary</text><line x1="250" y1="141" x2="250" y2="127" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="153" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="171" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Add &amp; Norm</text><line x1="250" y1="196" x2="250" y2="182" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="196" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="214" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Feed-Forward Network</text><line x1="250" y1="239" x2="250" y2="225" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="239" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="257" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Add &amp; Norm</text><line x1="250" y1="282" x2="250" y2="268" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="282" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="300" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Masked Multi-Head Self-Attention</text><text x="406" y="231.5" text-anchor="start" font-size="15" fill="#f5a623">N&#215;</text><path d="M250 317 L104 317 L104 253 L119 253" fill="none" stroke="#4a9eff" stroke-width="1.6" marker-end="url(#da2)"></path><path d="M250 231 L104 231 L104 167 L119 167" fill="none" stroke="#4a9eff" stroke-width="1.6" marker-end="url(#da2)"></path><text x="100" y="285.5" text-anchor="end" font-size="10" fill="#4a9eff">residual</text><line x1="250" y1="337" x2="250" y2="323" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="337" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="355" text-anchor="middle" font-size="14" fill="#e8eaf0">Positional encoding</text><line x1="250" y1="380" x2="250" y2="366" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="380" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="392" text-anchor="middle" font-size="14" fill="#e8eaf0">Tokenize</text><text x="250" y="406" text-anchor="middle" font-size="10" fill="#8892a4">text &#8594; token vectors</text><line x1="250" y1="423" x2="250" y2="409" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="423" width="260" height="28" rx="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" stroke-width="1.3"></rect><text x="250" y="441" text-anchor="middle" font-size="14" fill="#e8eaf0">The capital of France</text></svg>
+</div>
+
+Bottom to top: tokenize and embed, add position, $N$ identical blocks refine the vectors (each sub-layer wrapped in a blue **residual connection**), then the **unembedding** scores every token.
 
 ---
 
@@ -2413,21 +2715,22 @@ What should a language model read?
   <div class="byte-lane">
     <h3>Text</h3>
     <div class="token-strip">
-      <span>The</span><span>&nbsp;</span><span>model</span><span>&nbsp;</span><span>reads</span><span>&nbsp;</span><span>bytes</span>
+      <span>The</span><span>&nbsp;</span><span>model</span><span>&nbsp;</span><span>reads</span><span>&nbsp;</span><span>caf<b class="mb-char">é</b></span>
     </div>
   </div>
   <div class="byte-arrow">&darr;</div>
   <div class="byte-lane">
-    <h3>Raw bytes</h3>
+    <h3>Raw bytes: UTF-8, written in hex</h3>
     <div class="byte-grid">
-      <span>54</span><span>68</span><span>65</span><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span>
+      <span>54</span><span>68</span><span>65</span><span>20</span><span>6d</span><span>6f</span><span>64</span><span>65</span><span>6c</span><span>20</span><span>72</span><span>65</span><span>61</span><span>64</span><span>73</span><span>20</span><span>63</span><span>61</span><span>66</span><span class="mb">c3</span><span class="mb">a9</span>
     </div>
+    <p class="byte-note">UTF-8 uses 1 byte for ASCII and 2 to 4 for other characters: <b class="mb-char">é</b> = <b class="mb-char">c3 a9</b>. There are only 256 possible bytes, so the base vocabulary is 256 symbols.</p>
   </div>
   <div class="byte-arrow">&darr;</div>
   <div class="byte-lane">
-    <h3>Learned token IDs</h3>
+    <h3>Learned token IDs (GPT-2)</h3>
     <div class="token-strip token-strip-accent">
-      <span>464</span><span>2746</span><span>1100</span><span>9048</span>
+      <span>464</span><span>2746</span><span>9743</span><span>40304</span>
     </div>
   </div>
 </div>
@@ -2437,6 +2740,61 @@ What should a language model read?
   <div><strong>Large vocabulary</strong><span>bigger embedding table</span></div>
   <div><strong>Byte-level base</strong><span>no true out-of-vocabulary text</span></div>
 </div>
+
+---
+
+<!-- .slide: id="special-tokens" -->
+
+## Special Tokens
+
+<div class="st-strip">
+<span class="st-chip special"><b>&lt;|begin_of_text|&gt;</b><i>128000</i></span>
+<span class="st-chip special"><b>&lt;|start_header_id|&gt;</b><i>128006</i></span>
+<span class="st-chip"><b>user</b><i>882</i></span>
+<span class="st-chip special"><b>&lt;|end_header_id|&gt;</b><i>128007</i></span>
+<span class="st-chip"><b>\n\n</b><i>271</i></span>
+<span class="st-chip"><b>What</b><i>3923</i></span>
+<span class="st-chip"><b>is</b><i>374</i></span>
+<span class="st-chip"><b>the</b><i>279</i></span>
+<span class="st-chip"><b>capital</b><i>6864</i></span>
+<span class="st-chip"><b>of</b><i>315</i></span>
+<span class="st-chip"><b>France</b><i>9822</i></span>
+<span class="st-chip"><b>?</b><i>30</i></span>
+<span class="st-chip special"><b>&lt;|eot_id|&gt;</b><i>128009</i></span>
+<span class="st-chip special"><b>&lt;|start_header_id|&gt;</b><i>128006</i></span>
+<span class="st-chip"><b>assistant</b><i>78191</i></span>
+<span class="st-chip special"><b>&lt;|end_header_id|&gt;</b><i>128007</i></span>
+<span class="st-chip"><b>\n\n</b><i>271</i></span>
+<span class="st-chip"><b>Paris</b><i>60704</i></span>
+<span class="st-chip"><b>.</b><i>13</i></span>
+<span class="st-chip special"><b>&lt;|eot_id|&gt;</b><i>128009</i></span>
+</div>
+<div class="st-strip st-strip-tool">
+<span class="st-chip special"><b>&lt;|python_tag|&gt;</b><i>128010</i></span>
+<span class="st-chip"><b>br</b><i>1347</i></span>
+<span class="st-chip"><b>ave</b><i>525</i></span>
+<span class="st-chip"><b>_search</b><i>10947</i></span>
+<span class="st-chip"><b>.call</b><i>8692</i></span>
+<span class="st-chip"><b>(query</b><i>10974</i></span>
+<span class="st-chip"><b>=&quot;</b><i>429</i></span>
+<span class="st-chip"><b>Paris</b><i>60704</i></span>
+<span class="st-chip"><b>weather</b><i>9282</i></span>
+<span class="st-chip"><b>&quot;)</b><i>909</i></span>
+<span class="st-chip special"><b>&lt;|eom_id|&gt;</b><i>128008</i></span>
+</div>
+<p class="st-caption">Top: one chat turn in Llama 3's template. Bottom: a Llama 3.1 tool call. Orange tokens are reserved IDs that ordinary text never produces.</p>
+
+<table class="st-table">
+<tr><th>token (Llama 3.1)</th><th>what it does</th><th>ID</th><th>same idea elsewhere</th></tr>
+<tr><td><code class="st-tok">&lt;|begin_of_text|&gt;</code></td><td>start of every sequence (BOS)</td><td class="st-id">128000</td><td>BERT <code>[CLS]</code></td></tr>
+<tr><td><code class="st-tok">&lt;|end_of_text|&gt;</code></td><td>end of a document (EOS)</td><td class="st-id">128001</td><td>GPT-2 <code>&lt;|endoftext|&gt;</code></td></tr>
+<tr><td><code class="st-tok">&lt;|start_header_id|&gt;</code></td><td>opens a role name: system, user, assistant, ipython</td><td class="st-id">128006</td><td>ChatML <code>&lt;|im_start|&gt;</code></td></tr>
+<tr><td><code class="st-tok">&lt;|end_header_id|&gt;</code></td><td>closes the role name</td><td class="st-id">128007</td><td>&mdash;</td></tr>
+<tr><td><code class="st-tok">&lt;|eot_id|&gt;</code></td><td>end of turn: the model stops here</td><td class="st-id">128009</td><td>ChatML <code>&lt;|im_end|&gt;</code></td></tr>
+<tr><td><code class="st-tok">&lt;|python_tag|&gt;</code></td><td>the assistant starts a tool call</td><td class="st-id">128010</td><td>Qwen <code>&amp;lt;tool_call&amp;gt;</code></td></tr>
+<tr><td><code class="st-tok">&lt;|eom_id|&gt;</code></td><td>pause so the tool result can come back</td><td class="st-id">128008</td><td>Qwen <code>&amp;lt;/tool_call&amp;gt;</code></td></tr>
+<tr><td><code class="st-tok">&lt;|finetune_right_pad_id|&gt;</code></td><td>padding, ignored by attention and loss</td><td class="st-id">128004</td><td>BERT <code>[PAD]</code></td></tr>
+</table>
 
 ---
 
@@ -2489,189 +2847,12 @@ These **under-trained tokens** (Land and Bartolo, 2024) prove the boundary: the 
 
 ---
 
-<!-- .slide: id="divider-sampling" class="section-divider" data-state="is-section-divider" -->
+<!-- .slide: id="divider-embeddings" class="section-divider" data-state="is-section-divider" -->
 
-# Generating Text
+# Embeddings
 
-From logits to tokens: decoding strategies
+From token IDs to vectors
 
-
----
-
-<!-- .slide: id="logits-to-text" -->
-
-## From Logits to Text
-
-A forward pass produces a raw score (a **logit** $z$) for every token in the vocabulary. **Softmax** turns those scores into probabilities that sum to one:
-
-$$p_{\textcolor{#f5a623}{i}} = \frac{e^{z_{\textcolor{#f5a623}{i}}}}{\sum_{\textcolor{#4a9eff}{j}} e^{z_{\textcolor{#4a9eff}{j}}}}$$
-
-<div class="prompt-line"><span class="pl-text">The capital of France is</span><span class="pl-next">next token?</span></div>
-
-<div class="logit-index-visual">
-  <div class="lv-num"><b>i</b> &mdash; the one token whose probability we are computing (numerator)</div>
-  <div class="vocab-stack">
-    <div class="vocab-row">
-      <span class="vtok i">Paris<small>z = 8.2</small></span>
-      <span class="vtok">London<small>5.1</small></span>
-      <span class="vtok">Lyon<small>4.7</small></span>
-      <span class="vtok">city<small>4.0</small></span>
-      <span class="vtok">the<small>3.2</small></span>
-      <span class="vtok">of<small>2.5</small></span>
-      <span class="vtok more">&hellip;</span>
-    </div>
-    <div class="vocab-bracket"></div>
-  </div>
-  <div class="lv-den"><b>j</b> &mdash; runs over <strong>every</strong> token in the vocabulary; the sum normalizes (denominator)</div>
-</div>
-
----
-
-<!-- .slide: id="greedy-decoding" -->
-
-## Greedy Decoding
-
-Always pick the token with the highest probability:
-
-$$\text{token}_t = \arg\max_i p_i$$
-
-- Simple, deterministic, fast
-- Produces repetitive, flat text; never explores lower-probability continuations
-- Once in a loop ("the the the"), it stays there
-
----
-
-<!-- .slide: id="temperature" -->
-
-## Temperature
-
-Scale the logits by $\textcolor{#f5a623}{T}$ before softmax to control randomness:
-
-$$p_i = \frac{e^{z_i / \textcolor{#f5a623}{T}}}{\sum_j e^{z_j / \textcolor{#f5a623}{T}}}$$
-
-<div class="temp-regimes">
-  <div class="temp-card"><b>T &lt; 1</b><span>sharper</span><p>conservative; sticks to the highest-probability tokens</p></div>
-  <div class="temp-card"><b>T = 1</b><span>original</span><p>the model's raw distribution, unchanged</p></div>
-  <div class="temp-card"><b>T &gt; 1</b><span>flatter</span><p>more random and creative; unlikely tokens gain probability</p></div>
-</div>
-
-The simplest inference-time control over randomness.
-
----
-
-<!-- .slide: id="topk-topp" -->
-
-## Top-k and Top-p (Nucleus) Sampling
-
-Temperature alone can still sample implausible tokens. Two truncation fixes:
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-**Top-k**
-
-- Keep the $k$ most likely tokens, renormalize, sample
-- $k = 50$ is common
-- Fixed cutoff: too strict for peaked distributions, too loose for flat ones
-
-</div>
-
-<div>
-
-**Top-p (nucleus)**
-
-- Keep the smallest set with cumulative probability &gt; $p$
-- Peaked distribution: ~5 tokens. Flat: ~200
-- Adapts to distribution shape
-
-</div>
-
-</div>
-
-In practice: scale by temperature, then truncate, then sample.
-
----
-
-<section id="sampling-explorer">
-  <h2>Temperature, Top-k, Top-p on One Distribution</h2>
-  <div class="interactive-host" data-widget="samplingExplorer"></div>
-</section>
-
----
-
-<section id="sampling-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="sampling-demo" preload="auto"></video>
-  </div>
-</section>
-
----
-
-<!-- .slide: id="beam-search" -->
-
-## Beam Search
-
-<div class="beam-tree">
-<svg viewBox="0 0 880 320" role="img" aria-label="Beam search drawn as a left-to-right tree with beam width 2">
-<path d="M130 165 C215 165 215 85 300 85" fill="none" stroke="#f5a623" stroke-width="2.5"/>
-<path d="M130 165 C215 165 215 175 300 175" fill="none" stroke="#f5a623" stroke-width="2.5"/>
-<path d="M130 165 C215 165 215 265 300 265" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
-<path d="M430 85 C510 85 510 55 590 55" fill="none" stroke="#f5a623" stroke-width="2.5"/>
-<path d="M430 85 C510 85 510 120 590 120" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
-<path d="M430 175 C510 175 510 210 590 210" fill="none" stroke="#f5a623" stroke-width="2.5"/>
-<path d="M430 175 C510 175 510 275 590 275" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
-<rect x="20" y="145" width="110" height="40" rx="8" fill="rgba(74,158,255,0.12)" stroke="rgba(74,158,255,0.6)" stroke-width="1.5"/>
-<text x="75" y="170" text-anchor="middle" font-size="16" fill="#e8eaf0">The</text>
-<rect x="300" y="65" width="130" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
-<text x="365" y="90" text-anchor="middle" font-size="15" fill="#e8eaf0">cat&#160;&#160;0.42</text>
-<rect x="300" y="155" width="130" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
-<text x="365" y="180" text-anchor="middle" font-size="15" fill="#e8eaf0">dog&#160;&#160;0.31</text>
-<rect x="300" y="245" width="130" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
-<text x="365" y="270" text-anchor="middle" font-size="15" fill="#8892a4">car&#160;&#160;0.08</text>
-<rect x="590" y="35" width="150" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
-<text x="665" y="60" text-anchor="middle" font-size="15" fill="#e8eaf0">cat sat&#160;&#160;0.18</text>
-<rect x="590" y="100" width="150" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
-<text x="665" y="125" text-anchor="middle" font-size="15" fill="#8892a4">cat ran&#160;&#160;0.05</text>
-<rect x="590" y="190" width="150" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
-<text x="665" y="215" text-anchor="middle" font-size="15" fill="#e8eaf0">dog ran&#160;&#160;0.15</text>
-<rect x="590" y="255" width="150" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
-<text x="665" y="280" text-anchor="middle" font-size="15" fill="#8892a4">dog the&#160;&#160;0.04</text>
-<text x="752" y="60" text-anchor="start" font-size="13" fill="#f5a623">beam 1</text>
-<text x="752" y="215" text-anchor="start" font-size="13" fill="#f5a623">beam 2</text>
-<text x="75" y="225" text-anchor="middle" font-size="12" fill="#8892a4">start</text>
-<text x="365" y="35" text-anchor="middle" font-size="12" fill="#8892a4">step 1</text>
-<text x="665" y="22" text-anchor="middle" font-size="12" fill="#8892a4">step 2</text>
-</svg>
-</div>
-
-Keep the $b$ best partial sequences at every step ($b = 2$ here). Solid orange paths survive; dashed branches were scored and pruned.
-
-- **Good for:** translation and other tasks with one correct answer
-- **Bad for:** open-ended generation; the most likely sequence is usually vacuous or repetitive
-
-Next: follow a full prompt through the stack that produces these distributions.
-
----
-
-<!-- .slide: id="divider-block" class="section-divider" data-state="is-section-divider" -->
-
-# Putting It All Together
-
-Following one prompt through a decoder-only transformer
-
-
----
-
-<!-- .slide: id="decoder-only-arch" -->
-
-## The Decoder-Only Architecture
-
-<div class="decoder-svg">
-<svg viewBox="0 0 560 463" role="img" aria-label="Decoder-only transformer stack from raw text up to next-token probabilities, with residual connections around each sub-layer"><rect x="98" y="141" width="304" height="181" rx="10" fill="rgba(74,158,255,0.03)" stroke="rgba(74,158,255,0.5)" stroke-width="1.2" stroke-dasharray="5 4"></rect><defs><marker id="da" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="da2" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4a9eff"></path></marker></defs><rect x="120" y="12" width="260" height="28" rx="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" stroke-width="1.3"></rect><text x="250" y="30" text-anchor="middle" font-size="14" fill="#e8eaf0">Next-token probabilities</text><line x1="250" y1="55" x2="250" y2="41" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="55" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="73" text-anchor="middle" font-size="14" fill="#e8eaf0">Softmax</text><line x1="250" y1="98" x2="250" y2="84" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="98" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="110" text-anchor="middle" font-size="14" fill="#e8eaf0">Unembedding</text><text x="250" y="124" text-anchor="middle" font-size="10" fill="#8892a4">linear: model dim &#8594; vocabulary</text><line x1="250" y1="141" x2="250" y2="127" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="153" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="171" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Add &amp; Norm</text><line x1="250" y1="196" x2="250" y2="182" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="196" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="214" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Feed-Forward Network</text><line x1="250" y1="239" x2="250" y2="225" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="239" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="257" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Add &amp; Norm</text><line x1="250" y1="282" x2="250" y2="268" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="282" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="300" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Masked Multi-Head Self-Attention</text><text x="406" y="231.5" text-anchor="start" font-size="15" fill="#f5a623">N&#215;</text><path d="M250 317 L104 317 L104 253 L119 253" fill="none" stroke="#4a9eff" stroke-width="1.6" marker-end="url(#da2)"></path><path d="M250 231 L104 231 L104 167 L119 167" fill="none" stroke="#4a9eff" stroke-width="1.6" marker-end="url(#da2)"></path><text x="100" y="285.5" text-anchor="end" font-size="10" fill="#4a9eff">residual</text><line x1="250" y1="337" x2="250" y2="323" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="337" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="355" text-anchor="middle" font-size="14" fill="#e8eaf0">Positional encoding</text><line x1="250" y1="380" x2="250" y2="366" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="380" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="392" text-anchor="middle" font-size="14" fill="#e8eaf0">Tokenize</text><text x="250" y="406" text-anchor="middle" font-size="10" fill="#8892a4">text &#8594; token vectors</text><line x1="250" y1="423" x2="250" y2="409" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="423" width="260" height="28" rx="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" stroke-width="1.3"></rect><text x="250" y="441" text-anchor="middle" font-size="14" fill="#e8eaf0">The capital of France</text></svg>
-</div>
-
-Bottom to top: tokenize and embed, add position, $N$ identical blocks refine the vectors (each sub-layer wrapped in a blue **residual connection**), then the **unembedding** scores every token.
 
 ---
 
@@ -2717,6 +2898,162 @@ Row $k$ of the **embedding matrix** is the learned vector for token $k$. Lookup 
 <section id="embedding-anim">
   <div class="video-container">
     <video class="manim-stepper" data-manim-scene="embedding-lookup" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<!-- .slide: id="embedding-matrix" -->
+
+## Where the Embedding Matrix Comes From
+
+<div class="emb-svg">
+<svg viewBox="0 0 1030 330" role="img" aria-label="Step 0: every entry of the embedding matrix is drawn from a Gaussian with mean 0 and standard deviation 0.02. Training by gradient descent then changes the entries into learned values.">
+<defs><marker id="emb" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#8892a4"></path></marker></defs>
+<text x="130" y="32" text-anchor="middle" font-size="17" fill="#e8eaf0">1. Initialize</text>
+<text x="130" y="54" text-anchor="middle" font-size="13" fill="#8892a4">Gaussian: mean 0, std 0.02</text>
+<polygon points="10,210 10.0,208.7 12.0,208.5 14.0,208.2 16.0,207.9 18.0,207.6 20.0,207.3 22.0,206.9 24.0,206.4 26.0,205.9 28.0,205.4 30.0,204.7 32.0,204.0 34.0,203.3 36.0,202.4 38.0,201.5 40.0,200.5 42.0,199.3 44.0,198.1 46.0,196.8 48.0,195.3 50.0,193.8 52.0,192.1 54.0,190.3 56.0,188.3 58.0,186.3 60.0,184.0 62.0,181.7 64.0,179.2 66.0,176.6 68.0,173.9 70.0,171.0 72.0,168.1 74.0,165.0 76.0,161.8 78.0,158.5 80.0,155.1 82.0,151.6 84.0,148.1 86.0,144.5 88.0,140.9 90.0,137.2 92.0,133.6 94.0,130.0 96.0,126.4 98.0,122.9 100.0,119.4 102.0,116.1 104.0,112.9 106.0,109.8 108.0,106.8 110.0,104.1 112.0,101.6 114.0,99.2 116.0,97.1 118.0,95.3 120.0,93.7 122.0,92.4 124.0,91.3 126.0,90.6 128.0,90.1 130.0,90.0 132.0,90.1 134.0,90.6 136.0,91.3 138.0,92.4 140.0,93.7 142.0,95.3 144.0,97.1 146.0,99.2 148.0,101.6 150.0,104.1 152.0,106.8 154.0,109.8 156.0,112.9 158.0,116.1 160.0,119.4 162.0,122.9 164.0,126.4 166.0,130.0 168.0,133.6 170.0,137.2 172.0,140.9 174.0,144.5 176.0,148.1 178.0,151.6 180.0,155.1 182.0,158.5 184.0,161.8 186.0,165.0 188.0,168.1 190.0,171.0 192.0,173.9 194.0,176.6 196.0,179.2 198.0,181.7 200.0,184.0 202.0,186.3 204.0,188.3 206.0,190.3 208.0,192.1 210.0,193.8 212.0,195.3 214.0,196.8 216.0,198.1 218.0,199.3 220.0,200.5 222.0,201.5 224.0,202.4 226.0,203.3 228.0,204.0 230.0,204.7 232.0,205.4 234.0,205.9 236.0,206.4 238.0,206.9 240.0,207.3 242.0,207.6 244.0,207.9 246.0,208.2 248.0,208.5 250.0,208.7 250,210" fill="rgba(74,158,255,0.15)" stroke="none"></polygon>
+<polyline points="10.0,208.7 12.0,208.5 14.0,208.2 16.0,207.9 18.0,207.6 20.0,207.3 22.0,206.9 24.0,206.4 26.0,205.9 28.0,205.4 30.0,204.7 32.0,204.0 34.0,203.3 36.0,202.4 38.0,201.5 40.0,200.5 42.0,199.3 44.0,198.1 46.0,196.8 48.0,195.3 50.0,193.8 52.0,192.1 54.0,190.3 56.0,188.3 58.0,186.3 60.0,184.0 62.0,181.7 64.0,179.2 66.0,176.6 68.0,173.9 70.0,171.0 72.0,168.1 74.0,165.0 76.0,161.8 78.0,158.5 80.0,155.1 82.0,151.6 84.0,148.1 86.0,144.5 88.0,140.9 90.0,137.2 92.0,133.6 94.0,130.0 96.0,126.4 98.0,122.9 100.0,119.4 102.0,116.1 104.0,112.9 106.0,109.8 108.0,106.8 110.0,104.1 112.0,101.6 114.0,99.2 116.0,97.1 118.0,95.3 120.0,93.7 122.0,92.4 124.0,91.3 126.0,90.6 128.0,90.1 130.0,90.0 132.0,90.1 134.0,90.6 136.0,91.3 138.0,92.4 140.0,93.7 142.0,95.3 144.0,97.1 146.0,99.2 148.0,101.6 150.0,104.1 152.0,106.8 154.0,109.8 156.0,112.9 158.0,116.1 160.0,119.4 162.0,122.9 164.0,126.4 166.0,130.0 168.0,133.6 170.0,137.2 172.0,140.9 174.0,144.5 176.0,148.1 178.0,151.6 180.0,155.1 182.0,158.5 184.0,161.8 186.0,165.0 188.0,168.1 190.0,171.0 192.0,173.9 194.0,176.6 196.0,179.2 198.0,181.7 200.0,184.0 202.0,186.3 204.0,188.3 206.0,190.3 208.0,192.1 210.0,193.8 212.0,195.3 214.0,196.8 216.0,198.1 218.0,199.3 220.0,200.5 222.0,201.5 224.0,202.4 226.0,203.3 228.0,204.0 230.0,204.7 232.0,205.4 234.0,205.9 236.0,206.4 238.0,206.9 240.0,207.3 242.0,207.6 244.0,207.9 246.0,208.2 248.0,208.5 250.0,208.7" fill="none" stroke="#4a9eff" stroke-width="2"></polyline>
+<line x1="10" y1="210" x2="250" y2="210" stroke="#8892a4" stroke-width="1.3"></line>
+<line x1="50.0" y1="210" x2="50.0" y2="215" stroke="#8892a4" stroke-width="1.2"></line>
+<text x="50.0" y="230" text-anchor="middle" font-size="12" fill="#8892a4">&#8722;0.04</text>
+<line x1="90.0" y1="210" x2="90.0" y2="215" stroke="#8892a4" stroke-width="1.2"></line>
+<text x="90.0" y="230" text-anchor="middle" font-size="12" fill="#8892a4">&#8722;0.02</text>
+<line x1="130.0" y1="210" x2="130.0" y2="215" stroke="#8892a4" stroke-width="1.2"></line>
+<text x="130.0" y="230" text-anchor="middle" font-size="12" fill="#8892a4">0</text>
+<line x1="170.0" y1="210" x2="170.0" y2="215" stroke="#8892a4" stroke-width="1.2"></line>
+<text x="170.0" y="230" text-anchor="middle" font-size="12" fill="#8892a4">0.02</text>
+<line x1="210.0" y1="210" x2="210.0" y2="215" stroke="#8892a4" stroke-width="1.2"></line>
+<text x="210.0" y="230" text-anchor="middle" font-size="12" fill="#8892a4">0.04</text>
+<text x="130" y="252" text-anchor="middle" font-size="13" fill="#8892a4">value of one entry</text>
+<text x="130" y="276" text-anchor="middle" font-size="13" fill="#e8eaf0">most draws land between &#8722;0.04 and 0.04</text>
+<line x1="258" y1="150" x2="318" y2="150" stroke="#8892a4" stroke-width="2" marker-end="url(#emb)"></line>
+<text x="288" y="138" text-anchor="middle" font-size="13" fill="#8892a4">fill</text>
+<text x="288" y="170" text-anchor="middle" font-size="13" fill="#8892a4">every entry</text>
+<text x="455" y="72" text-anchor="middle" font-size="17" fill="#e8eaf0">2. E at step 0</text>
+<text x="455" y="94" text-anchor="middle" font-size="13" fill="#8892a4">small random numbers, no meaning yet</text>
+<text x="377" y="132" text-anchor="end" font-size="14" fill="#e8eaf0">The</text>
+<rect x="385" y="110" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="417.0" y="132" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.023</text>
+<rect x="453" y="110" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="485.0" y="132" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.023</text>
+<rect x="521" y="110" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="553.0" y="132" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.005</text>
+<text x="599" y="132" text-anchor="middle" font-size="15" fill="#8892a4">&#8943;</text>
+<text x="377" y="171" text-anchor="end" font-size="14" fill="#e8eaf0">capital</text>
+<rect x="385" y="149" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="417.0" y="171" text-anchor="middle" font-size="13" fill="#e8eaf0">0.017</text>
+<rect x="453" y="149" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="485.0" y="171" text-anchor="middle" font-size="13" fill="#e8eaf0">0.014</text>
+<rect x="521" y="149" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="553.0" y="171" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.006</text>
+<text x="599" y="171" text-anchor="middle" font-size="15" fill="#8892a4">&#8943;</text>
+<text x="377" y="210" text-anchor="end" font-size="14" fill="#e8eaf0">of</text>
+<rect x="385" y="188" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="417.0" y="210" text-anchor="middle" font-size="13" fill="#e8eaf0">0.006</text>
+<rect x="453" y="188" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="485.0" y="210" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.025</text>
+<rect x="521" y="188" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="553.0" y="210" text-anchor="middle" font-size="13" fill="#e8eaf0">0.007</text>
+<text x="599" y="210" text-anchor="middle" font-size="15" fill="#8892a4">&#8943;</text>
+<text x="377" y="249" text-anchor="end" font-size="14" fill="#e8eaf0">France</text>
+<rect x="385" y="227" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="417.0" y="249" text-anchor="middle" font-size="13" fill="#e8eaf0">0.002</text>
+<rect x="453" y="227" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="485.0" y="249" text-anchor="middle" font-size="13" fill="#e8eaf0">0.025</text>
+<rect x="521" y="227" width="64" height="34" rx="4" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.2"></rect>
+<text x="553.0" y="249" text-anchor="middle" font-size="13" fill="#e8eaf0">0.022</text>
+<text x="599" y="249" text-anchor="middle" font-size="15" fill="#8892a4">&#8943;</text>
+<text x="377" y="284" text-anchor="end" font-size="16" fill="#8892a4">&#8942;</text>
+<text x="485" y="284" text-anchor="middle" font-size="16" fill="#8892a4">&#8942;</text>
+<line x1="640" y1="150" x2="714" y2="150" stroke="#8892a4" stroke-width="2" marker-end="url(#emb)"></line>
+<text x="677" y="138" text-anchor="middle" font-size="13" fill="#8892a4">train</text>
+<text x="677" y="170" text-anchor="middle" font-size="13" fill="#8892a4">(backprop)</text>
+<text x="855" y="72" text-anchor="middle" font-size="17" fill="#e8eaf0">3. E after training</text>
+<text x="855" y="94" text-anchor="middle" font-size="13" fill="#8892a4">real GPT-2 small values</text>
+<text x="777" y="132" text-anchor="end" font-size="14" fill="#e8eaf0">The</text>
+<rect x="785" y="110" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="817" y="132" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.069</text>
+<rect x="853" y="110" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="885" y="132" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.020</text>
+<rect x="921" y="110" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="953" y="132" text-anchor="middle" font-size="13" fill="#e8eaf0">0.064</text>
+<text x="999" y="132" text-anchor="middle" font-size="15" fill="#8892a4">&#8943;</text>
+<text x="777" y="171" text-anchor="end" font-size="14" fill="#e8eaf0">capital</text>
+<rect x="785" y="149" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="817" y="171" text-anchor="middle" font-size="13" fill="#e8eaf0">0.057</text>
+<rect x="853" y="149" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="885" y="171" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.007</text>
+<rect x="921" y="149" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="953" y="171" text-anchor="middle" font-size="13" fill="#e8eaf0">0.091</text>
+<text x="999" y="171" text-anchor="middle" font-size="15" fill="#8892a4">&#8943;</text>
+<text x="777" y="210" text-anchor="end" font-size="14" fill="#e8eaf0">of</text>
+<rect x="785" y="188" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="817" y="210" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.057</text>
+<rect x="853" y="188" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="885" y="210" text-anchor="middle" font-size="13" fill="#e8eaf0">0.018</text>
+<rect x="921" y="188" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="953" y="210" text-anchor="middle" font-size="13" fill="#e8eaf0">0.033</text>
+<text x="999" y="210" text-anchor="middle" font-size="15" fill="#8892a4">&#8943;</text>
+<text x="777" y="249" text-anchor="end" font-size="14" fill="#e8eaf0">France</text>
+<rect x="785" y="227" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="817" y="249" text-anchor="middle" font-size="13" fill="#e8eaf0">&#8722;0.069</text>
+<rect x="853" y="227" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="885" y="249" text-anchor="middle" font-size="13" fill="#e8eaf0">0.049</text>
+<rect x="921" y="227" width="64" height="34" rx="4" fill="rgba(63,185,80,0.10)" stroke="#3fb950" stroke-width="1.2"></rect>
+<text x="953" y="249" text-anchor="middle" font-size="13" fill="#e8eaf0">0.162</text>
+<text x="999" y="249" text-anchor="middle" font-size="15" fill="#8892a4">&#8943;</text>
+<text x="777" y="284" text-anchor="end" font-size="16" fill="#8892a4">&#8942;</text>
+<text x="885" y="284" text-anchor="middle" font-size="16" fill="#8892a4">&#8942;</text>
+</svg>
+</div>
+
+$E$ has one row per token and one column per dimension: $50{,}257 \times 768 \approx$ 38.6M numbers in GPT-2 small. It starts random and is learned like every other weight.
+
+---
+
+<!-- .slide: id="embedding-coordinates" -->
+
+## Vectors Are Coordinates
+
+A vector of $d$ numbers is a point in $d$-dimensional space.
+
+<div class="emb-svg emb-svg-compact">
+<svg viewBox="40 0 960 325" role="img" aria-label="Left: cat and dog vectors point in nearly the same direction with a small angle between them, while Paris points elsewhere. Right: the man to woman arrow is parallel to the king to queen arrow.">
+<defs><marker id="eca" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4a9eff"></path></marker><marker id="ecb" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="ecc" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#3fb950"></path></marker></defs>
+<text x="240" y="24" text-anchor="middle" font-size="18" fill="#e8eaf0">similar tokens point the same way</text>
+<line x1="70" y1="270" x2="450" y2="270" stroke="#2a3450" stroke-width="1.5"></line><line x1="70" y1="270" x2="70" y2="50" stroke="#2a3450" stroke-width="1.5"></line>
+<line x1="70" y1="270" x2="390" y2="150" stroke="#3fb950" stroke-width="2.6" marker-end="url(#ecc)"></line><text x="398" y="150" text-anchor="start" font-size="16" fill="#3fb950">cat</text>
+<line x1="70" y1="270" x2="380" y2="110" stroke="#3fb950" stroke-width="2.6" marker-end="url(#ecc)"></line><text x="388" y="106" text-anchor="start" font-size="16" fill="#3fb950">dog</text>
+<line x1="70" y1="270" x2="150" y2="60" stroke="#4a9eff" stroke-width="2.6" marker-end="url(#eca)"></line><text x="158" y="60" text-anchor="start" font-size="16" fill="#4a9eff">Paris</text>
+<path d="M182.4,227.9 A120,120 0 0 0 176.6,215.0" fill="none" stroke="#f5a623" stroke-width="2"></path>
+<text x="196.35950130828536" y="227.41401831848134" text-anchor="start" font-size="15" fill="#f5a623">&#952; small</text>
+<text x="240" y="312" text-anchor="middle" font-size="15" fill="#8892a4">cos &#952; = a&#183;b / (&#8214;a&#8214; &#8214;b&#8214;): near 1 for cat and dog</text>
+<text x="760" y="24" text-anchor="middle" font-size="18" fill="#e8eaf0">directions carry meaning</text>
+<line x1="580" y1="250" x2="830" y2="250" stroke="#2a3450" stroke-width="1.6" stroke-dasharray="5 4"></line>
+<line x1="650" y1="120" x2="900" y2="120" stroke="#2a3450" stroke-width="1.6" stroke-dasharray="5 4"></line>
+<line x1="584.3" y1="242.1" x2="644.3" y2="130.6" stroke="#f5a623" stroke-width="2.6" marker-end="url(#ecb)"></line>
+<line x1="834.3" y1="242.1" x2="894.3" y2="130.6" stroke="#f5a623" stroke-width="2.6" marker-end="url(#ecb)"></line>
+<circle cx="580" cy="250" r="6" fill="#4a9eff"></circle>
+<text x="580" y="276" text-anchor="middle" font-size="16" fill="#e8eaf0">man</text>
+<circle cx="650" cy="120" r="6" fill="#4a9eff"></circle>
+<text x="650" y="106" text-anchor="middle" font-size="16" fill="#e8eaf0">woman</text>
+<circle cx="830" cy="250" r="6" fill="#4a9eff"></circle>
+<text x="830" y="276" text-anchor="middle" font-size="16" fill="#e8eaf0">king</text>
+<circle cx="900" cy="120" r="6" fill="#4a9eff"></circle>
+<text x="900" y="106" text-anchor="middle" font-size="16" fill="#e8eaf0">queen</text>
+<text x="775" y="190" text-anchor="middle" font-size="15" fill="#f5a623">same offset</text>
+<text x="760" y="312" text-anchor="middle" font-size="15" fill="#8892a4">king &#8722; man + woman &#8776; queen (word2vec, Mikolov et al., 2013)</text>
+</svg>
+</div>
+
+<div class="interactive-host cos-host" data-widget="cosineDial"></div>
+
+---
+
+<section id="embedding-space-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="embedding-space" preload="auto"></video>
   </div>
 </section>
 
@@ -2886,6 +3223,70 @@ Placement: the original transformer normalized **after** each sub-layer (post-no
 
 ---
 
+<!-- .slide: id="residual-stream" -->
+
+## The Residual Stream View
+
+Every sub-layer reads the current vector, computes an update, and **adds** it back:
+
+<div class="formula-card">output = input + sub-layer(norm(input))</div>
+
+- Blocks only add; the original embedding is never overwritten
+- Prompt information stays available many layers later
+- Gradients flow back through the addition without decaying
+- This "residual stream" is the central object in mechanistic interpretability
+
+---
+
+<section id="residual-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="residual-stream" preload="auto"></video>
+  </div>
+</section>
+
+---
+
+<!-- .slide: id="side-quest-induction-heads" -->
+
+## Side Quest: Induction Heads
+
+<div class="emb-svg">
+<svg viewBox="0 40 1000 260" role="img" aria-label="Induction head example: at the second Mr, the head attends to Dursley, the token that followed the first Mr, and copies it as the prediction.">
+<defs><marker id="iha" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="ihb" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#3fb950"></path></marker><marker id="ihc" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#8892a4"></path></marker></defs>
+<rect x="30" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="75.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">Mr</text>
+<rect x="134" y="150" width="90" height="46" rx="8" fill="rgba(63,185,80,0.16)" stroke="#3fb950" stroke-width="1.6"></rect>
+<text x="179.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">Dursley</text>
+<rect x="238" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="283.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">was</text>
+<rect x="342" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="387.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">proud</text>
+<rect x="446" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="491.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">.</text>
+<rect x="550" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="595.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">Later</text>
+<rect x="654" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="699.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">,</text>
+<rect x="758" y="150" width="90" height="46" rx="8" fill="rgba(245,166,35,0.18)" stroke="#f5a623" stroke-width="1.6"></rect>
+<text x="803.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">Mr</text>
+<rect x="862" y="150" width="90" height="46" rx="8" fill="rgba(136,146,164,0.08)" stroke="#8892a4" stroke-width="1.6" stroke-dasharray="5 4"></rect>
+<text x="907.0" y="179" text-anchor="middle" font-size="17" fill="#8892a4">?</text>
+<path d="M179.0,198 C179.0,240 75.0,240 75.0,202" fill="none" stroke="#8892a4" stroke-width="2" marker-end="url(#ihc)"></path>
+<text x="40" y="262" text-anchor="start" font-size="14" fill="#8892a4">1. previous-token head:</text>
+<text x="40" y="280" text-anchor="start" font-size="14" fill="#8892a4">Dursley stores "I came after Mr"</text>
+<path d="M803.0,146 C803.0,55 179.0,55 179.0,142" fill="none" stroke="#f5a623" stroke-width="2.4" marker-end="url(#iha)"></path>
+<text x="491.0" y="70" text-anchor="middle" font-size="14" fill="#f5a623">2. induction head at the second Mr looks for "the token that came after Mr" and finds Dursley</text>
+<path d="M199.0,198 C239.0,300 907.0,300 907.0,202" fill="none" stroke="#3fb950" stroke-width="2.4" marker-end="url(#ihb)"></path>
+<text x="623.0" y="290" text-anchor="middle" font-size="14" fill="#3fb950">3. copy: predict Dursley</text>
+</svg>
+</div>
+
+- Two attention heads in different layers cooperate to copy `[A] [B] ... [A]` &rarr; `[B]` (Olsson et al., 2022)
+- It works on name pairs never seen in training, so the copying happens entirely in context
+- These heads form suddenly during training, at the same point in-context learning improves
+
+---
+
 <!-- .slide: id="sampling-step" -->
 
 ## Step 6: Sampling
@@ -2919,38 +3320,160 @@ Placement: the original transformer normalized **after** each sub-layer (post-no
 
 ---
 
-<!-- .slide: id="residual-stream" -->
+<!-- .slide: id="divider-sampling" class="section-divider" data-state="is-section-divider" -->
 
-## The Residual Stream View
+# Generating Text
 
-Every sub-layer reads the current vector, computes an update, and **adds** it back:
+From logits to tokens: decoding strategies
 
-<div class="formula-card">output = input + sub-layer(norm(input))</div>
-
-- Blocks only add; the original embedding is never overwritten
-- Prompt information stays available many layers later
-- Gradients flow back through the addition without decaying
-- This "residual stream" is the central object in mechanistic interpretability
 
 ---
 
-<section id="residual-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="residual-stream" preload="auto"></video>
+<!-- .slide: id="logits-to-text" -->
+
+## From Logits to Text
+
+A forward pass produces a raw score (a **logit** $z$) for every token in the vocabulary. **Softmax** turns those scores into probabilities that sum to one:
+
+$$p_{\textcolor{#f5a623}{i}} = \frac{e^{z_{\textcolor{#f5a623}{i}}}}{\sum_{\textcolor{#4a9eff}{j}} e^{z_{\textcolor{#4a9eff}{j}}}}$$
+
+<div class="prompt-line"><span class="pl-text">The capital of France is</span><span class="pl-next">next token?</span></div>
+
+<div class="logit-index-visual">
+  <div class="lv-num"><b>i</b> &mdash; the one token whose probability we are computing (numerator)</div>
+  <div class="vocab-stack">
+    <div class="vocab-row">
+      <span class="vtok i">Paris<small>z = 8.2</small></span>
+      <span class="vtok">London<small>5.1</small></span>
+      <span class="vtok">Lyon<small>4.7</small></span>
+      <span class="vtok">city<small>4.0</small></span>
+      <span class="vtok">the<small>3.2</small></span>
+      <span class="vtok">of<small>2.5</small></span>
+      <span class="vtok more">&hellip;</span>
+    </div>
+    <div class="vocab-bracket"></div>
   </div>
+  <div class="lv-den"><b>j</b> &mdash; runs over <strong>every</strong> token in the vocabulary; the sum normalizes (denominator)</div>
+</div>
+
+---
+
+<!-- .slide: id="greedy-decoding" -->
+
+## Greedy Decoding
+
+Always pick the token with the highest probability:
+
+$$\text{token}_t = \arg\max_i p_i$$
+
+- Simple, deterministic, fast
+- Produces repetitive, flat text; never explores lower-probability continuations
+- Once in a loop ("the the the"), it stays there
+
+---
+
+<!-- .slide: id="temperature" -->
+
+## Temperature
+
+Scale the logits by $\textcolor{#f5a623}{T}$ before softmax to control randomness:
+
+$$p_i = \frac{e^{z_i / \textcolor{#f5a623}{T}}}{\sum_j e^{z_j / \textcolor{#f5a623}{T}}}$$
+
+<div class="temp-regimes">
+  <div class="temp-card"><b>T &lt; 1</b><span>sharper</span><p>conservative; sticks to the highest-probability tokens</p></div>
+  <div class="temp-card"><b>T = 1</b><span>original</span><p>the model's raw distribution, unchanged</p></div>
+  <div class="temp-card"><b>T &gt; 1</b><span>flatter</span><p>more random and creative; unlikely tokens gain probability</p></div>
+</div>
+
+The simplest inference-time control over randomness.
+
+---
+
+<!-- .slide: id="topk-topp" -->
+
+## Top-k and Top-p (Nucleus) Sampling
+
+Temperature alone can still sample implausible tokens. Two truncation fixes:
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
+
+<div>
+
+**Top-k**
+
+- Keep the $k$ most likely tokens, renormalize, sample
+- $k = 50$ is common
+- Fixed cutoff: too strict for peaked distributions, too loose for flat ones
+
+</div>
+
+<div>
+
+**Top-p (nucleus)**
+
+- Keep the smallest set with cumulative probability &gt; $p$
+- Peaked distribution: ~5 tokens. Flat: ~200
+- Adapts to distribution shape
+
+</div>
+
+</div>
+
+In practice: scale by temperature, then truncate, then sample.
+
+---
+
+<section id="sampling-explorer">
+  <h2>Temperature, Top-k, Top-p on One Distribution</h2>
+  <div class="interactive-host" data-widget="samplingExplorer"></div>
 </section>
 
 ---
 
-<!-- .slide: id="side-quest-induction-heads" -->
+<!-- .slide: id="beam-search" -->
 
-## Side Quest: Induction Heads
+## Beam Search
 
-**Induction heads** (Olsson et al., 2022) implement copy-and-continue:
+<div class="beam-tree">
+<svg viewBox="0 0 880 320" role="img" aria-label="Beam search drawn as a left-to-right tree with beam width 2">
+<path d="M130 165 C215 165 215 85 300 85" fill="none" stroke="#f5a623" stroke-width="2.5"/>
+<path d="M130 165 C215 165 215 175 300 175" fill="none" stroke="#f5a623" stroke-width="2.5"/>
+<path d="M130 165 C215 165 215 265 300 265" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
+<path d="M430 85 C510 85 510 55 590 55" fill="none" stroke="#f5a623" stroke-width="2.5"/>
+<path d="M430 85 C510 85 510 120 590 120" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
+<path d="M430 175 C510 175 510 210 590 210" fill="none" stroke="#f5a623" stroke-width="2.5"/>
+<path d="M430 175 C510 175 510 275 590 275" fill="none" stroke="#5a6478" stroke-width="1.5" stroke-dasharray="5 5"/>
+<rect x="20" y="145" width="110" height="40" rx="8" fill="rgba(74,158,255,0.12)" stroke="rgba(74,158,255,0.6)" stroke-width="1.5"/>
+<text x="75" y="170" text-anchor="middle" font-size="16" fill="#e8eaf0">The</text>
+<rect x="300" y="65" width="130" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
+<text x="365" y="90" text-anchor="middle" font-size="15" fill="#e8eaf0">cat&#160;&#160;0.42</text>
+<rect x="300" y="155" width="130" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
+<text x="365" y="180" text-anchor="middle" font-size="15" fill="#e8eaf0">dog&#160;&#160;0.31</text>
+<rect x="300" y="245" width="130" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
+<text x="365" y="270" text-anchor="middle" font-size="15" fill="#8892a4">car&#160;&#160;0.08</text>
+<rect x="590" y="35" width="150" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
+<text x="665" y="60" text-anchor="middle" font-size="15" fill="#e8eaf0">cat sat&#160;&#160;0.18</text>
+<rect x="590" y="100" width="150" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
+<text x="665" y="125" text-anchor="middle" font-size="15" fill="#8892a4">cat ran&#160;&#160;0.05</text>
+<rect x="590" y="190" width="150" height="40" rx="8" fill="rgba(245,166,35,0.14)" stroke="rgba(245,166,35,0.65)" stroke-width="1.5"/>
+<text x="665" y="215" text-anchor="middle" font-size="15" fill="#e8eaf0">dog ran&#160;&#160;0.15</text>
+<rect x="590" y="255" width="150" height="40" rx="8" fill="rgba(136,146,164,0.06)" stroke="rgba(136,146,164,0.30)" stroke-width="1.5"/>
+<text x="665" y="280" text-anchor="middle" font-size="15" fill="#8892a4">dog the&#160;&#160;0.04</text>
+<text x="752" y="60" text-anchor="start" font-size="13" fill="#f5a623">beam 1</text>
+<text x="752" y="215" text-anchor="start" font-size="13" fill="#f5a623">beam 2</text>
+<text x="75" y="225" text-anchor="middle" font-size="12" fill="#8892a4">start</text>
+<text x="365" y="35" text-anchor="middle" font-size="12" fill="#8892a4">step 1</text>
+<text x="665" y="22" text-anchor="middle" font-size="12" fill="#8892a4">step 2</text>
+</svg>
+</div>
 
-- See `[A] [B] ... [A]`, predict `[B]`
-- The head finds an earlier occurrence of the current token and predicts what followed it, with no weight updates
-- A core mechanism behind few-shot (in-context) learning at scale
+Keep the $b$ best partial sequences at every step ($b = 2$ here). Solid orange paths survive; dashed branches were scored and pruned.
+
+- **Good for:** translation and other tasks with one correct answer
+- **Bad for:** open-ended generation; the most likely sequence is usually vacuous or repetitive
+
+Next: follow a full prompt through the stack that produces these distributions.
 
 ---
 
@@ -3003,21 +3526,74 @@ Mostly independent changes; together they make training more stable and efficien
 
 ## Mixture of Experts
 
-<div class="moe-diagram">
-  <div class="router-box">router<br><span>top-k experts per token</span></div>
-  <div class="expert-grid">
-    <div class="expert active">expert 3<br><span>GPU active</span></div>
-    <div class="expert">expert 8<br><span>CPU or cold GPU</span></div>
-    <div class="expert active">expert 17<br><span>GPU active</span></div>
-    <div class="expert">expert 42<br><span>CPU or cold GPU</span></div>
-  </div>
+<div class="moe-svg">
+<svg viewBox="-20 0 1020 400" role="img" aria-label="One transformer block with mixture of experts: dense masked self-attention used by every token, then an MoE layer in place of the feed-forward network, where a router sends each token to 2 of 8 experts and mixes their outputs.">
+<defs><marker id="mea" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="meb" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#8892a4"></path></marker></defs>
+<rect x="28.0" y="70" width="344" height="282" rx="10" fill="rgba(74,158,255,0.03)" stroke="rgba(74,158,255,0.5)" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<text x="24" y="215" text-anchor="start" font-size="17" fill="#f5a623">N&#215;</text>
+<text x="200" y="392" text-anchor="middle" font-size="13" fill="#8892a4">token vectors from the previous block</text>
+<line x1="200" y1="375" x2="200" y2="338" stroke="#f5a623" stroke-width="2" marker-end="url(#mea)"></line>
+<rect x="50.0" y="290" width="300" height="46" rx="8" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="200.0" y="310.0" text-anchor="middle" font-size="14" fill="#e8eaf0">Masked Multi-Head Self-Attention</text>
+<text x="200.0" y="328.0" text-anchor="middle" font-size="12" fill="#8892a4">dense: every token uses all of it</text>
+<line x1="200" y1="290" x2="200" y2="262" stroke="#f5a623" stroke-width="2" marker-end="url(#mea)"></line>
+<rect x="50.0" y="226" width="300" height="34" rx="8" fill="rgba(136,146,164,0.08)" stroke="#3a4460" stroke-width="1.6"></rect>
+<text x="200.0" y="248.0" text-anchor="middle" font-size="14" fill="#e8eaf0">Add &amp; Norm</text>
+<line x1="200" y1="226" x2="200" y2="200" stroke="#f5a623" stroke-width="2" marker-end="url(#mea)"></line>
+<rect x="50.0" y="148" width="300" height="50" rx="8" fill="rgba(245,166,35,0.18)" stroke="#f5a623" stroke-width="1.6"></rect>
+<text x="200.0" y="170.0" text-anchor="middle" font-size="15" fill="#e8eaf0">MoE layer</text>
+<text x="200.0" y="188.0" text-anchor="middle" font-size="12" fill="#8892a4">replaces the feed-forward network</text>
+<line x1="200" y1="148" x2="200" y2="122" stroke="#f5a623" stroke-width="2" marker-end="url(#mea)"></line>
+<rect x="50.0" y="86" width="300" height="34" rx="8" fill="rgba(136,146,164,0.08)" stroke="#3a4460" stroke-width="1.6"></rect>
+<text x="200.0" y="108.0" text-anchor="middle" font-size="14" fill="#e8eaf0">Add &amp; Norm</text>
+<line x1="200" y1="86" x2="200" y2="40" stroke="#f5a623" stroke-width="2" marker-end="url(#mea)"></line>
+<text x="200" y="30" text-anchor="middle" font-size="13" fill="#8892a4">to the next block</text>
+<rect x="440" y="18" width="550" height="364" rx="10" fill="rgba(245,166,35,0.03)" stroke="rgba(245,166,35,0.5)" stroke-width="1.2" stroke-dasharray="5 4"></rect>
+<line x1="350.0" y1="148" x2="440" y2="18" stroke="rgba(245,166,35,0.45)" stroke-width="1.2" stroke-dasharray="4 4"></line>
+<line x1="350.0" y1="198" x2="440" y2="382" stroke="rgba(245,166,35,0.45)" stroke-width="1.2" stroke-dasharray="4 4"></line>
+<text x="715.0" y="40" text-anchor="middle" font-size="14" fill="#f5a623">inside the MoE layer, for one token</text>
+<rect x="460" y="168" width="110" height="64" rx="8" fill="rgba(74,158,255,0.12)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="515.0" y="197.0" text-anchor="middle" font-size="15" fill="#e8eaf0">router</text>
+<text x="515.0" y="215.0" text-anchor="middle" font-size="12" fill="#8892a4">top 2 of 8</text>
+<line x1="570" y1="200" x2="638" y2="61" stroke="#2a3450" stroke-width="1.3" stroke-dasharray="4 4"></line>
+<rect x="640" y="48" width="150" height="26" rx="6" fill="rgba(136,146,164,0.05)" stroke="#3a4460" stroke-width="1.2"></rect>
+<text x="715.0" y="66" text-anchor="middle" font-size="13" fill="#5d6679">expert 1</text>
+<line x1="570" y1="200" x2="638" y2="101" stroke="#2a3450" stroke-width="1.3" stroke-dasharray="4 4"></line>
+<rect x="640" y="88" width="150" height="26" rx="6" fill="rgba(136,146,164,0.05)" stroke="#3a4460" stroke-width="1.2"></rect>
+<text x="715.0" y="106" text-anchor="middle" font-size="13" fill="#5d6679">expert 2</text>
+<line x1="570" y1="200" x2="636" y2="141" stroke="#f5a623" stroke-width="2.2" marker-end="url(#mea)"></line>
+<rect x="640" y="128" width="150" height="26" rx="6" fill="rgba(245,166,35,0.16)" stroke="#f5a623" stroke-width="1.6"></rect>
+<text x="715.0" y="146" text-anchor="middle" font-size="13" fill="#e8eaf0">expert 3 (FFN)</text>
+<line x1="792" y1="141" x2="862" y2="190" stroke="#f5a623" stroke-width="2.2" marker-end="url(#mea)"></line>
+<text x="835" y="135" text-anchor="middle" font-size="13" fill="#f5a623">&#215; 0.62</text>
+<line x1="570" y1="200" x2="638" y2="181" stroke="#2a3450" stroke-width="1.3" stroke-dasharray="4 4"></line>
+<rect x="640" y="168" width="150" height="26" rx="6" fill="rgba(136,146,164,0.05)" stroke="#3a4460" stroke-width="1.2"></rect>
+<text x="715.0" y="186" text-anchor="middle" font-size="13" fill="#5d6679">expert 4</text>
+<line x1="570" y1="200" x2="638" y2="221" stroke="#2a3450" stroke-width="1.3" stroke-dasharray="4 4"></line>
+<rect x="640" y="208" width="150" height="26" rx="6" fill="rgba(136,146,164,0.05)" stroke="#3a4460" stroke-width="1.2"></rect>
+<text x="715.0" y="226" text-anchor="middle" font-size="13" fill="#5d6679">expert 5</text>
+<line x1="570" y1="200" x2="636" y2="261" stroke="#f5a623" stroke-width="2.2" marker-end="url(#mea)"></line>
+<rect x="640" y="248" width="150" height="26" rx="6" fill="rgba(245,166,35,0.16)" stroke="#f5a623" stroke-width="1.6"></rect>
+<text x="715.0" y="266" text-anchor="middle" font-size="13" fill="#e8eaf0">expert 6 (FFN)</text>
+<line x1="792" y1="261" x2="862" y2="210" stroke="#f5a623" stroke-width="2.2" marker-end="url(#mea)"></line>
+<text x="835" y="281" text-anchor="middle" font-size="13" fill="#f5a623">&#215; 0.38</text>
+<line x1="570" y1="200" x2="638" y2="301" stroke="#2a3450" stroke-width="1.3" stroke-dasharray="4 4"></line>
+<rect x="640" y="288" width="150" height="26" rx="6" fill="rgba(136,146,164,0.05)" stroke="#3a4460" stroke-width="1.2"></rect>
+<text x="715.0" y="306" text-anchor="middle" font-size="13" fill="#5d6679">expert 7</text>
+<line x1="570" y1="200" x2="638" y2="341" stroke="#2a3450" stroke-width="1.3" stroke-dasharray="4 4"></line>
+<rect x="640" y="328" width="150" height="26" rx="6" fill="rgba(136,146,164,0.05)" stroke="#3a4460" stroke-width="1.2"></rect>
+<text x="715.0" y="346" text-anchor="middle" font-size="13" fill="#5d6679">expert 8</text>
+<circle cx="885" cy="200" r="20" fill="rgba(245,166,35,0.12)" stroke="#f5a623" stroke-width="1.8"></circle>
+<text x="885" y="207" text-anchor="middle" font-size="20" fill="#f5a623">+</text>
+<line x1="905" y1="200" x2="950" y2="200" stroke="#8892a4" stroke-width="2" marker-end="url(#meb)"></line>
+<text x="968" y="205" text-anchor="middle" font-size="13" fill="#e8eaf0">out</text>
+<text x="715" y="372" text-anchor="middle" font-size="12" fill="#8892a4">6 of 8 experts sit idle for this token</text>
+</svg>
 </div>
 
-$$\text{MoE}(\mathbf{x}) = \sum_{i=1}^{E} g(\mathbf{x})_i \cdot \text{FFN}_i(\mathbf{x})$$
-
-- $g(\mathbf{x})$ is the router: a sparse gate, nonzero only for the top-$k$ experts
-- Sparse activation buys far more parameters at roughly the same compute per token
-- Serving trade-off: active experts need fast GPU access; inactive ones can sit in CPU memory or on other devices
+- Output $= \sum_i g_i \cdot \text{FFN}_i(\mathbf x)$, where the router weights $g_i$ are a softmax over the top-$k$ expert scores (here 2 of 8) and 0 for the rest
+- Mixtral 8x7B stores about 47B parameters but uses about 13B per token (Jiang et al., 2024)
+- Serving cost: every expert must stay reachable in memory, though each token runs only two
 
 ---
 
@@ -3131,6 +3707,64 @@ Decoder-only won on generality and scaling, not every axis:
 - **Decoder-only:** best for open-ended tasks and one-model-for-everything prompting; the price is phrasing every task as completion
 
 Pick by problem, not by fashion.
+
+---
+
+<!-- .slide: id="training-ce" -->
+
+## Training: Match the Target Token
+
+<div class="emb-svg">
+<svg viewBox="0 0 1000 320" role="img" aria-label="Cross-entropy training: the model gives Paris probability 0.174, the target puts all probability on Paris, and the loss is minus log 0.174, which is 1.75.">
+<text x="200" y="28" text-anchor="middle" font-size="17" fill="#e8eaf0">model output p</text>
+<text x="200" y="50" text-anchor="middle" font-size="13" fill="#8892a4">softmax of the last row (GPT-2 medium)</text>
+<line x1="20" y1="260" x2="380" y2="260" stroke="#2a3450" stroke-width="1.5"></line>
+<rect x="40" y="89.8" width="40" height="170.2" rx="3" fill="#f5a623" fill-opacity="0.9"></rect>
+<text x="60" y="82.0" text-anchor="middle" font-size="13" fill="#e8eaf0">0.174</text>
+<text x="60" y="280" text-anchor="middle" font-size="14" fill="#e8eaf0">Paris</text>
+<rect x="102" y="207.4" width="40" height="52.6" rx="3" fill="#f5a623" fill-opacity="0.4"></rect>
+<text x="122" y="199.2" text-anchor="middle" font-size="13" fill="#8892a4">0.054</text>
+<text x="122" y="280" text-anchor="middle" font-size="14" fill="#8892a4">the</text>
+<rect x="164" y="219.0" width="40" height="41.0" rx="3" fill="#f5a623" fill-opacity="0.4"></rect>
+<text x="184" y="211.0" text-anchor="middle" font-size="13" fill="#8892a4">0.042</text>
+<text x="184" y="280" text-anchor="middle" font-size="14" fill="#8892a4">Lyon</text>
+<rect x="226" y="229.8" width="40" height="30.2" rx="3" fill="#f5a623" fill-opacity="0.4"></rect>
+<text x="246" y="221.7" text-anchor="middle" font-size="13" fill="#8892a4">0.031</text>
+<text x="246" y="280" text-anchor="middle" font-size="14" fill="#8892a4">not</text>
+<rect x="288" y="234.5" width="40" height="25.5" rx="3" fill="#f5a623" fill-opacity="0.4"></rect>
+<text x="308" y="226.6" text-anchor="middle" font-size="13" fill="#8892a4">0.026</text>
+<text x="308" y="280" text-anchor="middle" font-size="14" fill="#8892a4">a</text>
+<text x="370" y="280" text-anchor="middle" font-size="14" fill="#8892a4">&#8230;</text>
+<text x="660" y="28" text-anchor="middle" font-size="17" fill="#e8eaf0">target y</text>
+<text x="660" y="50" text-anchor="middle" font-size="13" fill="#8892a4">the real next token gets all the probability</text>
+<line x1="480" y1="260" x2="840" y2="260" stroke="#2a3450" stroke-width="1.5"></line>
+<rect x="500" y="90.0" width="40" height="170.0" rx="3" fill="#3fb950" fill-opacity="0.9"></rect>
+<text x="520" y="82.0" text-anchor="middle" font-size="13" fill="#e8eaf0">1</text>
+<text x="520" y="280" text-anchor="middle" font-size="14" fill="#e8eaf0">Paris</text>
+<rect x="562" y="258.5" width="40" height="1.5" rx="3" fill="#3fb950" fill-opacity="0.4"></rect>
+<text x="582" y="250.5" text-anchor="middle" font-size="13" fill="#8892a4">0</text>
+<text x="582" y="280" text-anchor="middle" font-size="14" fill="#8892a4">the</text>
+<rect x="624" y="258.5" width="40" height="1.5" rx="3" fill="#3fb950" fill-opacity="0.4"></rect>
+<text x="644" y="250.5" text-anchor="middle" font-size="13" fill="#8892a4">0</text>
+<text x="644" y="280" text-anchor="middle" font-size="14" fill="#8892a4">Lyon</text>
+<rect x="686" y="258.5" width="40" height="1.5" rx="3" fill="#3fb950" fill-opacity="0.4"></rect>
+<text x="706" y="250.5" text-anchor="middle" font-size="13" fill="#8892a4">0</text>
+<text x="706" y="280" text-anchor="middle" font-size="14" fill="#8892a4">not</text>
+<rect x="748" y="258.5" width="40" height="1.5" rx="3" fill="#3fb950" fill-opacity="0.4"></rect>
+<text x="768" y="250.5" text-anchor="middle" font-size="13" fill="#8892a4">0</text>
+<text x="768" y="280" text-anchor="middle" font-size="14" fill="#8892a4">a</text>
+<rect x="810" y="258.5" width="40" height="1.5" rx="3" fill="#3fb950" fill-opacity="0.4"></rect>
+<text x="830" y="250.5" text-anchor="middle" font-size="13" fill="#8892a4">0</text>
+<text x="830" y="280" text-anchor="middle" font-size="14" fill="#8892a4">&#8230;</text>
+<text x="200" y="300" text-anchor="middle" font-size="13" fill="#8892a4">the other 50,252 tokens share the remaining 0.673</text>
+<text x="660" y="300" text-anchor="middle" font-size="13" fill="#8892a4">one-hot: 1 for Paris, 0 for every other token</text>
+<line x1="440" y1="40" x2="440" y2="290" stroke="#2a3450" stroke-width="1.2" stroke-dasharray="4 4"></line>
+</svg>
+</div>
+
+$$\mathcal L = -\sum_w y_w \log p_w = -\log p(\text{Paris}) = -\log 0.174 = 1.75$$
+
+Backpropagation nudges every weight to raise $p(\text{Paris})$. In training every row of the parallel pass has its own target, and the loss is averaged over all of them. Module 5 covers this in depth.
 
 ---
 
@@ -3701,8 +4335,10 @@ Next: Module 5 &mdash; Pretraining and Fine-Tuning
       <li>Hochreiter and Schmidhuber, "Long Short-Term Memory" (1997), <em>Neural Computation</em></li>
       <li>Sennrich, Haddow, and Birch, "Neural Machine Translation of Rare Words with Subword Units," <a href="https://arxiv.org/abs/1508.07909">arXiv:1508.07909</a></li>
       <li>Land and Bartolo, "Fishing for Magikarp," <a href="https://aclanthology.org/2024.emnlp-main.649/">ACL Anthology</a></li>
+      <li>Mikolov et al., "Distributed Representations of Words and Phrases," <a href="https://arxiv.org/abs/1310.4546">arXiv:1310.4546</a></li>
       <li>Vaswani et al., "Attention Is All You Need," <a href="https://arxiv.org/abs/1706.03762">arXiv:1706.03762</a></li>
       <li>Radford et al., GPT and GPT-2 reports (2018-2019)</li>
+      <li>Jiang et al., "Mixtral of Experts," <a href="https://arxiv.org/abs/2401.04088">arXiv:2401.04088</a></li>
       <li>Shazeer et al., "Sparsely-Gated Mixture-of-Experts," <a href="https://arxiv.org/abs/1701.06538">arXiv:1701.06538</a></li>
       <li>Gu and Dao, "Mamba," <a href="https://arxiv.org/abs/2312.00752">arXiv:2312.00752</a></li>
       <li>Olsson et al., "In-context Learning and Induction Heads," <a href="https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html">Transformer Circuits</a></li>
@@ -3788,63 +4424,114 @@ window.ASSET_BASE = "module_04_architectures/";
       ctx.clearRect(0, 0, W, H);
       var d = distribution();
 
-      var padL = 46, padR = 20, padB = 62, padT = 30;
+      // Tokens are already sorted by score, so cumulative mass reads left to right.
+      var padL = 96, padR = 56, padT = 34, padB = 78;
       var plotW = W - padL - padR, plotH = H - padT - padB;
       var n = TOKENS.length;
-      var step = plotW / n, bw = Math.min(52, step - 12);
+      var step = plotW / n, bw = Math.min(50, step - 14);
+      var yBase = padT + plotH;
       var maxP = Math.max.apply(null, d.final.concat(d.raw));
-      var scale = plotH / (maxP * 1.12);
+      var scale = plotH / (maxP * 1.18);
+      var xOf = function (i) { return padL + step * i + step / 2; };
 
-      ctx.textAlign = 'center';
       ctx.font = '12px Inter, sans-serif';
-      ctx.fillStyle = COL.muted;
-      ctx.fillText('probability after temperature (outline) and after truncation + renormalize (filled)' +
-        (state.draws ? '; orange = how often 200 draws actually landed there' : ''), W / 2, 16);
+      ctx.fillStyle = COL.muted; ctx.textAlign = 'left';
+      ctx.fillText('bars: probability after temperature (outline) and after the cut, renormalized (filled)', padL, 16);
+      ctx.textAlign = 'right'; ctx.fillStyle = COL.secondary;
+      ctx.fillText('orange line: cumulative probability', W - padR, 16);
 
+      // Right axis for the cumulative line (0 to 100%).
+      var cy = function (c) { return yBase - c * plotH; };
+      ctx.strokeStyle = COL.line; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(W - padR + 6, cy(0)); ctx.lineTo(W - padR + 6, cy(1)); ctx.stroke();
+      ctx.fillStyle = COL.secondary; ctx.textAlign = 'left'; ctx.font = '11px Inter, sans-serif';
+      [0, 0.5, 1].forEach(function (c) { ctx.fillText(Math.round(c * 100) + '%', W - padR + 10, cy(c) + 4); });
+
+      var cum = 0, cums = [];
       for (var i = 0; i < n; i++) {
-        var cx = padL + step * i + step / 2;
-        var yBase = padT + plotH;
-
-        // Outline: what temperature alone produced, before any cutoff.
+        var cx = xOf(i);
         var hRaw = d.raw[i] * scale;
-        ctx.strokeStyle = 'rgba(136,146,164,0.55)';
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = 'rgba(136,146,164,0.55)'; ctx.lineWidth = 1.2;
         ctx.strokeRect(cx - bw / 2, yBase - hRaw, bw, hRaw);
-
         var hFin = d.final[i] * scale;
         if (hFin > 0.5) {
-          ctx.fillStyle = d.kept[i] ? 'rgba(74,158,255,0.75)' : 'rgba(136,146,164,0.15)';
+          ctx.fillStyle = 'rgba(74,158,255,0.75)';
           U.rounded(ctx, cx - bw / 2, yBase - hFin, bw, hFin, 3);
           ctx.fill();
         }
-
-        // Sample counts land as an orange overlay so drift from the bars is visible.
         if (state.draws) {
           var hs = (state.draws[i] / state.draws.total) * scale;
           if (hs > 0.5) {
-            ctx.fillStyle = 'rgba(245,166,35,0.85)';
-            ctx.fillRect(cx - bw / 2 + bw * 0.28, yBase - hs, bw * 0.44, hs);
+            ctx.fillStyle = 'rgba(63,185,80,0.9)';
+            ctx.fillRect(cx - bw / 2 + bw * 0.3, yBase - hs, bw * 0.4, hs);
           }
         }
-
-        ctx.save();
-        ctx.translate(cx, yBase + 10);
-        ctx.rotate(-Math.PI / 5);
-        ctx.textAlign = 'right';
+        // Probability label on top of each bar.
+        var shown = d.kept[i] ? d.final[i] : d.raw[i];
+        ctx.textAlign = 'center';
         ctx.fillStyle = d.kept[i] ? COL.text : COL.muted;
-        ctx.font = (d.kept[i] ? '600 ' : '') + '12px Inter, sans-serif';
-        ctx.fillText(TOKENS[i], 0, 0);
-        ctx.restore();
+        ctx.font = '11px Inter, sans-serif';
+        ctx.fillText((shown * 100).toFixed(shown < 0.1 ? 1 : 0) + '%', cx, yBase - Math.max(hRaw, hFin) - 6);
+        cum += d.raw[i]; cums.push(cum);
+      }
+
+      // Cumulative probability (before truncation): the quantity top-p thresholds.
+      ctx.strokeStyle = COL.secondary; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (i = 0; i < n; i++) {
+        if (i === 0) ctx.moveTo(xOf(i), cy(cums[i])); else ctx.lineTo(xOf(i), cy(cums[i]));
+      }
+      ctx.stroke();
+      for (i = 0; i < n; i++) {
+        ctx.fillStyle = COL.secondary;
+        ctx.beginPath(); ctx.arc(xOf(i), cy(cums[i]), 3, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (state.p < 1) {
+        ctx.setLineDash([5, 4]); ctx.strokeStyle = 'rgba(245,166,35,0.7)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(padL, cy(state.p)); ctx.lineTo(W - padR, cy(state.p)); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = COL.secondary; ctx.textAlign = 'right'; ctx.font = '12px Inter, sans-serif';
+        ctx.fillText('p = ' + state.p.toFixed(2), W - padR - 4, cy(state.p) - 6);
+      }
+
+      // Cut line: everything to the right of it can never be sampled.
+      if (d.size < n) {
+        var xc = padL + step * d.size;
+        ctx.setLineDash([6, 4]); ctx.strokeStyle = COL.text; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(xc, padT - 4); ctx.lineTo(xc, yBase + 58); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(136,146,164,0.08)';
+        ctx.fillRect(xc, padT - 4, W - padR - xc, plotH + 4);
+        ctx.fillStyle = COL.text; ctx.textAlign = 'left'; ctx.font = '600 12px Inter, sans-serif';
+        var why = (state.k <= d.size && state.k < n) ? 'top-k cut' : 'top-p cut';
+        ctx.fillText(why + ': never sampled', xc + 6, padT + 10);
       }
 
       ctx.strokeStyle = COL.line; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(padL, padT + plotH); ctx.lineTo(W - padR, padT + plotH); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, yBase); ctx.lineTo(W - padR, yBase); ctx.stroke();
+
+      // Table under the axis: token, raw score (logit), cumulative probability.
+      var rows = [['token', yBase + 18], ['score', yBase + 38], ['cumulative', yBase + 58]];
+      ctx.textAlign = 'right'; ctx.fillStyle = COL.muted; ctx.font = '12px Inter, sans-serif';
+      rows.forEach(function (r) { ctx.fillText(r[0], padL - 12, r[1]); });
+      for (i = 0; i < n; i++) {
+        ctx.textAlign = 'center';
+        ctx.fillStyle = d.kept[i] ? COL.text : COL.muted;
+        ctx.font = (d.kept[i] ? '600 ' : '') + '12px Inter, sans-serif';
+        ctx.fillText(TOKENS[i], xOf(i), rows[0][1]);
+        ctx.font = '12px Inter, sans-serif';
+        ctx.fillStyle = COL.muted;
+        ctx.fillText((LOGITS[i] / state.T).toFixed(1), xOf(i), rows[1][1]);
+        ctx.fillStyle = COL.secondary;
+        ctx.fillText(Math.round(cums[i] * 100) + '%', xOf(i), rows[2][1]);
+      }
 
       var ent = 0;
       d.final.forEach(function (v) { if (v > 0) ent -= v * Math.log2(v); });
-      readout.innerHTML = 'Kept <strong>' + d.size + ' of ' + n + '</strong> tokens. Top token now at <strong>' +
-        (Math.max.apply(null, d.final) * 100).toFixed(1) + '%</strong>, entropy <strong>' + ent.toFixed(2) +
-        ' bits</strong>. Truncation is what stops the long tail from ever being drawn.';
+      readout.innerHTML = 'Scores are logits divided by T. Kept <strong>' + d.size + ' of ' + n +
+        '</strong> tokens; top token now at <strong>' + (Math.max.apply(null, d.final) * 100).toFixed(1) +
+        '%</strong>, entropy <strong>' + ent.toFixed(2) + ' bits</strong>.' +
+        (state.draws ? ' Green = where 200 draws landed.' : '');
     }
 
     var read = U.bindSliders(host, function (key, value) {
@@ -3887,6 +4574,152 @@ window.ASSET_BASE = "module_04_architectures/";
     return { resize: draw };
   }
 
+  // ===================================================================
+  // WIDGET: cosineDial — drag two vectors lying in a tilted 2-D plane;
+  // cos(theta) is drawn as a bar along the third (vertical) axis.
+  // ===================================================================
+  function cosineDial(host) {
+    var U = WIDGET_UTIL, COL = WIDGET_UTIL.COL;
+    host.innerHTML = '<canvas class="cos-canvas"></canvas>';
+    U.stop(host);
+    var canvas = host.querySelector('canvas');
+    var vec = { a: [1.0, 0.15], b: [0.45, 0.9] };
+    var geo = null, drag = null;
+    // Camera: rotate the floor by AZ about the vertical axis, tilt it back by EL.
+    var AZ = -0.62, EL = 0.42;
+    var cA = Math.cos(AZ), sA = Math.sin(AZ), sE = Math.sin(EL), cE = Math.cos(EL);
+
+    function proj(X, Y, Z) {
+      var x1 = X * cA - Y * sA, y1 = X * sA + Y * cA;
+      return [geo.cx + x1 * geo.R, geo.cy - (y1 * sE + (Z || 0) * cE * geo.zs) * geo.R];
+    }
+    function toFloor(px, py) {
+      var x1 = (px - geo.cx) / geo.R, y1 = (geo.cy - py) / (geo.R * sE);
+      return [x1 * cA + y1 * sA, -x1 * sA + y1 * cA];
+    }
+    function line(ctx, p, q) { ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.stroke(); }
+    function poly(ctx, pts, fill) {
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      ctx.closePath(); ctx.fillStyle = fill; ctx.fill();
+    }
+    function arrow(ctx, from, to, color) {
+      var ang = Math.atan2(to[1] - from[1], to[0] - from[0]);
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3;
+      line(ctx, from, to);
+      ctx.beginPath(); ctx.moveTo(to[0], to[1]);
+      ctx.lineTo(to[0] - 12 * Math.cos(ang - 0.4), to[1] - 12 * Math.sin(ang - 0.4));
+      ctx.lineTo(to[0] - 12 * Math.cos(ang + 0.4), to[1] - 12 * Math.sin(ang + 0.4));
+      ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.arc(to[0], to[1], 6, 0, 2 * Math.PI); ctx.globalAlpha = 0.25; ctx.fill(); ctx.globalAlpha = 1;
+    }
+
+    function draw() {
+      var f = U.fit(canvas); if (!f) return;
+      var ctx = f.ctx, W = f.w, H = f.h;
+      geo = { cx: W * 0.36, cy: H * 0.6, R: Math.min(W * 0.26, H * 0.42), zs: 0.95 };
+      ctx.clearRect(0, 0, W, H);
+
+      var a = vec.a, b = vec.b;
+      var cos = (a[0] * b[0] + a[1] * b[1]) / (Math.hypot(a[0], a[1]) * Math.hypot(b[0], b[1]));
+      var thA = Math.atan2(a[1], a[0]), thB = Math.atan2(b[1], b[0]);
+      var d = thB - thA;
+      while (d > Math.PI) d -= 2 * Math.PI;
+      while (d < -Math.PI) d += 2 * Math.PI;
+
+      // Floor: a square grid seen in perspective, so the plane reads as 3-D.
+      var E = 1.3;
+      poly(ctx, [proj(-E, -E), proj(E, -E), proj(E, E), proj(-E, E)], 'rgba(74,158,255,0.05)');
+      ctx.strokeStyle = 'rgba(136,146,164,0.22)'; ctx.lineWidth = 1;
+      for (var g = -E; g <= E + 1e-9; g += 0.325) {
+        line(ctx, proj(g, -E), proj(g, E));
+        line(ctx, proj(-E, g), proj(E, g));
+      }
+      ctx.strokeStyle = 'rgba(136,146,164,0.7)'; ctx.lineWidth = 1.4;
+      line(ctx, proj(-E, 0), proj(E, 0)); line(ctx, proj(0, -E), proj(0, E));
+      ctx.fillStyle = COL.muted; ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'center';
+      var lx = proj(E + 0.18, 0), ly = proj(0, E + 0.18);
+      ctx.fillText('dim 1', lx[0], lx[1] + 4); ctx.fillText('dim 2', ly[0], ly[1] + 4);
+
+      // Angle arc on the floor.
+      ctx.strokeStyle = COL.secondary; ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (var t = 0; t <= 30; t++) {
+        var ang = thA + d * t / 30, q = proj(0.4 * Math.cos(ang), 0.4 * Math.sin(ang));
+        if (t === 0) ctx.moveTo(q[0], q[1]); else ctx.lineTo(q[0], q[1]);
+      }
+      ctx.stroke();
+
+      // Vertical cos axis with ticks.
+      var o = proj(0, 0);
+      ctx.setLineDash([4, 4]); ctx.strokeStyle = 'rgba(232,234,240,0.5)'; ctx.lineWidth = 1.2;
+      line(ctx, proj(0, 0, -1), proj(0, 0, 1)); ctx.setLineDash([]);
+      [-1, -0.5, 0.5, 1].forEach(function (z) {
+        var p = proj(0, 0, z);
+        ctx.strokeStyle = 'rgba(232,234,240,0.5)'; line(ctx, [p[0] - 5, p[1]], [p[0] + 5, p[1]]);
+        ctx.fillStyle = COL.muted; ctx.textAlign = 'right'; ctx.font = '11px Inter, sans-serif';
+        ctx.fillText((z > 0 ? '+' : '') + z, p[0] - 9, p[1] + 4);
+      });
+      var zt = proj(0, 0, 1.18);
+      ctx.fillStyle = COL.secondary; ctx.textAlign = 'center'; ctx.font = '600 13px Inter, sans-serif';
+      ctx.fillText('cos θ', zt[0], zt[1]);
+
+      // The bar: a small box from the floor up (or down) to z = cos, with shaded faces.
+      var w = 0.07, z = cos;
+      var c = [[-w, -w], [w, -w], [w, w], [-w, w]];
+      var bot = c.map(function (p) { return proj(p[0], p[1], 0); });
+      var top = c.map(function (p) { return proj(p[0], p[1], z); });
+      var faces = [[0, 1], [1, 2], [2, 3], [3, 0]];
+      faces.forEach(function (fc, k) {
+        var shade = ['rgba(245,166,35,0.55)', 'rgba(245,166,35,0.75)', 'rgba(245,166,35,0.55)', 'rgba(245,166,35,0.75)'][k];
+        poly(ctx, [bot[fc[0]], bot[fc[1]], top[fc[1]], top[fc[0]]], shade);
+      });
+      poly(ctx, top, 'rgba(255,200,110,0.95)');
+
+      arrow(ctx, o, proj(a[0], a[1]), COL.primary);
+      arrow(ctx, o, proj(b[0], b[1]), COL.green);
+      ctx.font = '600 15px Inter, sans-serif'; ctx.textAlign = 'left';
+      var la = proj(a[0] * 1.12, a[1] * 1.12), lb = proj(b[0] * 1.12, b[1] * 1.12);
+      ctx.fillStyle = COL.primary; ctx.fillText('a', la[0] + 4, la[1] + 4);
+      ctx.fillStyle = COL.green; ctx.fillText('b', lb[0] + 4, lb[1] + 4);
+
+      var rx = W * 0.72, ry = H * 0.28;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = COL.secondary; ctx.font = '600 22px Inter, sans-serif';
+      ctx.fillText('cos θ = ' + cos.toFixed(2), rx, ry);
+      ctx.fillStyle = COL.text; ctx.font = '14px Inter, sans-serif';
+      ctx.fillText('θ = ' + Math.round(Math.abs(d) * 180 / Math.PI) + '°', rx, ry + 26);
+      ctx.fillStyle = COL.muted; ctx.font = '12px Inter, sans-serif';
+      ctx.fillText('bar height = cos θ', rx, ry + 54);
+      ctx.fillText('+1 same direction, 0 unrelated,', rx, ry + 72);
+      ctx.fillText('-1 opposite', rx, ry + 88);
+      ctx.fillText('drag the arrow tips on the floor', rx, ry + 114);
+    }
+
+    function pointer(e) {
+      var r = canvas.getBoundingClientRect();
+      return toFloor((e.clientX - r.left) * canvas.clientWidth / r.width, (e.clientY - r.top) * canvas.clientHeight / r.height);
+    }
+    canvas.addEventListener('pointerdown', function (e) {
+      if (!geo) return;
+      var P = pointer(e);
+      drag = Math.hypot(P[0] - vec.a[0], P[1] - vec.a[1]) < Math.hypot(P[0] - vec.b[0], P[1] - vec.b[1]) ? 'a' : 'b';
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var P = pointer(e), n = Math.hypot(P[0], P[1]);
+      if (n < 0.25) return;
+      var s = Math.min(n, 1.25) / n;
+      vec[drag] = [P[0] * s, P[1] * s];
+      draw();
+    });
+    canvas.addEventListener('pointerup', function () { drag = null; });
+
+    draw();
+    return { resize: draw };
+  }
+
   window.MODULE_CONFIG = {
     title: 'LLMs 0 to 100 - Module 4',
     manimSections: {
@@ -3901,12 +4734,22 @@ window.ASSET_BASE = "module_04_architectures/";
         'RecurrenceVsAttentionScene_0000_recurrence.mp4',
         'RecurrenceVsAttentionScene_0001_attention.mp4'
       ],
-      'sampling-demo': [
-        'SamplingScene_0000_dist.mp4',
-        'SamplingScene_0001_temp_sharp.mp4',
-        'SamplingScene_0002_temp_flat.mp4',
-        'SamplingScene_0003_topk.mp4',
-        'SamplingScene_0004_topp.mp4'
+      'parallel-forward': [
+        'ParallelForwardScene_0000_input.mp4',
+        'ParallelForwardScene_0001_block1.mp4',
+        'ParallelForwardScene_0002_mask.mp4',
+        'ParallelForwardScene_0003_stack.mp4',
+        'ParallelForwardScene_0004_predict.mp4',
+        'ParallelForwardScene_0005_shift.mp4',
+        'ParallelForwardScene_0006_last_row.mp4'
+      ],
+      'embedding-space': [
+        'EmbeddingSpaceScene_0000_init.mp4',
+        'EmbeddingSpaceScene_0001_row_is_point.mp4',
+        'EmbeddingSpaceScene_0002_train.mp4',
+        'EmbeddingSpaceScene_0003_clusters.mp4',
+        'EmbeddingSpaceScene_0004_directions.mp4',
+        'EmbeddingSpaceScene_0005_high_dim.mp4'
       ],
       'embedding-lookup': [
         'EmbeddingLookupScene_0000_word.mp4',
@@ -3932,7 +4775,8 @@ window.ASSET_BASE = "module_04_architectures/";
       ]
     },
     widgets: {
-      samplingExplorer: samplingExplorer
+      samplingExplorer: samplingExplorer,
+      cosineDial: cosineDial
     }
   };
 }());

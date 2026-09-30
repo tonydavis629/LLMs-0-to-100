@@ -93,11 +93,6 @@ In practice: scale by temperature, then truncate, then sample.
 
 ---
 
-:::manim id="sampling-anim" scene="sampling-demo"
-:::
-
----
-
 <!-- .slide: id="beam-search" -->
 
 ## Beam Search

@@ -1,62 +1,3 @@
-:::divider id="divider-block" title="Putting It All Together" sub="Following one prompt through a decoder-only transformer"
-:::
-
----
-
-<!-- .slide: id="decoder-only-arch" -->
-
-## The Decoder-Only Architecture
-
-<div class="decoder-svg">
-<svg viewBox="0 0 560 463" role="img" aria-label="Decoder-only transformer stack from raw text up to next-token probabilities, with residual connections around each sub-layer"><rect x="98" y="141" width="304" height="181" rx="10" fill="rgba(74,158,255,0.03)" stroke="rgba(74,158,255,0.5)" stroke-width="1.2" stroke-dasharray="5 4"></rect><defs><marker id="da" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="da2" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4a9eff"></path></marker></defs><rect x="120" y="12" width="260" height="28" rx="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" stroke-width="1.3"></rect><text x="250" y="30" text-anchor="middle" font-size="14" fill="#e8eaf0">Next-token probabilities</text><line x1="250" y1="55" x2="250" y2="41" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="55" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="73" text-anchor="middle" font-size="14" fill="#e8eaf0">Softmax</text><line x1="250" y1="98" x2="250" y2="84" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="98" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="110" text-anchor="middle" font-size="14" fill="#e8eaf0">Unembedding</text><text x="250" y="124" text-anchor="middle" font-size="10" fill="#8892a4">linear: model dim &#8594; vocabulary</text><line x1="250" y1="141" x2="250" y2="127" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="153" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="171" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Add &amp; Norm</text><line x1="250" y1="196" x2="250" y2="182" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="196" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="214" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Feed-Forward Network</text><line x1="250" y1="239" x2="250" y2="225" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="239" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="257" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Add &amp; Norm</text><line x1="250" y1="282" x2="250" y2="268" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="282" width="260" height="28" rx="8" fill="rgba(136,146,164,0.10)" stroke="rgba(136,146,164,0.45)" stroke-width="1.3"></rect><text x="250" y="300" text-anchor="middle" font-size="12.5" fill="#e8eaf0">Masked Multi-Head Self-Attention</text><text x="406" y="231.5" text-anchor="start" font-size="15" fill="#f5a623">N&#215;</text><path d="M250 317 L104 317 L104 253 L119 253" fill="none" stroke="#4a9eff" stroke-width="1.6" marker-end="url(#da2)"></path><path d="M250 231 L104 231 L104 167 L119 167" fill="none" stroke="#4a9eff" stroke-width="1.6" marker-end="url(#da2)"></path><text x="100" y="285.5" text-anchor="end" font-size="10" fill="#4a9eff">residual</text><line x1="250" y1="337" x2="250" y2="323" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="337" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="355" text-anchor="middle" font-size="14" fill="#e8eaf0">Positional encoding</text><line x1="250" y1="380" x2="250" y2="366" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="380" width="260" height="28" rx="8" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.40)" stroke-width="1.3"></rect><text x="250" y="392" text-anchor="middle" font-size="14" fill="#e8eaf0">Tokenize</text><text x="250" y="406" text-anchor="middle" font-size="10" fill="#8892a4">text &#8594; token vectors</text><line x1="250" y1="423" x2="250" y2="409" stroke="#f5a623" stroke-width="2" marker-end="url(#da)"></line><rect x="120" y="423" width="260" height="28" rx="8" fill="rgba(245,166,35,0.12)" stroke="rgba(245,166,35,0.55)" stroke-width="1.3"></rect><text x="250" y="441" text-anchor="middle" font-size="14" fill="#e8eaf0">The capital of France</text></svg>
-</div>
-
-Bottom to top: tokenize and embed, add position, $N$ identical blocks refine the vectors (each sub-layer wrapped in a blue **residual connection**), then the **unembedding** scores every token.
-
----
-
-<!-- .slide: id="embedding-layer" -->
-
-## Step 1: Words to Vectors
-
-<div class="decoder-flow active-embedding">
-  <div class="flow-node embedding">word &rarr; vector</div>
-  <div class="flow-node position">add position</div>
-  <div class="flow-node attention">multi-head attention</div>
-  <div class="flow-node ffn">feed-forward network</div>
-  <div class="flow-node repeat">repeat blocks</div>
-  <div class="flow-node sampling">sampling</div>
-</div>
-
-<div class="embedding-visual">
-  <div class="word-card">The capital of France</div>
-  <div class="pipe-arrow">&rarr;</div>
-  <div class="token-strip"><span>The</span><span>&nbsp;capital</span><span>&nbsp;of</span><span>&nbsp;France</span></div>
-  <div class="pipe-arrow">&rarr;</div>
-  <div class="id-strip"><span>464</span><span>3139</span><span>286</span><span>4881</span></div>
-  <div class="pipe-arrow">&rarr;</div>
-  <div class="embedding-table">
-    <div class="et-title">embedding matrix<br><span>one learned vector per row</span></div>
-    <div class="et-row"><span class="et-id">row 464</span><span class="et-vec">[ 0.14 -0.22 0.05 0.61 &#8230; ]</span></div>
-    <div class="et-row"><span class="et-id">row 3139</span><span class="et-vec">[ -0.31 0.47 0.18 -0.09 &#8230; ]</span></div>
-    <div class="et-row"><span class="et-id">row 286</span><span class="et-vec">[ 0.02 0.33 -0.27 0.40 &#8230; ]</span></div>
-    <div class="et-row accent"><span class="et-id">row 4881</span><span class="et-vec">[ 0.55 -0.12 0.29 -0.63 &#8230; ]</span></div>
-  </div>
-</div>
-
-Tokenize, then look up each ID in the embedding matrix. From here on, the transformer sees vectors, not text.
-
-:::note
-Row $k$ of the **embedding matrix** is the learned vector for token $k$. Lookup is pure indexing: ID 4881 ("France") selects row 4881, and that row **is** the token's vector.
-:::
-
----
-
-:::manim id="embedding-anim" scene="embedding-lookup"
-:::
-
----
-
 <!-- .slide: id="positional-encoding" -->
 
 ## Step 2: Add Position
@@ -215,6 +156,67 @@ Placement: the original transformer normalized **after** each sub-layer (post-no
 
 ---
 
+<!-- .slide: id="residual-stream" -->
+
+## The Residual Stream View
+
+Every sub-layer reads the current vector, computes an update, and **adds** it back:
+
+<div class="formula-card">output = input + sub-layer(norm(input))</div>
+
+- Blocks only add; the original embedding is never overwritten
+- Prompt information stays available many layers later
+- Gradients flow back through the addition without decaying
+- This "residual stream" is the central object in mechanistic interpretability
+
+---
+
+:::manim id="residual-anim" scene="residual-stream"
+:::
+
+---
+
+<!-- .slide: id="side-quest-induction-heads" -->
+
+## Side Quest: Induction Heads
+
+<div class="emb-svg">
+<svg viewBox="0 40 1000 260" role="img" aria-label="Induction head example: at the second Mr, the head attends to Dursley, the token that followed the first Mr, and copies it as the prediction.">
+<defs><marker id="iha" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="ihb" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#3fb950"></path></marker><marker id="ihc" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#8892a4"></path></marker></defs>
+<rect x="30" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="75.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">Mr</text>
+<rect x="134" y="150" width="90" height="46" rx="8" fill="rgba(63,185,80,0.16)" stroke="#3fb950" stroke-width="1.6"></rect>
+<text x="179.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">Dursley</text>
+<rect x="238" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="283.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">was</text>
+<rect x="342" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="387.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">proud</text>
+<rect x="446" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="491.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">.</text>
+<rect x="550" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="595.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">Later</text>
+<rect x="654" y="150" width="90" height="46" rx="8" fill="rgba(74,158,255,0.10)" stroke="#4a9eff" stroke-width="1.6"></rect>
+<text x="699.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">,</text>
+<rect x="758" y="150" width="90" height="46" rx="8" fill="rgba(245,166,35,0.18)" stroke="#f5a623" stroke-width="1.6"></rect>
+<text x="803.0" y="179" text-anchor="middle" font-size="17" fill="#e8eaf0">Mr</text>
+<rect x="862" y="150" width="90" height="46" rx="8" fill="rgba(136,146,164,0.08)" stroke="#8892a4" stroke-width="1.6" stroke-dasharray="5 4"></rect>
+<text x="907.0" y="179" text-anchor="middle" font-size="17" fill="#8892a4">?</text>
+<path d="M179.0,198 C179.0,240 75.0,240 75.0,202" fill="none" stroke="#8892a4" stroke-width="2" marker-end="url(#ihc)"></path>
+<text x="40" y="262" text-anchor="start" font-size="14" fill="#8892a4">1. previous-token head:</text>
+<text x="40" y="280" text-anchor="start" font-size="14" fill="#8892a4">Dursley stores "I came after Mr"</text>
+<path d="M803.0,146 C803.0,55 179.0,55 179.0,142" fill="none" stroke="#f5a623" stroke-width="2.4" marker-end="url(#iha)"></path>
+<text x="491.0" y="70" text-anchor="middle" font-size="14" fill="#f5a623">2. induction head at the second Mr looks for "the token that came after Mr" and finds Dursley</text>
+<path d="M199.0,198 C239.0,300 907.0,300 907.0,202" fill="none" stroke="#3fb950" stroke-width="2.4" marker-end="url(#ihb)"></path>
+<text x="623.0" y="290" text-anchor="middle" font-size="14" fill="#3fb950">3. copy: predict Dursley</text>
+</svg>
+</div>
+
+- Two attention heads in different layers cooperate to copy `[A] [B] ... [A]` &rarr; `[B]` (Olsson et al., 2022)
+- It works on name pairs never seen in training, so the copying happens entirely in context
+- These heads form suddenly during training, at the same point in-context learning improves
+
+---
+
 <!-- .slide: id="sampling-step" -->
 
 ## Step 6: Sampling
@@ -245,35 +247,3 @@ Placement: the original transformer normalized **after** each sub-layer (post-no
 - Softmax turns scores into the next-token distribution
 - A decoding strategy (greedy, temperature, top-k, top-p) picks the token
 - The token is appended and fed back in
-
----
-
-<!-- .slide: id="residual-stream" -->
-
-## The Residual Stream View
-
-Every sub-layer reads the current vector, computes an update, and **adds** it back:
-
-<div class="formula-card">output = input + sub-layer(norm(input))</div>
-
-- Blocks only add; the original embedding is never overwritten
-- Prompt information stays available many layers later
-- Gradients flow back through the addition without decaying
-- This "residual stream" is the central object in mechanistic interpretability
-
----
-
-:::manim id="residual-anim" scene="residual-stream"
-:::
-
----
-
-<!-- .slide: id="side-quest-induction-heads" -->
-
-## Side Quest: Induction Heads
-
-**Induction heads** (Olsson et al., 2022) implement copy-and-continue:
-
-- See `[A] [B] ... [A]`, predict `[B]`
-- The head finds an earlier occurrence of the current token and predicts what followed it, with no weight updates
-- A core mechanism behind few-shot (in-context) learning at scale

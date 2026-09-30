@@ -240,7 +240,7 @@ class BPETrainingScene(Scene):
             ["lo", "w", "e", "r"],
             ["lo", "w", "e", "s", "t"],
         ]
-        corpus_lo = self.corpus_group(rows_lo).scale(0.95).move_to(corpus)
+        corpus_lo = self.corpus_group(rows_lo).scale(0.95).move_to(corpus).align_to(corpus, LEFT)
         vocab_lo = VGroup(
             self.label("Vocabulary gains", 24, SECONDARY),
             self.token_box("lo", SECONDARY),
@@ -253,8 +253,11 @@ class BPETrainingScene(Scene):
 
         # Section 4: merge low.
         self.next_section("merge_low", skip_animations=False)
+        # Measure from the merged layout (corpus_lo), not from `corpus`: after
+        # Transform, corpus keeps its old submobject count, so its row[0]/row[1]
+        # no longer line up with the "lo" and "w" boxes on screen.
         low_highlights = VGroup()
-        for row in corpus:
+        for row in corpus_lo:
             left = row[0].get_left()
             right = row[1].get_right()
             center = (left + right) / 2
@@ -274,7 +277,7 @@ class BPETrainingScene(Scene):
             ["low", "e", "r"],
             ["low", "e", "s", "t"],
         ]
-        corpus_low = self.corpus_group(rows_low).scale(0.95).move_to(corpus)
+        corpus_low = self.corpus_group(rows_low).scale(0.95).move_to(corpus).align_to(corpus, LEFT)
         vocab_low = VGroup(
             self.label("Vocabulary gains", 24, SECONDARY),
             VGroup(self.token_box("lo", SECONDARY), self.token_box("low", SECONDARY)).arrange(RIGHT, buff=0.18),
@@ -753,4 +756,371 @@ class SamplingScene(StepScene):
         plab = label("top-p = 0.75  (nucleus)", 22, SECONDARY).move_to(tlab)
         self.play(Transform(tlab, plab), Transform(bars, pbars), run_time=0.8)
         self.caption("Top-p keeps the smallest set whose probability sums past p; its size adapts.")
+        self.wait(0.3)
+
+
+class EmbeddingSpaceScene(StepScene):
+    """Embedding rows as coordinates: random at init, organized by training."""
+
+    # Schematic 2-D positions after training (not measured from a real model).
+    TRAINED = {
+        "France": (1.2, -1.0), "Italy": (0.1, -1.5), "Japan": (2.05, -1.35),
+        "Paris": (1.55, 0.6), "Rome": (0.45, 0.1), "Tokyo": (2.4, 0.25),
+        "cat": (-1.9, -1.1), "dog": (-1.3, -1.7), "horse": (-2.3, -2.0),
+    }
+    TABLE_ROWS = ["France", "Paris", "Italy", "Rome", "cat", "dog"]
+
+    def construct(self):
+        self.setup_bg()
+        self.add(title_bar("Embeddings as Coordinates", "a toy model with d = 2, so each row is a point in the plane"))
+
+        rng = np.random.default_rng(7)
+        init = {w: tuple(np.round(rng.normal(0, 0.55, 2), 2)) for w in self.TRAINED}
+        init["France"] = (0.62, 0.48)  # far enough from the origin to read its coordinates
+
+        axes = Axes(x_range=[-3, 3, 1], y_range=[-2.5, 2.5, 1], x_length=6.6, y_length=5.0,
+                    tips=False, axis_config={"color": LINE, "stroke_width": 2,
+                                             "include_ticks": True, "tick_size": 0.05})
+        axes.move_to(RIGHT * 3.1 + DOWN * 0.45)
+        xlab = label("dim 1", 18, MUTED).next_to(axes.x_axis.get_end(), DOWN, buff=0.15).shift(LEFT * 0.3)
+        ylab = label("dim 2", 18, MUTED).next_to(axes.y_axis, UP, buff=0.08)
+
+        def color_of(w):
+            if w in ("Paris", "Rome", "Tokyo"):
+                return SECONDARY
+            if w in ("France", "Italy", "Japan"):
+                return PRIMARY
+            return GREEN
+
+        def point(w, xy):
+            d = Dot(axes.c2p(*xy), radius=0.08, color=color_of(w))
+            t = label(w, 18, color_of(w)).next_to(d, RIGHT, buff=0.08)
+            return VGroup(d, t)
+
+        def table(vals):
+            rows = VGroup()
+            for w in self.TABLE_ROWS:
+                x, y = vals[w]
+                name = label(w, 20, color_of(w))
+                nums = label(f"[ {x:5.2f} , {y:5.2f} ]", 20, TEXT)
+                rows.add(VGroup(name, nums))
+            for r in rows:
+                r[1].next_to(r[0], RIGHT, buff=0.3)
+            rows.arrange(DOWN, buff=0.2, aligned_edge=LEFT)
+            # Align every vector column on the same x.
+            col_x = max(r[0].get_right()[0] for r in rows) + 0.3
+            for r in rows:
+                r[1].align_to([col_x, 0, 0], LEFT)
+            dots = label("...", 20, MUTED).next_to(rows, DOWN, buff=0.15).align_to(rows[0][1], LEFT)
+            return VGroup(rows, dots).move_to(LEFT * 4.1 + DOWN * 0.3)
+
+        # ---- init: random rows, random points ----
+        self.next_section("init", skip_animations=False)
+        tab = table(init)
+        head = label("embedding matrix E (rows)", 20, MUTED).next_to(tab, UP, buff=0.3)
+        pts = {w: point(w, init[w]) for w in self.TRAINED}
+        self.play(FadeIn(head), FadeIn(tab), Create(axes), FadeIn(xlab), FadeIn(ylab), run_time=0.8)
+        self.play(LaggedStart(*[FadeIn(p) for p in pts.values()], lag_ratio=0.05), run_time=0.7)
+        self.caption("At initialization every entry is small random noise. The points mean nothing yet.")
+        self.wait(0.3)
+
+        # ---- one row = one point ----
+        self.next_section("row_is_point", skip_animations=False)
+        fr = pts["France"][0]
+        hx = DashedLine(axes.c2p(init["France"][0], 0), fr.get_center(), color=PRIMARY, stroke_width=3)
+        hy = DashedLine(axes.c2p(0, init["France"][1]), fr.get_center(), color=PRIMARY, stroke_width=3)
+        row_box = SurroundingRectangle(tab[0][0], color=PRIMARY, buff=0.08, stroke_width=2.5)
+        self.play(Create(row_box), Create(hx), Create(hy), Indicate(pts["France"], color=PRIMARY), run_time=0.8)
+        self.caption("Read each row as coordinates: France's two numbers are one point.")
+        self.wait(0.3)
+
+        # ---- training moves the points ----
+        self.next_section("train", skip_animations=False)
+        new_tab = table(self.TRAINED)
+        self.play(FadeOut(row_box), FadeOut(hx), FadeOut(hy), run_time=0.3)
+        self.play(Transform(tab, new_tab),
+                  *[pts[w].animate.move_to(point(w, self.TRAINED[w]).get_center()) for w in self.TRAINED],
+                  run_time=2.2, rate_func=smooth)
+        self.caption("Training nudges every row. Tokens used in similar contexts drift together.")
+        self.wait(0.3)
+
+        # ---- neighborhoods ----
+        self.next_section("clusters", skip_animations=False)
+
+        def hull(words, color, text, direction):
+            g = VGroup(*[pts[w] for w in words])
+            e = Ellipse(width=g.width + 0.9, height=g.height + 0.5, color=color,
+                        stroke_width=2).move_to(g)
+            t = label(text, 18, color).next_to(e, direction, buff=0.08)
+            return VGroup(e, t)
+
+        h1 = hull(["France", "Italy", "Japan"], PRIMARY, "countries", DOWN)
+        h2 = hull(["Paris", "Rome", "Tokyo"], SECONDARY, "capitals", UP)
+        h3 = hull(["cat", "dog", "horse"], GREEN, "animals", UP)
+        self.play(Create(h1), Create(h2), Create(h3), run_time=0.9)
+        self.caption("Nearby points are tokens the model treats alike.")
+        self.wait(0.3)
+
+        # ---- directions ----
+        self.next_section("directions", skip_animations=False)
+        self.play(FadeOut(h1), FadeOut(h2), FadeOut(h3), run_time=0.3)
+        arrows = VGroup(*[
+            Arrow(pts[a][0].get_center(), pts[b][0].get_center(), buff=0.1, color=SECONDARY,
+                  stroke_width=3, max_tip_length_to_length_ratio=0.18)
+            for a, b in [("France", "Paris"), ("Italy", "Rome"), ("Japan", "Tokyo")]
+        ])
+        self.play(LaggedStart(*[GrowArrow(a) for a in arrows], lag_ratio=0.25), run_time=1.0)
+        self.caption("Directions carry meaning too: country to capital is about the same offset.")
+        self.wait(0.3)
+
+        # ---- high dimensions ----
+        self.next_section("high_dim", skip_animations=False)
+        note_txt = VGroup(label("GPT-2 small: d = 768", 22, PRIMARY),
+                          label("each token is a point in 768-D space", 19, TEXT)).arrange(DOWN, buff=0.12)
+        note_box = RoundedRectangle(width=note_txt.width + 0.5, height=note_txt.height + 0.4, corner_radius=0.1,
+                                    stroke_color=PRIMARY, fill_color=PRIMARY, fill_opacity=0.12, stroke_width=2)
+        note = VGroup(note_box, note_txt.move_to(note_box)).next_to(tab, DOWN, buff=0.45)
+        self.play(FadeIn(note), run_time=0.5)
+        self.caption("Too many axes to draw, but distance and direction work the same way.")
+        self.wait(0.3)
+
+
+class ParallelForwardScene(StepScene):
+    """Inference as one parallel pass: every block maps a T x d matrix to a T x d matrix."""
+
+    TOKENS = ["The", "capital", "of", "France", "is"]
+    # Everything below is real output of GPT-2 medium (Hugging Face `gpt2-medium`,
+    # run in float64) on "The capital of France is".
+    # Raw logits for eight vocabulary columns (rows = positions). Columns are in
+    # vocabulary-ID order, the order the LM head actually emits them in; three
+    # are unrelated distractors ("ing", "happy", "banana").
+    VOCAB = ["ing", "of", "is", "capital", "happy", "France", "Paris", "banana"]
+    VOCAB_IDS = [278, 286, 318, 3139, 3772, 4881, 6342, 25996]
+    LOGITS = [
+        [-72.1, -68.2, -67.8, -66.1, -69.5, -70.0, -67.6, -69.7],
+        [-58.6, -49.4, -50.2, -55.0, -60.6, -58.0, -55.8, -60.2],
+        [-69.1, -65.7, -65.5, -64.6, -68.3, -61.5, -63.4, -67.8],
+        [-80.2, -74.9, -70.5, -76.2, -81.1, -76.4, -77.1, -82.8],
+        [-103.5, -96.9, -99.3, -98.3, -100.9, -95.5, -92.3, -105.5],
+    ]
+    # Column of the true next token for each row (capital, of, France, is, Paris).
+    TARGET_COL = [3, 1, 5, 2, 6]
+    # Softmax of the last row: the five most likely next tokens.
+    LAST_TOP = [("Paris", 0.174), ("the", 0.054), ("Lyon", 0.042), ("not", 0.031), ("a", 0.026)]
+    CELL = 0.46
+    GAP = 0.05
+    Y0 = 0.3  # vertical center of the pipeline row
+
+    def matrix(self, color, seed, cols=3, ell_col=1):
+        """5 x cols grid; cell shading varies so each matrix reads as different data."""
+        rng = np.random.default_rng(seed)
+        grid = VGroup()
+        for _ in range(len(self.TOKENS)):
+            row = VGroup()
+            for c in range(cols):
+                if c == ell_col:
+                    row.add(label("...", 16, MUTED).set(width=self.CELL * 0.7))
+                else:
+                    row.add(Square(self.CELL, stroke_color=color, stroke_width=1.2,
+                                   fill_color=color, fill_opacity=float(rng.uniform(0.1, 0.7))))
+            row.arrange(RIGHT, buff=self.GAP)
+            grid.add(row)
+        return grid.arrange(DOWN, buff=self.GAP)
+
+    def logits_matrix(self):
+        """5 rows x 5 labeled vocabulary columns plus an ellipsis for the rest of
+        the 50,257. Brighter cell = higher raw score, scaled within each row."""
+        grid = VGroup()
+        for r in self.LOGITS:
+            lo, hi = min(r), max(r)
+            row = VGroup()
+            for v in r:
+                row.add(Rectangle(width=0.24, height=self.CELL, stroke_color=SECONDARY, stroke_width=1.1,
+                                  fill_color=SECONDARY, fill_opacity=0.04 + 0.9 * ((v - lo) / (hi - lo)) ** 1.6))
+            row.add(label("...", 16, MUTED).set(width=self.CELL * 0.5))
+            row.arrange(RIGHT, buff=0.04)
+            grid.add(row)
+        return grid.arrange(DOWN, buff=self.GAP)
+
+    def named(self, mat, x, name, dims, color):
+        mat.move_to([x, self.Y0, 0])
+        top = label(name, 22, color).next_to(mat, UP, buff=0.16)
+        bot = label(dims, 18, MUTED).next_to(mat, DOWN, buff=0.16)
+        return VGroup(mat, top, bot)
+
+    def block(self, x, name, color, h):
+        box = RoundedRectangle(width=0.72, height=h, corner_radius=0.08, stroke_color=color,
+                               stroke_width=2, fill_color=color, fill_opacity=0.10).move_to([x, self.Y0, 0])
+        words = VGroup(*[label(w, 18, color) for w in name.split()]).arrange(DOWN, buff=0.08)
+        if words.width > 0.62:
+            words.scale(0.62 / words.width)
+        return VGroup(box, words.move_to(box))
+
+    def link(self, a, b):
+        return Arrow([a, self.Y0, 0], [b, self.Y0, 0], buff=0.04, color=MUTED, stroke_width=2.5,
+                     max_tip_length_to_length_ratio=0.5)
+
+    def construct(self):
+        self.setup_bg()
+        self.add(title_bar("One Forward Pass, Every Position at Once",
+                           "inference on \"The capital of France is\" (GPT-2 medium)"))
+
+        # ---- input matrix ----
+        self.next_section("input", skip_animations=False)
+        X = self.named(self.matrix(PRIMARY, 1), -5.0, "X", "5 x 1024", PRIMARY)
+        toks = VGroup(*[label(t, 21, TEXT).next_to(X[0][i], LEFT, buff=0.2)
+                        for i, t in enumerate(self.TOKENS)])
+        for t in toks:
+            t.align_to(toks[1], RIGHT)
+        self.play(LaggedStart(*[FadeIn(t) for t in toks], lag_ratio=0.1), run_time=0.6)
+        self.play(FadeIn(X), run_time=0.6)
+        self.caption("Embed all 5 tokens and stack them: X is one 5 x 1024 matrix, one row per position.")
+        self.wait(0.3)
+
+        # ---- block 1: matrix in, matrix out ----
+        self.next_section("block1", skip_animations=False)
+        bh = X[0].height + 0.36
+        B1 = self.block(-3.55, "Block 1", GREEN, bh)
+        H1 = self.named(self.matrix(GREEN, 2), -2.1, "H1", "5 x 1024", GREEN)
+        a1, a2 = self.link(X[0].get_right()[0], B1.get_left()[0]), self.link(B1.get_right()[0], H1[0].get_left()[0])
+        self.play(GrowArrow(a1), FadeIn(B1), run_time=0.5)
+        ghost = X[0].copy()
+        self.play(ghost.animate.move_to(B1).scale(0.5).set_opacity(0), run_time=0.6)
+        self.remove(ghost)
+        self.play(GrowArrow(a2), TransformFromCopy(B1[0], H1[0]), FadeIn(H1[1]), FadeIn(H1[2]), run_time=0.8)
+        self.caption("Block 1 reads the whole matrix at once and outputs a new 5 x 1024 matrix, H1.")
+        self.wait(0.3)
+
+        # ---- causal mask inside block 1 ----
+        self.next_section("mask", skip_animations=False)
+        n, cs = len(self.TOKENS), 0.44
+        weights = [[1.0], [0.45, 0.55], [0.2, 0.5, 0.3], [0.1, 0.3, 0.2, 0.4], [0.05, 0.3, 0.1, 0.35, 0.2]]
+        grid = VGroup()
+        for i in range(n):
+            for j in range(n):
+                if j <= i:
+                    sq = Square(cs, stroke_color=SECONDARY, stroke_width=1.3, fill_color=SECONDARY,
+                                fill_opacity=0.12 + 0.6 * weights[i][j])
+                    tx = label(f"{weights[i][j]:.2f}", 14, TEXT)
+                else:
+                    sq = Square(cs, stroke_color=LINE, stroke_width=1.3, fill_color=LINE, fill_opacity=0.35)
+                    tx = label("0", 14, MUTED)
+                grid.add(VGroup(sq, tx.move_to(sq)).move_to([j * (cs + 0.03), -i * (cs + 0.03), 0]))
+        grid.move_to([1.2, self.Y0 - 0.25, 0])
+        rl = VGroup(*[label(self.TOKENS[i], 16, TEXT).next_to(grid[i * n], LEFT, buff=0.14) for i in range(n)])
+        for r in rl:
+            r.align_to(rl[1], RIGHT)
+        cl = VGroup(*[label(self.TOKENS[j], 15, TEXT).rotate(PI / 4).next_to(grid[j], UP, buff=0.06)
+                      for j in range(n)])
+        frame = SurroundingRectangle(VGroup(grid, rl, cl), color=GREEN, buff=0.15, stroke_width=1.5,
+                                     corner_radius=0.08)
+        # Dashed elbow from the bottom of Block 1 to the panel: "this happens in here".
+        yb = min(B1[0].get_bottom()[1], frame.get_bottom()[1]) - 0.4
+        fx = frame.get_x()
+        tether = VGroup(
+            DashedLine(B1[0].get_bottom(), [B1[0].get_x(), yb, 0], color=GREEN, stroke_width=2),
+            DashedLine([B1[0].get_x(), yb, 0], [fx, yb, 0], color=GREEN, stroke_width=2),
+            DashedLine([fx, yb, 0], frame.get_bottom(), color=GREEN, stroke_width=2),
+        )
+        side = VGroup(label("inside Block 1's attention:", 20, GREEN),
+                      label("5 x 5 scores, all rows at once", 20, TEXT),
+                      label("future cells set to -inf,", 20, TEXT),
+                      label("so softmax gives them 0", 20, TEXT)).arrange(DOWN, buff=0.14, aligned_edge=LEFT)
+        side.next_to(frame, RIGHT, buff=0.35)
+        self.play(Create(tether), Create(frame), run_time=0.5)
+        self.play(FadeIn(grid), FadeIn(rl), FadeIn(cl), FadeIn(side), run_time=0.8)
+        self.caption("The causal mask: row i attends only to positions 1 to i, so no row sees the future.")
+        self.wait(0.3)
+
+        # ---- blocks 2..12 ----
+        self.next_section("stack", skip_animations=False)
+        self.play(FadeOut(VGroup(tether, frame, grid, rl, cl, side)), run_time=0.4)
+        dots = label("...", 26, MUTED).move_to([-0.95, self.Y0, 0])
+        B12 = self.block(0.05, "Block 24", GREEN, bh)
+        H12 = self.named(self.matrix(GREEN, 3), 1.5, "H24", "5 x 1024", GREEN)
+        a3 = self.link(H1[0].get_right()[0], dots.get_left()[0] - 0.02)
+        a4 = self.link(dots.get_right()[0] + 0.02, B12.get_left()[0])
+        a5 = self.link(B12.get_right()[0], H12[0].get_left()[0])
+        self.play(GrowArrow(a3), FadeIn(dots), GrowArrow(a4), FadeIn(B12), run_time=0.6)
+        self.play(GrowArrow(a5), TransformFromCopy(B12[0], H12[0]), FadeIn(H12[1]), FadeIn(H12[2]), run_time=0.8)
+        self.caption("Blocks 2 to 24 repeat this. Every block outputs a 5 x 1024 matrix; the shape never changes.")
+        self.wait(0.3)
+
+        # ---- LM head -> logits ----
+        self.next_section("predict", skip_animations=False)
+        head = self.block(2.9, "LM head", SECONDARY, bh)
+        L = self.named(self.logits_matrix(), 0, "", "logits: 5 x 50,257, columns in vocab-ID order", SECONDARY)
+        L.shift(RIGHT * (head.get_right()[0] + 0.38 - L[0].get_left()[0]))
+        ids = VGroup(*[label(str(v), 11, MUTED).rotate(PI / 2).next_to(L[0][-1][c], DOWN, buff=0.08)
+                       for c, v in enumerate(self.VOCAB_IDS)])
+        for v in ids:
+            v.align_to(ids[0], UP)
+        L[2].scale(0.8).next_to(ids, DOWN, buff=0.1)
+        L[2].shift(RIGHT * (L[0].get_center()[0] - L[2].get_center()[0]))
+        vlabs = VGroup(*[label(v, 15, SECONDARY).rotate(PI / 2).next_to(L[0][0][c], UP, buff=0.1)
+                         for c, v in enumerate(self.VOCAB)])
+        for v in vlabs:
+            v.align_to(vlabs[0], DOWN)
+        a6 = self.link(H12[0].get_right()[0], head.get_left()[0])
+        a7 = self.link(head.get_right()[0], L[0].get_left()[0])
+        # One arrow per row: the head is applied to each row on its own.
+        row_arrows = VGroup(*[
+            Arrow([H12[0][i].get_right()[0] + 0.05, H12[0][i].get_y(), 0],
+                  [L[0][i].get_left()[0] - 0.05, L[0][i].get_y(), 0], buff=0, color=SECONDARY,
+                  stroke_width=2, max_tip_length_to_length_ratio=0.06)
+            for i in range(len(self.TOKENS))])
+        self.play(GrowArrow(a6), FadeIn(head), run_time=0.5)
+        self.play(GrowArrow(a7), TransformFromCopy(head[0], L[0]), FadeIn(vlabs), FadeIn(ids), FadeIn(L[2]), run_time=0.8)
+        self.play(LaggedStart(*[Create(r) for r in row_arrows], lag_ratio=0.0), run_time=0.6)
+        self.play(FadeOut(row_arrows), run_time=0.3)
+        self.caption("The LM head scores each row on its own: 5 rows in, 5 rows of 50,257 scores out.")
+        self.wait(0.3)
+
+        # ---- each row predicts the NEXT position ----
+        self.next_section("shift", skip_animations=False)
+        nexts = self.TOKENS[1:] + ["?"]
+        ntitle = label("predicts", 17, MUTED)
+        preds = VGroup(*[label(n, 18, MUTED if i < 4 else SECONDARY).next_to(L[0][i], RIGHT, buff=0.18)
+                         for i, n in enumerate(nexts)])
+        ntitle.next_to(preds, UP, buff=0.14).align_to(preds, LEFT)
+        # Outline the cell of the token that really comes next (a diagonal, shifted by one).
+        known = VGroup(*[SurroundingRectangle(L[0][i][self.TARGET_COL[i]], color=TEXT, buff=0.02, stroke_width=2)
+                         for i in range(4)])
+        self.play(FadeIn(ntitle), LaggedStart(*[FadeIn(p) for p in preds], lag_ratio=0.12),
+                  Create(known), run_time=0.9)
+        self.caption("Row i scores the token after position i: the brightest cell is that word. Rows 1 to 4 we already know.")
+        self.wait(0.3)
+
+        # ---- keep the last row ----
+        self.next_section("last_row", skip_animations=False)
+        mats = [X[0], H1[0], H12[0], L[0]]
+        veils = VGroup(*[Rectangle(width=VGroup(*m[:-1]).width + 0.08, height=VGroup(*m[:-1]).height + 0.06,
+                                   stroke_width=0, fill_color=BG, fill_opacity=0.72).move_to(VGroup(*m[:-1]))
+                         for m in mats])
+        dim = list(preds[:-1]) + list(toks[:-1])
+        boxes = VGroup(*[SurroundingRectangle(m[-1], color=SECONDARY, buff=0.04, stroke_width=2) for m in mats])
+        paris_cell = SurroundingRectangle(L[0][-1][self.TARGET_COL[-1]], color=TEXT, buff=0.02, stroke_width=2.5)
+        self.play(FadeOut(known), FadeIn(veils), *[m.animate.set_opacity(0.25) for m in dim], Create(boxes),
+                  Create(paris_cell),
+                  toks[-1].animate.set_color(SECONDARY), run_time=0.8)
+        # Softmax of the last row as a small vertical bar chart below the logits.
+        base_y, unit, pitch = -2.78, 0.6 / self.LAST_TOP[0][1], 0.62
+        bars = VGroup()
+        for k, (name, pv) in enumerate(self.LAST_TOP):
+            hot = name == "Paris"
+            x = k * pitch
+            bar = Rectangle(width=0.42, height=pv * unit, stroke_width=0, fill_color=SECONDARY,
+                            fill_opacity=0.9 if hot else 0.35).move_to([x, base_y + pv * unit / 2, 0])
+            pc = label(f"{pv * 100:.0f}%", 15, TEXT if hot else MUTED).next_to(bar, UP, buff=0.06)
+            nm = label(name, 16, TEXT if hot else MUTED).move_to([x, base_y - 0.18, 0])
+            bars.add(VGroup(bar, pc, nm))
+        axis = Line([-0.3, base_y, 0], [(len(self.LAST_TOP) - 1) * pitch + 0.3, base_y, 0],
+                    color=LINE, stroke_width=1.5)
+        chart = VGroup(axis, bars)
+        chart.shift(RIGHT * (L[0].get_center()[0] - chart.get_center()[0]))
+        btitle = label("softmax of the last row", 16, MUTED).next_to(chart, LEFT, buff=0.35).align_to(chart, UP)
+        chart = VGroup(chart, btitle)
+        paris = label("Paris", 18, SECONDARY).move_to(preds[-1], aligned_edge=LEFT)
+        self.play(FadeIn(chart), Transform(preds[-1], paris), run_time=0.8)
+        self.caption("For the next word we only need the last row: softmax gives Paris 17%. Append it and repeat.")
         self.wait(0.3)
