@@ -65,7 +65,7 @@ Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each 
 | 7 | `MLP.forward()` | Two-layer MLP: ReLU hidden layer, sigmoid output |
 | EC | `SGD.step()` | Your own optimizer; train the MLP with it |
 
-The single neuron does its gradients by hand (steps 3 and 4). The `MLP` is an `nn.Module`: you write only its `forward`, and PyTorch's autograd computes the gradients during training. `src/main.py` is the runner and `src/visualization.py` holds the plotting helpers &mdash; both are provided. The tests live in `tests/`, one file per step (`test_step1_forward.py` through `test_step7_mlp.py`, plus `test_extra_credit.py`). Each calls your function on small tensors with a known answer, so you can read the test for the step you are on to see exactly what is expected. You should only need to edit `exercise.py`.
+The single neuron does its gradients by hand (steps 3 and 4). The `MLP` is an `nn.Module`: you write only its `forward`, and PyTorch's autograd computes the gradients during training. `src/main.py` is the runner: it reads top to bottom as the steps, including both training loops. The rest of `src/` is provided plumbing: `src/evaluation.py` loads the datasets and scores trained models, `src/visualization.py` holds the plotting helpers, `src/reporting.py` prints the CORRECT/INCORRECT/INCOMPLETE results, and `src/solution.py` handles `--solution`. The tests live in `tests/`, one file per step (`test_step1_forward.py` through `test_step7_mlp.py`, plus `test_extra_credit.py`). Each calls your function on small tensors with a known answer, so you can read the test for the step you are on to see exactly what is expected. You should only need to edit `exercise.py`.
 
 ## Data
 

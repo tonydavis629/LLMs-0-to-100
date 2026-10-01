@@ -97,7 +97,11 @@ quantitative.
 
 The corpus loader (`src/data.py`), the sentence encoder (`src/encoder.py`),
 plotting (`src/visualization.py`), and the runner (`src/main.py`) are all
-provided. You only edit `exercise.py`.
+provided. The runner reads top to bottom as the seven steps. Its bookkeeping
+lives in `src/reporting.py` (the CORRECT/INCORRECT/INCOMPLETE output),
+`src/prerequisites.py` (the "needs Step N" checks), `src/tables.py` (the
+worked-example and score-table printing) and `src/solution.py` (the
+`--solution` switch). You only edit `exercise.py`.
 
 The tests live in `tests/`, one file per step (`test_step1_tokenize.py` through
 `test_step7_metrics.py`). Each calls your function on small inputs with a known

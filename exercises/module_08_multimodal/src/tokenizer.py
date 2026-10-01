@@ -42,3 +42,13 @@ def decode(ids: "list[int] | object", itos: dict[int, str]) -> str:
     if isinstance(ids, torch.Tensor):
         ids = ids.tolist()
     return "".join(itos.get(int(i), "?") for i in ids)
+
+
+def pad_captions(captions: list[str], stoi: dict[str, int], pad_id: int, max_len: int):
+    """Encode each caption and pad it with <|pad|> to max_len, giving one (B, max_len) tensor."""
+    import torch
+    rows = []
+    for caption in captions:
+        ids = encode(caption, stoi)[:max_len]
+        rows.append(ids + [pad_id] * (max_len - len(ids)))
+    return torch.tensor(rows, dtype=torch.long)

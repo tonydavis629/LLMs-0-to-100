@@ -26,3 +26,16 @@ def load_jsonl(path: str | Path) -> list[dict]:
 def article_text(article: dict) -> str:
     """The text both retrievers index: the title and the body together."""
     return article["title"] + ". " + article["body"]
+
+
+def _find_data_dir() -> Path:
+    """Locate the module's data/ directory by walking up from this file."""
+    for parent in Path(__file__).resolve().parents:
+        candidate = parent / "data"
+        if (candidate / "articles.jsonl").exists():
+            return candidate
+    raise FileNotFoundError("Could not locate the data/ directory")
+
+
+# The folder holding articles.jsonl, queries.jsonl and the bundled encoder
+DATA_DIR = _find_data_dir()

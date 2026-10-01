@@ -50,10 +50,11 @@ def check_greedy_next_token(greedy_next_token) -> list[Check]:
     return checks
 
 
-def check_grounded_captions(results: dict) -> list[Check]:
+def check_grounded_captions(predicted: list[str], expected: list[str]) -> list[Check]:
     """With the trained bridge, the caption should depend on the image."""
     checks = []
-    correct, total = results["caption_correct"], results["caption_total"]
+    total = len(predicted)
+    correct = sum(p.strip() == e.strip() for p, e in zip(predicted, expected))
     name = "held-out caption exact-match is at least 50% (the scenes were never trained on)"
     checks.append(
         ok(name)
@@ -62,7 +63,7 @@ def check_grounded_captions(results: dict) -> list[Check]:
     )
 
     # The grounding test: one prompt, three different scenes, three different answers
-    captions = results["demo_captions"]
+    captions = predicted[:3]  # the first three held-out scenes
     name = "the same prompt returns a different caption for each of the 3 demo images"
     checks.append(
         ok(name)

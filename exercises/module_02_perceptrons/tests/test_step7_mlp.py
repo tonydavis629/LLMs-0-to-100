@@ -43,9 +43,8 @@ def check_mlp_forward(MLP) -> list[Check]:
     return checks
 
 
-def check_mlp_training(results: dict) -> list[Check]:
+def check_mlp_training(correct: int, total: int) -> list[Check]:
     """After training on the XOR data, the hidden layer should make it solvable."""
-    correct, total = results["mlp_acc"]
     pct = 100 * correct / total
     return [
         ok("XOR data: the MLP reaches at least 95% accuracy where the single neuron got 50%")

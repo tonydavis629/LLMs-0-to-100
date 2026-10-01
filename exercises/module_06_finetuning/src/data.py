@@ -87,3 +87,15 @@ def load_dataset(path: Path) -> list[dict[str, str]]:
             if line:
                 out.append(json.loads(line))
     return out
+
+
+def pad(seq: list[int], length: int, pad_id: int) -> list[int]:
+    """Pad (or truncate) a sequence to exactly `length`."""
+    if len(seq) >= length:
+        return seq[:length]
+    return seq + [pad_id] * (length - len(seq))
+
+
+def prompt_span(prompt: str, enc) -> int:
+    """How many leading tokens belong to the prompt: user marker + text + end marker + assistant marker."""
+    return 1 + len(enc(prompt)) + 1 + 1

@@ -87,8 +87,12 @@ needs only one expression or one short block.
 Step 6 (the warmup + cosine learning-rate schedule, `lr_at_step()`) is provided in
 full, and steps 9 (the loss-curve plot) and 11 (the overfit sanity check) are
 handled by the runner using the functions above. The model (`src/model.py`), the
-runner (`src/main.py`), and the plotting helper (`src/visualization.py`) are all
-provided &mdash; you only edit `exercise.py`.
+runner (`src/main.py`, which reads top to bottom as the steps), and the plotting
+helper (`src/visualization.py`) are all provided. The runner's bookkeeping lives in
+`src/reporting.py` (the CORRECT/INCORRECT/INCOMPLETE output), `src/prerequisites.py`
+(the "needs Step N" checks), `src/solution.py` (the `--solution` switch),
+`src/corpus.py` (loading the text and decoding tokens) and `src/seeding.py`
+(seeding so runs match the slides). You only edit `exercise.py`.
 
 ## Dataset
 

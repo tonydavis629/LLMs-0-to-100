@@ -5,8 +5,13 @@ lecture's napkin math as code, an HTTP client that speaks the OpenAI-compatible
 chat completions API, streaming with a stopwatch on it, and a concurrency
 benchmark that makes batching visible.
 
-You edit exactly one file: `exercise.py`. Everything in `src/` is provided
-plumbing (the runner, the HTTP code, the threading, the plotting).
+You edit exactly one file: `exercise.py`. Everything in `src/` is provided.
+`src/main.py` is the runner and reads top to bottom as the eight steps; read
+it alongside `exercise.py` to see how your functions are used. The rest is
+plumbing: `src/client.py` (the HTTP code), `src/reporting.py` (the
+CORRECT/INCORRECT/INCOMPLETE output), `src/prerequisites.py` (the "needs
+Step N" checks), `src/solution.py` (the `--solution` switch) and
+`src/visualization.py` (the plot).
 
 ## Running
 

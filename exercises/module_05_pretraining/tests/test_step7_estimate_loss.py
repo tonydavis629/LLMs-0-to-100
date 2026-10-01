@@ -75,9 +75,11 @@ def check_estimate_loss(estimate_loss) -> list[Check]:
     return checks
 
 
-def check_pretraining(results: dict) -> list[Check]:
-    """After the full run, the model should have learned a lot about Shakespeare."""
-    val = results["val_hist"]
+def check_pretraining(val: list[float]) -> list[Check]:
+    """After the full run, the model should have learned a lot about Shakespeare.
+
+    `val` is the validation loss at each checkpoint, first to last.
+    """
     return [
         ok("pretraining lowers the validation loss from about ln 65 = 4.17 to under 2.0")
         if val[0] > 4.0 and val[-1] < 2.0

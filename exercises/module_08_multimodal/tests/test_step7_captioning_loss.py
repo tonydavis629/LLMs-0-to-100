@@ -65,9 +65,8 @@ def check_captioning_loss(captioning_loss) -> list[Check]:
     return checks
 
 
-def check_bridge_training(results: dict) -> list[Check]:
+def check_bridge_training(losses: list[float]) -> list[Check]:
     """Finetuning the projector and the language model should drive the loss down."""
-    losses = results["bridge_losses"]
     first = losses[0]
     last = sum(losses[-50:]) / len(losses[-50:])
     name = "bridge training takes the captioning loss from about 9 to under 0.1 (last 50 steps)"

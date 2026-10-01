@@ -26,7 +26,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from model import Block, GPTConfig
+from src.model import Block, GPTConfig
 
 # ---- Fixed dimensions for the whole exercise -----------------------------------
 IMG_SIZE = 32

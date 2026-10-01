@@ -82,9 +82,8 @@ def check_train_step(train_step) -> list[Check]:
     return checks
 
 
-def check_overfit(results: dict) -> list[Check]:
+def check_overfit(losses: list[float]) -> list[Check]:
     """The --overfit sanity check: one fixed batch should be memorized."""
-    losses = results["overfit_losses"]
     return [
         ok("training on one fixed batch drives its loss from about 4.18 to under 0.5")
         if losses[0] > 4.0 and losses[-1] < 0.5

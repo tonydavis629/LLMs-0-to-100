@@ -160,6 +160,54 @@ def save_comparison(
     plt.close(fig)
 
 
+def save_boundary_and_loss(
+    predict_fn,
+    X: np.ndarray,
+    y: np.ndarray,
+    losses: list[float],
+    boundary_title: str,
+    loss_title: str,
+    filepath: str,
+) -> None:
+    """Save a decision boundary next to the loss curve that produced it.
+
+    Args:
+        predict_fn: Vectorized function mapping (n_points, 2) -> (n_points,) probabilities.
+        X: Feature array, shape (n_samples, 2).
+        y: Label array, shape (n_samples,).
+        losses: Per-epoch loss values.
+        boundary_title: Title for the decision-boundary panel.
+        loss_title: Title for the loss-curve panel.
+        filepath: Where to save the figure.
+
+    Returns:
+        None.
+    """
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
+    plot_decision_boundary(predict_fn, X, y, title=boundary_title, ax=ax1)
+    plot_loss_curve(losses, title=loss_title, ax=ax2)
+    fig.tight_layout()
+    fig.savefig(filepath, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+def save_loss_curve(losses: list[float], title: str, filepath: str) -> None:
+    """Save a single loss curve to a file.
+
+    Args:
+        losses: Per-epoch loss values.
+        title: Plot title.
+        filepath: Where to save the figure.
+
+    Returns:
+        None.
+    """
+    fig, ax = plt.subplots(figsize=(6, 4))
+    plot_loss_curve(losses, title=title, ax=ax)
+    fig.savefig(filepath, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
 def plot_datasets(linear_csv: str, nonlinear_csv: str, filepath: str) -> None:
     """Save a dark-themed side-by-side scatter of the two exercise datasets.
 

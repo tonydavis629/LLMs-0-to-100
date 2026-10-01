@@ -53,9 +53,8 @@ def check_sgd_step(SGD) -> list[Check]:
     return checks
 
 
-def check_sgd_training(results: dict) -> list[Check]:
+def check_sgd_training(correct: int, total: int) -> list[Check]:
     """The MLP trained with your optimizer should learn XOR just as well."""
-    correct, total = results["ec_acc"]
     pct = 100 * correct / total
     return [
         ok("the MLP trained with your optimizer reaches at least 95% on XOR")

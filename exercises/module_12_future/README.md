@@ -84,9 +84,13 @@ Only `exercise.py`, at the module root. Each of the seven blanks is one line or
 one short expression, marked with a `# TODO` describing what to return and a
 `# HINT` pointing at the operation to use.
 
-Everything in `src/` is provided plumbing: the softmax attention baseline, the
-loop that drives your per-token functions across a sequence, the random input
-generator, and the plotting.
+Everything in `src/` is provided plumbing. `src/attention.py` holds the softmax
+attention baseline, the loop that drives your per-token functions across a
+sequence, and the random input generator; `src/visualization.py` does the plotting. `src/main.py` is the runner, and it reads top to
+bottom as the seven steps. Its bookkeeping lives in `src/reporting.py` (the
+CORRECT/INCORRECT/INCOMPLETE output), `src/prerequisites.py` (the "needs Step N"
+checks), `src/scaling.py` (the Step 7 timing table and slope fit) and
+`src/solution.py` (the `--solution` switch).
 
 The tests live in `tests/`, one file per step (`test_step1_feature_map.py`
 through `test_step7_time_forward.py`). Each calls your function on small tensors

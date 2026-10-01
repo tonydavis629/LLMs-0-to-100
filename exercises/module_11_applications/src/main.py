@@ -4,17 +4,14 @@ Module 11 Exercise runner: two retrievers over one support corpus
 Run with:
     uv run python module_11_applications/src/main.py
 
-Builds a TF-IDF index and an embedding index over the same 48 support articles,
-runs two worked example queries through each retriever, then scores both on 30
-labeled queries per category and saves a grouped bar chart.
+Each step below runs one function you write in exercise.py on the real
+corpus of 48 support articles, then tests it. Read top to bottom, the steps
+build two search engines and then compare them:
 
-Every step is tagged on its header line, then its output follows: what your
-code produced on the real corpus and the result of each test in tests/.
-The tags are:
-
-    CORRECT     every test for the step passed
-    INCORRECT   your code ran but at least one test failed (details follow)
-    INCOMPLETE  the function still raises NotImplementedError
+    1-3. sparse index: text -> terms -> IDF weights -> one TF-IDF vector per article
+    4-5. ranking: cosine similarity between a query and every article, keep the top k
+    6.   dense index: MiniLM token vectors -> mean pooling -> one embedding per article
+    7.   scoring: recall@k and reciprocal rank on 30 labeled queries, per category
 
 Add --step N to run one step (1-7).
 Add --solution to run the finished answers from solution/exercise.py.
@@ -23,190 +20,80 @@ Add --solution to run the finished answers from solution/exercise.py.
 from __future__ import annotations
 
 import argparse
-import io
 import sys
-from contextlib import redirect_stdout
+from functools import cache
 from pathlib import Path
 
 import numpy as np
 
-# Make the module root (parent of src/) importable so we can `from exercise import ...`,
-# and src/ importable for the provided data / encoder / plotting helpers.
+# Make the module root (parent of src/) importable so we can `from exercise import ...`
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-# `--solution` swaps in the finished answers from solution/exercise.py.
-# Registering it as "exercise" before the imports below means every
-# `from exercise import ...` in this file picks it up with no other change.
-if "--solution" in sys.argv:
-    import importlib.util
+# With --solution, swap in solution/exercise.py before anything imports `exercise`
+from src.solution import use_solution_if_requested
 
-    sys.argv.remove("--solution")
-    _sol = Path(__file__).resolve().parent.parent / "solution" / "exercise.py"
-    _spec = importlib.util.spec_from_file_location("exercise", _sol)
-    _exercise = importlib.util.module_from_spec(_spec)
-    sys.modules["exercise"] = _exercise
-    _spec.loader.exec_module(_exercise)
+use_solution_if_requested()
 
-from exercise import (  # noqa: E402  (import after sys.path edits)
-    tokenize,
-    inverse_document_frequency,
-    tfidf_vector,
+from exercise import (
     cosine_similarity,
-    rank_documents,
+    inverse_document_frequency,
     mean_pool,
+    rank_documents,
     recall_at_k,
     reciprocal_rank,
+    tfidf_vector,
+    tokenize,
 )
-from data import load_jsonl, article_text  # noqa: E402
-from encoder import SentenceEncoder  # noqa: E402
-from visualization import save_category_comparison  # noqa: E402
+from src.data import DATA_DIR, article_text, load_jsonl
+from src.encoder import SentenceEncoder
+from src.prerequisites import needs, probe_own_blank
+from src.reporting import run_step
+from src.tables import CATEGORY_ORDER, aggregate, print_report, print_worked_example
+from src.visualization import save_category_comparison
 
 # One test file per step lives in tests/
-from tests.test_step1_tokenize import check_tokenize  # noqa: E402
-from tests.test_step2_idf import check_inverse_document_frequency  # noqa: E402
-from tests.test_step3_tfidf import check_tfidf_vector  # noqa: E402
-from tests.test_step4_cosine import check_cosine_similarity  # noqa: E402
-from tests.test_step5_rank import check_rank_documents, known_good_cosine  # noqa: E402
-from tests.test_step6_mean_pool import check_mean_pool  # noqa: E402
-from tests.test_step7_metrics import check_recall_at_k, check_reciprocal_rank  # noqa: E402
+from tests.test_step1_tokenize import check_tokenize
+from tests.test_step2_idf import check_inverse_document_frequency
+from tests.test_step3_tfidf import check_tfidf_vector
+from tests.test_step4_cosine import check_cosine_similarity
+from tests.test_step5_rank import check_rank_documents
+from tests.test_step6_mean_pool import check_mean_pool
+from tests.test_step7_metrics import check_recall_at_k, check_reciprocal_rank
 
+OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
 
-TOP_K = 3                                          # results shown and scored at k=3
-CATEGORY_ORDER = ["keyword", "paraphrase", "verbatim"]
-EXAMPLE_QUERY_IDS = ["q01", "q19"]                 # one keyword, one paraphrase
+TOP_K = 3                           # results shown and scored at k=3
+EXAMPLE_QUERY_IDS = ["q01", "q19"]  # one keyword query, one paraphrase query
 
-_THIS_DIR = Path(__file__).resolve().parent
-_OUTPUT_DIR = _THIS_DIR.parent / "output"
-
-
-def _find_data_dir() -> Path:
-    """Locate the module's data/ directory (the solution runs one level deeper)."""
-    for parent in _THIS_DIR.parents:
-        candidate = parent / "data"
-        if (candidate / "articles.jsonl").exists():
-            return candidate
-    raise FileNotFoundError("Could not locate the data/ directory")
-
-
-_DATA_DIR = _find_data_dir()
+# The corpus (each article is {id, title, body}) and the labeled queries
+# (each query is {id, category, text, relevant_ids})
+ARTICLES = load_jsonl(DATA_DIR / "articles.jsonl")
+QUERIES = load_jsonl(DATA_DIR / "queries.jsonl")
+# How many queries fall in each category, e.g. {"keyword": 10, ...}
+COUNTS = {category: sum(1 for q in QUERIES if q["category"] == category)
+          for category in CATEGORY_ORDER}
 
 
 # ---------------------------------------------------------------------------
-# Reporting helpers
+# The two retrievers. Each index is a vector per article plus a function that
+# turns a query into a vector the same way. Ranking and scoring are shared.
 # ---------------------------------------------------------------------------
 
-# The three possible outcomes for a step
-CORRECT = "CORRECT"
-INCORRECT = "INCORRECT"
-INCOMPLETE = "INCOMPLETE"
 
-# ANSI color codes, used only when printing to a real terminal
-_COLORS = {CORRECT: "\033[32m", INCORRECT: "\033[31m", INCOMPLETE: "\033[90m"}
-_RESET = "\033[0m"
+@cache  # build once, then reuse the same index in Steps 3-7
+def sparse_index() -> dict:
+    """TF-IDF vectors for every article, plus a query vectorizer (Steps 1-3).
 
-
-def _tag(status: str) -> str:
-    """Format a status label in a fixed-width column, colored on a terminal."""
-    label = f"{status:<10}"
-    if sys.stdout.isatty():
-        return f"{_COLORS[status]}{label}{_RESET}"
-    return label
-
-
-def _print_checks(checks) -> None:
-    """Print one line per test, with details under any that failed."""
-    for check in checks:
-        print(f"  {_tag(CORRECT if check.passed else INCORRECT)} {check.name}")
-        if not check.passed and check.detail:
-            for line in check.detail.split("\n"):
-                print(f"             {line.strip()}")
-
-
-def run_step(title: str, show, check) -> str:
-    """Run one step and print its header, tag, output, and test results.
-
-    `show()` prints whatever the student's code produces (training progress,
-    saved plots). `check()` returns the list of Check results for the step.
-
-    The tag goes on the header line, so the output is captured first and
-    printed after the tag is known. Returns CORRECT, INCORRECT, or INCOMPLETE.
+    Tokenize every article, compute IDF over the corpus, fix a vocabulary
+    order, and vectorize each article. The query vectorizer reuses the same
+    IDF table and vocabulary, because a query MUST be vectorized with the
+    corpus statistics, not its own.
     """
-    buffer = io.StringIO()
-    checks = []
-    note = ""
-    try:
-        with redirect_stdout(buffer):
-            show()
-        checks = check()
-        status = CORRECT if all(c.passed for c in checks) else INCORRECT
-    except NotImplementedError as e:
-        # The student has not filled in this blank yet
-        status, note = INCOMPLETE, str(e)
-    except Exception as e:  # noqa: BLE001 - show students any crash, whatever its type
-        status, note = INCORRECT, f"your code crashed: {type(e).__name__}: {e}"
-
-    print(f"=== {title} === {_tag(status).rstrip()}")
-    if note:
-        print(f"  {note}")
-    output = buffer.getvalue()
-    if output and status != INCOMPLETE:
-        print(output, end="" if output.endswith("\n") else "\n")
-    _print_checks(checks)
-    print()
-    return status
-
-
-# ---------------------------------------------------------------------------
-# Earlier steps a demo depends on
-# ---------------------------------------------------------------------------
-
-# One tiny call per step. If it raises NotImplementedError, that step is unfinished.
-_PROBES = {
-    1: ("tokenize", lambda: tokenize("a b")),
-    2: ("inverse_document_frequency", lambda: inverse_document_frequency([["a"]])),
-    3: ("tfidf_vector", lambda: tfidf_vector(["a"], {"a": 1.0}, {"a": 0})),
-    4: ("cosine_similarity", lambda: cosine_similarity(np.ones(2), np.ones(2))),
-    5: ("rank_documents", lambda: rank_documents(np.ones(2), np.ones((2, 2)), 1)),
-    6: ("mean_pool", lambda: mean_pool(np.ones((2, 2)), np.ones(2))),
-}
-
-
-def needs(steps: list[int], purpose: str) -> None:
-    """Stop a demo with a pointed message if an earlier step is unfinished.
-
-    Without this, a demo that calls an unfinished earlier function would show
-    that function's TODO message under the wrong step.
-    """
-    for number in steps:
-        name, probe = _PROBES[number]
-        try:
-            probe()
-        except NotImplementedError:
-            raise NotImplementedError(f"needs Step {number} ({name}) to {purpose}") from None
-        except Exception:  # noqa: BLE001
-            pass  # it runs; whether it is right is for that step's own tests to say
-
-
-# ---------------------------------------------------------------------------
-# Building the two indexes (each one is: a vector per article, plus a way to
-# vectorize a query the same way). Ranking and scoring are shared.
-# ---------------------------------------------------------------------------
-
-
-def build_sparse_index(articles: list[dict]):
-    """TF-IDF vectors for every article, plus a query vectorizer.
-
-    Uses steps 1-3: tokenize every article, compute IDF over the corpus, fix a
-    vocabulary order, and vectorize each article. The returned query_vectorizer
-    closes over the same IDF table and vocabulary, because a query MUST be
-    vectorized with the corpus statistics, not its own.
-    """
-    doc_tokens = [tokenize(article_text(article)) for article in articles]
+    needs([1, 2, 3], "build the TF-IDF index")
+    doc_tokens = [tokenize(article_text(article)) for article in ARTICLES]
     idf = inverse_document_frequency(doc_tokens)
-    vocab_index = {term: slot for slot, term in enumerate(sorted(idf))}
-    doc_vectors = np.stack([tfidf_vector(tokens, idf, vocab_index)
-                            for tokens in doc_tokens])
+    vocab_index = {term: slot for slot, term in enumerate(sorted(idf))}  # term -> vector slot
+    doc_vectors = np.stack([tfidf_vector(tokens, idf, vocab_index) for tokens in doc_tokens])
 
     def query_vectorizer(query: str) -> np.ndarray:
         return tfidf_vector(tokenize(query), idf, vocab_index)
@@ -215,14 +102,23 @@ def build_sparse_index(articles: list[dict]):
             "doc_tokens": doc_tokens, "idf": idf, "vocab_index": vocab_index}
 
 
-def build_dense_index(articles: list[dict], encoder: SentenceEncoder):
-    """Mean-pooled MiniLM embeddings for every article, plus a query vectorizer.
+@cache  # load once (about a second on CPU), then reuse
+def load_encoder() -> SentenceEncoder:
+    """The bundled MiniLM encoder: text in, one 384-number vector per token out."""
+    return SentenceEncoder(DATA_DIR / "encoder")
 
-    Uses step 6: the encoder (provided plumbing) emits per-token vectors, and
-    mean_pool turns each article's tokens into one 384-dimensional vector.
-    Queries go through the exact same encoder and pooling.
+
+@cache  # build once, then reuse the same index in Steps 6-7
+def dense_index() -> dict:
+    """Mean-pooled MiniLM embeddings for every article, plus a query vectorizer (Step 6).
+
+    The encoder emits one vector per token, and mean_pool turns each
+    article's token vectors into one vector. Queries go through the exact
+    same encoder and pooling.
     """
-    encoded = encoder.encode([article_text(article) for article in articles])
+    needs([6], "pool the encoder's token vectors into article vectors")
+    encoder = load_encoder()
+    encoded = encoder.encode([article_text(article) for article in ARTICLES])
     doc_vectors = np.stack([mean_pool(vectors, mask) for vectors, mask in encoded])
 
     def query_vectorizer(query: str) -> np.ndarray:
@@ -232,82 +128,36 @@ def build_dense_index(articles: list[dict], encoder: SentenceEncoder):
     return {"doc_vectors": doc_vectors, "query_vectorizer": query_vectorizer}
 
 
-def sparse_index(articles: list[dict], results: dict):
-    """Build the TF-IDF index once (Steps 1-3) and share it with later steps."""
-    if "sparse" not in results:
-        needs([1, 2, 3], "build the TF-IDF index")
-        results["sparse"] = build_sparse_index(articles)
-    return results["sparse"]
-
-
-def load_encoder(results: dict) -> SentenceEncoder:
-    """Load the bundled MiniLM once (about a second on CPU) and share it."""
-    if "encoder" not in results:
-        results["encoder"] = SentenceEncoder(_DATA_DIR / "encoder")
-    return results["encoder"]
-
-
-def dense_index(articles: list[dict], results: dict):
-    """Build the embedding index once (Step 6) and share it with later steps."""
-    if "dense" not in results:
-        needs([6], "pool the encoder's token vectors into article vectors")
-        results["dense"] = build_dense_index(articles, load_encoder(results))
-    return results["dense"]
-
-
-def retrieve(query: str, query_vectorizer, doc_vectors, articles, k):
+def retrieve(query: str, index: dict, k: int) -> list[tuple[dict, float]]:
     """Vectorize a query, rank every article against it, return the top k.
 
-    This one function IS both retrievers: only query_vectorizer/doc_vectors
-    differ between sparse and dense. Returns (article, score) pairs.
+    This one function IS both retrievers: only the index differs between
+    sparse and dense. Returns (article, score) pairs, best first.
     """
-    query_vector = query_vectorizer(query)
-    top = rank_documents(query_vector, doc_vectors, k)
-    return [(articles[i], cosine_similarity(query_vector, doc_vectors[i]))
-            for i in top]
+    query_vector = index["query_vectorizer"](query)
+    top = rank_documents(query_vector, index["doc_vectors"], k)
+    return [(ARTICLES[i], cosine_similarity(query_vector, index["doc_vectors"][i])) for i in top]
 
 
-# ---------------------------------------------------------------------------
-# The worked examples and the report
-# ---------------------------------------------------------------------------
-
-
-def print_worked_example(query: dict, retrievers: dict, articles: list[dict]) -> None:
-    """One query, each retriever's top 3, with the labeled answer marked."""
-    print(f"  [{query['category']}] {query['text']!r}")
-    print(f"  labeled answer: {query['relevant_ids'][0]}")
-    for name, (doc_vectors, query_vectorizer) in retrievers.items():
-        results = retrieve(query["text"], query_vectorizer, doc_vectors,
-                           articles, TOP_K)
-        print(f"    {name}:")
-        for rank, (article, score) in enumerate(results, start=1):
-            marker = "[relevant]" if article["id"] in query["relevant_ids"] else ""
-            line = (f"      {rank}. {score:5.3f}  {article['id']:<16}"
-                    f"{article['title'][:38]:<40}{marker}")
-            print(line.rstrip())
-
-
-def print_worked_examples(queries: list[dict], retrievers: dict, articles: list[dict]) -> None:
-    """The two example queries (one keyword, one paraphrase), a blank line apart."""
+def show_worked_examples(indexes: dict) -> None:
+    """Run the two example queries through each retriever and print the top 3."""
     for number, query_id in enumerate(EXAMPLE_QUERY_IDS):
         if number > 0:
             print()
-        query = next(q for q in queries if q["id"] == query_id)
-        print_worked_example(query, retrievers, articles)
+        query = next(q for q in QUERIES if q["id"] == query_id)
+        print_worked_example(query, {name: retrieve(query["text"], index, TOP_K)
+                                     for name, index in indexes.items()})
 
 
-def score_retriever(queries, doc_vectors, query_vectorizer, articles):
-    """Full ranking per query -> recall@1, recall@3, reciprocal rank per query.
+def score_retriever(index: dict) -> list[dict]:
+    """Recall@1, recall@3 and reciprocal rank for every labeled query.
 
-    The ranking is computed over ALL articles (k = corpus size) because
-    reciprocal rank needs to know where the right article landed even when it
-    missed the top 3.
+    The ranking covers ALL articles (k = corpus size) because reciprocal rank
+    needs to know where the right article landed even when it missed the top 3.
     """
     per_query = []
-    for query in queries:
-        ranked = retrieve(query["text"], query_vectorizer, doc_vectors,
-                          articles, len(articles))
-        ranked_ids = [article["id"] for article, _ in ranked]
+    for query in QUERIES:
+        ranked_ids = [article["id"] for article, _ in retrieve(query["text"], index, len(ARTICLES))]
         per_query.append({
             "category": query["category"],
             "recall1": recall_at_k(ranked_ids, query["relevant_ids"], 1),
@@ -317,69 +167,41 @@ def score_retriever(queries, doc_vectors, query_vectorizer, articles):
     return per_query
 
 
-def _mean(values: list[float]) -> float:
-    return sum(values) / len(values)
-
-
-def _aggregate(per_query: list[dict], category: str | None) -> tuple[float, float, float]:
-    rows = [r for r in per_query if category is None or r["category"] == category]
-    return (_mean([r["recall1"] for r in rows]),
-            _mean([r["recall3"] for r in rows]),
-            _mean([r["rr"] for r in rows]))
-
-
-def print_report(scores: dict, counts: dict[str, int]) -> None:
-    """The per-category table. The overall row comes last, and never alone."""
-    names = list(scores)
-    header_left = f"    {'category':<12}{'n':>4}"
-    print(header_left + "".join(f"{name + ' (r@1   r@3   MRR)':>28}" for name in names))
-    for category in CATEGORY_ORDER + [None]:
-        label = category if category else "overall"
-        count = counts[category] if category else sum(counts.values())
-        row = f"    {label:<12}{count:>4}"
-        for name in names:
-            r1, r3, rr = _aggregate(scores[name], category)
-            row += f"{r1:>13.0%}{r3:>6.0%}{rr:>6.2f}   "
-        print(row.rstrip())
-
-
 # ---------------------------------------------------------------------------
-# The steps
+# Step 1: text -> terms
 # ---------------------------------------------------------------------------
 
 
-def step_1(data: dict, results: dict) -> str:
-    """Tokenize an article title and a query, then the whole corpus."""
-
+def step_1() -> str:
     def show():
-        articles, counts = data["articles"], data["counts"]
-        print(f"Corpus: {len(articles)} support articles for fictional PX-series printers")
-        print(f"Queries: {len(data['queries'])} labeled ({counts['keyword']} keyword, "
-              f"{counts['paraphrase']} paraphrase, {counts['verbatim']} verbatim)")
+        print(f"Corpus: {len(ARTICLES)} support articles for fictional PX-series printers")
+        print(f"Queries: {len(QUERIES)} labeled ({COUNTS['keyword']} keyword, "
+              f"{COUNTS['paraphrase']} paraphrase, {COUNTS['verbatim']} verbatim)")
         # One article title and one query, term by term
         for text in ("Error E-341: fuser temperature fault", "my pages come out crumpled"):
             print(f"  {text!r}")
             print(f"    -> {tokenize(text)}")
         # Then every article, counted
-        all_tokens = [tokenize(article_text(article)) for article in articles]
+        all_tokens = [tokenize(article_text(article)) for article in ARTICLES]
         n_terms = sum(len(tokens) for tokens in all_tokens)
         n_distinct = len({term for tokens in all_tokens for term in tokens})
-        print(f"  All {len(articles)} articles: {n_terms} terms in total, {n_distinct} distinct")
+        print(f"  All {len(ARTICLES)} articles: {n_terms} terms in total, {n_distinct} distinct")
 
     return run_step("Step 1: tokenize()", show, lambda: check_tokenize(tokenize))
 
 
-def step_2(data: dict, results: dict) -> str:
-    """IDF over the real corpus, for a few terms from rare to everywhere."""
+# ---------------------------------------------------------------------------
+# Step 2: IDF weights, from rare terms to terms in every article
+# ---------------------------------------------------------------------------
 
+
+def step_2() -> str:
     def show():
-        # Call this step's own function first, so an unfinished blank reports its own TODO
-        inverse_document_frequency([["probe"]])
+        probe_own_blank(2)
         needs([1], "split the articles into terms")
-
-        doc_tokens = [tokenize(article_text(article)) for article in data["articles"]]
+        doc_tokens = [tokenize(article_text(article)) for article in ARTICLES]
         idf = inverse_document_frequency(doc_tokens)
-        doc_sets = [set(tokens) for tokens in doc_tokens]
+        doc_sets = [set(tokens) for tokens in doc_tokens]  # the distinct terms of each article
         print(f"IDF over {len(doc_tokens)} articles, {len(idf)} distinct terms. Rarer terms weigh more:")
         print(f"    {'term':<10}{'in docs':>8}{'idf':>8}")
         for term in ("341", "fuser", "printer", "the"):
@@ -393,13 +215,15 @@ def step_2(data: dict, results: dict) -> str:
                     lambda: check_inverse_document_frequency(inverse_document_frequency))
 
 
-def step_3(data: dict, results: dict) -> str:
-    """Vectorize every article; show how sparse the vectors are."""
+# ---------------------------------------------------------------------------
+# Step 3: one TF-IDF vector per article
+# ---------------------------------------------------------------------------
 
+
+def step_3() -> str:
     def show():
-        # Call this step's own function first, so an unfinished blank reports its own TODO
-        tfidf_vector(["probe"], {"probe": 1.0}, {"probe": 0})
-        index = sparse_index(data["articles"], results)
+        probe_own_blank(3)
+        index = sparse_index()
         doc_vectors, vocab_index = index["doc_vectors"], index["vocab_index"]
         vocab_size = len(vocab_index)
         nonzero = int(np.mean((doc_vectors != 0).sum(axis=1)))
@@ -409,7 +233,7 @@ def step_3(data: dict, results: dict) -> str:
         print("vectors are called sparse.")
 
         # The biggest entries of one article's vector, with the count x IDF behind each
-        row = [article["id"] for article in data["articles"]].index("err-e341")
+        row = [article["id"] for article in ARTICLES].index("err-e341")
         slot_to_term = {slot: term for term, slot in vocab_index.items()}
         print("  Largest entries in the vector for err-e341:")
         for slot in np.argsort(-doc_vectors[row])[:3]:
@@ -420,14 +244,16 @@ def step_3(data: dict, results: dict) -> str:
     return run_step("Step 3: tfidf_vector()", show, lambda: check_tfidf_vector(tfidf_vector))
 
 
-def step_4(data: dict, results: dict) -> str:
-    """Compare every pair of articles by the cosine of their TF-IDF vectors."""
+# ---------------------------------------------------------------------------
+# Step 4: cosine similarity between article vectors
+# ---------------------------------------------------------------------------
 
+
+def step_4() -> str:
     def show():
-        # Call this step's own function first, so an unfinished blank reports its own TODO
-        cosine_similarity(np.ones(2), np.ones(2))
-        index = sparse_index(data["articles"], results)
-        doc_vectors, ids = index["doc_vectors"], [article["id"] for article in data["articles"]]
+        probe_own_blank(4)
+        index = sparse_index()
+        doc_vectors, ids = index["doc_vectors"], [article["id"] for article in ARTICLES]
 
         # All 1128 pairs of the 48 articles, most similar first
         pairs = [(cosine_similarity(doc_vectors[i], doc_vectors[j]), ids[i], ids[j])
@@ -448,71 +274,63 @@ def step_4(data: dict, results: dict) -> str:
                     lambda: check_cosine_similarity(cosine_similarity))
 
 
-def step_5(data: dict, results: dict) -> str:
-    """The sparse retriever is complete: run the two worked examples through it."""
+# ---------------------------------------------------------------------------
+# Step 5: ranking. The sparse retriever is complete.
+# ---------------------------------------------------------------------------
 
+
+def step_5() -> str:
     def show():
-        # Call this step's own function first, so an unfinished blank reports its own TODO.
-        # rank_documents() calls cosine_similarity() from Step 4, so a known-good copy
-        # stands in for it during this one call.
-        with known_good_cosine(rank_documents):
-            rank_documents(np.ones(2), np.ones((2, 2)), 1)
+        probe_own_blank(5)
         needs([4], "score each document")
-        index = sparse_index(data["articles"], results)
-        retrievers = {"sparse": (index["doc_vectors"], index["query_vectorizer"])}
-        print_worked_examples(data["queries"], retrievers, data["articles"])
+        show_worked_examples({"sparse": sparse_index()})
 
     return run_step("Step 5: rank_documents()", show, lambda: check_rank_documents(rank_documents))
 
 
-def step_6(data: dict, results: dict) -> str:
-    """Build the dense index with mean pooling; run the same two queries through it."""
+# ---------------------------------------------------------------------------
+# Step 6: mean pooling. The dense retriever, ranked by the same code.
+# ---------------------------------------------------------------------------
 
+
+def step_6() -> str:
     def show():
-        # Call this step's own function first, so an unfinished blank reports its own TODO
-        mean_pool(np.ones((2, 2)), np.ones(2))
-        articles = data["articles"]
-        print(f"Encoding {len(articles)} articles with the bundled MiniLM (CPU, a few seconds)...")
-        index = dense_index(articles, results)
-        doc_vectors = index["doc_vectors"]
+        probe_own_blank(6)
+        print(f"Encoding {len(ARTICLES)} articles with the bundled MiniLM (CPU, a few seconds)...")
+        doc_vectors = dense_index()["doc_vectors"]
         nonzero = int(np.mean((doc_vectors != 0).sum(axis=1)))
         print(f"Indexed {len(doc_vectors)} articles: one {doc_vectors.shape[1]}-dimensional embedding each. On average")
         print(f"{nonzero} of the {doc_vectors.shape[1]} entries are nonzero: dense, where TF-IDF was sparse.")
 
         # The ranking code from Steps 4-5, unchanged, with the new vectors
         needs([4, 5], "rank the articles for the worked examples")
-        retrievers = {"dense": (index["doc_vectors"], index["query_vectorizer"])}
-        print_worked_examples(data["queries"], retrievers, articles)
+        show_worked_examples({"dense": dense_index()})
 
     return run_step("Step 6: mean_pool()", show,
-                    lambda: check_mean_pool(mean_pool, load_encoder(results)))
+                    lambda: check_mean_pool(mean_pool, load_encoder()))
 
 
-def step_7(data: dict, results: dict) -> str:
-    """Score both retrievers on all 30 labeled queries, per category."""
+# ---------------------------------------------------------------------------
+# Step 7: score both retrievers on all 30 labeled queries, per category
+# ---------------------------------------------------------------------------
 
+
+def step_7() -> str:
     def show():
-        # Call this step's own functions first, so an unfinished blank reports its own TODO
-        recall_at_k(["probe"], ["probe"], 1)
-        reciprocal_rank(["probe"], ["probe"])
+        probe_own_blank(7)
         needs([1, 2, 3, 4, 5, 6], "have both retrievers' rankings to score")
+        scores = {"sparse": score_retriever(sparse_index()),
+                  "dense": score_retriever(dense_index())}
+        print_report(scores, COUNTS)
 
-        articles, queries = data["articles"], data["queries"]
-        indexes = {"sparse": sparse_index(articles, results),
-                   "dense": dense_index(articles, results)}
-        scores = {name: score_retriever(queries, index["doc_vectors"],
-                                        index["query_vectorizer"], articles)
-                  for name, index in indexes.items()}
-        print_report(scores, data["counts"])
-
-        # recall@3 per category, plus overall, as a grouped bar chart
+        # recall@3 (the middle number from aggregate) per category, plus overall
         save_category_comparison(
             CATEGORY_ORDER,
-            [_aggregate(scores["sparse"], c)[1] for c in CATEGORY_ORDER],
-            [_aggregate(scores["dense"], c)[1] for c in CATEGORY_ORDER],
-            _OUTPUT_DIR / "retrieval_comparison.png",
-            _aggregate(scores["sparse"], None)[1],
-            _aggregate(scores["dense"], None)[1],
+            [aggregate(scores["sparse"], c)[1] for c in CATEGORY_ORDER],
+            [aggregate(scores["dense"], c)[1] for c in CATEGORY_ORDER],
+            OUTPUT_DIR / "retrieval_comparison.png",
+            aggregate(scores["sparse"], None)[1],
+            aggregate(scores["dense"], None)[1],
         )
         print()
         print("  Chart saved to output/retrieval_comparison.png")
@@ -535,22 +353,12 @@ def main() -> None:
     parser.add_argument("--step", choices=[*STEPS, "all"], default="all",
                         help="Which step to run (default: all)")
     args = parser.parse_args()
-    steps = list(STEPS) if args.step == "all" else [args.step]
 
-    _OUTPUT_DIR.mkdir(exist_ok=True)
-    queries = load_jsonl(_DATA_DIR / "queries.jsonl")
-    data = {
-        "articles": load_jsonl(_DATA_DIR / "articles.jsonl"),
-        "queries": queries,
-        "counts": {category: sum(1 for q in queries if q["category"] == category)
-                   for category in CATEGORY_ORDER},
-    }
-    results: dict = {}  # the two indexes and the encoder, built once and shared between steps
-
-    for step in steps:
-        STEPS[step](data, results)
+    OUTPUT_DIR.mkdir(exist_ok=True)
+    for number, step in STEPS.items():
+        if args.step in ("all", number):
+            step()
 
 
 if __name__ == "__main__":
     main()
-# ---------------------------------------------------------------------------

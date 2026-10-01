@@ -66,7 +66,9 @@ Every function in `exercise.py` has a blank to fill. Everything already written 
 - `src/sampling.py` &mdash; the loops that turn a count table into text (`generate_from_char_model()`, `generate_from_word_model()`)
 - `src/text.py` &mdash; `tokenize()`
 - `src/metrics.py` &mdash; `perplexity()`
-- `src/main.py` &mdash; the runner
+- `src/main.py` &mdash; the runner, which reads top to bottom as the steps
+- `src/reporting.py` &mdash; prints the CORRECT/INCORRECT/INCOMPLETE result for each step
+- `src/solution.py` &mdash; the `--solution` switch
 
 The tests live in `tests/`, one file per step (`test_step1_load_text.py` through `test_step6_word_ngram_model.py`, plus `test_extra_credit.py`). Each calls your function on small inputs with a known answer, so you can read the test for the step you are on to see exactly what is expected.
 

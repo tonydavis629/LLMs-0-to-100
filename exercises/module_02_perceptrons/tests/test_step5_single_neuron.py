@@ -12,11 +12,11 @@ import math
 from tests.check import Check, bad, ok
 
 
-def check_single_neuron(results: dict) -> list[Check]:
-    """`results` holds the losses and (correct, total) from both training runs."""
+def check_single_neuron(linear: tuple, xor: tuple) -> list[Check]:
+    """Each argument is (losses, correct, total) from one training run."""
     checks = []
-    lin_losses, lin_correct, lin_total = results["lin_losses"], *results["lin_acc"]
-    nl_losses, nl_correct, nl_total = results["nl_losses"], *results["nl_acc"]
+    lin_losses, lin_correct, lin_total = linear
+    nl_losses, nl_correct, nl_total = xor
 
     # A line separates the linear data, so a linear classifier should nail it
     lin_pct = 100 * lin_correct / lin_total

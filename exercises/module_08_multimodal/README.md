@@ -108,8 +108,12 @@ The provided `src/ops.py` supplies the smaller mechanical steps around these
 (`flatten_patches`, `project_patches`, `add_position_embeddings`, `encode_text`,
 `retrieval_accuracy`, `concat_visual_prefix`). The model (`src/model.py`), tokenizer
 (`src/tokenizer.py`), dataset (`src/data.py`), vision/text encoders (`src/vision.py`),
-plotting (`src/visualization.py`), and runner (`src/main.py`) are all provided too. You
-only edit `exercise.py`.
+plotting (`src/visualization.py`), and runner (`src/main.py`) are all provided too. The
+runner reads top to bottom as the eight steps; its bookkeeping lives in `src/chat.py`
+(the chat-format training examples), `src/grading.py` (answer matching),
+`src/reporting.py` (the CORRECT/INCORRECT/INCOMPLETE output), `src/prerequisites.py`
+(the "needs Step N" checks) and `src/solution.py` (the `--solution` switch). You only
+edit `exercise.py`.
 
 ## Data
 

@@ -2270,11 +2270,11 @@
   margin-left: 16px;
 }
 
-/* cosineDial widget: bottom center of the coordinates slide. */
+/* cosineDial widget: bottom center of the cosine similarity slide. */
 .reveal .interactive-host.cos-host {
   width: 700px;
   max-width: 700px;
-  height: 250px;
+  height: 380px;
   margin: 4px auto 0;
 }
 
@@ -3078,7 +3078,7 @@ $E$ has one row per token and one column per dimension: $50{,}257 \times 768 \ap
 
 A vector of $d$ numbers is a point in $d$-dimensional space.
 
-<div class="emb-svg emb-svg-compact">
+<div class="emb-svg">
 <svg viewBox="40 0 960 325" role="img" aria-label="Left: cat and dog vectors point in nearly the same direction with a small angle between them, while Paris points elsewhere. Right: the man to woman arrow is parallel to the king to queen arrow.">
 <defs><marker id="eca" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#4a9eff"></path></marker><marker id="ecb" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#f5a623"></path></marker><marker id="ecc" markerWidth="7" markerHeight="7" refX="5" refY="2.5" orient="auto"><path d="M0,0 L5,2.5 L0,5 Z" fill="#3fb950"></path></marker></defs>
 <text x="240" y="24" text-anchor="middle" font-size="18" fill="#e8eaf0">similar tokens point the same way</text>
@@ -3088,7 +3088,7 @@ A vector of $d$ numbers is a point in $d$-dimensional space.
 <line x1="70" y1="270" x2="150" y2="60" stroke="#4a9eff" stroke-width="2.6" marker-end="url(#eca)"></line><text x="158" y="60" text-anchor="start" font-size="16" fill="#4a9eff">Paris</text>
 <path d="M182.4,227.9 A120,120 0 0 0 176.6,215.0" fill="none" stroke="#f5a623" stroke-width="2"></path>
 <text x="196.35950130828536" y="227.41401831848134" text-anchor="start" font-size="15" fill="#f5a623">&#952; small</text>
-<text x="240" y="312" text-anchor="middle" font-size="15" fill="#8892a4">near 1 for cat and dog</text>
+<text x="240" y="312" text-anchor="middle" font-size="15" fill="#8892a4">small angle between cat and dog</text>
 <text x="760" y="24" text-anchor="middle" font-size="18" fill="#e8eaf0">directions carry meaning</text>
 <line x1="580" y1="250" x2="830" y2="250" stroke="#2a3450" stroke-width="1.6" stroke-dasharray="5 4"></line>
 <line x1="650" y1="120" x2="900" y2="120" stroke="#2a3450" stroke-width="1.6" stroke-dasharray="5 4"></line>
@@ -3107,7 +3107,15 @@ A vector of $d$ numbers is a point in $d$-dimensional space.
 </svg>
 </div>
 
-<div class="cos-formula"><span class="cos-eq">$\textcolor{#f5a623}{\cos\theta} = \dfrac{a \cdot b}{\lVert a \rVert\,\lVert b \rVert}$</span><span class="cos-note">direction over magnitude</span></div>
+---
+
+<!-- .slide: id="cosine-similarity" -->
+
+## Cosine Similarity
+
+A dot product that ignores magnitude: it compares only direction.
+
+<div class="cos-formula"><span class="cos-eq">$\textcolor{#f5a623}{\cos\theta} = \dfrac{a \cdot b}{\lVert a \rVert\,\lVert b \rVert}$</span><span class="cos-note">ranges from &#8722;1 (opposite) to 1 (same direction)</span></div>
 
 <div class="interactive-host cos-host" data-widget="cosineDial"></div>
 

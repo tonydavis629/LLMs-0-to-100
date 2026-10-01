@@ -83,7 +83,10 @@ needs only one expression or one short block.
 | 10 | `merge_lora_weight()` | The merged weight `base_W + scale * (B @ A)` |
 
 The model (`src/model.py`), tokenizer (`src/tokenizer.py`), dataset builder
-(`src/data.py`), and runner (`src/main.py`) are all provided. The LoRA injection,
+(`src/data.py`), and runner (`src/main.py`, which reads top to bottom as the ten
+steps) are all provided. The runner's bookkeeping lives in `src/reporting.py` (the
+CORRECT/INCORRECT/INCOMPLETE output), `src/prerequisites.py` (the "needs Step N"
+checks) and `src/solution.py` (the `--solution` switch). The LoRA injection,
 freezing loop, and merge loop live in `src/model.py` and call back into the three
 functions you write (steps 5, 6, 10). You only edit `exercise.py`.
 

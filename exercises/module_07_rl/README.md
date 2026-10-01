@@ -88,7 +88,11 @@ only one expression or one short block.
 
 The model (`src/model.py`), tokenizer (`src/tokenizer.py`), data (`src/data.py`),
 plotting (`src/visualization.py`), and runner (`src/main.py`) are all provided. The
-runner orchestrates the loop and calls the functions you write. The tests live in
+runner reads top to bottom as the ten steps and then the GRPO training loop, calling
+the functions you write. Its bookkeeping lives in `src/chat.py` (the chat prompt
+format), `src/reporting.py` (the CORRECT/INCORRECT/INCOMPLETE output),
+`src/prerequisites.py` (the "needs Step N" checks) and `src/solution.py` (the
+`--solution` switch). The tests live in
 `tests/`, one file per step (`test_step1_sample_group.py` through
 `test_step10_mean_reward.py`, plus `test_training.py` for the training run). Each calls
 your function on small tensors with a known answer, so you can read the test for the

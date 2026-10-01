@@ -58,9 +58,10 @@ def check_merge_lora_weight(merge_lora_weight) -> list[Check]:
     return checks
 
 
-def check_merge_on_model(results: dict) -> list[Check]:
+def check_merge_on_model(model, merged, token_ids: torch.Tensor) -> list[Check]:
     """The runner merged every adapter in the real model; its logits must not move."""
-    diff = results["merge_diff"]
+    with torch.no_grad():
+        diff = (model(token_ids) - merged(token_ids)).abs().max().item()
     return [
         ok("real model: merged and adapter logits agree (max difference under 1e-4)")
         if diff < 1e-4

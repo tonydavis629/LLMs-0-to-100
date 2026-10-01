@@ -65,9 +65,8 @@ def check_clip_loss(clip_loss) -> list[Check]:
     return checks
 
 
-def check_clip_training(results: dict) -> list[Check]:
+def check_clip_training(before: float, after: float) -> list[Check]:
     """After contrastive training, most held-out images should find their own caption."""
-    before, after = results["clip_acc_before"], results["clip_acc_after"]
     name = "held-out retrieval accuracy climbs above 50% after training (chance is 1/60)"
     return [
         ok(name)

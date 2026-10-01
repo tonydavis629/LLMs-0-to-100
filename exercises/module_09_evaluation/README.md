@@ -92,7 +92,12 @@ two benchmarks that tell a different story about the same models.
 
 The model (`src/model.py`), tokenizer (`src/tokenizer.py`), evaluation data
 (`src/data.py`), plotting (`src/visualization.py`), and runner (`src/main.py`) are
-all provided. You only edit `exercise.py`.
+all provided. The runner reads top to bottom as the eight steps. Its supporting code
+lives in `src/suite.py` (loading the checkpoints and data), `src/harness.py` (running
+the models: loss, generation, option log-probabilities), `src/display.py` (the
+protocol and score tables), `src/reporting.py` (the CORRECT/INCORRECT/INCOMPLETE
+output), `src/prerequisites.py` (the "needs Step N" checks) and `src/solution.py`
+(the `--solution` switch). You only edit `exercise.py`.
 
 ## Data
 

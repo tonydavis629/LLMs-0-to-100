@@ -84,9 +84,9 @@ def check_sft_train_step(sft_train_step) -> list[Check]:
     return checks
 
 
-def check_sft_training(results: dict) -> list[Check]:
+def check_sft_training(losses: list[float]) -> list[Check]:
     """After finetuning, the masked loss on the instruction data should have collapsed."""
-    start, end = results["losses"][0], results["losses"][-1]
+    start, end = losses[0], losses[-1]
     return [
         ok(f"finetuning drives the masked loss below 0.5 (from {start:.2f} at step 0)")
         if end < 0.5
