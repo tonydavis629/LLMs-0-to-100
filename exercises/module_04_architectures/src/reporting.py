@@ -25,6 +25,13 @@ _COLORS = {CORRECT: "\033[32m", INCORRECT: "\033[31m", INCOMPLETE: "\033[90m"}
 _RESET = "\033[0m"
 
 
+class MissingPrerequisite(NotImplementedError):
+    """An earlier step is unfinished, so this step's full-size output cannot run.
+
+    The step's own tests use small fake models, so they still run.
+    """
+
+
 def _tag(status: str) -> str:
     """Format a status label in a fixed-width column, colored on a terminal."""
     label = f"{status:<10}"
@@ -48,6 +55,9 @@ def run_step(title: str, show, check) -> str:
     `show()` prints whatever the student's code produces (shapes, generated
     text, saved plots). `check()` returns the list of Check results for the step.
 
+    If `show()` needs an unfinished earlier step, its output is skipped but
+    the step's own tests still run, so each blank gets feedback on its own.
+
     The tag goes on the header line, so the output is captured first and
     printed after the tag is known. Returns CORRECT, INCORRECT, or INCOMPLETE.
     """
@@ -55,9 +65,17 @@ def run_step(title: str, show, check) -> str:
     checks = []
     note = ""
     try:
-        with redirect_stdout(buffer):
-            show()
-        checks = check()
+        try:
+            with redirect_stdout(buffer):
+                show()
+        except MissingPrerequisite as e:
+            note = f"output skipped: {e}"
+        try:
+            checks = check()
+        except NotImplementedError:
+            if note:  # the tests also need the earlier step
+                raise MissingPrerequisite(note.removeprefix("output skipped: ")) from None
+            raise
         status = CORRECT if all(c.passed for c in checks) else INCORRECT
     except NotImplementedError as e:
         # The student has not filled in this blank yet

@@ -1,6 +1,6 @@
 # Exercises
 
-The `exercises/` folder uses its own `uv` environment, separate from the course environment in the repository root.
+The exercises share the repository's single `uv` environment (defined in the root `pyproject.toml`). Create it once from anywhere in the repo:
 
 ```bash
 uv sync

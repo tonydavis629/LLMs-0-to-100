@@ -19,6 +19,7 @@ from exercise import (
     greedy_decode,
     sample_with_temperature_topk,
 )
+from src.reporting import MissingPrerequisite
 from tests.fakes import CountingModel, FixedModel, NumberTokenizer, tiny_gpt2
 
 # Short names for the steps, used in "needs Step N (...)" messages
@@ -53,7 +54,7 @@ _PROBES = {
 
 
 def require(step: str, needs: str, purpose: str) -> None:
-    """Raise NotImplementedError if `step` or any step in `needs` is unfinished.
+    """Raise NotImplementedError if `step` is unfinished, MissingPrerequisite if a step in `needs` is.
 
     The current step is tried first so that its own TODO message is the one
     reported. A missing earlier step gets a "needs Step N" message instead.
@@ -64,6 +65,6 @@ def require(step: str, needs: str, purpose: str) -> None:
             try:
                 _PROBES[earlier]()
             except NotImplementedError:
-                raise NotImplementedError(
+                raise MissingPrerequisite(
                     f"needs Step {earlier} ({STEP_NAMES[earlier]}) to {purpose}"
                 ) from None
