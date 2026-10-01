@@ -56,9 +56,12 @@ def check_gpt2_forward(GPT2Model) -> list[Check]:
     return checks
 
 
-def check_matches_hugging_face(results: dict) -> list[Check]:
+def check_matches_hugging_face(model, hf_model, token_ids: torch.Tensor) -> list[Check]:
     """Your GPT-2 with the real weights against Hugging Face's GPT2LMHeadModel."""
-    diff = results["hf_logit_diff"]
+    with torch.no_grad():
+        logits = model(token_ids)
+        reference = hf_model(token_ids).logits  # Hugging Face's GPT-2, same weights
+    diff = float((logits - reference).abs().max()) if logits.shape == reference.shape else float("inf")
     name = "real GPT-2: your logits match Hugging Face's GPT2LMHeadModel to within 0.001"
     if diff < 1e-3:
         return [ok(name)]

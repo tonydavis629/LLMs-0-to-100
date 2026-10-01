@@ -44,9 +44,24 @@ def check_greedy_decode(greedy_decode) -> list[Check]:
     return checks
 
 
-def check_greedy_on_gpt2(results: dict) -> list[Check]:
+class _LogitsOnly(torch.nn.Module):
+    """Wrap Hugging Face's GPT-2 so that calling it returns plain logits, like yours."""
+
+    def __init__(self, hf_model: torch.nn.Module) -> None:
+        super().__init__()
+        self.hf_model = hf_model
+
+    def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
+        return self.hf_model(token_ids).logits
+
+
+def check_greedy_on_gpt2(greedy_decode, hf_model, tokenizer, prompt: str) -> list[Check]:
     """Your loop driving Hugging Face's GPT-2, against Hugging Face's own generate()."""
-    yours, theirs = results["greedy_on_hf"], results["hf_greedy"]
+    yours = greedy_decode(_LogitsOnly(hf_model), tokenizer, prompt, max_new=10)
+    ids = tokenizer.encode(prompt, return_tensors="pt")
+    out = hf_model.generate(ids, attention_mask=torch.ones_like(ids), max_new_tokens=10,
+                            do_sample=False, pad_token_id=tokenizer.eos_token_id)
+    theirs = tokenizer.decode(out[0])
     name = "real GPT-2: your loop matches Hugging Face's generate(do_sample=False)"
     if yours == theirs:
         return [ok(name)]

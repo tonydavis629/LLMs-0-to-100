@@ -8,6 +8,8 @@ you assembled in `exercise.py`.
 
 from __future__ import annotations
 
+from functools import cache
+
 import torch
 import torch.nn as nn
 
@@ -22,6 +24,7 @@ def _quiet_huggingface() -> None:
     hf_logging.disable_progress_bar()
 
 
+@cache  # load once, then reuse the same tokenizer on every later call
 def load_tokenizer():
     """Return the GPT-2 byte-pair-encoding tokenizer from HuggingFace."""
     from transformers import GPT2Tokenizer

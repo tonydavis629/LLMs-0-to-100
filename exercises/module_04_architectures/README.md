@@ -68,7 +68,7 @@ Open `exercise.py` and fill in each `raise NotImplementedError(...)` line. Each 
 
 In Step 4 the runner loads the real GPT-2 checkpoint into your model for you.
 
-Everything else is provided: `src/attention.py` (the Module 3 attention block), `src/pretrained.py` (`load_gpt2_weights()`), `src/sampling.py` (the top-k helper), `src/visualization.py` (plots) and `src/main.py` (the runner). The tests live in `tests/`, one file per step (`test_step1_embedding.py` through `test_step6_temperature.py`). Each calls your code on small inputs with a known answer. Where a step depends on other parts of the model, its tests swap those parts for simple stand-ins (see `tests/fakes.py`), so each step is tested on its own. Steps 4 and 5 also compare your work against Hugging Face's own GPT-2. You only edit `exercise.py`.
+Everything else is provided: `src/attention.py` (the Module 3 attention block), `src/pretrained.py` (`load_gpt2_weights()`), `src/sampling.py` (the top-k helper), `src/visualization.py` (plots) and `src/main.py` (the runner, which reads top to bottom as the six steps). The runner's bookkeeping lives in `src/reporting.py` (the CORRECT/INCORRECT/INCOMPLETE output), `src/prerequisites.py` (the "needs Step N" checks) and `src/solution.py` (the `--solution` switch). The tests live in `tests/`, one file per step (`test_step1_embedding.py` through `test_step6_temperature.py`). Each calls your code on small inputs with a known answer. Where a step depends on other parts of the model, its tests swap those parts for simple stand-ins (see `tests/fakes.py`), so each step is tested on its own. Steps 4 and 5 also compare your work against Hugging Face's own GPT-2. You only edit `exercise.py`.
 
 ## Extra credit
 
