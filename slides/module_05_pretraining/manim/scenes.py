@@ -329,7 +329,7 @@ class TrainingLoopScene(StepScene):
         loop.reverse_points()
         spin.move_to(loop.point_from_proportion(0))
         self.play(FadeIn(spin), run_time=0.2)
-        for val in ["2.29", "1.83", "1.64"]:
+        for val in ["2.34", "2.11", "1.90"]:
             newn = label(val, 40, SECONDARY).move_to(num)
             self.play(MoveAlongPath(spin, loop),
                       LaggedStart(*[a.animate.set_stroke(width=4.5) for a in ring], lag_ratio=0.05),
@@ -660,14 +660,14 @@ class PerplexityScene(StepScene):
 
         # ---- perplexity as effective choices ----
         self.next_section("perplexity", skip_animations=False)
-        p_before = panel("4.18", "65", "6.03", "the effective number of next-token guesses")
+        p_before = panel("4.19", "66", "6.04", "the effective number of next-token guesses")
         self.play(FadeIn(p_before), run_time=0.6)
-        self.caption("Perplexity = exp(loss): the effective number of guesses. Here, nearly all 65 characters.")
+        self.caption("Perplexity = exp(loss): the effective number of guesses. Here, roughly all 65 characters.")
 
         # ---- after training: sharpened ----
         self.next_section("sharpen", skip_animations=False)
         bars_after = bars_of(after)
-        p_after = panel("1.64", "5.1", "2.36", "now only a handful of plausible characters")
+        p_after = panel("2.01", "7.5", "2.90", "now only a handful of plausible characters")
         self.play(Transform(bars, bars_after), Transform(p_before, p_after),
                   truth.animate.next_to(bars_after[0], UP, buff=0.15), run_time=1.1)
         self.caption("Training sharpens the distribution: lower loss, and far lower perplexity.")

@@ -18,7 +18,7 @@ the actual math.
                    embedding into K visual prefix vectors at the language model's
                    width.
 
-Widths are deliberately tiny so everything trains on a CPU in a couple of minutes.
+Widths are deliberately tiny so everything trains on a laptop CPU in seconds.
 """
 
 from __future__ import annotations

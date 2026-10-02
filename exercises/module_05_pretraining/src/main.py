@@ -75,23 +75,23 @@ from tests.test_step10_generate import check_generate
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
 
 # ---------------------------------------------------------------------------
-# Hyperparameters (small enough to train on a laptop CPU in a few minutes)
+# Hyperparameters (small enough to train on a laptop CPU in under a minute)
 # ---------------------------------------------------------------------------
-BLOCK_SIZE = 128       # context length in characters
+BLOCK_SIZE = 32        # context length in characters
 BATCH_SIZE = 32        # examples per batch
-N_LAYER = 4            # transformer blocks
+N_LAYER = 2            # transformer blocks
 N_HEAD = 4             # attention heads per block
-N_EMBD = 128           # model width
-DROPOUT = 0.1
+N_EMBD = 64            # model width
+DROPOUT = 0.0          # no dropout: this short run sees each character less than once
 
-MAX_STEPS = 2000       # total training steps
-WARMUP_STEPS = 100     # linear LR warmup
-MAX_LR = 3e-3          # peak learning rate
-MIN_LR = 3e-4          # final learning rate
+MAX_STEPS = 800        # total training steps
+WARMUP_STEPS = 40      # linear LR warmup
+MAX_LR = 6e-3          # peak learning rate
+MIN_LR = 6e-4          # final learning rate
 WEIGHT_DECAY = 0.1
 GRAD_CLIP = 1.0
 
-EVAL_INTERVAL = 250    # estimate train/val loss every this many steps
+EVAL_INTERVAL = 100    # estimate train/val loss every this many steps
 EVAL_BATCHES = 20      # batches averaged per loss estimate
 VAL_FRACTION = 0.1
 SEED = 1337
@@ -101,7 +101,7 @@ SAMPLE_SEED_TEXT = "\n"  # what to prime generation with
 
 OVERFIT_BATCH_SIZE = 8  # small fixed batch for the --overfit sanity check
 OVERFIT_LR = 3e-3       # learning rate for the overfit sanity check
-OVERFIT_STEPS = 300     # optimizer steps on that one batch
+OVERFIT_STEPS = 100     # optimizer steps on that one batch
 
 # Everything the steps hand to each other: the corpus and vocabulary, the
 # model, and what each step builds (token IDs, splits, loss history).
@@ -199,7 +199,7 @@ def overfit() -> list[float]:
     for step in range(OVERFIT_STEPS + 1):
         loss = train_step(model, optimizer, x, y, GRAD_CLIP)
         losses.append(loss)
-        if step % 50 == 0:
+        if step % 20 == 0:
             print(f"{step:>6}  {loss:>8.4f}")
             progress(f"overfitting: step {step} of {OVERFIT_STEPS}, loss {loss:.4f}")
     progress_done()

@@ -40,16 +40,18 @@ def sample_group(
 
     GRPO scores a whole *group* of samples against each other, so the first move is
     to generate several completions for the same prompt. `generate_fn` is the
-    provided sampler; call it once per group member, each at `temperature` so the
-    group is diverse. Each call returns shape (1, L); take row [0].
+    provided sampler. Give it the prompt repeated `group_size` times, one row per
+    group member, and a single call samples the whole group at `temperature`. Each
+    row draws its own tokens, so the group is diverse. The call returns shape
+    (group_size, L); each row is one completion.
 
     Returns:
         A list of `group_size` tensors, each the full prompt+completion ids of one sample.
     """
-    # TODO: Return a list of `group_size` completions, each from generate_fn(policy,
-    #       prompt_ids, max_new_tokens, block_size, temperature=temperature,
-    #       generator=generator)[0].
-    # HINT: a list comprehension over range(group_size); index [0] to drop the batch dim.
+    # TODO: Return a list of `group_size` completions from ONE call to generate_fn(policy,
+    #       <the prompt repeated group_size times>, max_new_tokens, block_size,
+    #       temperature=temperature, generator=generator).
+    # HINT: prompt_ids.repeat(group_size, 1) stacks the copies; list() splits a 2-D tensor into its rows.
     raise NotImplementedError("TODO: sample a group of completions from the policy")
 
 

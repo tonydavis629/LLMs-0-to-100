@@ -75,12 +75,13 @@ from tests.test_step10_merge import check_merge_lora_weight, check_merge_on_mode
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
 # ---------------------------------------------------------------------------
-# Hyperparameters (small enough to finetune on a laptop CPU in a couple minutes)
+# Hyperparameters (small enough to finetune on a laptop CPU in seconds)
 # ---------------------------------------------------------------------------
-BLOCK_SIZE = 128       # context length in characters
+BLOCK_SIZE = 128       # the base model's context length in characters
+PAD_LEN = 36           # pad each pair to 36 tokens (the longest is 33), not the full 128
 BATCH_SIZE = 16        # examples per batch
-MAX_STEPS = 1000       # total finetuning steps
-EVAL_INTERVAL = 100    # report the loss every this many steps
+MAX_STEPS = 150        # total finetuning steps (the loss levels off near 0.3 by then)
+EVAL_INTERVAL = 25     # report the loss every this many steps
 LR = 1e-3              # small finetuning learning rate (step 4)
 GRAD_CLIP = 1.0        # largest gradient norm allowed in one update
 RANK = 8               # LoRA rank r
@@ -134,15 +135,15 @@ def build_batch(generator) -> tuple[torch.Tensor, torch.Tensor]:
     """Build one padded (x, y) batch from random prompt-response pairs (uses Steps 1 and 2).
 
     Targets are built from the unpadded ids so pad tokens never become targets;
-    both x and y are then padded to BLOCK_SIZE with -100 padding on the targets.
+    both x and y are then padded to PAD_LEN with -100 padding on the targets.
     """
     idxs = torch.randperm(len(dataset), generator=generator)[:BATCH_SIZE].tolist()
     xs, ys = [], []
     for i in idxs:
         ids = format_example(dataset[i]["prompt"], dataset[i]["response"], special, enc)  # Step 1
         targets = build_targets(ids, prompt_span(dataset[i]["prompt"], enc))              # Step 2
-        xs.append(pad(ids, BLOCK_SIZE, special["<|pad|>"]))
-        ys.append(pad(targets, BLOCK_SIZE, -100))
+        xs.append(pad(ids, PAD_LEN, special["<|pad|>"]))
+        ys.append(pad(targets, PAD_LEN, -100))
     return torch.tensor(xs, dtype=torch.long), torch.tensor(ys, dtype=torch.long)
 
 

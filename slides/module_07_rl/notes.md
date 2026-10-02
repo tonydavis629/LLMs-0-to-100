@@ -330,7 +330,7 @@ Regular lecture slides (not side quests), interleaved where relevant.
 
 - **Setup**: the policy is a small instruct model (a TinyGPT finetuned from the Module
   5/6 base) that can partly reverse strings. Its argmax is often right but its sampling
-  distribution is broad, so sampled completions verify only about 16% of the time. The
+  distribution is broad, so sampled completions verify only about 14% of the time. The
   reward is a Python function (`verifiable_reward`): reverse the input and compare. No
   human labels, no reward model.
 - **The loop**: for each of a batch of prompts, sample a group of $G = 8$ completions,
@@ -343,9 +343,9 @@ Regular lecture slides (not side quests), interleaved where relevant.
   completion, Step 7 implements $\mathcal L_{\text{PG}} = -A_i \sum_t m_t \log
   \pi_\theta(y_t \mid x, y_{<t})$, where $A_i$ is the group-relative advantage and
   $m_t$ masks out prompt tokens.
-- **Result** (actual solution output): over 400 steps the mean group reward climbs from
-  about 0.15 to 0.96; held-out sampled accuracy rises from 15.9% to 73.1% and greedy
-  from 22.5% to 92.5%. The sample prompt `reverse: sukgh` flips from `hgkuk` (wrong) to
+- **Result** (actual solution output): over 100 steps of 8 prompts each the mean group
+  reward climbs from about 0.13 to 0.78; held-out sampled accuracy rises from 14.4% to
+  54.1% and greedy from 22.5% to 75.0%. The sample prompt `reverse: sukgh` flips from `hgkuk` (wrong) to
   `hgkus` (correct). This is the module's thesis in miniature: RL **sharpens** the
   distribution onto reversals the model could already occasionally sample, which is why
   the sampled-accuracy (pass@1) gain is dramatic.

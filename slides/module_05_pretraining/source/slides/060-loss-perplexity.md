@@ -31,7 +31,7 @@ A **nat** is the natural-log sibling of the bit: $\ln$ instead of $\log_2$. PyTo
 ## What Progress Looks Like
 
 <div class="loss-figure">
-  <img src="images/loss_curve.png" alt="Training and validation loss falling over 2000 steps">
+  <img src="images/loss_curve.png" alt="Training and validation loss falling over 800 steps">
 </div>
 
 - Both curves should fall
@@ -66,22 +66,23 @@ A **nat** is the natural-log sibling of the bit: $\ln$ instead of $\log_2$. PyTo
 Same model, before and after training. Both samples are real output from the exercise's tiny character-level model.
 
 :::columns cols="2" gap="30px"
-**Before** (random weights, loss 4.18)
+**Before** (random weights, loss 4.19)
 
 ```text
--pzlYaS ;czdeCpwEiT,YzrzlG3-aYeNB
+CpzlTaS ;czde.'wEiT,YzrzlGu-?YeNY
 ijbo
-Lzzj$KUKS-A.U FisdJ'G HTobPPW;,Ue$
+Lzzj$eULS-AAU FisVJ'G HT,OPPW;,qe$
 ```
 +++
-**After** (2000 steps, val loss 1.64)
+**After** (800 steps, val loss 2.01)
 
 ```text
-FRIAR LAURENCE:
-What do tongue the cLARENCE:
-Your felsed hath you seed heart of me.
+Frapust how's, for and his mettilew.
+And to joy of elsed had this seed heart of me.
+
+TARGAUCKE Matised and mago:
 ```
 :::
 
 - Still nonsense up close, but it learned the **shape**: names in caps, colons, line breaks, plausible letters
-- Perplexity: ~65 to ~5. Bits per token: ~6.0 to ~2.4
+- Perplexity: ~66 to ~7.5. Bits per token: ~6.0 to ~2.9

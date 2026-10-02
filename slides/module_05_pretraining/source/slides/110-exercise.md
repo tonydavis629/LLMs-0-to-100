@@ -7,7 +7,7 @@
 
 ## Running the Exercise
 
-Open `module_05_pretraining/exercise.py` and fill in the `NotImplementedError` lines. The model is provided; you write the training loop. Run after each step. Step 7 trains for 2,000 steps, which takes several minutes on a laptop CPU, and saves a loss-curve image to `output/`. <!-- .element: class="text-lg" -->
+Open `module_05_pretraining/exercise.py` and fill in the `NotImplementedError` lines. The model is provided; you write the training loop. Run after each step. Step 7 trains a small model for 800 steps, which takes under a minute on most laptop CPUs, and saves a loss-curve image to `output/`. <!-- .element: class="text-lg" -->
 
 ```bash
 # Run every step; each is tagged CORRECT, INCORRECT, or INCOMPLETE
@@ -40,9 +40,9 @@ The tag sits on the step's header line, with the output and the individual test 
 :::terminal id="exercise-results-example" title="What an INCORRECT Step Looks Like" cmd="uv run python module_05_pretraining/src/main.py --step 3" maxw="920px" caption="Here <code>get_batch()</code> built <code>y</code> with the same slice as <code>x</code>, so every target equals its input. The shape test still passes. The shift test prints <code>x[0]</code>, the <code>y[0]</code> it got, and the <code>y[0]</code> it expected. Training on these batches would still drive the loss down, because the model only has to copy its input."
 <span class="skipped">...</span>
 <span class="header">=== Step 3: get_batch() ===</span> <span class="t-fail">INCORRECT</span>
-  One batch: x has shape (32, 128), y has shape (32, 128)
-  x[0][:24] = ' guess who caused your f'
-  y[0][:24] = ' guess who caused your f'
+  One batch: x has shape (32, 32), y has shape (32, 32)
+  x[0][:24] = "to corrupt a man's wife "
+  y[0][:24] = "to corrupt a man's wife "
   <span class="success">CORRECT</span>    x and y both have shape (batch_size, block_size): (3, 4) here
   <span class="t-fail">INCORRECT</span>  on data = 0, 1, ..., 99 every target is its input plus one (y = x + 1)
              x[0] = [44, 45, 46, 47]
@@ -134,11 +134,11 @@ return data[:n_train], data[n_train:]
 
 ---
 
-:::terminal id="exercise-output-12" title="Steps 1&ndash;2: Data" cmd="uv run python module_05_pretraining/src/main.py" maxw="920px" caption="A 1.1M-character corpus with 65 distinct characters, encoded and split 90/10. The model has 818K parameters. Every later step is tagged INCOMPLETE with the TODO it is waiting on."
+:::terminal id="exercise-output-12" title="Steps 1&ndash;2: Data" cmd="uv run python module_05_pretraining/src/main.py" maxw="920px" caption="A 1.1M-character corpus with 65 distinct characters, encoded and split 90/10. The model has 106K parameters. Every later step is tagged INCOMPLETE with the TODO it is waiting on."
 Corpus:      tinyshakespeare.txt  (1,115,394 characters)
 Vocabulary:  65 unique characters
-TinyGPT:     4 layers, 4 heads, width 128, context 128
-Parameters:  818,048
+TinyGPT:     2 layers, 4 heads, width 64, context 32
+Parameters:  106,304
 
 <span class="header">=== Step 1: encode() ===</span> <span class="success">CORRECT</span>
   Encoded 1,115,394 tokens. First 20 IDs: [18, 47, 56, 57, 58, 1, 15, 47, 58, 47, 64, 43, 52, 10, 0, 14, 43, 44, 53, 56]
@@ -247,15 +247,15 @@ loss.backward()
 <span class="skipped">  ...</span>
 
 <span class="header">=== Step 3: get_batch() ===</span> <span class="success">CORRECT</span>
-  One batch: x has shape (32, 128), y has shape (32, 128)
-  x[0][:24] = ' guess who caused your f'
-  y[0][:24] = 'guess who caused your fa'
+  One batch: x has shape (32, 32), y has shape (32, 32)
+  x[0][:24] = "to corrupt a man's wife "
+  y[0][:24] = "o corrupt a man's wife i"
   <span class="success">CORRECT</span>    x and y both have shape (batch_size, block_size): (3, 4) here
   <span class="success">CORRECT</span>    on data = 0, 1, ..., 99 every target is its input plus one (y = x + 1)
   <span class="success">CORRECT</span>    shortest stream: 0..4 with block_size 4 gives x = [0,1,2,3], y = [1,2,3,4]
 
 <span class="header">=== Step 4: compute_loss() ===</span> <span class="success">CORRECT</span>
-  Untrained model on 8 x 128 characters: loss 4.1857 nats
+  Untrained model on 8 x 32 characters: loss 4.1821 nats
   A uniform guess over 65 characters costs ln 65 = 4.1744 nats
   <span class="success">CORRECT</span>    equal logits over 3 tokens cost ln 3 = 1.0986 nats
   <span class="success">CORRECT</span>    averages over positions: surprises ln 3 and ln 2 give 0.8959
@@ -263,8 +263,8 @@ loss.backward()
   <span class="success">CORRECT</span>    returns a 0-dim tensor that autograd can backpropagate through
 
 <span class="header">=== Step 5: train_step() ===</span> <span class="success">CORRECT</span>
-  Five train_step() calls on one batch of 8 x 128 characters:
-  loss 4.1860 -&gt; 3.8484 -&gt; 3.5361 -&gt; 3.3830 -&gt; 3.2890
+  Five train_step() calls on one batch of 8 x 32 characters:
+  loss 4.1821 -&gt; 3.8522 -&gt; 3.6674 -&gt; 3.5115 -&gt; 3.3797
   <span class="success">CORRECT</span>    returns the batch loss as a float: ln 5 = 1.6094 for a table of zeros
   <span class="success">CORRECT</span>    one SGD step (lr 0.5) moves the weights exactly as backward() + step() should
   <span class="success">CORRECT</span>    clears old gradients first: a leftover .grad of 100 does not leak into the step
@@ -321,7 +321,7 @@ total += compute_loss(logits, y).item()
 
 ---
 
-:::terminal id="exercise-output-train" title="Step 7: The Pretraining Run" cmd="uv run python module_05_pretraining/src/main.py" maxw="920px" caption="Loss falls from 4.18, a uniform guess, to 1.44 on train and 1.64 on validation. The last test checks the run itself."
+:::terminal id="exercise-output-train" title="Step 7: The Pretraining Run" cmd="uv run python module_05_pretraining/src/main.py" maxw="920px" caption="Loss falls from 4.19, no better than a uniform guess, to 1.90 on train and 2.01 on validation. The last test checks the run itself."
 <span class="header">=== Step 1: encode() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 2: train_val_split() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 3: get_batch() ===</span> <span class="success">CORRECT</span>
@@ -330,22 +330,22 @@ total += compute_loss(logits, y).item()
 <span class="skipped">  ...</span>
 
 <span class="header">=== Step 7: estimate_loss() ===</span> <span class="success">CORRECT</span>
-Pretraining for 2,000 steps (warmup + cosine learning rate from src/schedules.py):
+Pretraining for 800 steps (warmup + cosine learning rate from src/schedules.py):
   step         lr     train       val
-     0   3.00e-05    4.1816    4.1803
-   250   2.96e-03    2.2870    2.3055
-   500   2.72e-03    1.8689    1.9827
-   750   2.29e-03    1.6868    1.8527
-  1000   1.76e-03    1.5905    1.7748
-  1250   1.21e-03    1.5325    1.7299
-  1500   7.36e-04    1.4845    1.6649
-  1750   4.14e-04    1.4398    1.6254
-  2000   3.00e-04    1.4379    1.6373
+     0   1.50e-04    4.1924    4.1867
+   100   5.92e-03    2.4986    2.5307
+   200   5.43e-03    2.3388    2.3291
+   300   4.59e-03    2.1966    2.2317
+   400   3.52e-03    2.1071    2.1181
+   500   2.42e-03    2.0338    2.0714
+   600   1.47e-03    1.9416    2.0533
+   700   8.27e-04    1.9022    1.9999
+   800   6.00e-04    1.8980    2.0091
 Saved loss curve to module_05_pretraining/output/loss_curve.png
   <span class="success">CORRECT</span>    a uniform model scores ln 5 = 1.6094 on every batch, so the average is ln 5
   <span class="success">CORRECT</span>    matches the mean of compute_loss(logits, y) over the same 3 seeded batches
   <span class="success">CORRECT</span>    returns a plain Python float
-  <span class="success">CORRECT</span>    pretraining lowers the validation loss from about ln 65 = 4.17 to under 2.0
+  <span class="success">CORRECT</span>    pretraining lowers the validation loss from about ln 65 = 4.17 to under 2.2
 :::
 
 ---
@@ -382,21 +382,21 @@ return perplexity, bits_per_token
 
 ---
 
-:::terminal id="exercise-output-step8" title="Step 8: Perplexity and Bits" cmd="uv run python module_05_pretraining/src/main.py" maxw="920px" caption="Before training the model is as unsure as a uniform guess over 65 characters. After 2,000 steps its perplexity is 5.14, and it needs 2.36 bits per character instead of 6.03."
+:::terminal id="exercise-output-step8" title="Step 8: Perplexity and Bits" cmd="uv run python module_05_pretraining/src/main.py" maxw="920px" caption="Before training the model is as unsure as a uniform guess over 65 characters. After 800 steps its perplexity is 7.46, and it needs 2.90 bits per character instead of 6.04."
 <span class="skipped">...</span>
 <span class="header">=== Step 5: train_step() ===</span> <span class="success">CORRECT</span>
 <span class="skipped">  ...</span>
 <span class="header">=== Step 7: estimate_loss() ===</span> <span class="success">CORRECT</span>
 <span class="skipped">  ...</span>
-  2000   3.00e-04    1.4379    1.6373
+   800   6.00e-04    1.8980    2.0091
 <span class="skipped">  ...</span>
 
 <span class="header">=== Step 8: loss_to_perplexity_and_bits() ===</span> <span class="success">CORRECT</span>
   Validation loss, read three ways:
                             nats   perplexity   bits/token
   uniform over 65 chars   4.1744        65.00       6.0224
-  before training         4.1803        65.38       6.0309
-  after training          1.6373         5.14       2.3621
+  before training         4.1867        65.80       6.0401
+  after training          2.0091         7.46       2.8985
   <span class="success">CORRECT</span>    uniform over 65 characters: loss ln 65 gives perplexity 65 and 6.0224 bits
   <span class="success">CORRECT</span>    a loss of 0 (a perfect model) gives perplexity 1 and 0 bits
   <span class="success">CORRECT</span>    a loss of 1 nat gives perplexity e = 2.7183 and 1 / ln 2 = 1.4427 bits
@@ -428,7 +428,7 @@ next_id = torch.multinomial(probs, num_samples=1, generator=generator)
 
 ---
 
-:::terminal id="exercise-output-step10" title="Step 10: Before and After Training" cmd="uv run python module_05_pretraining/src/main.py" maxw="920px" caption="The same seeded generator, before and after 2,000 steps. Every step is now CORRECT."
+:::terminal id="exercise-output-step10" title="Step 10: Before and After Training" cmd="uv run python module_05_pretraining/src/main.py" maxw="920px" caption="The same seeded generator, before and after 800 steps. Every step is now CORRECT."
 <span class="skipped">...</span>
 <span class="header">=== Step 7: estimate_loss() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 8: loss_to_perplexity_and_bits() ===</span> <span class="success">CORRECT</span>
@@ -436,18 +436,17 @@ next_id = torch.multinomial(probs, num_samples=1, generator=generator)
 
 <span class="header">=== Step 10: generate() ===</span> <span class="success">CORRECT</span>
   Sample before training (random weights):
-    -pzlYaS ;czdeCpwEiT,YzrzlG3-aYeNB
+    CpzlTaS ;czde.'wEiT,YzrzlGu-?YeNY
     ijbo
-    Lzzj$KUKS-A.U FisdJ'G HTobPPW;,Ue$zOAnsz-imHzPAkfEfYYgS;RTNBE:myOzk. qVh -LLcJJlZHPXBvZLUofg<span class="skipped">...</span>
-  Sample after training (2,000 steps):
-    FRIAR LAURENCE:
-    What do tongue the cLARENCE:
-    Your felsed hath you seed heart of me.
+    Lzzj$eULS-AAU FisVJ'G HT,OPPW;,qe$zOAnsz-imHzPAkfJfYYgS;RTNBE:myOzk. qVh -LLcJJlOHPXBvsLAofg<span class="skipped">...</span>
+  Sample after training (800 steps):
+    Frapust how's, for and his mettilew.
+    And to joy of elsed had this seed heart of me.
 
-    FRIAR MARGARET:
-    Pray, good Jint:
-    And face where comman, I field I will be you wede no
-    To die.
+    TARGAUCKE Matised and mago:
+    What they scoaw my Woulow could by mead rumbory prowde not be
+    Ter. Mast, the chuger, not we day,
+    That yu thing mines an and so' sure kive,
     <span class="skipped">...</span>
   <span class="success">CORRECT</span>    appends max_new_tokens tokens: a 2-token seed plus 5 new gives shape (1, 7)
   <span class="success">CORRECT</span>    at temperature 0.01 it matches argmax: the counting table gives 0 1 2 3 4 0 1
@@ -466,16 +465,15 @@ next_id = torch.multinomial(probs, num_samples=1, generator=generator)
 <span class="skipped">  ...</span>
 
 <span class="header">=== Sanity check: overfit one batch (Steps 3-5 together) ===</span> <span class="success">CORRECT</span>
-Training repeatedly on ONE batch of shape (8, 128) for 300 steps:
+Training repeatedly on ONE batch of shape (8, 32) for 100 steps:
   step      loss
-     0    4.1782
-    50    2.4023
-   100    1.1647
-   150    0.3843
-   200    0.2334
-   250    0.1421
-   300    0.0704
-  <span class="success">CORRECT</span>    training on one fixed batch drives its loss from about 4.18 to under 0.5
+     0    4.1750
+    20    1.5970
+    40    0.2672
+    60    0.0389
+    80    0.0181
+   100    0.0136
+  <span class="success">CORRECT</span>    training on one fixed batch drives its loss from about 4.2 to under 0.5
 :::
 
 ---

@@ -69,7 +69,7 @@ def check_bridge_training(losses: list[float]) -> list[Check]:
     """Finetuning the projector and the language model should drive the loss down."""
     first = losses[0]
     last = sum(losses[-50:]) / len(losses[-50:])
-    name = "bridge training takes the captioning loss from about 9 to under 0.1 (last 50 steps)"
+    name = "bridge training takes the captioning loss from about 8 to under 0.1 (last 50 steps)"
     return [
         ok(name)
         if last < 0.1

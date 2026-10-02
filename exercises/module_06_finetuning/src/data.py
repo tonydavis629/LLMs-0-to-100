@@ -3,7 +3,7 @@ Toy instruction dataset: deterministically generated, highly learnable.
 
 All characters used here must exist in the base Module-5 vocabulary (65 chars).
 Tasks weighted toward simple memorization and transformation so a tiny model
-shows a crisp flip in a few hundred CPU steps.
+shows a crisp flip in about 150 CPU steps.
 """
 
 from __future__ import annotations

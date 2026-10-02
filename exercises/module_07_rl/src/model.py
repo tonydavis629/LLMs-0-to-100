@@ -5,8 +5,8 @@ The same decoder-only model used in Modules 5 and 6. Module 7 does NOT need LoRA
 the instruct checkpoint Module 6 produced has already merged its adapter back into
 the weights, so the policy here is a plain TinyGPT and we finetune it directly.
 
-This file gives you the model, an autoregressive sampler (`generate`), and a loader
-for the bundled instruct checkpoint (`load_instruct_model`).
+This file gives you the model, an autoregressive sampler with a KV cache (`generate`),
+and a loader for the bundled instruct checkpoint (`load_instruct_model`).
 """
 
 from __future__ import annotations
@@ -50,15 +50,24 @@ class CausalSelfAttention(nn.Module):
             ),
         )
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: torch.Tensor, cache: dict | None = None) -> torch.Tensor:
         B, T, C = x.shape
         q, k, v = self.c_attn(x).split(self.n_embd, dim=2)
         head_size = C // self.n_head
         q = q.view(B, T, self.n_head, head_size).transpose(1, 2)
         k = k.view(B, T, self.n_head, head_size).transpose(1, 2)
         v = v.view(B, T, self.n_head, head_size).transpose(1, 2)
+        if cache is not None:
+            # KV cache (used only by generate): reuse the keys and values of the
+            # earlier tokens instead of recomputing them for every new token
+            if "k" in cache:
+                k = torch.cat([cache["k"], k], dim=2)
+                v = torch.cat([cache["v"], v], dim=2)
+            cache["k"], cache["v"] = k, v
+        S = k.shape[2]  # how many tokens the queries can look at (cached + new)
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(head_size))
-        att = att.masked_fill(self.mask[:, :, :T, :T] == 0, float("-inf"))
+        # The new queries are the last T of the S positions
+        att = att.masked_fill(self.mask[:, :, S - T:S, :S] == 0, float("-inf"))
         att = F.softmax(att, dim=-1)
         att = self.attn_dropout(att)
         y = att @ v
@@ -89,8 +98,8 @@ class Block(nn.Module):
         self.ln2 = nn.LayerNorm(cfg.n_embd)
         self.mlp = MLP(cfg)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        x = x + self.attn(self.ln1(x))
+    def forward(self, x: torch.Tensor, cache: dict | None = None) -> torch.Tensor:
+        x = x + self.attn(self.ln1(x), cache)
         x = x + self.mlp(self.ln2(x))
         return x
 
@@ -110,12 +119,17 @@ class TinyGPT(nn.Module):
         self.lm_head = nn.Linear(cfg.n_embd, cfg.vocab_size, bias=False)
         self.lm_head.weight = self.token_embed.weight
 
-    def forward(self, idx: torch.Tensor) -> torch.Tensor:
+    def forward(self, idx: torch.Tensor, caches: list[dict] | None = None, start: int = 0) -> torch.Tensor:
+        """Logits for every position of idx.
+
+        `caches` (one dict per block) and `start` (the position of idx's first token)
+        are only for generate's KV cache; training calls model(idx).
+        """
         B, T = idx.shape
-        pos = torch.arange(T, dtype=torch.long, device=idx.device)
+        pos = torch.arange(start, start + T, dtype=torch.long, device=idx.device)
         x = self.drop(self.token_embed(idx) + self.pos_embed(pos))
-        for block in self.blocks:
-            x = block(x)
+        for i, block in enumerate(self.blocks):
+            x = block(x, caches[i] if caches is not None else None)
         x = self.ln_f(x)
         return self.lm_head(x)
 
@@ -141,9 +155,18 @@ def generate(
     """
     was_training = model.training
     model.eval()
-    for _ in range(max_new_tokens):
-        idx_cond = idx[:, -block_size:]
-        logits = model(idx_cond)[:, -1, :]
+    # With a KV cache each new token costs one position of compute, not the whole
+    # sequence. It needs the full sequence to fit in the context window.
+    use_cache = isinstance(model, TinyGPT) and idx.shape[1] + max_new_tokens <= block_size
+    caches = [{} for _ in range(len(model.blocks))] if use_cache else None
+    for step in range(max_new_tokens):
+        if use_cache:
+            # First step: the whole prompt. After that: only the newest token.
+            new = idx if step == 0 else idx[:, -1:]
+            logits = model(new, caches, start=idx.shape[1] - new.shape[1])[:, -1, :]
+        else:
+            idx_cond = idx[:, -block_size:]
+            logits = model(idx_cond)[:, -1, :]
         if greedy:
             next_id = logits.argmax(dim=-1, keepdim=True)
         else:

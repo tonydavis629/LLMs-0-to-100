@@ -280,12 +280,12 @@ return 0.5 * (F.cross_entropy(logits, labels) + F.cross_entropy(logits.t(), labe
 <span class="t-gray">  Retrieval accuracy before training: 1.7%  (chance is 1/60)</span>
 
 <span class="header">=== Step 5: clip_loss() ===</span> <span class="success">CORRECT</span>
-CLIP training: 400 steps of 32 image-caption pairs
+CLIP training: 200 steps of 32 image-caption pairs
   step    1   contrastive loss  3.468   batch retrieval acc  3.1%
+  step   25   contrastive loss  1.168   batch retrieval acc 56.2%
   step   50   contrastive loss  0.626   batch retrieval acc 75.0%
-  step  100   contrastive loss  0.371   batch retrieval acc 78.1%
   <span class="skipped">...</span>
-  step  400   contrastive loss  0.477   batch retrieval acc 68.8%
+  step  200   contrastive loss  0.395   batch retrieval acc 75.0%
   <span class="success">Held-out retrieval accuracy: 1.7% before training, 76.7% after</span>
   Saved retrieval heatmap to output/retrieval_heatmap.png
   <span class="success">CORRECT</span>    a uniform 4 x 4 matrix (no idea which caption matches) gives ln 4 = 1.386
@@ -382,7 +382,7 @@ return F.cross_entropy(logits[mask], targets[mask])
 
 ---
 
-:::terminal id="exercise-output-bridge-train" title="Part 3: Training the Bridge" cmd="uv run python module_08_multimodal/src/main.py" maxw="1000px" caption="Four visual tokens at the language model's width sit in front of the 21 prompt tokens. The captioning loss falls from 8.9 to 0.009, and it scores only the response tokens."
+:::terminal id="exercise-output-bridge-train" title="Part 3: Training the Bridge" cmd="uv run python module_08_multimodal/src/main.py" maxw="1000px" caption="Four visual tokens at the language model's width sit in front of the 21 prompt tokens. The captioning loss falls from 8.2 to 0.001, and it scores only the response tokens."
 <span class="header">=== Step 1: patchify() ===</span> <span class="success">CORRECT</span>
 <span class="skipped">  ...</span>
 <span class="header">=== Step 5: clip_loss() ===</span> <span class="success">CORRECT</span>
@@ -399,14 +399,14 @@ Projector: Linear(64 -&gt; 4 x 128), 33,280 parameters
 
 <span class="header">=== Step 7: captioning_loss() ===</span> <span class="success">CORRECT</span>
 Bridge training: 400 steps of 16 examples (a caption and 4 questions per scene)
-  step    1   captioning loss  8.901
-  step   50   captioning loss  0.216
+  step    1   captioning loss  8.189
+  step   50   captioning loss  0.118
   <span class="skipped">...</span>
-  step  400   captioning loss  <span class="success">0.009</span>
+  step  400   captioning loss  <span class="success">0.001</span>
   <span class="success">CORRECT</span>    averages -log p(target) over the response only: p = 0.5 and 0.75 give 0.490
   <span class="success">CORRECT</span>    scrambling the logits at masked-out positions leaves the loss unchanged
   <span class="success">CORRECT</span>    matches F.cross_entropy with the prompt positions set to ignore_index (random 6 x 10)
-  <span class="success">CORRECT</span>    bridge training takes the captioning loss from about 9 to under 0.1 (last 50 steps)
+  <span class="success">CORRECT</span>    bridge training takes the captioning loss from about 8 to under 0.1 (last 50 steps)
 
 <span class="header">=== Step 8: greedy_next_token() ===</span> <span class="skipped">INCOMPLETE</span>
   <span class="skipped">TODO: greedily pick the next token</span>
@@ -443,18 +443,18 @@ return logits[:, -1, :].argmax(dim=-1)
 
 ---
 
-:::terminal id="exercise-output-bridge" title="Part 3: The Answer Follows the Image" cmd="uv run python module_08_multimodal/src/main.py" maxw="1000px" caption="Held-out captions are 87% exact-match, and the same prompt returns a different, correct caption for each image. The last test checks that the captions differ: the model reads the image instead of guessing from priors."
+:::terminal id="exercise-output-bridge" title="Part 3: The Answer Follows the Image" cmd="uv run python module_08_multimodal/src/main.py" maxw="1000px" caption="Held-out captions are 95% exact-match, and the same prompt returns a different, correct caption for each image. The last test checks that the captions differ: the model reads the image instead of guessing from priors."
 <span class="header">=== Step 1: patchify() ===</span> <span class="success">CORRECT</span>
 <span class="skipped">  ...</span>
 <span class="header">=== Step 7: captioning_loss() ===</span> <span class="success">CORRECT</span>
 
 <span class="header">=== Step 8: greedy_next_token() ===</span> <span class="success">CORRECT</span>
 Before bridge training (projector is random), 'describe the image' gives:
-    image['red triangle above blue triangle'] -&gt; <span class="t-fail">'tookn'</span>
-    image['blue triangle above green triangle'] -&gt; <span class="t-fail">'toomme'</span>
+    image['red triangle above blue triangle'] -&gt; <span class="t-fail">'tool'</span>
+    image['blue triangle above green triangle'] -&gt; <span class="t-fail">'toojuu'</span>
     image['red square above red circle'] -&gt; <span class="t-fail">'toomb'</span>
 
-After bridge training, held-out caption exact-match: <span class="success">52/60 = 86.7%</span>
+After bridge training, held-out caption exact-match: <span class="success">57/60 = 95.0%</span>
 
 Same prompt, different images (the grounding test):
     describe -&gt; 'red triangle above blue triangle'    (correct)

@@ -20,7 +20,7 @@ uv run python module_06_finetuning/src/main.py
 uv run python module_06_finetuning/src/main.py --step 3
 ```
 
-Step 7 finetunes the bundled Module 5 base model (`data/base_model.pt`) and takes about two minutes on a laptop CPU. <!-- .element: class="text-md" style="margin-top: 22px;" -->
+Step 7 finetunes the bundled Module 5 base model (`data/base_model.pt`) and takes under 30 seconds on a laptop CPU. <!-- .element: class="text-md" style="margin-top: 22px;" -->
 
 ---
 
@@ -352,7 +352,7 @@ loss.backward()
 
 ---
 
-:::terminal id="exercise-output-step7" title="Step 7: Finetuning" cmd="uv run python module_06_finetuning/src/main.py" maxw="1000px" caption="The masked loss falls from 6.11 to 0.34 by step 200 and then hovers around 0.3. The first three tests grade <code>sft_train_step()</code> on a 4-token toy model worked out by hand; the last one checks this run."
+:::terminal id="exercise-output-step7" title="Step 7: Finetuning" cmd="uv run python module_06_finetuning/src/main.py" maxw="1000px" caption="The masked loss falls from 6.11 to 0.38 by step 100 and then levels off around 0.3. The first three tests grade <code>sft_train_step()</code> on a 4-token toy model worked out by hand; the last one checks this run."
 <span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>
@@ -364,10 +364,12 @@ loss.backward()
 <span class="header">=== Step 7: sft_train_step() ===</span> <span class="success">CORRECT</span>
   step      loss
      0    6.1116
-   100    0.4182
-   200    0.3391
-<span class="skipped">  ...</span>
-  1000    0.3012
+    25    2.9740
+    50    1.3169
+    75    0.7570
+   100    0.3835
+   125    0.3708
+   150    0.3092
   <span class="success">CORRECT</span>    returns the batch loss as a float: uniform logits over 4 tokens give ln 4 = 1.3863
   <span class="success">CORRECT</span>    one SGD step (lr=1) on a zero embedding moves row 1 to [-0.125, -0.125, 0.375, -0.125]
   <span class="success">CORRECT</span>    clears the previous step's gradients first (a leftover .grad of 100 changes nothing)
@@ -485,7 +487,7 @@ Base model (before finetuning):
   full:     '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;ers\nIn the father '
   response: 'ers\nIn the father '   &lt;- ignores the instruction
 Finetuned model (after Step 7):
-  full:     '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;HELLO&lt;|end|&gt;d doge&lt;|end|&gt;t&lt;|end|&gt;Mbl'
+  full:     '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;HELLO&lt;|end|&gt;d god\nTo god'
   response: 'HELLO'   &lt;- answers the instruction
   <span class="success">CORRECT</span>    prompt 'ab' gives [user, a, b, end, assistant], with no response yet
   <span class="success">CORRECT</span>    ends on the assistant marker, so the next generated token starts the answer
@@ -526,7 +528,7 @@ return base_W + scale * (B @ A)
 
 ---
 
-:::terminal id="exercise-output-all" title="All Ten Steps: Output" cmd="uv run python module_06_finetuning/src/main.py" maxw="1000px" caption="Merging folds each <code>scale * (B @ A)</code> back into its weight. The model is back to 818,560 parameters with no adapters, and its logits move by only 6.68e-06, float32 rounding."
+:::terminal id="exercise-output-all" title="All Ten Steps: Output" cmd="uv run python module_06_finetuning/src/main.py" maxw="1000px" caption="Merging folds each <code>scale * (B @ A)</code> back into its weight. The model is back to 818,560 parameters with no adapters, and its logits move by only 8.40e-06, float32 rounding."
 <span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>
@@ -544,7 +546,7 @@ return base_W + scale * (B @ A)
 
 <span class="header">=== Step 10: merge_lora_weight() ===</span> <span class="success">CORRECT</span>
 Merged 16 LoRA layers into plain nn.Linear weights: 884,096 -&gt; 818,560 parameters
-  Max logit difference (adapter vs merged): 6.68e-06
+  Max logit difference (adapter vs merged): 8.40e-06
   <span class="success">CORRECT</span>    W = I, A = [[1, 2]], B = [[1], [0]], scale = 0.5 gives [[1.5, 1], [0, 1]]
   <span class="success">CORRECT</span>    returns a new tensor and leaves base_W itself unchanged
   <span class="success">CORRECT</span>    one merged layer gives the same output as base layer + adapter (random 8 -&gt; 6 layer, r = 4)

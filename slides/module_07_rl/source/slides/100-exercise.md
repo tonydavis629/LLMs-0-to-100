@@ -24,7 +24,7 @@ uv run python module_07_rl/src/main.py --step 4
 
 <!-- .element: class="text-md" style="margin-top: 22px;" -->
 
-After Step 10 the runner trains the policy with GRPO. It prints held-out accuracy **before and after** (sampled and greedy) and the mean reward every 20 steps, and it saves a **reward-curve image**.
+After Step 10 the runner trains the policy with GRPO. It prints held-out accuracy **before and after** (sampled and greedy) and the mean reward every 10 steps, and it saves a **reward-curve image**.
 
 <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
@@ -42,7 +42,7 @@ For each step the runner prints what your function produced on the real model (a
 - **INCORRECT**: your code ran but a test failed; the expected and actual values are printed beneath
 - **INCOMPLETE**: the function still raises `NotImplementedError`
 
-The tag sits on the step's header line. Policy-gradient bugs rarely crash: the reward curve just stalls or falls, and you notice minutes into training. The tests catch sign and masking mistakes in seconds. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
+The tag sits on the step's header line. Policy-gradient bugs rarely crash: the reward curve just stalls or falls, and you only find out when training ends. The tests catch sign and masking mistakes in seconds. <!-- .element: class="text-lg" style="margin-top: 15px;" -->
 
 ---
 
@@ -68,9 +68,9 @@ The tag sits on the step's header line. Policy-gradient bugs rarely crash: the r
 :::columns cols="2" gap="30px"
 **The payoff**
 
-- Before: only ~16% of sampled completions verify
+- Before: only ~14% of sampled completions verify
 - GRPO **sharpens** the distribution
-- After: sampled accuracy ~73%, greedy ~92%
+- After: sampled accuracy ~54%, greedy ~75%
 +++
 **Ten one-line steps**
 
@@ -95,28 +95,27 @@ def sample_group(
 
     GRPO scores a whole *group* of samples against each other, so the first move is
     to generate several completions for the same prompt. `generate_fn` is the
-    provided sampler; call it once per group member, each at `temperature` so the
-    group is diverse. Each call returns shape (1, L); take row [0].
+    provided sampler. Give it the prompt repeated `group_size` times, one row per
+    group member, and a single call samples the whole group at `temperature`. Each
+    row draws its own tokens, so the group is diverse. The call returns shape
+    (group_size, L); each row is one completion.
 
     Returns:
         A list of `group_size` tensors, each the full prompt+completion ids of one sample.
     """
-    # TODO: Return a list of `group_size` completions, each from generate_fn(policy,
-    #       prompt_ids, max_new_tokens, block_size, temperature=temperature,
-    #       generator=generator)[0].
+    # TODO: Return a list of `group_size` completions from ONE call to generate_fn(policy,
+    #       <the prompt repeated group_size times>, max_new_tokens, block_size,
+    #       temperature=temperature, generator=generator).
     raise NotImplementedError("TODO: sample a group of completions from the policy")
 ```
 +++
-**Hint:** a list comprehension over `range(group_size)`; index `[0]` to drop the batch dim.
+**Hint:** `prompt_ids.repeat(group_size, 1)` stacks the copies; `list()` splits a 2-D tensor into its rows.
 +++
 **Answer:**
 
 ```python
-return [
-    generate_fn(policy, prompt_ids, max_new_tokens, block_size,
-                temperature=temperature, generator=generator)[0]
-    for _ in range(group_size)
-]
+return list(generate_fn(policy, prompt_ids.repeat(group_size, 1), max_new_tokens,
+                        block_size, temperature=temperature, generator=generator))
 ```
 :::
 
@@ -201,7 +200,7 @@ return (rewards - rewards.mean()) / (rewards.std() + eps)
 <span class="header">=== Step 1: sample_group() ===</span> <span class="success">CORRECT</span>
 Held-out prompt 'reverse: jphkq'; the verifier wants 'qkhpj'
 A group of G=8 completions sampled at temperature 1.0:
-  'qkhpV'  'qkhpp'  'qkhpq'  'qkhpb'  <span class="success">'qkhpj'</span>  'qkhpp'  <span class="success">'qkhpj'</span>  'qkhpq'
+  'qkhpb'  'qkhph'  'qkhpV'  'qkhpq'  <span class="success">'qkhpj'</span>  'qkhpb'  <span class="success">'qkhpj'</span>  'qkhph'
 <span class="skipped">  ...</span>
 <span class="header">=== Step 2: verifiable_reward() ===</span> <span class="success">CORRECT</span>
 The starting model's greedy answers on 4 held-out prompts:
@@ -441,7 +440,7 @@ return rewards.mean().item()
 
 ---
 
-:::terminal id="exercise-output-before" title="Before GRPO" cmd="uv run python module_07_rl/src/main.py" maxw="1000px" caption="All ten steps pass their tests, so training starts. Sampled completions verify only 15.9% of the time, and the argmax gets 'sukgh' wrong. The reward is a Python function, not a learned model."
+:::terminal id="exercise-output-before" title="Before GRPO" cmd="uv run python module_07_rl/src/main.py" maxw="1000px" caption="All ten steps pass their tests, so training starts. Sampled completions verify only 14.4% of the time, and the argmax gets 'sukgh' wrong. The reward is a Python function, not a learned model."
 <span class="header">=== Step 1: sample_group() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 2: verifiable_reward() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 3: score_group() ===</span> <span class="success">CORRECT</span>
@@ -458,33 +457,34 @@ return rewards.mean().item()
 TinyGPT: 4 layers, 4 heads, width 128, 818,560 parameters (the reference is a frozen copy)
 Task: reverse a string, verified by a Python function (no reward model)
 Train prompts: 256   Held-out prompts: 40
-Group size G=8, temperature=1.0, beta(KL)=0.01, lr=0.0001
+Group size G=8, temperature=1.0, beta(KL)=0.01, lr=0.00025
 
 Before GRPO:
-  Held-out accuracy, sampled (temp 1.0): 15.9%   &lt;- what GRPO optimizes
+  Held-out accuracy, sampled (temp 1.0): 14.4%   &lt;- what GRPO optimizes
   Held-out accuracy, greedy (argmax):     22.5%
   <span class="t-fail">sample: 'reverse: sukgh' -&gt; 'hgkuk'  (want 'hgkus': wrong)</span>
 :::
 
 ---
 
-:::terminal id="exercise-output-after" title="The Reward Climbs, the Policy Improves" cmd="uv run python module_07_rl/src/main.py" maxw="1000px" caption="Sampled accuracy rises from 15.9% to 73.1% and greedy from 22.5% to 92.5%, driven by reward, not imitation. The same prompt now reverses correctly, and the training tests check that the reward curve climbed."
+:::terminal id="exercise-output-after" title="The Reward Climbs, the Policy Improves" cmd="uv run python module_07_rl/src/main.py" maxw="1000px" caption="Sampled accuracy rises from 14.4% to 54.1% and greedy from 22.5% to 75.0%, driven by reward, not imitation. The same prompt now reverses correctly, and the training tests check that the reward curve climbed."
 <span class="header t-green">=== GRPO training (Steps 1-10 together) ===</span> <span class="success">CORRECT</span>
 <span class="skipped">  ...</span>
   step   mean reward
-    20         0.147
-    40         0.172
-    60         0.270
-<span class="skipped">   ...</span>
-   200         0.655
-<span class="skipped">   ...</span>
-   360         0.875
-   380         0.912
-   400         0.955
+    10         0.133
+    20         0.134
+    30         0.248
+    40         0.255
+    50         0.273
+    60         0.348
+    70         0.544
+    80         0.570
+    90         0.611
+   100         0.777
 
 After GRPO:
-  <span class="success">Held-out accuracy, sampled (temp 1.0): 73.1%   (was 15.9%)</span>
-  <span class="success">Held-out accuracy, greedy (argmax):     92.5%   (was 22.5%)</span>
+  <span class="success">Held-out accuracy, sampled (temp 1.0): 54.1%   (was 14.4%)</span>
+  <span class="success">Held-out accuracy, greedy (argmax):     75.0%   (was 22.5%)</span>
   <span class="success">sample: 'reverse: sukgh' -&gt; 'hgkus'  (want 'hgkus': correct)</span>
   Reward curve saved to output/reward_curve.png
   <span class="success">CORRECT</span>    the mean group reward climbs by at least 0.3 from the first checkpoint to the last
@@ -499,7 +499,7 @@ After GRPO:
 ## The Reward Curve
 
 <div class="curve-figure">
-  <img src="images/reward_curve.png" alt="Mean group reward climbing from 0.15 to 0.96 over 400 GRPO steps">
+  <img src="images/reward_curve.png" alt="Mean group reward climbing from 0.13 to 0.78 over 100 GRPO steps">
 </div>
 
 Reward climbs as the policy concentrates probability on reversals it could already occasionally sample. Dashed lines: held-out accuracy before and after. (Actual exercise output.) <!-- .element: class="text-lg" style="margin-top: 10px;" -->

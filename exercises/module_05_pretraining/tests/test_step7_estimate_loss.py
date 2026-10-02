@@ -81,8 +81,8 @@ def check_pretraining(val: list[float]) -> list[Check]:
     `val` is the validation loss at each checkpoint, first to last.
     """
     return [
-        ok("pretraining lowers the validation loss from about ln 65 = 4.17 to under 2.0")
-        if val[0] > 4.0 and val[-1] < 2.0
-        else bad("pretraining lowers the validation loss from about ln 65 = 4.17 to under 2.0",
+        ok("pretraining lowers the validation loss from about ln 65 = 4.17 to under 2.2")
+        if val[0] > 4.0 and val[-1] < 2.2
+        else bad("pretraining lowers the validation loss from about ln 65 = 4.17 to under 2.2",
                  f"validation loss went from {val[0]:.4f} to {val[-1]:.4f}")
     ]

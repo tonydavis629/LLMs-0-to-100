@@ -16,9 +16,9 @@ and a held-out accuracy that rises &mdash; driven by **reward**, not imitation.
 
 The starting policy is an instruct model that can *partly* reverse strings. Its
 argmax (greedy) answer is right on 22.5% of the held-out prompts, and its sampling
-distribution is broad, so **sampled** completions are correct only 15.9% of the time.
-GRPO **sharpens** that distribution: held-out sampled accuracy climbs to 73.1% and
-greedy accuracy to 92.5%. This is the module's thesis in miniature: RL
+distribution is broad, so **sampled** completions are correct only 14.4% of the time.
+GRPO **sharpens** that distribution: in 100 steps, held-out sampled accuracy climbs to
+54.1% and greedy accuracy to 75.0%. This is the module's thesis in miniature: RL
 concentrates probability on reasoning the model could already occasionally produce.
 
 ## Setup
@@ -54,7 +54,7 @@ Advantages:                   [-0.54, -0.54, -0.54, -0.54, +1.62, -0.54, +1.62, 
   CORRECT    a group where every reward ties gives all-zero advantages, not NaN: [1, 1, 1, 1]
 ```
 
-After Step 10 comes the payoff, `GRPO training (Steps 1-10 together)`, which needs all ten steps. It prints the held-out accuracy **before** training (sampled and greedy), the mean group reward every 20 steps, the held-out accuracy **after**, and the example prompt's greedy answer before and after. It saves a **reward-curve image** to `output/reward_curve.png`, then its tests check that the reward climbed and held-out accuracy rose. Training takes a few minutes on a laptop CPU, and a progress line shows the current step while it runs.
+After Step 10 comes the payoff, `GRPO training (Steps 1-10 together)`, which needs all ten steps. It prints the held-out accuracy **before** training (sampled and greedy), the mean group reward every 10 steps, the held-out accuracy **after**, and the example prompt's greedy answer before and after. It saves a **reward-curve image** to `output/reward_curve.png`, then its tests check that the reward climbed and held-out accuracy rose. Training takes well under a minute on a laptop CPU, and a progress line shows the current step while it runs.
 
 Run a single step with `--step` (1 to 10, or `train` for the training run):
 

@@ -77,17 +77,18 @@ from tests.test_step7_captioning_loss import check_bridge_training, check_captio
 from tests.test_step8_greedy_next_token import check_greedy_next_token, check_grounded_captions
 
 # ---------------------------------------------------------------------------
-# Hyperparameters (small enough to run on a laptop CPU in a couple of minutes)
+# Hyperparameters (small enough to train on a laptop CPU in seconds)
 # ---------------------------------------------------------------------------
 TEMPERATURE = 0.07       # CLIP softmax temperature
 CLIP_BATCH = 32          # image-caption pairs per contrastive step
-CLIP_STEPS = 400         # contrastive training steps
+CLIP_STEPS = 200         # contrastive training steps
 CLIP_LR = 1e-3
-CLIP_EVAL_INTERVAL = 50
+CLIP_EVAL_INTERVAL = 25
 
 BRIDGE_BATCH = 16        # image-conditioned examples per bridge step
 BRIDGE_STEPS = 400       # bridge (projector + LM) finetuning steps
-BRIDGE_LR = 3e-4
+BRIDGE_LR = 3e-4         # the LM is already trained, so it takes small steps
+PROJECTOR_LR = 3e-3      # the projector starts from random weights, so it takes bigger ones
 BRIDGE_EVAL_INTERVAL = 50
 MAX_ANSWER_TOKENS = 40   # generation cap for captions/answers (longest caption ~35 chars)
 
@@ -109,6 +110,8 @@ DESCRIBE = "describe the image"  # the one prompt used for every caption
 def setup() -> SimpleNamespace:
     """Load the bundled data and language model, and build the untrained towers."""
     torch.manual_seed(SEED)
+    # These tensors are tiny, so more than 4 CPU threads spends more time coordinating than computing
+    torch.set_num_threads(min(4, torch.get_num_threads()))
     rng = torch.Generator().manual_seed(SEED)  # batch order for both training runs
 
     # data/instruct_model.pt is the Module 6 instruct checkpoint that Module 7
@@ -205,16 +208,24 @@ def clip_training():
 # ---------------------------------------------------------------------------
 
 
-def bridge_example_loss(lm, venc, projector, image, prompt, response, special, stoi):
-    """Image-conditioned captioning loss for one example (one forward through the LM)."""
-    img_embed = vision_forward(venc, image.unsqueeze(0))                 # (1, D)
-    prefix = image_to_prefix(img_embed, projector.to_prefix, PREFIX_LEN)  # Step 6: (1, K, d_llm)
-    seq, resp_start = chat_ids(prompt, response, special, stoi)
-    tok_embed = lm.embed_tokens(seq.unsqueeze(0))                        # (1, L, d_llm)
-    inp = concat_visual_prefix(prefix, tok_embed)                       # (1, K+L, d_llm)
-    logits = lm.forward_embeds(inp)[0]                                  # (K+L, V)
-    targets, mask = targets_and_mask(seq, resp_start, PREFIX_LEN)
-    return captioning_loss(logits, targets, mask)                       # Step 7
+def bridge_batch_loss(lm, venc, projector, batch, special, stoi):
+    """Image-conditioned captioning loss for a batch of examples (one forward through the LM)."""
+    images = torch.stack([image for image, _, _ in batch])
+    img_embed = vision_forward(venc, images)                             # (B, D)
+    prefix = image_to_prefix(img_embed, projector.to_prefix, PREFIX_LEN)  # Step 6: (B, K, d_llm)
+    seqs = [chat_ids(prompt, response, special, stoi) for _, prompt, response in batch]
+    # Pad every example on the right to the longest one; the causal mask means the
+    # padding never affects the real positions, and the loss mask skips it
+    ids = torch.full((len(seqs), max(len(seq) for seq, _ in seqs)), special["<|pad|>"])
+    for row, (seq, _) in enumerate(seqs):
+        ids[row, :len(seq)] = seq
+    inp = concat_visual_prefix(prefix, lm.embed_tokens(ids))            # (B, K+L, d_llm)
+    logits = lm.forward_embeds(inp)                                     # (B, K+L, V)
+    losses = []
+    for row, (seq, resp_start) in enumerate(seqs):
+        targets, mask = targets_and_mask(seq, resp_start, PREFIX_LEN)
+        losses.append(captioning_loss(logits[row, :len(targets)], targets, mask))  # Step 7
+    return torch.stack(losses).mean()
 
 
 def train_bridge(lm, venc, projector, train, special, stoi, rng) -> list[float]:
@@ -223,18 +234,20 @@ def train_bridge(lm, venc, projector, train, special, stoi, rng) -> list[float]:
     for p in venc.parameters():
         p.requires_grad = False
     venc.eval()
-    optimizer = torch.optim.AdamW(list(lm.parameters()) + list(projector.parameters()), lr=BRIDGE_LR)
+    optimizer = torch.optim.AdamW([{"params": lm.parameters(), "lr": BRIDGE_LR},
+                                   {"params": projector.parameters(), "lr": PROJECTOR_LR}])
     examples = bridge_examples(train, DESCRIBE)  # a caption and 4 questions per scene
     n = len(examples)
     lm.train(); projector.train()
     losses: list[float] = []
     for step in range(1, BRIDGE_STEPS + 1):
         idx = torch.randperm(n, generator=rng)[:BRIDGE_BATCH].tolist()
-        batch_losses = []
-        for j in idx:
-            img, prompt, response = examples[j]
-            batch_losses.append(bridge_example_loss(lm, venc, projector, img, prompt, response, special, stoi))
-        loss = torch.stack(batch_losses).mean()
+        batch = [examples[j] for j in idx]
+        # Captions are much longer than one-word answers, so each kind gets its own
+        # forward pass (less padding); weighting by count keeps the mean over all examples
+        groups = [[ex for ex in batch if ex[1] == DESCRIBE], [ex for ex in batch if ex[1] != DESCRIBE]]
+        loss = sum(len(g) * bridge_batch_loss(lm, venc, projector, g, special, stoi)
+                   for g in groups if g) / len(batch)
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(list(lm.parameters()) + list(projector.parameters()), 1.0)
@@ -256,23 +269,36 @@ def bridge_training():
 
 
 @torch.no_grad()
-def generate_answer(lm, venc, projector, image, prompt, special, stoi, itos) -> str:
-    """Greedily decode an image-conditioned answer to `prompt` for one image."""
-    img_embed = vision_forward(venc, image.unsqueeze(0))
+def generate_answers(lm, venc, projector, images, prompt, special, stoi, itos) -> list[str]:
+    """Greedily decode an image-conditioned answer to `prompt` for each image, as one batch."""
+    img_embed = vision_forward(venc, images)
     prefix = image_to_prefix(img_embed, projector.to_prefix, PREFIX_LEN)
     seq = prompt_ids(prompt, special, stoi)
-    seq_t = torch.tensor(seq, dtype=torch.long)
+    seq_t = torch.tensor([seq] * images.shape[0], dtype=torch.long)  # the same prompt per image
     start = len(seq)
     end_id = special["<|end|>"]
+    done = torch.zeros(images.shape[0], dtype=torch.bool)  # which answers have hit <|end|>
     for _ in range(MAX_ANSWER_TOKENS):
-        tok_embed = lm.embed_tokens(seq_t.unsqueeze(0))
+        tok_embed = lm.embed_tokens(seq_t)
         inp = concat_visual_prefix(prefix, tok_embed)
         logits = lm.forward_embeds(inp)
-        nxt = int(greedy_next_token(logits).item())                    # Step 8
-        if nxt == end_id:
+        nxt = greedy_next_token(logits)                                # Step 8: (B,)
+        done |= nxt == end_id
+        if done.all():
             break
-        seq_t = torch.cat([seq_t, torch.tensor([nxt], dtype=torch.long)])
-    return decode(seq_t[start:], itos)
+        seq_t = torch.cat([seq_t, nxt.unsqueeze(1)], dim=1)
+    # Each answer is everything after the prompt, up to its first <|end|>
+    answers = []
+    for row in seq_t[:, start:].tolist():
+        if end_id in row:
+            row = row[:row.index(end_id)]
+        answers.append(decode(row, itos))
+    return answers
+
+
+def generate_answer(lm, venc, projector, image, prompt, special, stoi, itos) -> str:
+    """Greedily decode an image-conditioned answer to `prompt` for one image."""
+    return generate_answers(lm, venc, projector, image.unsqueeze(0), prompt, special, stoi, itos)[0]
 
 # ---------------------------------------------------------------------------
 # Step 1: cut each image into patches
@@ -444,8 +470,8 @@ def catch_up_bridge() -> None:
 def held_out_captions() -> list[str]:
     """Caption every held-out scene with the trained bridge."""
     lab = setup()
-    return [generate_answer(lab.lm, lab.venc, lab.projector, image, DESCRIBE, lab.special, lab.stoi, lab.itos)
-            for image in lab.eval["images"]]
+    return generate_answers(lab.lm, lab.venc, lab.projector, lab.eval["images"], DESCRIBE,
+                            lab.special, lab.stoi, lab.itos)
 
 
 def step_8() -> str:

@@ -133,11 +133,11 @@ only lowercase letters, spaces, and `?`, all in the base vocabulary.
 
 ## Expected result
 
-With all eight steps implemented, a full run (about a minute on a laptop CPU)
+With all eight steps implemented, a full run (under half a minute on a laptop CPU)
 reaches roughly:
 
 - **Held-out retrieval accuracy** `~77%` (from `~1.7%` at chance).
-- **Held-out caption exact-match** `~87%`.
+- **Held-out caption exact-match** `~95%`.
 - **Grounded visual questions** answered correctly, and the same `"describe the image"`
   prompt returning a **different, correct** caption for each image &mdash; the model is
   using the image, not language priors.

@@ -18,7 +18,6 @@ This file gives you the model, both forward paths, an autoregressive sampler
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -50,6 +49,8 @@ class CausalSelfAttention(nn.Module):
         self.c_proj = nn.Linear(cfg.n_embd, cfg.n_embd)
         self.attn_dropout = nn.Dropout(cfg.dropout)
         self.resid_dropout = nn.Dropout(cfg.dropout)
+        # The causal mask is kept as a buffer so saved checkpoints still load; forward()
+        # applies the same mask through scaled_dot_product_attention(is_causal=True)
         self.register_buffer(
             "mask",
             torch.tril(torch.ones(cfg.block_size, cfg.block_size)).view(
@@ -64,11 +65,9 @@ class CausalSelfAttention(nn.Module):
         q = q.view(B, T, self.n_head, head_size).transpose(1, 2)
         k = k.view(B, T, self.n_head, head_size).transpose(1, 2)
         v = v.view(B, T, self.n_head, head_size).transpose(1, 2)
-        att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(head_size))
-        att = att.masked_fill(self.mask[:, :, :T, :T] == 0, float("-inf"))
-        att = F.softmax(att, dim=-1)
-        att = self.attn_dropout(att)
-        y = att @ v
+        # softmax(q k^T / sqrt(head_size)) v with the causal mask, as one fused call
+        y = F.scaled_dot_product_attention(q, k, v, is_causal=True,
+                                           dropout_p=self.attn_dropout.p if self.training else 0.0)
         y = y.transpose(1, 2).contiguous().view(B, T, C)
         return self.resid_dropout(self.c_proj(y))
 

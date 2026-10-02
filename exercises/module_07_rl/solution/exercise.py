@@ -37,8 +37,10 @@ def sample_group(
 
     GRPO scores a whole *group* of samples against each other, so the first move is
     to generate several completions for the same prompt. `generate_fn` is the
-    provided sampler (`model.generate`); call it once per group member, each time at
-    `temperature` so the group is diverse.
+    provided sampler (`model.generate`). Give it the prompt repeated `group_size`
+    times, one row per group member, and a single call samples the whole group at
+    `temperature`. Each row draws its own tokens, so the group is diverse, and one
+    batched call is much faster than `group_size` separate calls.
 
     Args:
         policy: The model being trained (the current policy).
@@ -53,11 +55,8 @@ def sample_group(
     Returns:
         A list of `group_size` tensors, each the full prompt+completion ids of one sample.
     """
-    return [
-        generate_fn(policy, prompt_ids, max_new_tokens, block_size,
-                    temperature=temperature, generator=generator)[0]
-        for _ in range(group_size)
-    ]
+    return list(generate_fn(policy, prompt_ids.repeat(group_size, 1), max_new_tokens,
+                            block_size, temperature=temperature, generator=generator))
 
 
 # ---------------------------------------------------------------------------

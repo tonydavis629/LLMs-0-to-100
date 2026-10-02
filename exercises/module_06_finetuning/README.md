@@ -50,7 +50,7 @@ Fraction trainable:         7.41%
   CORRECT    real model: the count is exactly the LoRA A and B matrices, 65,536 numbers
 ```
 
-Step 7 finetunes the model, which takes about two minutes on a laptop CPU. Every other step takes a few seconds. Run a single step with `--step` (1 to 10):
+Step 7 finetunes the model for 150 steps, which takes under 30 seconds on a laptop CPU. Every other step takes a few seconds. Run a single step with `--step` (1 to 10):
 
 ```bash
 uv run python module_06_finetuning/src/main.py --step 3
@@ -105,7 +105,7 @@ your Step 3 function, so Step 7 is graded on its own.
   re-pretrained. (Regenerate it with `src/make_base_checkpoint.py`.)
 - `data/sft_pairs.jsonl` &mdash; ~350 toy instruction-response pairs across four
   learnable tasks: uppercase, fixed question-answer, repeat, and reverse. Toy and
-  deterministic so a tiny model shows a crisp flip in a few hundred CPU steps.
+  deterministic so a tiny model shows a crisp flip in 150 CPU steps.
 
 The tokenizer is the Module 5 65-character vocabulary plus four **atomic** special
 tokens (`<|user|>`, `<|assistant|>`, `<|end|>`, `<|pad|>`), each one token id, for

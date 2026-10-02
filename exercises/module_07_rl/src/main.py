@@ -21,7 +21,7 @@ tests it. Read top to bottom, the steps follow one round of GRPO:
 After the ten steps comes the payoff: GRPO training with all ten pieces
 together. The bundled Module 6 instruct model learns to reverse strings, a
 task a Python function can verify, and the runner reports held-out accuracy
-before and after. Training takes a few minutes on a laptop CPU.
+before and after. Training takes under a minute on a laptop CPU.
 
 Add --step N to run one step (1-10, or "train" for the training run).
 Add --solution to run the finished answers from solution/exercise.py.
@@ -78,14 +78,14 @@ from tests.test_training import check_training
 
 OUTPUT_DIR = Path(__file__).resolve().parent.parent / "output"
 
-# Hyperparameters (small enough to run on a laptop CPU in a few minutes)
+# Hyperparameters (small enough to train on a laptop CPU in under a minute)
 BLOCK_SIZE = 128         # context length
 GROUP_SIZE = 8           # completions sampled per prompt (G)
-PROMPTS_PER_STEP = 4     # prompts in each optimizer step (a batch of groups)
-MAX_NEW_TOKENS = 8       # tokens to generate per completion (answers are short)
-MAX_STEPS = 400          # GRPO steps
-EVAL_INTERVAL = 20       # record reward / report every this many steps
-LR = 1e-4                # policy learning rate
+PROMPTS_PER_STEP = 8     # prompts in each optimizer step (a batch of groups)
+MAX_NEW_TOKENS = 6       # tokens to generate per completion (5 letters + <|end|>)
+MAX_STEPS = 100          # GRPO steps
+EVAL_INTERVAL = 10       # record reward / report every this many steps
+LR = 2.5e-4              # policy learning rate (much higher and the policy collapses)
 GRAD_CLIP = 1.0          # largest allowed gradient norm
 BETA = 0.01              # KL-to-reference penalty weight
 TEMPERATURE = 1.0        # sampling temperature for the group (exploration)
@@ -333,9 +333,12 @@ def sampled_accuracy(policy, setup: dict) -> float:
     for item in setup["eval"]:
         ids = prompt_ids(item["prompt"], setup["stoi"])
         gen = torch.Generator().manual_seed(SEED)
-        for _ in range(EVAL_SAMPLES):
-            out = generate(policy, ids, MAX_NEW_TOKENS, BLOCK_SIZE, temperature=TEMPERATURE, generator=gen)
-            answer = response_text(out[0], ids.shape[1], setup["itos"])
+        # One generate call draws all EVAL_SAMPLES answers at once: the prompt repeated
+        # as EVAL_SAMPLES rows of a batch (much faster than one call per sample)
+        out = generate(policy, ids.repeat(EVAL_SAMPLES, 1), MAX_NEW_TOKENS, BLOCK_SIZE,
+                       temperature=TEMPERATURE, generator=gen)
+        for row in out:
+            answer = response_text(row, ids.shape[1], setup["itos"])
             rewards.append(verifiable_reward(answer, item["answer"]))
     return mean_reward(torch.tensor(rewards))
 
@@ -349,18 +352,24 @@ def show_sample(policy, setup: dict) -> None:
 
 
 def completion_losses(policy, reference, seqs, advantages, prompt_len, end_id) -> list[torch.Tensor]:
-    """Per-completion policy-gradient loss + KL penalty for one prompt's group (Steps 5-8)."""
+    """Policy-gradient loss + KL penalty for every sampled completion (Steps 5-8)."""
+    # Every sample is the prompt + MAX_NEW_TOKENS tokens, so all of them stack into
+    # one (N, L) batch: one forward pass per model instead of one per completion
+    batch = torch.stack(seqs)
+    policy_logits = policy(batch[:, :-1])  # position t predicts token t + 1
+    with torch.no_grad():
+        ref_logits = reference(batch[:, :-1])
+
     losses = []
-    for seq, adv in zip(seqs, advantages):
-        seq = truncate_at_end(seq, prompt_len, end_id)
+    for i, adv in enumerate(advantages):
+        seq = truncate_at_end(seqs[i], prompt_len, end_id)
         if seq.shape[0] - prompt_len < 1:
             continue  # nothing was generated before <|end|>
-        inp = seq[:-1].unsqueeze(0)  # what the model reads
-        targets = seq[1:]            # the token it should predict at each position
+        n = seq.shape[0] - 1  # positions up to <|end|>; the causal mask keeps later tokens out
+        targets = seq[1:]     # the token it should predict at each position
         mask = completion_mask(prompt_len, seq.shape[0])
-        policy_lp = gather_token_log_probs(policy(inp)[0], targets)
-        with torch.no_grad():
-            ref_lp = gather_token_log_probs(reference(inp)[0], targets)
+        policy_lp = gather_token_log_probs(policy_logits[i, :n], targets)
+        ref_lp = gather_token_log_probs(ref_logits[i, :n], targets)
         losses.append(pg_loss(policy_lp, adv.item(), mask) + BETA * kl_penalty(policy_lp, ref_lp, mask))
     return losses
 
@@ -387,25 +396,27 @@ def train(setup: dict) -> tuple[list[int], list[float]]:
         progress(f"  GRPO training: step {step + 1}/{MAX_STEPS}")
 
         # One optimizer step over a batch of prompts, each with its own group.
-        step_losses: list[torch.Tensor] = []
+        all_seqs: list[torch.Tensor] = []
+        all_advantages: list[torch.Tensor] = []
+        policy.eval()
         for _ in range(PROMPTS_PER_STEP):
             item = setup["train"][torch.randint(len(setup["train"]), (1,), generator=rng).item()]
             ids = prompt_ids(item["prompt"], setup["stoi"])
-            prompt_len = ids.shape[1]
+            prompt_len = ids.shape[1]  # every prompt has the same length
 
             # Steps 1-4 and 10: sample a group, score it, compare each answer to the group
-            policy.eval()
             seqs = sample_group(policy, ids, GROUP_SIZE, MAX_NEW_TOKENS,
                                 BLOCK_SIZE, TEMPERATURE, generate, gen)
             responses = [response_text(s, prompt_len, setup["itos"]) for s in seqs]
             rewards = score_group(responses, item["answer"])
-            advantages = group_relative_advantages(rewards)
+            all_seqs.extend(seqs)
+            all_advantages.extend(group_relative_advantages(rewards))
             interval_rewards.append(mean_reward(rewards))
 
-            # Steps 5-8: the loss for every completion in the group
-            policy.train()
-            step_losses.extend(
-                completion_losses(policy, reference, seqs, advantages, prompt_len, setup["end_id"]))
+        # Steps 5-8: the loss for every completion of every group
+        policy.train()
+        step_losses = completion_losses(policy, reference, all_seqs, all_advantages,
+                                        prompt_len, setup["end_id"])
 
         # Step 9: one optimizer step on the average loss
         loss = torch.stack(step_losses).mean() if step_losses else torch.zeros((), requires_grad=True)
@@ -480,6 +491,9 @@ def main() -> None:
     args = parser.parse_args()
 
     torch.manual_seed(SEED)
+    # The model is tiny, so one CPU thread is about as fast as many, and it keeps the
+    # printed numbers the same on every machine
+    torch.set_num_threads(1)
     OUTPUT_DIR.mkdir(exist_ok=True)
     load_setup()  # load the models and prompts up front, before any step runs
     for name, step in STEPS.items():

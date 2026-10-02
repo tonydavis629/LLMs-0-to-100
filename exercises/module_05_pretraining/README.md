@@ -40,9 +40,9 @@ The runner goes through the steps in order. Each step's header line carries a ta
 
 ```
 === Step 3: get_batch() === CORRECT
-  One batch: x has shape (32, 128), y has shape (32, 128)
-  x[0][:24] = ' guess who caused your f'
-  y[0][:24] = 'guess who caused your fa'
+  One batch: x has shape (32, 32), y has shape (32, 32)
+  x[0][:24] = "to corrupt a man's wife "
+  y[0][:24] = "o corrupt a man's wife i"
   CORRECT    x and y both have shape (batch_size, block_size): (3, 4) here
   CORRECT    on data = 0, 1, ..., 99 every target is its input plus one (y = x + 1)
   CORRECT    shortest stream: 0..4 with block_size 4 gives x = [0,1,2,3], y = [1,2,3,4]
@@ -54,7 +54,7 @@ Run a single step with `--step` (1, 2, 3, 4, 5, 7, 8, or 10). Steps 1 and 2 alwa
 uv run python module_05_pretraining/src/main.py --step 4
 ```
 
-Step 7 runs the full pretraining loop once Steps 3 to 5 work: 2,000 optimizer steps, which take several minutes on a laptop CPU. It prints the train and validation loss every 250 steps and saves a loss-curve image to `output/`. Steps 8 and 10 then use the trained model. Step 8 reads its validation loss as perplexity and bits per token, and Step 10 prints a text sample from before and after training.
+Step 7 runs the full pretraining loop once Steps 3 to 5 work: 800 optimizer steps on a deliberately small model (2 layers, width 64, 32-character context), which take under a minute on most laptop CPUs. It prints the train and validation loss every 100 steps and saves a loss-curve image to `output/`. Steps 8 and 10 then use the trained model. Step 8 reads its validation loss as perplexity and bits per token, and Step 10 prints a text sample from before and after training.
 
 There is also a single-batch sanity check. It runs Steps 1 to 5, then trains on one small batch over and over in place of the full run. The loss should fall toward zero, which shows the model and optimizer can fit data and the loop is wired correctly:
 

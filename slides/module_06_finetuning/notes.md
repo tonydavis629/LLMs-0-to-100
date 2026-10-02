@@ -281,12 +281,12 @@ $$W' = W + \frac{\alpha}{r} BA, \qquad B \in \mathbb{R}^{d \times r}, \quad A \i
   $(\tfrac{1}{4} - \text{onehot}(y)) / N$ over the $N = 2$ unmasked positions.
   Some steps add one check on the real model, such as the trainable count equalling
   the total size of the LoRA $A$ and $B$ matrices.
-- Captured run (seed 1337, rank 8, alpha 32, 1000 steps, ~350 toy pairs): the same
+- Captured run (seed 1337, rank 8, alpha 32, 150 steps of batch 16, ~350 toy pairs): the same
   prompt `uppercase: hello` flips from `'ers\nIn the father '` (base continues
   Shakespeare-style text, ignoring the instruction) to `'HELLO'` (finetuned answers
   it); 65,536 of 884,096 parameters are trainable (7.41%); the masked loss falls
-  from ~6.1 to ~0.30; and the merge-equality check passes (max logit difference
-  6.68e-06, float32 rounding). The "reverse" task is the hardest and is honestly presented as a minority
+  from ~6.1 to ~0.31; and the merge-equality check passes (max logit difference
+  8.40e-06, float32 rounding). The "reverse" task is the hardest and is honestly presented as a minority
   case &mdash; a tiny model may not nail it.
 - Extra credit: full-FT vs LoRA (skip the freeze, compare counts/quality); vary the
   rank $r$; catastrophic-forgetting probe (a raw base-style prompt after
