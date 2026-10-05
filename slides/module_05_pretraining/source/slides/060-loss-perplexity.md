@@ -40,25 +40,6 @@ A **nat** is the natural-log sibling of the bit: $\ln$ instead of $\log_2$. PyTo
 
 ---
 
-<!-- .slide: id="runs-are-messy" -->
-
-## Real Runs Are Messy
-
-:::columns cols="2" gap="34px"
-**Spikes and divergence**
-
-- Long runs can spike or diverge
-- Usual suspects: learning rate too high, weak clipping, batch size, a bad data shard
-+++
-**Loss is not the whole story**
-
-- Lower loss does not perfectly predict every capability
-- Real runs also track **downstream benchmarks** at checkpoints
-- Generated samples build intuition, but are not a metric
-:::
-
----
-
 <!-- .slide: id="before-after-demo" -->
 
 ## The Demo: Before vs After

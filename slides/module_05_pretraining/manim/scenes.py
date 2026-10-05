@@ -2,7 +2,6 @@
 
 Seven step-through scenes (each split into clips with self.next_section):
   next-token         shifted (input, target) pairs and one loss per position
-  training-loop      forward -> loss -> backward -> update, loss descending
   sequence-packing   documents -> concat with EOS -> fixed-length blocks
   lr-schedule        warmup then cosine decay, traced by a moving dot
   scaling-laws       the power-law line, then the Chinchilla compute-optimal valley
@@ -253,91 +252,6 @@ class NextTokenScene(StepScene):
                   Indicate(tbars[0], color=GREEN, scale_factor=1.15), run_time=0.7)
         self.play(FadeIn(lossv), run_time=0.4)
         self.caption("Cross-entropy compares the two: only the true token's term survives.")
-        self.wait(0.3)
-
-
-class TrainingLoopScene(StepScene):
-    """The optimization loop: forward, loss, backward, update, repeat; loss descends."""
-
-    def construct(self):
-        self.setup_bg()
-        self.add(title_bar("The Training Loop"))
-
-        F = cell("Forward", 2.0, 0.8, PRIMARY, size=22).move_to([0, 1.85, 0])
-        L = cell("Loss", 2.0, 0.8, SECONDARY, size=22).move_to([3.8, 0.15, 0])
-        B = cell("Backward", 2.0, 0.8, SECONDARY, size=22).move_to([0, -1.55, 0])
-        U = cell("Update", 2.0, 0.8, GREEN, size=22).move_to([-3.8, 0.15, 0])
-        nodes = VGroup(F, L, B, U)
-
-        a_fl = CurvedArrow(F.get_right(), L.get_top(), angle=-0.9, color=PRIMARY, stroke_width=3, tip_length=0.2)
-        a_lb = CurvedArrow(L.get_bottom(), B.get_right(), angle=-0.9, color=SECONDARY, stroke_width=3, tip_length=0.2)
-        a_bu = CurvedArrow(B.get_left(), U.get_bottom(), angle=-0.9, color=SECONDARY, stroke_width=3, tip_length=0.2)
-        a_uf = CurvedArrow(U.get_top(), F.get_left(), angle=-0.9, color=GREEN, stroke_width=3, tip_length=0.2)
-        ring = VGroup(a_fl, a_lb, a_bu, a_uf)
-
-        cap = label("training loss", 18, MUTED).move_to([0, 0.62, 0])
-        num = label("--", 40, TEXT).move_to([0, -0.05, 0])
-
-        # ---- the loop ----
-        self.next_section("setup", skip_animations=False)
-        self.play(LaggedStart(*[FadeIn(n) for n in nodes], lag_ratio=0.1), run_time=0.9)
-        self.play(LaggedStart(*[Create(a) for a in ring], lag_ratio=0.15), run_time=1.0)
-        self.play(FadeIn(cap), FadeIn(num), run_time=0.4)
-        self.caption("Pretraining repeats one loop, millions of times.")
-
-        # ---- forward ----
-        self.next_section("forward", skip_animations=False)
-        batch = VGroup(*[sq(0.22, PRIMARY, 0.5) for _ in range(3)]).arrange(DOWN, buff=0.05)
-        batch.next_to(F, UP, buff=0.35)
-        blab = label("token batch", 16, MUTED).next_to(batch, RIGHT, buff=0.18)
-        self.play(FadeIn(batch), FadeIn(blab), run_time=0.4)
-        dot = batch.copy()
-        self.play(dot.animate.move_to(F.get_center()).scale(0.6), run_time=0.4)
-        self.play(dot.animate.move_to(L.get_center()), a_fl.animate.set_stroke(width=5), run_time=0.5)
-        num4 = label("4.18", 40, SECONDARY).move_to(num)
-        self.play(Transform(num, num4), FadeOut(dot), run_time=0.4)
-        self.caption("Forward pass: run the batch through the model, then measure the loss.")
-
-        # ---- backward ----
-        self.next_section("backward", skip_animations=False)
-        grad = Dot(color=SECONDARY, radius=0.13).move_to(L.get_center())
-        self.play(a_fl.animate.set_stroke(width=3), FadeIn(grad, scale=1.4), run_time=0.3)
-        self.play(MoveAlongPath(grad, a_lb), a_lb.animate.set_stroke(width=5), run_time=0.6)
-        self.play(MoveAlongPath(grad, a_bu), a_bu.animate.set_stroke(width=5), run_time=0.6)
-        self.caption("Backward pass: backpropagate the loss into a gradient for every weight.")
-
-        # ---- update ----
-        self.next_section("update", skip_animations=False)
-        grid = VGroup(*[sq(0.20, GREEN, 0.35) for _ in range(9)]).arrange_in_grid(3, 3, buff=0.05)
-        grid.next_to(U, DOWN, buff=0.3)
-        gl = label("weights", 15, MUTED).next_to(grid, DOWN, buff=0.12)
-        self.play(FadeOut(grad), FadeIn(grid), FadeIn(gl), run_time=0.4)
-        self.play(Indicate(U, color=GREEN, scale_factor=1.08),
-                  *[s.animate.set_fill(opacity=np.random.uniform(0.2, 0.7)) for s in grid],
-                  a_bu.animate.set_stroke(width=3), run_time=0.5)
-        num340 = label("3.40", 40, SECONDARY).move_to(num)
-        self.play(a_uf.animate.set_stroke(width=5), Transform(num, num340), run_time=0.6)
-        self.play(a_uf.animate.set_stroke(width=3), run_time=0.2)
-        self.caption("Optimizer step: nudge every weight to lower the loss. Then repeat.")
-
-        # ---- descend ----
-        self.next_section("descend", skip_animations=False)
-        spin = Dot(color=TEXT, radius=0.10)
-        loop = Ellipse(width=7.6, height=3.4).move_to([0, 0.15, 0])
-        # Ellipse traces counterclockwise; the loop's arrows run clockwise
-        # (forward -> loss -> backward -> update), so reverse the path.
-        loop.reverse_points()
-        spin.move_to(loop.point_from_proportion(0))
-        self.play(FadeIn(spin), run_time=0.2)
-        for val in ["2.34", "2.11", "1.90"]:
-            newn = label(val, 40, SECONDARY).move_to(num)
-            self.play(MoveAlongPath(spin, loop),
-                      LaggedStart(*[a.animate.set_stroke(width=4.5) for a in ring], lag_ratio=0.05),
-                      run_time=0.7, rate_func=linear)
-            self.play(Transform(num, newn),
-                      *[a.animate.set_stroke(width=3) for a in ring], run_time=0.3)
-        self.play(FadeOut(spin), Indicate(num, color=GREEN, scale_factor=1.2), run_time=0.5)
-        self.caption("Over many steps the loss falls: random weights become useful weights.")
         self.wait(0.3)
 
 
@@ -615,70 +529,82 @@ class DataParallelScene(StepScene):
 
 
 class PerplexityScene(StepScene):
-    """Cross-entropy becomes perplexity (effective choices) and bits per token."""
+    """Cross-entropy becomes perplexity (effective choices) and bits per token.
+
+    One prediction position with word tokens. Loss is -ln p(true token), so
+    perplexity exp(loss) = 1 / p(true token) and bits = loss / ln 2.
+    """
 
     def construct(self):
         self.setup_bg()
-        self.add(title_bar("Loss, Perplexity, and Bits", "after the prefix 'to b'"))
+        self.add(title_bar("Loss, Perplexity, and Bits", "next token after \"The cat sat on the\""))
 
-        toks = ["e", "a", "o", " ", "r", "u", "l", "y"]
-        before = np.array([0.17, 0.15, 0.14, 0.13, 0.12, 0.11, 0.10, 0.08])
-        after = np.array([0.78, 0.06, 0.05, 0.04, 0.03, 0.02, 0.01, 0.01])
-        bx0, bdx, unit, base = -5.4, 0.62, 2.6, -1.4
+        toks = ["mat", "floor", "bed", "couch", "table", "chair", "roof", "all other"]
+        before = np.array([0.05, 0.05, 0.04, 0.04, 0.04, 0.03, 0.03, 0.72])
+        after = np.array([0.60, 0.12, 0.08, 0.06, 0.05, 0.03, 0.02, 0.04])
+        bx0, bdx, unit, base = -5.9, 0.82, 2.5, -1.5
 
         def bars_of(probs):
             g = VGroup()
             for i, p in enumerate(probs):
-                col = SECONDARY if i == 0 else PRIMARY
+                col = SECONDARY if i == 0 else (MUTED if i == len(probs) - 1 else PRIMARY)
                 h = max(p * unit, 0.05)
-                g.add(Rectangle(width=0.46, height=h, stroke_width=1.4, stroke_color=col,
+                g.add(Rectangle(width=0.52, height=h, stroke_width=1.4, stroke_color=col,
                                 fill_color=col, fill_opacity=0.6).move_to([bx0 + i * bdx, base + h / 2, 0]))
             return g
 
-        tlabels = VGroup(*[label(t if t != " " else "_", 17, MUTED).move_to([bx0 + i * bdx, base - 0.28, 0])
+        tlabels = VGroup(*[label(t, 16, MUTED).move_to([bx0 + i * bdx, base - 0.28, 0])
                            for i, t in enumerate(toks)])
+        tlabels[-1].become(label("all other", 14, MUTED).move_to([bx0 + 7 * bdx, base - 0.25, 0]))
+        tlabels.add(label("50k tokens", 14, MUTED).move_to([bx0 + 7 * bdx, base - 0.5, 0]))
 
-        def panel(loss, ppl, bits, ppl_note):
+        def pct_labels(probs, bars):
+            return VGroup(*[label(f"{p:.2f}", 14, TEXT).next_to(bars[i], UP, buff=0.08)
+                            for i, p in enumerate(probs)])
+
+        def panel(p, loss, ppl, bits, ppl_note):
             rows = VGroup(
-                label(f"loss = {loss}  nats", 22, TEXT),
+                label(f"p(mat) = {p}", 22, SECONDARY),
+                label(f"loss = -ln p = {loss}  nats", 22, TEXT),
                 label(f"perplexity = exp(loss) = {ppl}", 22, SECONDARY),
                 label(ppl_note, 15, MUTED),
-                label(f"bits / token = loss / ln 2 = {bits}", 22, PRIMARY),
+                label(f"bits = loss / ln 2 = {bits}", 22, PRIMARY),
             ).arrange(DOWN, buff=0.26, aligned_edge=LEFT)
-            rows[2].next_to(rows[1], DOWN, buff=0.06, aligned_edge=LEFT)
-            rows.move_to([2.6, 0.8, 0])
+            rows[3].next_to(rows[2], DOWN, buff=0.06, aligned_edge=LEFT)
+            rows.move_to([3.2, 0.6, 0])
             return rows
 
         # ---- before: spread out ----
         self.next_section("spread", skip_animations=False)
         bars = bars_of(before)
-        truth = label("true next token", 15, SECONDARY).next_to(bars[0], UP, buff=0.15)
+        nums = pct_labels(before, bars)
         self.play(LaggedStart(*[GrowFromEdge(b, DOWN) for b in bars], lag_ratio=0.06),
                   FadeIn(tlabels), run_time=1.0)
-        self.play(FadeIn(truth), run_time=0.3)
-        self.caption("Before training, the model is unsure: probability is spread across many tokens.")
+        self.play(FadeIn(nums), run_time=0.3)
+        self.caption("Early in training, probability is spread thin. The true token, \"mat\", gets 0.05.")
 
         # ---- perplexity as effective choices ----
         self.next_section("perplexity", skip_animations=False)
-        p_before = panel("4.19", "66", "6.04", "the effective number of next-token guesses")
+        p_before = panel("0.05", "3.00", "20", "4.32", "as unsure as a fair pick among 20 tokens")
         self.play(FadeIn(p_before), run_time=0.6)
-        self.caption("Perplexity = exp(loss): the effective number of guesses. Here, roughly all 65 characters.")
+        self.caption("Perplexity = 1 / p: how many equally likely tokens the model is choosing among.")
 
         # ---- after training: sharpened ----
         self.next_section("sharpen", skip_animations=False)
         bars_after = bars_of(after)
-        p_after = panel("2.01", "7.5", "2.90", "now only a handful of plausible characters")
-        self.play(Transform(bars, bars_after), Transform(p_before, p_after),
-                  truth.animate.next_to(bars_after[0], UP, buff=0.15), run_time=1.1)
-        self.caption("Training sharpens the distribution: lower loss, and far lower perplexity.")
+        nums_after = pct_labels(after, bars_after)
+        p_after = panel("0.60", "0.51", "1.67", "0.74", "barely more than one real choice")
+        self.play(Transform(bars, bars_after), Transform(nums, nums_after),
+                  Transform(p_before, p_after), run_time=1.1)
+        self.caption("Training sharpens the distribution onto \"mat\": lower loss, far lower perplexity.")
 
         # ---- bits and compression ----
         self.next_section("bits", skip_animations=False)
-        self.play(Indicate(p_before[3], color=PRIMARY, scale_factor=1.12), run_time=0.6)
-        comp = label("fewer bits per token  =  the text compresses better", 19, PRIMARY)
-        comp.to_edge(DOWN, buff=1.15)
+        self.play(Indicate(p_before[4], color=PRIMARY, scale_factor=1.12), run_time=0.6)
+        comp = label("4.32 -> 0.74 bits: better compression", 18, PRIMARY)
+        comp.next_to(p_before, DOWN, buff=0.45, aligned_edge=LEFT)
         self.play(FadeIn(comp), run_time=0.5)
-        self.caption("Bits per token is the same loss in Shannon's units: the bridge back to Module 1.")
+        self.caption("Bits per token is the same loss in Shannon's units, as in Module 1.")
         self.wait(0.3)
 
 

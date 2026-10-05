@@ -82,9 +82,9 @@ Gao, Biderman, and collaborators at EleutherAI built **The Pile**: 800GB, 22 cur
 
 ---
 
-<!-- .slide: id="side-quest-data-wall" -->
+<!-- .slide: id="data-wall" -->
 
-## Side Quest: The Data Wall
+## The Data Wall
 
 What if high-quality **human** text, not model size, is the scarce resource?
 

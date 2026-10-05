@@ -1114,6 +1114,45 @@
   height: 6px;
 }
 
+/* Training-loop walkthrough: the full loop fits without scrolling, and the
+   lines under discussion stand out from the dimmed rest. */
+.reveal section[id^="loop-"] pre code {
+  max-height: none;
+  font-size: 11.5pt;
+  line-height: 1.3;
+}
+.reveal section[id^="loop-"] pre code td {
+  font-size: inherit;
+  padding: 0 6px;
+  border: none;
+}
+.reveal section[id^="loop-"] pre code.has-highlights tr:not(.highlight-line) {
+  opacity: 0.3;
+}
+.reveal section[id^="loop-"] pre code tr.highlight-line td.hljs-ln-code {
+  background: rgba(245, 166, 35, 0.14);
+}
+
+/* Real training-log charts from public BigScience runs. */
+.run-figure {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 6px;
+}
+.run-figure img {
+  width: 100%;
+  height: auto;
+  margin: 0;
+}
+
+/* Gradient-accumulation flow: leave room for the motivation line above it. */
+.reveal #grad-accumulation .stage-flow { margin: 10px 0 6px; }
+.reveal #grad-accumulation .stage-flow svg { max-width: 700px; }
+
+/* Loss-scaling number line: leave room for the three columns and the note. */
+.reveal #loss-scaling .stage-flow { margin: 8px 0 4px; }
+.reveal #loss-scaling .stage-flow svg { max-width: 740px; }
+
   </style>
 </head>
 <body>
@@ -1202,6 +1241,36 @@ Causal masking + cross-entropy is the whole idea. The rest of the module &mdash;
 
 ---
 
+<!-- .slide: id="review-3" -->
+
+## Review: Prediction Is Compression (Module 1)
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**What Module 1 showed**
+
+- Encoding a symbol with probability $p$ costs $-\log_2 p$ bits
+- Cross-entropy is the average cost when the code comes from the model's $q$ instead of the true $p$
+- A code built from character frequencies shrank "the cat sat on the mat" from 110 bits to 70
+
+</div>
+
+<div>
+
+**Why it matters here**
+
+- The pretraining loss **is** a cross-entropy, so lower loss means fewer bits per token
+- Training a better predictor and building a better compressor are the same objective
+- Del&eacute;tang et al. (2023), "Language Modeling Is Compression," use LLMs directly as lossless compressors
+
+</div>
+
+</div>
+
+---
+
 <!-- .slide: id="divider-what" class="section-divider" data-state="is-section-divider" -->
 
 # What Pretraining Is
@@ -1260,7 +1329,7 @@ Free supervision is why pretraining can consume trillions of tokens.
 
 <!-- .slide: id="why-enough" -->
 
-## "Just" Predicting the Next Token
+## &ldquo;Just&rdquo; Predicting the Next Token
 
 To push the loss lower, the model must learn everything that makes text predictable:
 
@@ -1269,7 +1338,7 @@ To push the loss lower, the model must learn everything that makes text predicta
 <div>
 
 - **Grammar and syntax** &mdash; to keep sentences well-formed
-- **Facts about the world** &mdash; "the capital of France is ___"
+- **Facts about the world** &mdash; &ldquo;the capital of France is&nbsp;___&rdquo;
 - **Style and register** &mdash; legal text, poetry, code comments
 
 </div>
@@ -1524,32 +1593,6 @@ Two alternatives change **which tokens are predicted from which context**:
 
 ---
 
-<!-- .slide: id="side-quest-compression" -->
-
-## Side Quest: Compression Is Prediction
-
-A model that predicts text well is a good **compressor**: encoding the next token takes about $-\log_2 p(\text{token})$ bits.
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
-
-<div>
-
-- Shannon's through-line from Module 1: **cross-entropy, perplexity, and bits per token** measure compression
-- Lower loss = fewer bits per token = tighter description of the data
-
-</div>
-
-<div>
-
-- Minimizing loss and maximizing compression are the **same objective**
-- Ilya Sutskever frames next-token prediction as compression; the **Hutter Prize** rewards compressing Wikipedia; DeepMind's **"Language Modeling Is Compression"** (2023) makes the equivalence precise
-
-</div>
-
-</div>
-
----
-
 <!-- .slide: id="divider-pipeline" class="section-divider" data-state="is-section-divider" -->
 
 # The Pretraining Pipeline
@@ -1674,21 +1717,314 @@ The engineering that keeps a long run stable
 
 ---
 
-<!-- .slide: id="recipe-intro" -->
+<!-- .slide: id="loop-overview" -->
 
-## One Loop, Repeated
+## The Training Loop in Code
 
-- Module 2 gave the core: SGD, Adam, mini-batches, learning rates
-- Pretraining adds a few standard choices that keep **long, large** runs stable
-- The loop never changes: forward, loss, backward, update &mdash; millions of times
+<div class="slide-columns" style="grid-template-columns: 1.45fr 1fr; gap: 30px;">
+
+<div>
+
+```python []
+model = GPT(config)
+optimizer = torch.optim.AdamW(model.parameters(), lr=6e-3, weight_decay=0.1)
+
+for step in range(max_steps):
+    lr = lr_at_step(step)
+    for group in optimizer.param_groups:
+        group["lr"] = lr
+
+    x, y = get_batch(train_data, block_size, batch_size)
+
+    logits = model(x)
+    loss = F.cross_entropy(logits.view(-1, vocab_size), y.view(-1))
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+    optimizer.step()
+```
+
+</div>
+
+<div>
+
+**Module 2's loop, plus two additions**
+
+- Lines 1-2: build the model and optimizer, once
+- Lines 5-7: set this step's learning rate
+- Line 9: sample a batch
+- Lines 11-12: forward pass and loss
+- Lines 14-15: backward pass
+- Lines 17-18: clip, then update
+
+The schedule (5-7) and clipping (17) are what pretraining adds. The exercise runs this loop 800 times.
+
+</div>
+
+</div>
 
 ---
 
-<section id="training-loop-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="training-loop" preload="auto"></video>
-  </div>
-</section>
+<!-- .slide: id="loop-setup" -->
+
+## Loop Step 1: Model and Optimizer
+
+<div class="slide-columns" style="grid-template-columns: 1.45fr 1fr; gap: 30px;">
+
+<div>
+
+```python [1-2]
+model = GPT(config)
+optimizer = torch.optim.AdamW(model.parameters(), lr=6e-3, weight_decay=0.1)
+
+for step in range(max_steps):
+    lr = lr_at_step(step)
+    for group in optimizer.param_groups:
+        group["lr"] = lr
+
+    x, y = get_batch(train_data, block_size, batch_size)
+
+    logits = model(x)
+    loss = F.cross_entropy(logits.view(-1, vocab_size), y.view(-1))
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+    optimizer.step()
+```
+
+</div>
+
+<div>
+
+- `model` starts with random weights, so its predictions are close to uniform: loss $\approx \ln V$
+- The exercise's 65-character vocabulary starts near $\ln 65 = 4.17$
+- `AdamW` keeps two running averages for **every** weight, so its state is twice the size of the model
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="loop-lr" -->
+
+## Loop Step 2: Set the Learning Rate
+
+<div class="slide-columns" style="grid-template-columns: 1.45fr 1fr; gap: 30px;">
+
+<div>
+
+```python [5-7]
+model = GPT(config)
+optimizer = torch.optim.AdamW(model.parameters(), lr=6e-3, weight_decay=0.1)
+
+for step in range(max_steps):
+    lr = lr_at_step(step)
+    for group in optimizer.param_groups:
+        group["lr"] = lr
+
+    x, y = get_batch(train_data, block_size, batch_size)
+
+    logits = model(x)
+    loss = F.cross_entropy(logits.view(-1, vocab_size), y.view(-1))
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+    optimizer.step()
+```
+
+</div>
+
+<div>
+
+- The rate changes every step: warm up, then cosine decay (two slides ahead)
+- PyTorch stores the rate in `optimizer.param_groups`
+- Overwriting it there each step is how a schedule is applied
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="loop-batch" -->
+
+## Loop Step 3: Sample a Batch
+
+<div class="slide-columns" style="grid-template-columns: 1.45fr 1fr; gap: 30px;">
+
+<div>
+
+```python [9]
+model = GPT(config)
+optimizer = torch.optim.AdamW(model.parameters(), lr=6e-3, weight_decay=0.1)
+
+for step in range(max_steps):
+    lr = lr_at_step(step)
+    for group in optimizer.param_groups:
+        group["lr"] = lr
+
+    x, y = get_batch(train_data, block_size, batch_size)
+
+    logits = model(x)
+    loss = F.cross_entropy(logits.view(-1, vocab_size), y.view(-1))
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+    optimizer.step()
+```
+
+</div>
+
+<div>
+
+- Pick `batch_size` random offsets into the token stream and slice `block_size` tokens at each
+- `x` and `y` both have shape $(B, T)$
+- `y` is `x` shifted left by one, so `y[b, t]` is the token that follows `x[b, t]`
+- One batch holds $B \times T$ next-token problems
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="loop-forward" -->
+
+## Loop Step 4: Forward Pass and Loss
+
+<div class="slide-columns" style="grid-template-columns: 1.45fr 1fr; gap: 30px;">
+
+<div>
+
+```python [11-12]
+model = GPT(config)
+optimizer = torch.optim.AdamW(model.parameters(), lr=6e-3, weight_decay=0.1)
+
+for step in range(max_steps):
+    lr = lr_at_step(step)
+    for group in optimizer.param_groups:
+        group["lr"] = lr
+
+    x, y = get_batch(train_data, block_size, batch_size)
+
+    logits = model(x)
+    loss = F.cross_entropy(logits.view(-1, vocab_size), y.view(-1))
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+    optimizer.step()
+```
+
+</div>
+
+<div>
+
+- `model(x)` returns logits of shape $(B, T, V)$: a score for every vocabulary token at every position
+- `cross_entropy` expects one row of scores per prediction, so `.view` flattens logits to $(BT, V)$ and targets to $(BT,)$
+- The result is one number: the mean of $-\log p(\text{true next token})$ over all $BT$ positions
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="loop-backward" -->
+
+## Loop Step 5: Backward Pass
+
+<div class="slide-columns" style="grid-template-columns: 1.45fr 1fr; gap: 30px;">
+
+<div>
+
+```python [14-15]
+model = GPT(config)
+optimizer = torch.optim.AdamW(model.parameters(), lr=6e-3, weight_decay=0.1)
+
+for step in range(max_steps):
+    lr = lr_at_step(step)
+    for group in optimizer.param_groups:
+        group["lr"] = lr
+
+    x, y = get_batch(train_data, block_size, batch_size)
+
+    logits = model(x)
+    loss = F.cross_entropy(logits.view(-1, vocab_size), y.view(-1))
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+    optimizer.step()
+```
+
+</div>
+
+<div>
+
+- `loss.backward()` runs the chain rule (Module 2) from the loss back through every layer
+- It fills `p.grad` for every parameter `p`
+- PyTorch **adds** into `.grad` instead of overwriting it, so `zero_grad()` must clear last step's gradients first
+- Skip it and every update uses the sum of all past gradients
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="loop-update" -->
+
+## Loop Step 6: Clip and Update
+
+<div class="slide-columns" style="grid-template-columns: 1.45fr 1fr; gap: 30px;">
+
+<div>
+
+```python [17-18]
+model = GPT(config)
+optimizer = torch.optim.AdamW(model.parameters(), lr=6e-3, weight_decay=0.1)
+
+for step in range(max_steps):
+    lr = lr_at_step(step)
+    for group in optimizer.param_groups:
+        group["lr"] = lr
+
+    x, y = get_batch(train_data, block_size, batch_size)
+
+    logits = model(x)
+    loss = F.cross_entropy(logits.view(-1, vocab_size), y.view(-1))
+
+    optimizer.zero_grad()
+    loss.backward()
+
+    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+    optimizer.step()
+```
+
+</div>
+
+<div>
+
+- `clip_grad_norm_` measures the norm of all gradients together; above 1.0, it scales every gradient down by the same factor
+- The direction of the step is unchanged, only its length is capped
+- `optimizer.step()` moves each weight using its gradient and its AdamW running averages
+- Then the loop repeats with the next batch
+
+</div>
+
+</div>
 
 ---
 
@@ -1760,42 +2096,288 @@ The engineering that keeps a long run stable
 
 ---
 
-<!-- .slide: id="stability-tricks" -->
+<!-- .slide: id="grad-clipping" -->
 
-## Stability and Scale
+## Gradient Clipping
 
-<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 20px;">
+<div class="slide-columns" style="grid-template-columns: 1.15fr 1fr; gap: 34px; align-items: center;">
 
 <div>
 
-**Gradient clipping**
-
-- Cap the global gradient norm
-- One bad batch cannot wreck the weights
-- Prevents loss spikes
+<div class="stage-flow"><svg viewBox="0 0 560 390" role="img" aria-label="A long gradient arrow is shortened to the clipping circle of radius c, keeping its direction; a short gradient inside the circle is unchanged"><defs><marker id="gcr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e74c3c"></path></marker><marker id="gcg" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#3fb950"></path></marker><marker id="gcb" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a9eff"></path></marker></defs><circle cx="200" cy="240" r="110" fill="rgba(136,146,164,0.06)" stroke="#8892a4" stroke-width="1.5" stroke-dasharray="6 5"></circle><text x="200" y="378" text-anchor="middle" font-size="15" fill="#8892a4">circle: norm = c</text><line x1="200" y1="240" x2="500" y2="40" stroke="#e74c3c" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#gcr)"></line><text x="490" y="28" text-anchor="end" font-size="16" fill="#e74c3c">raw gradient, norm 3.3c</text><line x1="200" y1="240" x2="291.5" y2="179.0" stroke="#3fb950" stroke-width="4" marker-end="url(#gcg)"></line><text x="307.5" y="203.0" font-size="16" fill="#3fb950">clipped: same direction, norm c</text><line x1="200" y1="240" x2="140" y2="178" stroke="#4a9eff" stroke-width="3" marker-end="url(#gcb)"></line><text x="20" y="100" font-size="15" fill="#4a9eff">small gradient: unchanged</text><circle cx="200" cy="240" r="4" fill="#e8eaf0"></circle></svg></div>
 
 </div>
 
 <div>
 
-**Gradient accumulation**
+$$\mathbf g \leftarrow \mathbf g \cdot \min\left(1, \frac{c}{\lVert \mathbf g \rVert}\right)$$
 
-- Sum gradients over several small batches before stepping
-- Simulates a larger **effective** batch than one GPU holds
+- A rare batch can produce a huge gradient, and one step along it is a **loss spike**
+- Clipping caps the step length at $c$ without changing its direction
+- The norm covers all parameters at once. GPT-3 used $c = 1.0$
+
+```python
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+```
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="grad-accumulation" -->
+
+## Gradient Accumulation
+
+Bigger batches average over more examples, so the gradient is less noisy and big runs train more stably. But a batch of millions of tokens does not fit in one GPU's memory.
+
+<div class="stage-flow"><svg viewBox="0 0 900 300" role="img" aria-label="Four micro-batches each run forward and backward; their gradients add into p.grad; one optimizer step follows"><defs><marker id="gab" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#4a9eff"></path></marker><marker id="gaa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#f5a623"></path></marker></defs><rect x="25" y="14" width="190" height="62" rx="10" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.55)" stroke-width="1.4"></rect><text x="120" y="40" text-anchor="middle" font-size="16" fill="#e8eaf0">micro-batch 1</text><text x="120" y="62" text-anchor="middle" font-size="13" fill="#8892a4">forward, backward</text><line x1="120" y1="80" x2="270" y2="140" stroke="#4a9eff" stroke-width="2" marker-end="url(#gab)"></line><rect x="245" y="14" width="190" height="62" rx="10" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.55)" stroke-width="1.4"></rect><text x="340" y="40" text-anchor="middle" font-size="16" fill="#e8eaf0">micro-batch 2</text><text x="340" y="62" text-anchor="middle" font-size="13" fill="#8892a4">forward, backward</text><line x1="340" y1="80" x2="390" y2="140" stroke="#4a9eff" stroke-width="2" marker-end="url(#gab)"></line><rect x="465" y="14" width="190" height="62" rx="10" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.55)" stroke-width="1.4"></rect><text x="560" y="40" text-anchor="middle" font-size="16" fill="#e8eaf0">micro-batch 3</text><text x="560" y="62" text-anchor="middle" font-size="13" fill="#8892a4">forward, backward</text><line x1="560" y1="80" x2="510" y2="140" stroke="#4a9eff" stroke-width="2" marker-end="url(#gab)"></line><rect x="685" y="14" width="190" height="62" rx="10" fill="rgba(74,158,255,0.10)" stroke="rgba(74,158,255,0.55)" stroke-width="1.4"></rect><text x="780" y="40" text-anchor="middle" font-size="16" fill="#e8eaf0">micro-batch 4</text><text x="780" y="62" text-anchor="middle" font-size="13" fill="#8892a4">forward, backward</text><line x1="780" y1="80" x2="630" y2="140" stroke="#4a9eff" stroke-width="2" marker-end="url(#gab)"></line><rect x="200" y="146" width="500" height="58" rx="10" fill="rgba(245,166,35,0.10)" stroke="rgba(245,166,35,0.6)" stroke-width="1.6"></rect><text x="450" y="172" text-anchor="middle" font-size="17" fill="#e8eaf0">p.grad: the four gradients add up</text><text x="450" y="193" text-anchor="middle" font-size="13" fill="#8892a4">dividing each loss by 4 makes the sum the mean</text><line x1="450" y1="208" x2="450" y2="236" stroke="#f5a623" stroke-width="2.5" marker-end="url(#gaa)"></line><rect x="270" y="242" width="360" height="48" rx="10" fill="rgba(63,185,80,0.12)" stroke="rgba(63,185,80,0.6)" stroke-width="1.6"></rect><text x="450" y="272" text-anchor="middle" font-size="16" fill="#e8eaf0">one optimizer.step(), then zero_grad()</text></svg></div>
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+- GPT-3 used 3.2 million tokens per step
+- Run the batch as small **micro-batches**: `.grad` adds up across `backward()` calls on its own
 
 </div>
 
 <div>
 
-**Mixed precision**
-
-- Most math in `bf16`, not `fp32`
-- Fewer bits = faster compute, larger models in memory
-- More in Module 9
+- Same update as one big batch, paid for in time instead of memory
+- Effective batch = micro-batch × steps × number of GPUs
 
 </div>
 
 </div>
+
+---
+
+<!-- .slide: id="number-formats" -->
+
+## Mixed Precision: Number Formats
+
+<div class="stage-flow">
+<svg viewBox="0 0 1000 210" role="img" aria-label="Bit layouts: fp32 has 1 sign, 8 exponent, 23 mantissa bits; fp16 has 1, 5, 10; bf16 has 1, 8, 7"><text x="70" y="41" text-anchor="end" font-size="17" fill="#e8eaf0">fp32</text><rect x="90" y="20" width="19" height="30" rx="3" fill="rgba(136,146,164,0.30)" stroke="#8892a4" stroke-width="1"></rect><rect x="112" y="20" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="134" y="20" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="156" y="20" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="178" y="20" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="200" y="20" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="222" y="20" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="244" y="20" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="266" y="20" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="288" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="310" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="332" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="354" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="376" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="398" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="420" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="442" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="464" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="486" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="508" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="530" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="552" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="574" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="596" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="618" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="640" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="662" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="684" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="706" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="728" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="750" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="772" y="20" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><text x="806" y="41" font-size="14" fill="#8892a4">max ≈ 3.4e38</text><text x="70" y="103" text-anchor="end" font-size="17" fill="#e8eaf0">fp16</text><rect x="90" y="82" width="19" height="30" rx="3" fill="rgba(136,146,164,0.30)" stroke="#8892a4" stroke-width="1"></rect><rect x="112" y="82" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="134" y="82" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="156" y="82" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="178" y="82" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="200" y="82" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="222" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="244" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="266" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="288" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="310" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="332" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="354" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="376" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="398" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="420" y="82" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><text x="454" y="103" font-size="14" fill="#8892a4">max 65,504</text><text x="70" y="165" text-anchor="end" font-size="17" fill="#e8eaf0">bf16</text><rect x="90" y="144" width="19" height="30" rx="3" fill="rgba(136,146,164,0.30)" stroke="#8892a4" stroke-width="1"></rect><rect x="112" y="144" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="134" y="144" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="156" y="144" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="178" y="144" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="200" y="144" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="222" y="144" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="244" y="144" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="266" y="144" width="19" height="30" rx="3" fill="rgba(74,158,255,0.30)" stroke="#4a9eff" stroke-width="1"></rect><rect x="288" y="144" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="310" y="144" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="332" y="144" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="354" y="144" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="376" y="144" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="398" y="144" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><rect x="420" y="144" width="19" height="30" rx="3" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-width="1"></rect><text x="454" y="165" font-size="14" fill="#8892a4">max ≈ 3.4e38</text><rect x="90" y="192" width="14" height="14" rx="2" fill="rgba(136,146,164,0.30)" stroke="#8892a4"></rect><text x="112" y="204" font-size="14" fill="#e8eaf0">sign</text><rect x="180" y="192" width="14" height="14" rx="2" fill="rgba(74,158,255,0.30)" stroke="#4a9eff"></rect><text x="202" y="204" font-size="14" fill="#e8eaf0">exponent: sets the range</text><rect x="420" y="192" width="14" height="14" rx="2" fill="rgba(245,166,35,0.25)" stroke="#f5a623"></rect><text x="442" y="204" font-size="14" fill="#e8eaf0">mantissa: sets the precision</text></svg>
+</div>
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+- Half the bits = half the memory and bandwidth per number
+- GPU tensor cores are built for 16-bit math. An A100 does 312 TFLOPS in bf16 against 19.5 in plain fp32
+- fp16 has a small range: tiny gradients underflow to zero unless the loss is scaled up first
+
+</div>
+
+<div>
+
+- **bf16** keeps fp32's 8 exponent bits, so it has the same range and needs no loss scaling
+- The price is precision: 7 mantissa bits. In bf16, $1 + 0.001$ rounds back to $1$
+- A small weight update can vanish entirely, so the weights themselves cannot live in bf16
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="mixed-precision" -->
+
+## Mixed Precision: In the Loop
+
+<div class="slide-columns" style="grid-template-columns: 1fr 1fr; gap: 34px;">
+
+<div>
+
+```python
+with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+    logits = model(x)
+    loss = F.cross_entropy(logits.view(-1, vocab_size), y.view(-1))
+
+optimizer.zero_grad()
+loss.backward()
+torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+optimizer.step()
+```
+
+</div>
+
+<div>
+
+**"Mixed" means two precisions at once**
+
+- Inside `autocast`, matrix multiplies run in bf16: the forward and backward passes, where nearly all the compute is
+- The **master weights** and AdamW's running averages stay in fp32, so small updates are not rounded away
+- A few sensitive ops (softmax, layer norm, the loss) also stay in fp32
+
+</div>
+
+</div>
+
+<div class="note">
+
+Pushing further: DeepSeek-V3 (2024) ran most matmuls in FP8. **Quantization-aware training (QAT)** simulates low-bit weights (e.g. 4-bit) during training so the model still works after it is quantized for serving (Module 10).
+
+</div>
+
+---
+
+<!-- .slide: id="loss-scaling" -->
+
+## Why fp16 Needs Loss Scaling
+
+<div class="stage-flow"><svg viewBox="-40 0 940 270" role="img" aria-label="fp16 number line: raw gradients below 6e-8 round to zero; multiplying by 65,536 shifts every gradient into the range fp16 can store, below the overflow limit of 65,504"><defs><marker id="lsa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#8892a4"></path></marker></defs><rect x="60.0" y="30" width="123.5" height="180" fill="rgba(231,76,60,0.12)"></rect><rect x="718.5" y="30" width="141.5" height="180" fill="rgba(231,76,60,0.12)"></rect><text x="121.7" y="22" text-anchor="middle" font-size="14" fill="#e74c3c">rounds to 0</text><text x="451.0" y="22" text-anchor="middle" font-size="14" fill="#e8eaf0">fp16 can store these</text><text x="789.3" y="22" text-anchor="middle" font-size="14" fill="#e74c3c">overflow: inf</text><text x="52" y="84" text-anchor="end" font-size="14" fill="#8892a4">raw</text><text x="52" y="174" text-anchor="end" font-size="14" fill="#8892a4">× 65,536</text><line x1="82.2" y1="88" x2="296.3" y2="160" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#lsa)"></line><circle cx="82.2" cy="80" r="7" fill="#e74c3c"></circle><circle cx="296.3" cy="170" r="7" fill="#3fb950"></circle><line x1="122.2" y1="88" x2="336.3" y2="160" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#lsa)"></line><circle cx="122.2" cy="80" r="7" fill="#e74c3c"></circle><circle cx="336.3" cy="170" r="7" fill="#3fb950"></circle><line x1="157.8" y1="88" x2="371.8" y2="160" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#lsa)"></line><circle cx="157.8" cy="80" r="7" fill="#e74c3c"></circle><circle cx="371.8" cy="170" r="7" fill="#3fb950"></circle><line x1="197.8" y1="88" x2="411.8" y2="160" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#lsa)"></line><circle cx="197.8" cy="80" r="7" fill="#4a9eff"></circle><circle cx="411.8" cy="170" r="7" fill="#3fb950"></circle><line x1="233.3" y1="88" x2="447.4" y2="160" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#lsa)"></line><circle cx="233.3" cy="80" r="7" fill="#4a9eff"></circle><circle cx="447.4" cy="170" r="7" fill="#3fb950"></circle><line x1="264.4" y1="88" x2="478.5" y2="160" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#lsa)"></line><circle cx="264.4" cy="80" r="7" fill="#4a9eff"></circle><circle cx="478.5" cy="170" r="7" fill="#3fb950"></circle><line x1="295.6" y1="88" x2="509.6" y2="160" stroke="#8892a4" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#lsa)"></line><circle cx="295.6" cy="80" r="7" fill="#4a9eff"></circle><circle cx="509.6" cy="170" r="7" fill="#3fb950"></circle><line x1="60" y1="215" x2="860.0" y2="215" stroke="#2a3450" stroke-width="1.5"></line><line x1="148.9" y1="210" x2="148.9" y2="220" stroke="#8892a4"></line><text x="148.9" y="238" text-anchor="middle" font-size="13" fill="#8892a4">1e-8</text><line x1="326.7" y1="210" x2="326.7" y2="220" stroke="#8892a4"></line><text x="326.7" y="238" text-anchor="middle" font-size="13" fill="#8892a4">1e-4</text><line x1="504.4" y1="210" x2="504.4" y2="220" stroke="#8892a4"></line><text x="504.4" y="238" text-anchor="middle" font-size="13" fill="#8892a4">1</text><line x1="682.2" y1="210" x2="682.2" y2="220" stroke="#8892a4"></line><text x="682.2" y="238" text-anchor="middle" font-size="13" fill="#8892a4">1e4</text><line x1="860.0" y1="210" x2="860.0" y2="220" stroke="#8892a4"></line><text x="860.0" y="238" text-anchor="middle" font-size="13" fill="#8892a4">1e8</text><text x="183.5" y="258" text-anchor="middle" font-size="12" fill="#e74c3c">6e-8</text><text x="718.5" y="258" text-anchor="middle" font-size="12" fill="#e74c3c">65,504</text></svg></div>
+
+<div class="slide-columns" style="grid-template-columns: repeat(3, 1fr); gap: 24px;">
+
+<div>
+
+**The problem**
+
+Many gradients are smaller than fp16's smallest number, so they round to 0 and the update is lost
+
+</div>
+
+<div>
+
+**The fix**
+
+Multiply the loss by a large $S$. Every gradient grows by $S$ too. Divide by $S$ again before the update
+
+</div>
+
+<div>
+
+**Keeping it safe**
+
+If any gradient overflows past 65,504, skip the step and halve $S$
+
+</div>
+
+</div>
+
+<div class="note">
+
+fp16 needs this; bf16 does not, because it has fp32's range. That is why bf16 replaced fp16 as the default for LLM training.
+
+</div>
+
+---
+
+<!-- .slide: id="runs-are-messy" -->
+
+## Real Runs Are Messy
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Spikes and divergence**
+
+- Long runs can spike or diverge
+- Usual suspects: learning rate too high, weak clipping, batch size, a bad data shard
+
+</div>
+
+<div>
+
+**Loss is not the whole story**
+
+- Lower loss does not perfectly predict every capability
+- Real runs also track **downstream benchmarks** at checkpoints
+- Generated samples build intuition, but are not a metric
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="bloom-176b-log" -->
+
+## A Real Run: BLOOM 176B
+
+<div class="slide-columns" style="grid-template-columns: 2.3fr 1fr; gap: 28px; align-items: center;">
+
+<div>
+
+<div class="run-figure">
+  <img src="module_05_pretraining/images/bloom176b_training.png" alt="BLOOM 176B training loss falling from about 4.4 to 1.93 over 367 billion tokens, with a loss spike to 5.1 at step 31,219 and grad-norm spikes up to 960">
+</div>
+
+</div>
+
+<div>
+
+- Mostly a smooth curve: loss falls to 1.93 over 367B tokens
+- At step 31,219 one batch sent the gradient norm to 960 (typical: 0.14) and the loss to 5.1. It recovered within about 80 steps
+- The job restarted from an earlier checkpoint 50 times over four months
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="bloom-104b-log" -->
+
+## A Run That Diverged: BigScience 104B
+
+<div class="slide-columns" style="grid-template-columns: 2.3fr 1fr; gap: 28px; align-items: center;">
+
+<div>
+
+<div class="run-figure">
+  <img src="module_05_pretraining/images/bloom104b_spikes.png" alt="Six attempts of the BigScience 104B prototype: loss jumps from 3.4 to above 7, losses become NaN, and the fp16 loss scale collapses to 1; restarts from earlier checkpoints diverge again">
+</div>
+
+</div>
+
+<div>
+
+- Each colored line is a restart from an earlier checkpoint. Every one that got past step 8,700 diverged
+- **Bottom:** the loss scale $S$. Each blow-up drove it to 1: the gradients overflowed fp16 even unscaled
+- BLOOM 176B switched to bf16, which has fp32's range
+
+</div>
+
+</div>
+
+---
+
+<!-- .slide: id="side-quest-llama3-noon" -->
+
+## Side Quest: Llama 3 Trained Slower at Noon
+
+Meta's log of a 54-day stretch of Llama 3 405B pretraining on 16K H100 GPUs:
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**Things broke constantly**
+
+- 466 job interruptions: 47 planned, 419 unexpected. Roughly one every three hours
+- About 78% traced to hardware. Faulty GPUs and their HBM3 memory topped the list
+- Automation restarted the job; only 3 failures needed serious human help
+
+</div>
+
+<div>
+
+**And some were just strange**
+
+- Throughput rose and fell 1 to 2% with the time of day: midday heat made the GPUs lower their clock speeds
+- When every GPU pauses at once, say for a checkpoint, the data center's power draw swings by tens of megawatts, straining the power grid
+
+</div>
+
+</div>
+
+Even so, over 90% of the time went to actual training.
 
 ---
 
@@ -1880,35 +2462,6 @@ A **nat** is the natural-log sibling of the bit: $\ln$ instead of $\log_2$. PyTo
 - Both curves should fall
 - A **widening gap** = memorizing the training set, not learning reusable patterns
 - This curve is real output from the Module 5 exercise
-
----
-
-<!-- .slide: id="runs-are-messy" -->
-
-## Real Runs Are Messy
-
-<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
-
-<div>
-
-**Spikes and divergence**
-
-- Long runs can spike or diverge
-- Usual suspects: learning rate too high, weak clipping, batch size, a bad data shard
-
-</div>
-
-<div>
-
-**Loss is not the whole story**
-
-- Lower loss does not perfectly predict every capability
-- Real runs also track **downstream benchmarks** at checkpoints
-- Generated samples build intuition, but are not a metric
-
-</div>
-
-</div>
 
 ---
 
@@ -2076,9 +2629,9 @@ Gao, Biderman, and collaborators at EleutherAI built **The Pile**: 800GB, 22 cur
 
 ---
 
-<!-- .slide: id="side-quest-data-wall" -->
+<!-- .slide: id="data-wall" -->
 
-## Side Quest: The Data Wall
+## The Data Wall
 
 What if high-quality **human** text, not model size, is the scarce resource?
 
@@ -2235,6 +2788,13 @@ Model size, data size, batch size, sequence length, hardware, and wall-clock tim
 
 ---
 
+<section id="serving-planner">
+  <h2>Same Loss, Two Models: Who Is Cheaper?</h2>
+  <div class="interactive-host" data-widget="servingPlanner"></div>
+</section>
+
+---
+
 <!-- .slide: id="side-quest-emergence" -->
 
 ## Side Quest: Emergent Abilities, Real or Mirage?
@@ -2284,14 +2844,6 @@ When the model, batch, or run no longer fits on one device
 
 ---
 
-<section id="data-parallel-anim">
-  <div class="video-container">
-    <video class="manim-stepper" data-manim-scene="data-parallel" preload="auto"></video>
-  </div>
-</section>
-
----
-
 <!-- .slide: id="parallelism-kinds" -->
 
 ## Two Ways to Split the Work
@@ -2323,6 +2875,14 @@ Split the **model itself** when it does not fit on one GPU:
 </div>
 
 **FSDP** is the hybrid: data-parallel structure, but parameters, gradients, and optimizer state are sharded too. Frontier runs combine all of these.
+
+---
+
+<section id="data-parallel-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="data-parallel" preload="auto"></video>
+  </div>
+</section>
 
 ---
 
@@ -3261,6 +3821,8 @@ Next: Module 6 &mdash; Finetuning and Alignment
       <li>Hoffmann et al., "Training Compute-Optimal Large Language Models" (Chinchilla), <a href="https://arxiv.org/abs/2203.15556">arXiv:2203.15556</a></li>
       <li>Gao et al., "The Pile," <a href="https://arxiv.org/abs/2101.00027">arXiv:2101.00027</a></li>
       <li>Lee et al., "Deduplicating Training Data Makes Language Models Better," <a href="https://arxiv.org/abs/2107.06499">arXiv:2107.06499</a></li>
+      <li>Sardana et al., "Beyond Chinchilla-Optimal," <a href="https://arxiv.org/abs/2401.00448">arXiv:2401.00448</a></li>
+      <li>Micikevicius et al., "Mixed Precision Training," <a href="https://arxiv.org/abs/1710.03740">arXiv:1710.03740</a></li>
       <li>Del&eacute;tang et al., "Language Modeling Is Compression," <a href="https://arxiv.org/abs/2309.10668">arXiv:2309.10668</a></li>
     </ul>
   </div>
@@ -3273,6 +3835,7 @@ Next: Module 6 &mdash; Finetuning and Alignment
       <li>Shoeybi et al., "Megatron-LM," <a href="https://arxiv.org/abs/1909.08053">arXiv:1909.08053</a></li>
       <li>Rajbhandari et al., "ZeRO," <a href="https://arxiv.org/abs/1910.02054">arXiv:1910.02054</a></li>
       <li>Zhao et al., "PyTorch FSDP," <a href="https://arxiv.org/abs/2304.11277">arXiv:2304.11277</a></li>
+      <li><a href="https://huggingface.co/bigscience/tr11-176B-logs">BLOOM 176B training logs</a>: public TensorBoard files behind the loss charts</li>
       <li><a href="https://github.com/karpathy/nanoGPT">github.com/karpathy/nanoGPT</a> &mdash; minimal GPT training codebase</li>
       <li><a href="https://github.com/karpathy/build-nanogpt">github.com/karpathy/build-nanogpt</a> &mdash; step-by-step GPT-2 pretraining</li>
     </ul>
@@ -3465,6 +4028,156 @@ window.ASSET_BASE = "module_05_pretraining/";
     return { resize: draw };
   }
 
+  // ===================================================================
+  // WIDGET: servingPlanner — two models that reach the SAME loss.
+  // Model A is the Chinchilla choice (N_A params on 20 N_A tokens).
+  // Model B is smaller; the tokens it needs to match A's loss come from
+  // inverting the corrected Chinchilla fit L = E + A/N^alpha + B/D^beta.
+  // Lifetime cost = training 6ND + serving 2N FLOPs per token served
+  // (Sardana et al., 2023). B costs more to train but less to serve, so
+  // the two cost lines cross at a break-even serving volume.
+  // ===================================================================
+  function servingPlanner(host) {
+    var U = WIDGET_UTIL, COL = WIDGET_UTIL.COL;
+    var E = 1.8172, A = 482.01, ALPHA = 0.3478, B = 2085.43, BETA = 0.3658;
+    var X_MIN = 9, X_MAX = 15;  // tokens served, log10
+
+    host.innerHTML =
+      '<div class="iw">' +
+        '<div class="iw-canvas-wrap"><canvas class="iw-canvas"></canvas></div>' +
+        '<div class="iw-stats">' +
+          '<div class="iw-stat"><span class="iw-stat-num" data-el="A">0</span><span class="iw-stat-lab">model A (Chinchilla)</span></div>' +
+          '<div class="iw-stat"><span class="iw-stat-num" data-el="B">0</span><span class="iw-stat-lab">model B (smaller)</span></div>' +
+          '<div class="iw-stat"><span class="iw-stat-num" data-el="be">0</span><span class="iw-stat-lab">break-even tokens served</span></div>' +
+          '<div class="iw-stat" data-el="winbox"><span class="iw-stat-num" data-el="win">0</span><span class="iw-stat-lab">B vs A, lifetime compute</span></div>' +
+        '</div>' +
+        '<div class="iw-sliders">' +
+          U.sliderHTML('logA', 'model A size', 9, 11.3, 0.05, 10.85) +
+          U.sliderHTML('frac', 'model B size (share of A)', 0.2, 0.9, 0.01, 0.4) +
+          U.sliderHTML('logInf', 'tokens served over the lifetime', X_MIN, X_MAX, 0.1, 13) +
+        '</div>' +
+        '<p class="iw-readout"></p>' +
+      '</div>';
+    U.stop(host);
+
+    var canvas = host.querySelector('.iw-canvas');
+    var readout = host.querySelector('.iw-readout');
+    var el = {};
+    host.querySelectorAll('[data-el]').forEach(function (n) { el[n.getAttribute('data-el')] = n; });
+
+    function loss(N, D) { return E + A / Math.pow(N, ALPHA) + B / Math.pow(D, BETA); }
+    function tokensFor(N, Lt) {
+      var room = Lt - E - A / Math.pow(N, ALPHA);
+      return room > 0 ? Math.pow(B / room, 1 / BETA) : Infinity;
+    }
+    function fmtFlops(f) {
+      var e = Math.floor(Math.log10(f));
+      return (f / Math.pow(10, e)).toFixed(1) + 'e' + e;
+    }
+
+    function draw() {
+      var v = read();
+      var NA = Math.pow(10, v.logA), DA = 20 * NA;
+      var Lt = loss(NA, DA);
+      var NB = v.frac * NA, DB = tokensFor(NB, Lt);
+      var trA = 6 * NA * DA, trB = 6 * NB * DB;
+      var served = Math.pow(10, v.logInf);
+      function cost(tr, N, d) { return tr + 2 * N * d; }
+      // Lines cross where trA + 2 NA d = trB + 2 NB d.
+      var be = (trB - trA) / (2 * (NA - NB));
+
+      var f = U.fit(canvas); if (!f) return;
+      var ctx = f.ctx, W = f.w, H = f.h;
+      ctx.clearRect(0, 0, W, H);
+      var padL = 70, padR = 24, padT = 40, padB = 46;
+      var pw = W - padL - padR, ph = H - padT - padB;
+
+      var yLo = Math.log10(Math.min(trA, trB)) - 0.3;
+      var yHi = Math.log10(cost(trA, NA, Math.pow(10, X_MAX))) + 0.1;
+      function X(ld) { return padL + (ld - X_MIN) / (X_MAX - X_MIN) * pw; }
+      function Y(val) { return padT + ph - (Math.log10(val) - yLo) / (yHi - yLo) * ph; }
+
+      ctx.strokeStyle = COL.line; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + ph); ctx.lineTo(W - padR, padT + ph); ctx.stroke();
+
+      ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = COL.muted;
+      ctx.fillText('tokens served over the model’s lifetime (log scale)', padL + pw / 2, H - 10);
+      for (var t = X_MIN; t <= X_MAX; t++) {
+        ctx.fillText(t >= 12 ? Math.pow(10, t - 12).toLocaleString() + 'T' : U.fmtCount(Math.pow(10, t)), X(t), padT + ph + 18);
+      }
+      ctx.save();
+      ctx.translate(16, padT + ph / 2); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('lifetime compute: training + serving (FLOPs, log)', 0, 0);
+      ctx.restore();
+
+      function line(tr, N, color) {
+        ctx.strokeStyle = color; ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (var ld = X_MIN; ld <= X_MAX + 1e-9; ld += 0.02) {
+          var px = X(ld), py = Y(cost(tr, N, Math.pow(10, ld)));
+          if (ld === X_MIN) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+      line(trA, NA, COL.primary);
+      line(trB, NB, COL.secondary);
+
+      // Legend above the plot.
+      ctx.textAlign = 'left';
+      var lx = padL + 10;
+      [['A: ' + U.fmtCount(NA) + ' on ' + U.fmtCount(DA) + ' tokens', COL.primary],
+       ['B: ' + U.fmtCount(NB) + ' on ' + U.fmtCount(DB) + ' tokens', COL.secondary]].forEach(function (it) {
+        ctx.fillStyle = it[1]; ctx.fillRect(lx, padT - 22, 16, 3);
+        ctx.fillStyle = COL.muted; ctx.fillText(it[0], lx + 24, padT - 18);
+        lx += 24 + ctx.measureText(it[0]).width + 30;
+      });
+
+      // Break-even marker.
+      ctx.textAlign = 'center';
+      var lbe = Math.log10(be);
+      if (lbe > X_MIN && lbe < X_MAX) {
+        var bx = X(lbe), by = Y(cost(trA, NA, be));
+        ctx.fillStyle = COL.green;
+        ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillText('break-even', bx - 44, by - 10);
+      }
+
+      // The chosen serving volume.
+      var sx = X(v.logInf);
+      ctx.strokeStyle = 'rgba(232,234,240,0.5)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sx, padT); ctx.lineTo(sx, padT + ph); ctx.stroke(); ctx.setLineDash([]);
+      [[trA, NA, COL.primary], [trB, NB, COL.secondary]].forEach(function (m) {
+        ctx.fillStyle = m[2];
+        ctx.beginPath(); ctx.arc(sx, Y(cost(m[0], m[1], served)), 5, 0, Math.PI * 2); ctx.fill();
+      });
+
+      var cA = cost(trA, NA, served), cB = cost(trB, NB, served);
+      var diff = cB / cA - 1;
+      el.A.textContent = U.fmtCount(NA);
+      el.B.textContent = U.fmtCount(NB);
+      el.be.textContent = U.fmtCount(be);
+      el.win.textContent = (diff > 0 ? '+' : '−') + Math.abs(Math.round(diff * 100)) + '%';
+      el.winbox.className = 'iw-stat ' + (diff < 0 ? 'good' : 'warn');
+
+      U.setVal(host, 'logA', U.fmtCount(NA));
+      U.setVal(host, 'frac', Math.round(v.frac * 100) + '%');
+      U.setVal(host, 'logInf', U.fmtCount(served));
+
+      readout.innerHTML =
+        'Both models reach the same loss. With fewer parameters, B must see more data to get there: <strong>' +
+        (DB / DA).toFixed(1) + '&times;</strong> as many tokens as A (' + Math.round(DB / NB).toLocaleString() +
+        ' per parameter instead of 20), so it costs <strong>' + (trB / trA).toFixed(1) +
+        '&times;</strong> as much to train. Each token it serves costs ' + Math.round(v.frac * 100) +
+        '% as much. Past <strong>' + U.fmtCount(be) + '</strong> tokens served, B is cheaper; at ' +
+        U.fmtCount(served) + ' it uses <strong>' + Math.abs(Math.round(diff * 100)) + '% ' +
+        (diff < 0 ? 'less' : 'more') + '</strong> lifetime compute (' + fmtFlops(cB) + ' vs ' + fmtFlops(cA) + ' FLOPs).';
+    }
+
+    var read = U.bindSliders(host, function () { draw(); });
+    draw();
+    return { resize: draw };
+  }
+
   window.MODULE_CONFIG = {
     title: 'LLMs 0 to 100 - Module 5',
     manimSections: {
@@ -3474,13 +4187,6 @@ window.ASSET_BASE = "module_05_pretraining/";
         'NextTokenScene_0002_predict.mp4',
         'NextTokenScene_0003_target.mp4',
         'NextTokenScene_0004_loss.mp4'
-      ],
-      'training-loop': [
-        'TrainingLoopScene_0000_setup.mp4',
-        'TrainingLoopScene_0001_forward.mp4',
-        'TrainingLoopScene_0002_backward.mp4',
-        'TrainingLoopScene_0003_update.mp4',
-        'TrainingLoopScene_0004_descend.mp4'
       ],
       'sequence-packing': [
         'SequencePackingScene_0000_docs.mp4',
@@ -3527,7 +4233,8 @@ window.ASSET_BASE = "module_05_pretraining/";
       ]
     },
     widgets: {
-      scalingPlanner: scalingPlanner
+      scalingPlanner: scalingPlanner,
+      servingPlanner: servingPlanner
     }
   };
 }());

@@ -13,11 +13,6 @@
 
 ---
 
-:::manim id="data-parallel-anim" scene="data-parallel"
-:::
-
----
-
 <!-- .slide: id="parallelism-kinds" -->
 
 ## Two Ways to Split the Work
@@ -39,6 +34,11 @@ Split the **model itself** when it does not fit on one GPU:
 :::
 
 **FSDP** is the hybrid: data-parallel structure, but parameters, gradients, and optimizer state are sharded too. Frontier runs combine all of these.
+
+---
+
+:::manim id="data-parallel-anim" scene="data-parallel"
+:::
 
 ---
 

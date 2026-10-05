@@ -42,13 +42,13 @@ Free supervision is why pretraining can consume trillions of tokens.
 
 <!-- .slide: id="why-enough" -->
 
-## "Just" Predicting the Next Token
+## &ldquo;Just&rdquo; Predicting the Next Token
 
 To push the loss lower, the model must learn everything that makes text predictable:
 
 :::columns cols="2" gap="30px"
 - **Grammar and syntax** &mdash; to keep sentences well-formed
-- **Facts about the world** &mdash; "the capital of France is ___"
+- **Facts about the world** &mdash; &ldquo;the capital of France is&nbsp;___&rdquo;
 - **Style and register** &mdash; legal text, poetry, code comments
 +++
 - **Code structure** &mdash; balanced brackets, valid identifiers

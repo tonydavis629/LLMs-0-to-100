@@ -98,6 +98,11 @@ Model size, data size, batch size, sequence length, hardware, and wall-clock tim
 
 ---
 
+:::interactive id="serving-planner" widget="servingPlanner" title="Same Loss, Two Models: Who Is Cheaper?"
+:::
+
+---
+
 <!-- .slide: id="side-quest-emergence" -->
 
 ## Side Quest: Emergent Abilities, Real or Mirage?

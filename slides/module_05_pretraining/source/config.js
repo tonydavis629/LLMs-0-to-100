@@ -173,6 +173,156 @@
     return { resize: draw };
   }
 
+  // ===================================================================
+  // WIDGET: servingPlanner — two models that reach the SAME loss.
+  // Model A is the Chinchilla choice (N_A params on 20 N_A tokens).
+  // Model B is smaller; the tokens it needs to match A's loss come from
+  // inverting the corrected Chinchilla fit L = E + A/N^alpha + B/D^beta.
+  // Lifetime cost = training 6ND + serving 2N FLOPs per token served
+  // (Sardana et al., 2023). B costs more to train but less to serve, so
+  // the two cost lines cross at a break-even serving volume.
+  // ===================================================================
+  function servingPlanner(host) {
+    var U = WIDGET_UTIL, COL = WIDGET_UTIL.COL;
+    var E = 1.8172, A = 482.01, ALPHA = 0.3478, B = 2085.43, BETA = 0.3658;
+    var X_MIN = 9, X_MAX = 15;  // tokens served, log10
+
+    host.innerHTML =
+      '<div class="iw">' +
+        '<div class="iw-canvas-wrap"><canvas class="iw-canvas"></canvas></div>' +
+        '<div class="iw-stats">' +
+          '<div class="iw-stat"><span class="iw-stat-num" data-el="A">0</span><span class="iw-stat-lab">model A (Chinchilla)</span></div>' +
+          '<div class="iw-stat"><span class="iw-stat-num" data-el="B">0</span><span class="iw-stat-lab">model B (smaller)</span></div>' +
+          '<div class="iw-stat"><span class="iw-stat-num" data-el="be">0</span><span class="iw-stat-lab">break-even tokens served</span></div>' +
+          '<div class="iw-stat" data-el="winbox"><span class="iw-stat-num" data-el="win">0</span><span class="iw-stat-lab">B vs A, lifetime compute</span></div>' +
+        '</div>' +
+        '<div class="iw-sliders">' +
+          U.sliderHTML('logA', 'model A size', 9, 11.3, 0.05, 10.85) +
+          U.sliderHTML('frac', 'model B size (share of A)', 0.2, 0.9, 0.01, 0.4) +
+          U.sliderHTML('logInf', 'tokens served over the lifetime', X_MIN, X_MAX, 0.1, 13) +
+        '</div>' +
+        '<p class="iw-readout"></p>' +
+      '</div>';
+    U.stop(host);
+
+    var canvas = host.querySelector('.iw-canvas');
+    var readout = host.querySelector('.iw-readout');
+    var el = {};
+    host.querySelectorAll('[data-el]').forEach(function (n) { el[n.getAttribute('data-el')] = n; });
+
+    function loss(N, D) { return E + A / Math.pow(N, ALPHA) + B / Math.pow(D, BETA); }
+    function tokensFor(N, Lt) {
+      var room = Lt - E - A / Math.pow(N, ALPHA);
+      return room > 0 ? Math.pow(B / room, 1 / BETA) : Infinity;
+    }
+    function fmtFlops(f) {
+      var e = Math.floor(Math.log10(f));
+      return (f / Math.pow(10, e)).toFixed(1) + 'e' + e;
+    }
+
+    function draw() {
+      var v = read();
+      var NA = Math.pow(10, v.logA), DA = 20 * NA;
+      var Lt = loss(NA, DA);
+      var NB = v.frac * NA, DB = tokensFor(NB, Lt);
+      var trA = 6 * NA * DA, trB = 6 * NB * DB;
+      var served = Math.pow(10, v.logInf);
+      function cost(tr, N, d) { return tr + 2 * N * d; }
+      // Lines cross where trA + 2 NA d = trB + 2 NB d.
+      var be = (trB - trA) / (2 * (NA - NB));
+
+      var f = U.fit(canvas); if (!f) return;
+      var ctx = f.ctx, W = f.w, H = f.h;
+      ctx.clearRect(0, 0, W, H);
+      var padL = 70, padR = 24, padT = 40, padB = 46;
+      var pw = W - padL - padR, ph = H - padT - padB;
+
+      var yLo = Math.log10(Math.min(trA, trB)) - 0.3;
+      var yHi = Math.log10(cost(trA, NA, Math.pow(10, X_MAX))) + 0.1;
+      function X(ld) { return padL + (ld - X_MIN) / (X_MAX - X_MIN) * pw; }
+      function Y(val) { return padT + ph - (Math.log10(val) - yLo) / (yHi - yLo) * ph; }
+
+      ctx.strokeStyle = COL.line; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + ph); ctx.lineTo(W - padR, padT + ph); ctx.stroke();
+
+      ctx.font = '12px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = COL.muted;
+      ctx.fillText('tokens served over the model’s lifetime (log scale)', padL + pw / 2, H - 10);
+      for (var t = X_MIN; t <= X_MAX; t++) {
+        ctx.fillText(t >= 12 ? Math.pow(10, t - 12).toLocaleString() + 'T' : U.fmtCount(Math.pow(10, t)), X(t), padT + ph + 18);
+      }
+      ctx.save();
+      ctx.translate(16, padT + ph / 2); ctx.rotate(-Math.PI / 2);
+      ctx.fillText('lifetime compute: training + serving (FLOPs, log)', 0, 0);
+      ctx.restore();
+
+      function line(tr, N, color) {
+        ctx.strokeStyle = color; ctx.lineWidth = 3;
+        ctx.beginPath();
+        for (var ld = X_MIN; ld <= X_MAX + 1e-9; ld += 0.02) {
+          var px = X(ld), py = Y(cost(tr, N, Math.pow(10, ld)));
+          if (ld === X_MIN) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+      line(trA, NA, COL.primary);
+      line(trB, NB, COL.secondary);
+
+      // Legend above the plot.
+      ctx.textAlign = 'left';
+      var lx = padL + 10;
+      [['A: ' + U.fmtCount(NA) + ' on ' + U.fmtCount(DA) + ' tokens', COL.primary],
+       ['B: ' + U.fmtCount(NB) + ' on ' + U.fmtCount(DB) + ' tokens', COL.secondary]].forEach(function (it) {
+        ctx.fillStyle = it[1]; ctx.fillRect(lx, padT - 22, 16, 3);
+        ctx.fillStyle = COL.muted; ctx.fillText(it[0], lx + 24, padT - 18);
+        lx += 24 + ctx.measureText(it[0]).width + 30;
+      });
+
+      // Break-even marker.
+      ctx.textAlign = 'center';
+      var lbe = Math.log10(be);
+      if (lbe > X_MIN && lbe < X_MAX) {
+        var bx = X(lbe), by = Y(cost(trA, NA, be));
+        ctx.fillStyle = COL.green;
+        ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.fillText('break-even', bx - 44, by - 10);
+      }
+
+      // The chosen serving volume.
+      var sx = X(v.logInf);
+      ctx.strokeStyle = 'rgba(232,234,240,0.5)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sx, padT); ctx.lineTo(sx, padT + ph); ctx.stroke(); ctx.setLineDash([]);
+      [[trA, NA, COL.primary], [trB, NB, COL.secondary]].forEach(function (m) {
+        ctx.fillStyle = m[2];
+        ctx.beginPath(); ctx.arc(sx, Y(cost(m[0], m[1], served)), 5, 0, Math.PI * 2); ctx.fill();
+      });
+
+      var cA = cost(trA, NA, served), cB = cost(trB, NB, served);
+      var diff = cB / cA - 1;
+      el.A.textContent = U.fmtCount(NA);
+      el.B.textContent = U.fmtCount(NB);
+      el.be.textContent = U.fmtCount(be);
+      el.win.textContent = (diff > 0 ? '+' : '−') + Math.abs(Math.round(diff * 100)) + '%';
+      el.winbox.className = 'iw-stat ' + (diff < 0 ? 'good' : 'warn');
+
+      U.setVal(host, 'logA', U.fmtCount(NA));
+      U.setVal(host, 'frac', Math.round(v.frac * 100) + '%');
+      U.setVal(host, 'logInf', U.fmtCount(served));
+
+      readout.innerHTML =
+        'Both models reach the same loss. With fewer parameters, B must see more data to get there: <strong>' +
+        (DB / DA).toFixed(1) + '&times;</strong> as many tokens as A (' + Math.round(DB / NB).toLocaleString() +
+        ' per parameter instead of 20), so it costs <strong>' + (trB / trA).toFixed(1) +
+        '&times;</strong> as much to train. Each token it serves costs ' + Math.round(v.frac * 100) +
+        '% as much. Past <strong>' + U.fmtCount(be) + '</strong> tokens served, B is cheaper; at ' +
+        U.fmtCount(served) + ' it uses <strong>' + Math.abs(Math.round(diff * 100)) + '% ' +
+        (diff < 0 ? 'less' : 'more') + '</strong> lifetime compute (' + fmtFlops(cB) + ' vs ' + fmtFlops(cA) + ' FLOPs).';
+    }
+
+    var read = U.bindSliders(host, function () { draw(); });
+    draw();
+    return { resize: draw };
+  }
+
   window.MODULE_CONFIG = {
     title: 'LLMs 0 to 100 - Module 5',
     manimSections: {
@@ -182,13 +332,6 @@
         'NextTokenScene_0002_predict.mp4',
         'NextTokenScene_0003_target.mp4',
         'NextTokenScene_0004_loss.mp4'
-      ],
-      'training-loop': [
-        'TrainingLoopScene_0000_setup.mp4',
-        'TrainingLoopScene_0001_forward.mp4',
-        'TrainingLoopScene_0002_backward.mp4',
-        'TrainingLoopScene_0003_update.mp4',
-        'TrainingLoopScene_0004_descend.mp4'
       ],
       'sequence-packing': [
         'SequencePackingScene_0000_docs.mp4',
@@ -235,7 +378,8 @@
       ]
     },
     widgets: {
-      scalingPlanner: scalingPlanner
+      scalingPlanner: scalingPlanner,
+      servingPlanner: servingPlanner
     }
   };
 }());

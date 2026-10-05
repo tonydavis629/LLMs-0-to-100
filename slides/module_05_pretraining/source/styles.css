@@ -66,3 +66,42 @@
   width: 6px;
   height: 6px;
 }
+
+/* Training-loop walkthrough: the full loop fits without scrolling, and the
+   lines under discussion stand out from the dimmed rest. */
+.reveal section[id^="loop-"] pre code {
+  max-height: none;
+  font-size: 11.5pt;
+  line-height: 1.3;
+}
+.reveal section[id^="loop-"] pre code td {
+  font-size: inherit;
+  padding: 0 6px;
+  border: none;
+}
+.reveal section[id^="loop-"] pre code.has-highlights tr:not(.highlight-line) {
+  opacity: 0.3;
+}
+.reveal section[id^="loop-"] pre code tr.highlight-line td.hljs-ln-code {
+  background: rgba(245, 166, 35, 0.14);
+}
+
+/* Real training-log charts from public BigScience runs. */
+.run-figure {
+  display: flex;
+  justify-content: center;
+  margin: 4px 0 6px;
+}
+.run-figure img {
+  width: 100%;
+  height: auto;
+  margin: 0;
+}
+
+/* Gradient-accumulation flow: leave room for the motivation line above it. */
+.reveal #grad-accumulation .stage-flow { margin: 10px 0 6px; }
+.reveal #grad-accumulation .stage-flow svg { max-width: 700px; }
+
+/* Loss-scaling number line: leave room for the three columns and the note. */
+.reveal #loss-scaling .stage-flow { margin: 8px 0 4px; }
+.reveal #loss-scaling .stage-flow svg { max-width: 740px; }

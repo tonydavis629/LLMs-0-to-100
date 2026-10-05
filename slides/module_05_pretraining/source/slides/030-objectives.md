@@ -110,19 +110,3 @@ Two alternatives change **which tokens are predicted from which context**:
 - **Natural generation.** The objective *is* generation: sample, append, repeat.
 - **Prompt compatibility.** Classification, translation, and Q&A all become text completion.
 :::
-
----
-
-<!-- .slide: id="side-quest-compression" -->
-
-## Side Quest: Compression Is Prediction
-
-A model that predicts text well is a good **compressor**: encoding the next token takes about $-\log_2 p(\text{token})$ bits.
-
-:::columns cols="2" gap="30px"
-- Shannon's through-line from Module 1: **cross-entropy, perplexity, and bits per token** measure compression
-- Lower loss = fewer bits per token = tighter description of the data
-+++
-- Minimizing loss and maximizing compression are the **same objective**
-- Ilya Sutskever frames next-token prediction as compression; the **Hutter Prize** rewards compressing Wikipedia; DeepMind's **"Language Modeling Is Compression"** (2023) makes the equivalence precise
-:::

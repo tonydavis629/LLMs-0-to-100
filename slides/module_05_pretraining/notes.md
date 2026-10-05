@@ -2,7 +2,7 @@
 
 Citations, math, and explanations for every claim in the presentation.
 
-The deck order is: a review of the Module 4 machinery, what pretraining is, the training objective (causal LM and its alternatives), the data pipeline, the training recipe, reading the loss, data quality, scaling laws, distributed training, and finally the handoff from base model to assistant. Seven Manim animations carry the dynamic processes; this file maps each claim to its visual and its source.
+The deck order is: a review of the Module 4 machinery, what pretraining is, the training objective (causal LM and its alternatives), the data pipeline, the training recipe, reading the loss, data quality, scaling laws, distributed training, and finally the handoff from base model to assistant. Eight Manim animations carry the dynamic processes; this file maps each claim to its visual and its source.
 
 ## Review
 
@@ -10,6 +10,7 @@ The deck order is: a review of the Module 4 machinery, what pretraining is, the 
 - A freshly initialized transformer has random weights (here, Gaussian with standard deviation 0.02, the GPT-2 scheme), so its output distribution is near-uniform and its samples are noise.
 - **Causal masking** (Module 3/4) lets each position attend only to itself and earlier positions, so every position can be trained to predict the *next* token without seeing it.
 - **Cross-entropy** (Module 2) is the training signal: $-\log p_\theta(\text{true next token})$, averaged over the corpus.
+- **Prediction is compression** (Module 1). Encoding a symbol of probability $p$ costs $-\log_2 p$ bits (Shannon, 1948), and cross-entropy $H(p, q) = -\sum_x p(x)\log_2 q(x)$ is the average cost when the code is built from the model's $q$ rather than the true $p$. Module 1's demo shrank "the cat sat on the mat" from 110 bits (uniform 5-bit code) to 70 bits (frequency-based prefix code). Because the pretraining loss is a cross-entropy, lowering it lowers the bits per token: a better predictor is a better compressor. Ilya Sutskever has publicly framed next-token prediction as compression; the Hutter Prize rewards compressing a fixed Wikipedia snapshot; Del&eacute;tang et al. (2023, "Language Modeling Is Compression," arXiv:2309.10668) make the equivalence precise by using LLMs as lossless compressors.
 
 ## a. What Pretraining Is
 
@@ -51,10 +52,6 @@ which is exactly cross-entropy between the model's predicted distribution and th
 - **Natural generation:** the training objective *is* generation.
 - **Prompt compatibility:** "understanding" tasks become text completion, so one model handles classification, translation, and Q&A via prompting.
 
-### Side quest: compression is prediction
-- Encoding the next token costs about $-\log_2 p(\text{token})$ bits, so a model that assigns high probability to the actual continuation needs fewer bits to store the text: prediction quality equals compression quality.
-- This is the Shannon through-line from Module 1 &mdash; cross-entropy, perplexity, and bits per token measure compression, not decoration. Ilya Sutskever has publicly framed next-token prediction as compression; the **Hutter Prize** rewards compressing a fixed Wikipedia snapshot; Del&eacute;tang et al. (2023, "Language Modeling Is Compression," arXiv:2309.10668) make the equivalence precise by using LLMs as lossless compressors.
-
 ## c. The Pretraining Pipeline
 
 - **Collect:** web pages, books, code, papers, forums, documentation. The mixture reflects the model's goals and legal/ethical constraints.
@@ -67,8 +64,13 @@ which is exactly cross-entropy between the model's predicted distribution and th
 
 ## d. The Training Recipe
 
-- Module 2 supplied SGD, Adam, mini-batches, and learning rates. Real pretraining adds standard engineering for stability and efficiency. The loop itself never changes: forward, loss, backward, update.
-- **Manim animation (`training-loop`):** the forward/loss/backward/update cycle as a ring with a token batch entering, a gradient pulse traveling the back half, a weight grid nudging, and the loss number descending 4.18 -> 2.34 -> 2.11 -> 1.90 over repeated loops (training-loss values from the exercise's captured run).
+- Module 2 supplied SGD, Adam, mini-batches, and learning rates. The deck walks through one PyTorch pretraining loop line by line; the same code is shown on every slide with the current lines highlighted. It mirrors the exercise's `pretrain()` and `train_step()` (`exercises/module_05_pretraining`).
+- **Setup.** A freshly initialized model predicts a near-uniform distribution over the vocabulary of size $V$, so its loss starts near $-\log(1/V) = \ln V$. The exercise uses a 65-character vocabulary (Tiny Shakespeare), so $\ln 65 \approx 4.17$; its captured validation loss before training is 4.19. AdamW stores a first-moment estimate $m$ and second-moment estimate $v$ per parameter (Kingma and Ba, 2014), so optimizer state is twice the parameter count.
+- **Learning rate.** PyTorch keeps the rate in `optimizer.param_groups`; writing a new value there before each step is how a manual schedule is applied (the exercise's `lr_at_step` in `src/schedules.py`).
+- **Batch.** `get_batch` draws `batch_size` random offsets and slices `block_size` tokens; the target `y` is the same slice shifted by one, so each batch carries $B \times T$ next-token problems.
+- **Forward and loss.** Logits have shape $(B, T, V)$. `F.cross_entropy` takes a 2-D `(N, C)` input and 1-D `(N,)` targets, hence the flatten to $(BT, V)$ and $(BT,)$. The output is $\mathcal{L} = -\frac{1}{BT}\sum_{b,t}\log p_\theta(y_{b,t}\mid x_{b,\le t})$.
+- **Backward.** `loss.backward()` computes $\partial\mathcal{L}/\partial\theta$ by reverse-mode automatic differentiation and **accumulates** it into each parameter's `.grad` (PyTorch autograd documentation), which is why `optimizer.zero_grad()` is called every step.
+- **Clip and update.** `clip_grad_norm_` computes the global norm $\lVert g\rVert_2$ over all parameters' gradients and, if it exceeds the threshold $c$, rescales every gradient by $c / \lVert g\rVert_2$, preserving direction (Pascanu et al., 2013, "On the difficulty of training recurrent neural networks," arXiv:1211.5063). `optimizer.step()` then applies the AdamW update. The exercise repeats the loop for 800 steps.
 
 ### AdamW
 - **AdamW** (Loshchilov and Hutter, 2017, "Decoupled Weight Decay Regularization," arXiv:1711.05101) combines Adam's per-parameter adaptive step sizes with **decoupled** weight decay (decay applied directly to the weights rather than folded into the gradient, as plain L2 in Adam effectively does). This connects to the regularization idea from Module 2i.
@@ -78,10 +80,24 @@ which is exactly cross-entropy between the model's predicted distribution and th
 - **Cosine decay** then lowers the learning rate along $\tfrac{1}{2}(1+\cos(\pi\,r))$ for decay fraction $r\in[0,1]$, from the peak down to a small floor (Loshchilov and Hutter, 2016, "SGDR: Stochastic Gradient Descent with Warm Restarts," arXiv:1608.03983, popularized the cosine shape). Big steps early to explore, small steps late to settle.
 - **Manim animation (`lr-schedule`):** a dot traces the linear warmup ramp into the cosine decay, with the warmup region shaded and the max/min learning rates marked.
 
-### Stability and scale
-- **Gradient clipping:** cap the global gradient norm so a single bad batch cannot wreck the weights; prevents loss spikes.
-- **Gradient accumulation:** sum gradients over several small device batches before stepping, simulating a much larger effective batch than one GPU could hold.
-- **Mixed precision:** do most math in `bf16` rather than `fp32` for speed and memory (more in Module 9).
+### Gradient clipping
+- A rare or malformed batch can yield a gradient far larger than typical; one step of size $\eta\,\lVert\mathbf g\rVert$ then moves the weights far from the trajectory and shows up as a loss spike.
+- Global-norm clipping (Pascanu et al., 2013, arXiv:1211.5063) rescales $\mathbf g \leftarrow \mathbf g \cdot \min(1, c/\lVert\mathbf g\rVert)$, where $\lVert\mathbf g\rVert = \sqrt{\sum_p \lVert \mathbf g_p\rVert_2^2}$ is the norm over all parameters concatenated. Direction is preserved; only the length is capped. The slide's five-line version matches what `torch.nn.utils.clip_grad_norm_` computes (PyTorch adds a small epsilon to the denominator and returns the pre-clip norm).
+- GPT-3 clipped the global gradient norm at 1.0 (Brown et al., 2020, arXiv:2005.14165, Appendix B), the same value the exercise and the walkthrough loop use.
+
+### Gradient accumulation
+- GPT-3 175B used a batch of 3.2M tokens (Brown et al., 2020, Table 2.1). Activations for every example must be stored for the backward pass, so memory grows with batch size.
+- Because PyTorch autograd sums into `.grad` on each `backward()` call, running $k$ micro-batches before `optimizer.step()` sums their gradients. Scaling each micro-batch loss by $1/k$ makes the result equal the gradient of the mean loss over the full batch: $\nabla \frac{1}{k}\sum_i \mathcal L_i = \frac{1}{k}\sum_i \nabla\mathcal L_i$.
+- Effective batch = micro-batch size × accumulation steps × data-parallel replicas (section h).
+
+### Mixed precision
+- IEEE 754 binary32 (fp32) has 1 sign, 8 exponent, and 23 mantissa bits; binary16 (fp16) has 1/5/10; bfloat16 has 1/8/7 (Kalamkar et al., 2019, "A Study of BFLOAT16 for Deep Learning Training," arXiv:1905.12322). Max finite values: fp32 and bf16 about $3.4\times10^{38}$, fp16 65,504 (checked with `torch.finfo`).
+- NVIDIA A100 datasheet: 19.5 TFLOPS fp32 (non-tensor-core), 312 TFLOPS bf16/fp16 on tensor cores (dense).
+- fp16's narrow exponent range makes small gradients underflow, so fp16 training needs loss scaling (Micikevicius et al., 2017, "Mixed Precision Training," arXiv:1710.03740). bf16 keeps fp32's exponent and range, so loss scaling is unnecessary.
+- bf16 has 8 significant bits (7 stored plus the implicit leading 1), so the spacing near 1.0 is $2^{-7}\approx0.0078$: in bf16, $1 + 0.001 = 1$ (checked with torch). An update of that relative size to a bf16 weight is lost, which is why mixed precision keeps fp32 master weights and optimizer state and applies the update in fp32 (Micikevicius et al., 2017).
+- `torch.autocast` runs eligible ops (matmuls, convolutions) in the lower precision while parameters remain fp32. Lower-precision weights for inference (quantization) are covered in Module 10.
+- **What is actually used.** bf16 mixed precision is the standard recipe for LLM pretraining (e.g. BLOOM, Llama, OLMo): matmuls, activations, and gradients in bf16; master weights and optimizer state in fp32; precision-sensitive ops (softmax, layer norm, loss reductions) kept in fp32 by autocast. Training "bf16 the whole way" is uncommon because updates smaller than bf16's spacing are lost. fp16 needs dynamic loss scaling and is prone to overflow (the 104B case later in the deck); bf16's fp32-sized exponent removes both problems, which is why it displaced fp16 for large-model training. Frontier runs now push matmuls lower: DeepSeek-V3 used an FP8 mixed-precision framework (DeepSeek-AI, 2024, "DeepSeek-V3 Technical Report," arXiv:2412.19437).
+- **Quantization-aware training (QAT)** inserts simulated ("fake") quantization of weights, and sometimes activations, into the forward pass during training or a late training phase, with gradients passed straight through the rounding, so the model learns weights that survive quantization to e.g. int4 for serving. Released examples include Meta's quantized Llama 3.2 1B/3B (2024, QAT with LoRA adapters) and Google's Gemma 3 QAT checkpoints (2025). Post-training quantization is covered in Module 10.
 
 ### Overfit-one-batch sanity check
 - Before a long run, train repeatedly on a single batch until the loss approaches zero. A model with enough capacity can memorize one tiny batch; if the loss does **not** crater, the loop is broken (detached gradient, wrong target shift, frozen parameter, bad learning rate). The exercise runs exactly this check.
@@ -91,8 +107,14 @@ which is exactly cross-entropy between the model's predicted distribution and th
 - Cross-entropy is the model's average **surprise** at the true next token; lower loss means more probability assigned to what actually came next.
 - The raw loss is measured in **nats**: the information unit of the natural logarithm, just as the bit is the unit of $\log_2$. Cross-entropy is computed with $\ln$ (what calculus and library `log` functions provide), so the loss comes out in nats; $1$ nat $= 1/\ln 2 \approx 1.443$ bits. The nat and the bit measure the same quantity, surprise, in different bases (Cover & Thomas, *Elements of Information Theory*, ch. 2).
 - **Perplexity** $=\exp(\mathcal{L})$ reads as the effective number of equally likely next-token choices. **Bits per token** $=\mathcal{L}/\ln 2$ is the same loss in Shannon's units.
-- **Manim animation (`perplexity`):** a near-uniform next-token distribution (untrained) sharpens onto the true token as training proceeds; the panel updates loss 4.19 -> 2.01, perplexity 66 -> 7.5, bits 6.04 -> 2.90 (the exercise's validation loss before and after training), tying lower loss to better compression.
+- **Manim animation (`perplexity`):** one prediction position with word tokens: the next token after "The cat sat on the", with candidates " mat", " floor", " bed", ... and an "all other tokens" bar for the rest of a ~50k-token vocabulary (GPT-2's has 50,257). The probabilities are illustrative. For a single position the loss is $-\ln p(\text{true})$, so perplexity $= e^{\mathcal L} = 1/p(\text{true})$ and bits $= \mathcal L / \ln 2 = -\log_2 p(\text{true})$. Before: $p = 0.05$, loss $3.00$ nats, perplexity $20$, $4.32$ bits. After: $p = 0.60$, loss $0.51$, perplexity $1.67$, $0.74$ bits. Averaged over a corpus, perplexity is $\exp$ of the mean loss, i.e. the geometric mean of $1/p$ across positions.
 - Training loss should fall; validation loss should fall too. A **widening gap** signals overfitting or memorization. Real runs can spike or diverge when the recipe is unstable; gradient clipping, learning rate, batch size, and data issues are the usual suspects. Lower loss does not perfectly predict every capability, so real runs also track downstream benchmarks at checkpoints; generated samples are useful for intuition but unreliable as a metric.
+- **Loss scaling (`loss-scaling`):** fp16's smallest positive (subnormal) value is about $6\times10^{-8}$ and its largest finite value is 65,504. Many activation gradients are smaller than the first and would flush to zero. Mixed-precision training multiplies the loss by a factor $S$ before `backward()`; by the chain rule every gradient is multiplied by $S$, shifting them into representable range, and the gradients are divided by $S$ (in fp32) before the optimizer step, so the update is unchanged. With dynamic loss scaling, any inf/NaN gradient causes the step to be skipped and $S$ halved; after a run of clean steps $S$ is increased again (Micikevicius et al., 2017, arXiv:1710.03740). The slide's diagram shifts illustrative gradient magnitudes by $S = 65{,}536 = 2^{16}$. A scale driven down to 1 means the gradients overflow fp16 even without scaling. bf16 has fp32's exponent range, so it needs no loss scaling.
+- **Real training logs (`bloom-176b-log`, `bloom-104b-log`).** Both charts are plotted directly from BigScience's public TensorBoard event files on Hugging Face (<https://huggingface.co/bigscience/tr11-176B-logs>, `tensorboard/main`; <https://huggingface.co/bigscience/tr8-104B-logs>, `tensorboard/tr8-104B-exp12-f`). Raw values are drawn faint with a rolling mean (loss) or rolling median (grad norm) on top. Every number on the slides was read from those files:
+  - **BLOOM 176B** (tags `lm-loss-training/lm loss`, `grad-norm/grad-norm`, converted from steps to tokens with `steps-vs-tokens`): steps 1 to 95,281 (0 to 366.5B tokens), logged 2022-03-11 to 2022-07-06. Loss is 4.40 at step 1,000 and averages 1.93 over the last 500 steps. The largest spike is at step 31,219 (97.85B tokens): loss 2.19 to 5.10 and grad norm 960 against a median of 0.14, recovering to about 2.2 within roughly 80 steps. 50 of the 117 event files begin at a step already logged by an earlier file, i.e. the job resumed from an earlier checkpoint; the plot keeps the last-written value per step.
+  - **104B prototype, experiment 12-f** (tags `lm loss`, `loss-scale`): six attempts logged 2021-11-05 to 2021-11-17, each drawn separately rather than merged. The first reached step 6,600; later attempts resumed from 6,301, 8,401, 9,901, 9,601, and 8,101. The 6,301 attempt jumped from loss 3.4 to 7.27 at step 8,741, hit its first NaN at 9,027, and its fp16 loss scale reached 1 at 9,040; the 8,401, 9,901, and 9,601 attempts also produced NaN losses and loss-scale collapse (the 9,901 attempt ends at loss 20.78, step 10,669). The 8,101 attempt stops at step 8,664. Dynamic loss scaling halves the scale whenever a gradient overflows to inf or NaN (Micikevicius et al., 2017), so a scale driven to 1 means overflow on step after step.
+  - BLOOM 176B was trained in bf16 mixed precision, informed by these fp16 instabilities in the 104B experiments (BigScience Workshop, 2022, "BLOOM: A 176B-Parameter Open-Access Multilingual Language Model," arXiv:2211.05100).
+- **Side quest, Llama 3 trained slower at noon:** all figures are from Section 3.3.4 ("Reliability and Operational Challenges") of Meta's "The Llama 3 Herd of Models" (Dubey et al., 2024, arXiv:2407.21783). Llama 3 405B trained on up to 16K H100 GPUs. Over a 54-day snapshot of pretraining there were 466 job interruptions: 47 planned (firmware upgrades, configuration or dataset updates) and 419 unexpected, about one every three hours. Roughly 78% of the unexpected interruptions were attributed to confirmed or suspected hardware issues; the largest categories in the paper's Table 5 are faulty GPUs (148) and GPU HBM3 memory (72). Significant manual intervention was required only three times; automation handled the rest, and effective training time stayed above 90%. The paper also reports a diurnal 1-2% throughput variation caused by higher mid-day temperatures affecting GPU dynamic voltage and frequency scaling, and instant data-center power swings on the order of tens of megawatts when tens of thousands of GPUs idle or resume together (e.g. waiting on checkpointing or collective communication), "stretching the limits of the power grid."
 - **The classroom demo:** sample from the same model before and after training. In the exercise, a tiny character-level model goes from random characters (loss 4.19) to text with the *shape* of Shakespeare &mdash; capitalized character names, colons, line breaks (validation loss 2.01 after 800 steps). Perplexity falls from ~66 to ~7.5; bits per token from ~6.0 to ~2.9. The numbers and samples shown in the deck are the actual output of the solution run.
 
 ## f. Data Quality, Contamination, Memorization
@@ -103,7 +125,7 @@ which is exactly cross-entropy between the model's predicted distribution and th
 - **Benchmark contamination:** when evaluation examples leak into pretraining data, the model can score by recall rather than ability, overstating capability. It is easy to introduce by accident (benchmarks are published on the scraped web) and hard to fully rule out.
 - **PII and copyright:** personally identifying and copyrighted text raise legal, ethical, and product risks beyond pure accuracy.
 - **Data mixture shapes behavior:** code-heavy data improves coding (and some structured reasoning); academic text shifts style and knowledge; conversational text changes dialogue handling. Open datasets made this concrete: **The Pile** (Gao, Biderman, and EleutherAI collaborators, 2020, "The Pile: An 800GB Dataset of Diverse Text for Language Modeling," arXiv:2101.00027) is a 22-source curated mixture widely used for open pretraining.
-- **Side quest, the data wall:** when high-quality human text, not model size, becomes the limiting resource, responses include aggressive curation and deduplication, careful domain balance, and increasingly synthetic data. This reframes the frontier and recurs in later modules.
+- **The data wall:** when high-quality human text, not model size, becomes the limiting resource, responses include aggressive curation and deduplication, careful domain balance, and increasingly synthetic data. This reframes the frontier and recurs in later modules.
 
 ## g. Scaling Laws and Compute-Optimal Training
 
@@ -118,6 +140,7 @@ which is exactly cross-entropy between the model's predicted distribution and th
 - **Interactive widget (`:::interactive widget="scalingPlanner"`):** fixes a compute budget $C$, then splits it using $C \approx 6ND$ with $D = r \cdot N$, so $N = \sqrt{C / 6r}$. Loss comes from the Chinchilla parametric form
   $$L(N, D) = E + \frac{A}{N^{\alpha}} + \frac{B}{D^{\beta}}$$
   using the corrected coefficients $E = 1.8172$, $A = 482.01$, $\alpha = 0.3478$, $B = 2085.43$, $\beta = 0.3658$ from Besiroglu et al. (2024), "Chinchilla Scaling: A Replication Attempt". Those are the values whose optimum reproduces the paper's own ~20 tokens per parameter; the coefficients as printed in Hoffmann et al. (2022) put the optimum nearer 60, which is the discrepancy the replication identified. The GPT-3 (~1.7 tokens/param) and Llama 3 8B (~1875) presets show the same budget spent two other ways, and the loss-above-optimal readout quantifies what serving-optimal training costs in training loss.
+- **Interactive widget (`:::interactive widget="servingPlanner"`):** compares two models that reach the same loss, following the inference-aware accounting of Sardana et al. (2023, "Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws," arXiv:2401.00448). Model A is the Chinchilla choice: $N_A$ parameters on $20N_A$ tokens, giving target loss $L^\ast = L(N_A, 20N_A)$ under the corrected fit above. Model B has $N_B = f N_A$ parameters; the tokens it needs to match $L^\ast$ come from inverting the fit, $D_B = \left(B / (L^\ast - E - A/N_B^{\alpha})\right)^{1/\beta}$. Lifetime compute after serving $d$ tokens is $6ND + 2Nd$ (one forward pass, $2N$ FLOPs, per served token). B costs more to train but less per served token, so the two lines cross at the break-even volume $d^\ast = (6N_BD_B - 6N_AD_A) / (2(N_A - N_B))$. Past $d^\ast$, the smaller, longer-trained model wins, which is the rationale for Llama-style token counts. For B below about 20% of A the fit demands tens of thousands of tokens per parameter, far outside the ratios Chinchilla measured, so the slider stops there; Sardana et al. trained models at up to 10,000 tokens per parameter and found quality kept improving.
 
 ## h. Distributed Training at Scale
 
@@ -151,6 +174,9 @@ which is exactly cross-entropy between the model's predicted distribution and th
 - Raffel et al., "Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer" (T5), arXiv:1910.10683.
 - Kaplan et al., "Scaling Laws for Neural Language Models," arXiv:2001.08361.
 - Hoffmann et al., "Training Compute-Optimal Large Language Models" (Chinchilla), arXiv:2203.15556.
+- BigScience Workshop, "BLOOM: A 176B-Parameter Open-Access Multilingual Language Model," arXiv:2211.05100; training logs at <https://huggingface.co/bigscience/tr11-176B-logs> and <https://huggingface.co/bigscience/tr8-104B-logs>.
+- Dubey et al., "The Llama 3 Herd of Models," arXiv:2407.21783.
+- Sardana et al., "Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws," arXiv:2401.00448. The model behind the `servingPlanner` widget.
 - Besiroglu et al., "Chinchilla Scaling: A Replication Attempt," arXiv:2404.10102. Corrects the parametric-fit coefficients reported in Hoffmann et al.; the corrected values are the ones used by the `scalingPlanner` widget.
 - Touvron et al., "LLaMA: Open and Efficient Foundation Language Models," arXiv:2302.13971.
 - Gao et al., "The Pile: An 800GB Dataset of Diverse Text for Language Modeling," arXiv:2101.00027.
@@ -158,6 +184,12 @@ which is exactly cross-entropy between the model's predicted distribution and th
 - Del&eacute;tang et al., "Language Modeling Is Compression," arXiv:2309.10668.
 - Wei et al., "Emergent Abilities of Large Language Models," arXiv:2206.07682.
 - Schaeffer et al., "Are Emergent Abilities of Large Language Models a Mirage?", arXiv:2304.15004.
+- DeepSeek-AI, "DeepSeek-V3 Technical Report," arXiv:2412.19437.
+- Micikevicius et al., "Mixed Precision Training," arXiv:1710.03740.
+- Kalamkar et al., "A Study of BFLOAT16 for Deep Learning Training," arXiv:1905.12322.
+- NVIDIA A100 Tensor Core GPU datasheet.
+- Kingma and Ba, "Adam: A Method for Stochastic Optimization," arXiv:1412.6980.
+- Pascanu, Mikolov, and Bengio, "On the difficulty of training recurrent neural networks" (gradient clipping), arXiv:1211.5063.
 - Loshchilov and Hutter, "Decoupled Weight Decay Regularization" (AdamW), arXiv:1711.05101; "SGDR: Stochastic Gradient Descent with Warm Restarts," arXiv:1608.03983.
 - Huang et al., "GPipe: Efficient Training of Giant Neural Networks using Pipeline Parallelism," arXiv:1811.06965.
 - Shoeybi et al., "Megatron-LM: Training Multi-Billion Parameter Language Models Using Model Parallelism," arXiv:1909.08053.

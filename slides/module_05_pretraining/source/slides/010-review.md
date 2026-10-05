@@ -42,3 +42,23 @@ Goal: assign **high probability to the token that actually comes next**.
 :::note
 Causal masking + cross-entropy is the whole idea. The rest of the module &mdash; data pipelines, schedules, scaling laws, distributed training &mdash; is the engineering that makes it work at scale.
 :::
+
+---
+
+<!-- .slide: id="review-3" -->
+
+## Review: Prediction Is Compression (Module 1)
+
+:::columns cols="2" gap="34px"
+**What Module 1 showed**
+
+- Encoding a symbol with probability $p$ costs $-\log_2 p$ bits
+- Cross-entropy is the average cost when the code comes from the model's $q$ instead of the true $p$
+- A code built from character frequencies shrank "the cat sat on the mat" from 110 bits to 70
++++
+**Why it matters here**
+
+- The pretraining loss **is** a cross-entropy, so lower loss means fewer bits per token
+- Training a better predictor and building a better compressor are the same objective
+- Del&eacute;tang et al. (2023), "Language Modeling Is Compression," use LLMs directly as lossless compressors
+:::
