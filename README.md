@@ -68,6 +68,7 @@ slides/          # reveal.js presentations
     source/      # slide source partials, config, per-module styles
     images/      # figures referenced by the deck
     manim/       # source for lecture animations
+    media/       # generated animations
 exercises/       # coding exercises with TODOs for you to complete
   module_XX/
     exercise.py  # the only file you edit

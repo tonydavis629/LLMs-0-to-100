@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build bundled reveal.js slide decks.
+"""Render lecture animations and build bundled reveal.js slide decks.
 
 Usage:
     uv run python build_course.py                     # build every module
@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import argparse
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 
@@ -318,6 +320,70 @@ def collect_widget_css(widgets_dir: Path, stems: list[str]) -> str:
     )
 
 
+def build_animations(module_dir: Path, md: str, module_config: str) -> None:
+    """Render missing or stale Manim sections used by this deck."""
+    # Each stepper names a config entry containing its ordered section filenames.
+    scenes = set(re.findall(r'data-manim-scene="([^"]+)"', md))
+    if not scenes:
+        return
+    section_lists = dict(re.findall(
+        r"['\"]?([\w-]+)['\"]?\s*:\s*\[([^\]]*)\]", module_config,
+    ))
+    clips_by_class: dict[str, list[str]] = {}
+    for scene in sorted(scenes):
+        clips = re.findall(r"['\"]([^'\"]+\.mp4)['\"]", section_lists.get(scene, ""))
+        if not clips:
+            raise ValueError(f"ERROR: no animation clips configured for scene {scene!r}")
+        for clip in clips:
+            # Manim names sections ClassName_0000_section_name.mp4.
+            match = re.fullmatch(r"([A-Za-z_]\w*)_\d{4}_.+\.mp4", clip)
+            if not match or Path(clip).name != clip:
+                raise ValueError(f"ERROR: invalid Manim section filename {clip!r}")
+            clips_by_class.setdefault(match.group(1), []).append(clip)
+
+    source = module_dir / "manim" / "scenes.py"
+    if not source.is_file():
+        raise ValueError(f"ERROR: animation source is missing: {source}")
+    # Changing a local helper also makes the rendered clips stale.
+    source_mtime = max(path.stat().st_mtime for path in source.parent.rglob("*.py"))
+    destination = module_dir / "media" / "sections"
+    pending = []
+    for scene_class, clips in clips_by_class.items():
+        if any(
+            not (destination / clip).is_file()
+            or (destination / clip).stat().st_size == 0
+            or (destination / clip).stat().st_mtime < source_mtime
+            for clip in clips
+        ):
+            pending.append(scene_class)
+    if not pending:
+        print(f"animations up to date for {module_dir.name}", flush=True)
+        return
+
+    # Use the same Python environment as the build, with no additional setup.
+    media_dir = (module_dir / "media").resolve()
+    print(f"Rendering animations for {module_dir.name}: {', '.join(pending)}", flush=True)
+    subprocess.run([
+        sys.executable, "-m", "manim", "render", "-qh", "--renderer", "cairo",
+        "--format", "mp4", "--save_sections", "--media_dir", str(media_dir),
+        "--progress_bar", "none", "-v", "WARNING", str(source.resolve()), *pending,
+    ], cwd=source.parent, check=True)
+    rendered = media_dir / "videos" / source.stem / "1080p60" / "sections"
+    # Validate every required output before copying any of them into the deck.
+    required = [clip for scene_class in pending for clip in clips_by_class[scene_class]]
+    for clip in required:
+        path = rendered / clip
+        if not path.is_file() or path.stat().st_size == 0 or path.stat().st_mtime < source_mtime:
+            raise ValueError(
+                f"ERROR: Manim did not produce the required section {clip!r}; "
+                "check the scene's section names against source/config.js"
+            )
+    destination.mkdir(parents=True, exist_ok=True)
+    for clip in required:
+        shutil.copy2(rendered / clip, destination / clip)
+    print(f"wrote {len(required)} animation clips to {destination}", flush=True)
+
+
 def build_module(module_dir: Path) -> Path:
     shared_dir = module_dir.parent / "source"
     base_html = (shared_dir / "base.html").read_text(encoding="utf-8")
@@ -353,6 +419,7 @@ def build_module(module_dir: Path) -> Path:
     module_config = f'window.ASSET_BASE = "{asset_base}";\n' + module_config
 
     md = expand_components(raw_md)
+    build_animations(module_dir, md, module_config)
     md = rewrite_asset_paths(md, asset_base)
     if "</textarea>" in md:
         raise ValueError("ERROR: slides.md contains a literal </textarea>, which would terminate the inline template early.")
