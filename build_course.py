@@ -9,10 +9,12 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import platform
 import re
 import shutil
 import subprocess
 import sys
+from importlib import import_module
 from pathlib import Path
 
 
@@ -360,7 +362,22 @@ def build_animations(module_dir: Path, md: str, module_config: str) -> None:
         print(f"animations up to date for {module_dir.name}", flush=True)
         return
 
-    # Use the same Python environment as the build, with no additional setup.
+    # Check native libraries only when rendering is needed, before launching Manim.
+    try:
+        import_module("manim")
+    except (ImportError, OSError) as exc:
+        raise RuntimeError(
+            f"ERROR: Manim cannot load on {platform.system()} ({platform.machine()}) "
+            f"with Python {platform.python_version()} at {sys.executable}.\n"
+            f"{exc}\n"
+            "For incompatible native binaries, run from the repository root:\n"
+            "uv sync --python 3.13 --managed-python --no-cache "
+            "--reinstall-package pycairo --reinstall-package manimpango\n"
+            "On Apple Silicon, use a native ARM terminal and ARM Homebrew libraries.\n"
+            "Native prerequisites: https://docs.manim.community/en/stable/installation.html"
+        ) from exc
+
+    # Use the build's Python interpreter on macOS, Linux, and Windows.
     media_dir = (module_dir / "media").resolve()
     print(f"Rendering animations for {module_dir.name}: {', '.join(pending)}", flush=True)
     subprocess.run([

@@ -43,7 +43,7 @@ uv sync
 ### Verify Your Setup
 
 ```bash
-uv run python -c "import torch, print('Environment ready.')"
+uv run python -c "import torch; print('Environment ready.')"
 ```
 
 ### Build the Slide Decks
