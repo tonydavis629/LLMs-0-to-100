@@ -180,7 +180,7 @@ The second hybrid in two sections. Autoregression won for computational convenie
 
 <!-- .slide: id="sidequest-lecun" -->
 
-## Side Quest: Is Autoregression a Dead End?
+## <span class="side-quest-badge">Side Quest</span> Is Autoregression a Dead End?
 
 Yann LeCun's critique:
 

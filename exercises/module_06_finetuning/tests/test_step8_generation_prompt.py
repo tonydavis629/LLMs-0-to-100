@@ -1,4 +1,4 @@
-"""Step 9: build_generation_prompt()
+"""Step 8: build_generation_prompt()
 
 Run by src/main.py. You do NOT need to edit this file.
 """

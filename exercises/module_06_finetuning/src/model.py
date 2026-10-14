@@ -17,13 +17,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-# Allow importing the student's exercise.py (it defines lora_forward_delta,
-# freeze_base_param, and merge_lora_weight that this file calls).
+# Allow importing the student's exercise.py (it defines lora_forward_delta
+# and merge_lora_weight, which this file calls).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from exercise import (  # noqa: E402
     lora_forward_delta,
-    freeze_base_param,
     merge_lora_weight,
 )
 
@@ -199,9 +198,8 @@ def inject_lora(
 def freeze_base_(model: nn.Module) -> None:
     """Freeze every parameter that does NOT belong to a LoRA adapter."""
     for name, p in model.named_parameters():
-        if "A" not in name and "B" not in name:
-            # Student step 6: freeze this parameter.
-            freeze_base_param(p)
+        if not name.endswith((".A", ".B")):
+            p.requires_grad = False  # backward() skips it, so the optimizer never moves it
 
 
 def merge_lora(model: nn.Module) -> nn.Module:

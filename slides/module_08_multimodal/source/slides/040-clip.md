@@ -119,7 +119,7 @@ An assistant needs the language model to **condition on visual information while
 
 <!-- .slide: id="sq-weak-supervision" -->
 
-## Side Quest: Why Captions Are Weak Supervision
+## <span class="side-quest-badge">Side Quest</span> Why Captions Are Weak Supervision
 
 - A caption rarely names every object, relation, style, and spatial detail: "a dog" ignores the breed, the grass, the ball in its mouth
 - Contrastive learning still works: **scale and diversity** create useful pressure across millions of pairs

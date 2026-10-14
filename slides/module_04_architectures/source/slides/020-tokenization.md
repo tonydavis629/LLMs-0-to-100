@@ -160,7 +160,7 @@ What should a language model read?
 
 <!-- .slide: id="side-quest-glitch-tokens" -->
 
-## Side Quest: Glitch Tokens
+## <span class="side-quest-badge">Side Quest</span> Glitch Tokens
 
 **Tokenization** generated a token for <code>&nbsp;SolidGoldMagikarp</code> (Reddit username, GPT-2 ID 33510), but **training** rarely saw it, so its embedding stayed near random.
 

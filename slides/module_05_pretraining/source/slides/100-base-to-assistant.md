@@ -19,7 +19,7 @@ It is not refusing to help, and not trying to help. It is predicting the next to
 
 <!-- .slide: id="side-quest-base-vs-assistant" -->
 
-## Side Quest: Same Prompt, Two Models
+## <span class="side-quest-badge">Side Quest</span> Same Prompt, Two Models
 
 :::columns cols="2" gap="30px"
 **Base model** sees a document to continue

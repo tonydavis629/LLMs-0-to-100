@@ -15,8 +15,9 @@ The example holds both prompt and response. We only want to teach the **response
 +++
 **How**
 
-- Set prompt targets to `-100`
-- `ignore_index=-100` skips those terms
+- Set prompt **targets** to `-100`
+- `-100` is a placeholder, not a token id or a logit: real ids start at 0
+- PyTorch's cross-entropy skips it by default (`ignore_index=-100`)
 :::
 
 Same cross-entropy as Module 5, restricted to the completion. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
@@ -55,7 +56,7 @@ The Module 5 loss with one change: the sum runs only over $R$, the **response-to
 
 <!-- .slide: id="side-quest-mask-ablation" -->
 
-## Side Quest: What If You Skip the Mask?
+## <span class="side-quest-badge">Side Quest</span> What If You Skip the Mask?
 
 Train on the **whole** sequence, prompt included, and the model learns to model user turns too.
 

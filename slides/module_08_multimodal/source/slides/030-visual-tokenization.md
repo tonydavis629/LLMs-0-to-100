@@ -80,7 +80,7 @@ A model can be "looking at" the image and still be blind to the part that matter
 
 <!-- .slide: id="sq-registers" -->
 
-## Side Quest: Vision Transformers Need Registers
+## <span class="side-quest-badge">Side Quest</span> Vision Transformers Need Registers
 
 <div class="img-figure">
   <img src="images/register_attention.png" alt="Two 16x16 patch-norm heatmaps: without registers a few patches have very high norm; with register tokens the features are clean and uniform" style="max-height: 380px;">

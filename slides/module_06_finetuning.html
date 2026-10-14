@@ -1531,8 +1531,9 @@ The example holds both prompt and response. We only want to teach the **response
 
 **How**
 
-- Set prompt targets to `-100`
-- `ignore_index=-100` skips those terms
+- Set prompt **targets** to `-100`
+- `-100` is a placeholder, not a token id or a logit: real ids start at 0
+- PyTorch's cross-entropy skips it by default (`ignore_index=-100`)
 
 </div>
 
@@ -1589,7 +1590,7 @@ The Module 5 loss with one change: the sum runs only over $R$, the **response-to
 
 <!-- .slide: id="side-quest-mask-ablation" -->
 
-## Side Quest: What If You Skip the Mask?
+## <span class="side-quest-badge">Side Quest</span> What If You Skip the Mask?
 
 Train on the **whole** sequence, prompt included, and the model learns to model user turns too.
 
@@ -1786,7 +1787,7 @@ Finetuning turns these into a **data problem**: which demonstrations you show, w
 
 <!-- .slide: id="side-quest-alignment-tax" -->
 
-## Side Quest: The Alignment Tax
+## <span class="side-quest-badge">Side Quest</span> The Alignment Tax
 
 **Alignment tax**: finetuning for helpfulness and safety can **reduce raw benchmark scores**.
 
@@ -2024,7 +2025,7 @@ Checkpoints shrink from **gigabytes to megabytes**. Finetuning fits on **consume
 
 <!-- .slide: id="side-quest-adapters-as-diffs" -->
 
-## Side Quest: Adapters as Diffs for Weights
+## <span class="side-quest-badge">Side Quest</span> Adapters as Diffs for Weights
 
 A LoRA adapter is a **diff** against the frozen base: a code patch for model weights.
 
@@ -2108,10 +2109,10 @@ The expensive part of SFT is not compute. It is **curating good demonstrations**
 
 <div>
 
-**Distillation**
+**Synthetic**
 
-- Generate data from a **stronger model**
-- Self-Instruct, Alpaca
+- **Distillation**: a stronger model writes the data (Alpaca)
+- **Self-instruction**: the model writes its own (Self-Instruct)
 
 </div>
 
@@ -2206,7 +2207,7 @@ Every option is partial and noisy. (How to evaluate: Module 11.) <!-- .element: 
 
 <!-- .slide: id="side-quest-superficial-alignment" -->
 
-## Side Quest: The Superficial Alignment Hypothesis
+## <span class="side-quest-badge">Side Quest</span> The Superficial Alignment Hypothesis
 
 LIMA's claim: the base model **already contains** the knowledge; alignment teaches **format, style, and which behaviors to surface**.
 
@@ -2221,8 +2222,6 @@ LIMA's claim: the base model **already contains** the knowledge; alignment teach
 
 <div>
 
-**Critical-thinking question** (compare Module 5's "emergence: real or mirage?"):
-
 If 1,000 examples align a model, how much is finetuning **teaching** vs **unlocking**?
 
 </div>
@@ -2233,27 +2232,33 @@ If 1,000 examples align a model, how much is finetuning **teaching** vs **unlock
 
 <!-- .slide: id="side-quest-model-collapse" -->
 
-## Side Quest: Synthetic Data and Model Collapse
-
-Alpaca and Self-Instruct generate finetuning data from a **stronger model**. Cheap and scalable, with hard questions:
+## <span class="side-quest-badge">Side Quest</span> Two Kinds of Synthetic Data
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
 <div>
 
-- **Quality and licensing**: the teacher's errors propagate; proprietary-model outputs may violate terms
-- **Model collapse**: repeated training on model-generated text erodes diversity
+**Distillation** (Alpaca, 2023)
+
+- A **stronger teacher** (text-davinci-003) wrote 52K demonstrations; a **smaller student** (LLaMA 7B) imitated them
+- The student copies the teacher's style more readily than its facts (Gudibande et al., 2023)
+- The teacher's errors and terms of use come along with the data
 
 </div>
 
 <div>
 
-- Ties to Module 5's **data-wall** side quest: scarce human data pushes models toward synthetic text
-- Open question: how much synthetic data before the snake eats its own tail?
+**Self-instruction** (Self-Instruct, 2022)
+
+- The **same model** (GPT-3) wrote new tasks and answers from 175 seeds, filtered them, then trained on them
+- No stronger model needed: the model bootstraps itself
+- Loop it and you risk **model collapse**: each generation loses more of the rare outputs (Shumailov et al., 2024)
 
 </div>
 
 </div>
+
+Module 5's data wall pushes labs toward both. How much synthetic text can a model train on before the loop starts to degrade it? <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -2353,7 +2358,7 @@ Finetune NanoGPT into an instruct model
 
 ## Running the Exercise
 
-- Open `module_06_finetuning/exercise.py`, fill in the ten `NotImplementedError` lines
+- Open `module_06_finetuning/exercise.py`, fill in the nine `NotImplementedError` lines
 - The model, LoRA plumbing, tokenizer, and dataset are provided in `src/`
 - Run after each step; each step is tagged with its test results
 
@@ -2362,11 +2367,11 @@ Finetune NanoGPT into an instruct model
 cd exercises
 uv run python module_06_finetuning/src/main.py
 
-# Run a single step (1-10)
+# Run a single step (1-9)
 uv run python module_06_finetuning/src/main.py --step 3
 ```
 
-Step 7 finetunes the bundled Module 5 base model (`data/base_model.pt`) and takes under 30 seconds on a laptop CPU. <!-- .element: class="text-md" style="margin-top: 22px;" -->
+Step 6 finetunes the bundled Module 5 base model (`data/base_model.pt`) and takes under 30 seconds on a laptop CPU. <!-- .element: class="text-md" style="margin-top: 22px;" -->
 
 ---
 
@@ -2423,9 +2428,9 @@ The base checkpoint is the **frozen Module 5 model**. You implement the **finetu
 
 <div>
 
-**Ten one-line steps**
+**Nine one-line steps**
 
-Format the template, mask the loss, compute masked cross-entropy, build the optimizer, implement the LoRA delta, freeze the base, run a step, count parameters, build the generation prompt, merge.
+Format the template, mask the loss, compute masked cross-entropy, build the optimizer, implement the LoRA delta, run a step, count parameters, build the generation prompt, merge.
 
 </div>
 
@@ -2503,6 +2508,10 @@ def build_targets(ids: list[int], prompt_span: int) -> list[int]:
     predicted at position prompt_span - 1 (the assistant marker), so positions
     0 .. prompt_span - 2 are masked, the response targets are ids[prompt_span:],
     and the final position is -100 (no token follows the last one).
+
+    -100 is not a token id or a logit. It is a placeholder target: real token ids
+    start at 0, and F.cross_entropy skips every position whose target equals its
+    ignore_index, which defaults to -100.
 
     Args:
         ids: The full formatted token sequence.
@@ -2646,7 +2655,10 @@ def lora_forward_delta(
 ) -> torch.Tensor:
     """Compute the low-rank update added to the frozen layer's output.
 
-    The update is:  scale * (dropout(x) @ A.t() @ B.t())
+    For a single column vector x, LoRA adds scale * B A x to the layer's output
+    (the lecture's alpha / r times BA). Here x holds a batch of ROW vectors, the
+    way nn.Linear sees its input, so each matrix has to act from the right.
+    Dropout is applied to x before the adapter sees it.
 
     Args:
         x: The layer input, shape (..., in_features).
@@ -2658,13 +2670,14 @@ def lora_forward_delta(
     Returns:
         The low-rank delta, shape (..., out_features).
     """
-    # TODO: Return the low-rank update scale * (dropout(x) @ A.t() @ B.t()).
+    # TODO: Return the low-rank update for the batch x: dropout first, then A
+    #       (down to rank r), then B (back up to out_features), times scale.
     raise NotImplementedError("TODO: compute the LoRA low-rank delta")
 ```
 
 <div class="fragment hint-box">
 
-**Hint:** apply `dropout` to `x`, matrix-multiply by `A.t()` then `B.t()`, scale the result.
+**Hint:** for a batch of row vectors, applying a matrix `M` is written `x @ M.t()`.
 
 </div>
 
@@ -2680,37 +2693,8 @@ return scale * (dropout(x) @ A.t() @ B.t())
 
 ---
 
-<!-- .slide: id="exercise-step6" -->
-
-## Step 6: freeze_base_param()
-
-```python
-def freeze_base_param(p: torch.nn.Parameter) -> None:
-    """Freeze a single base parameter so the optimizer never updates it."""
-    # TODO: Freeze this parameter so it receives no gradient updates.
-    raise NotImplementedError("TODO: freeze this base parameter")
-```
-
-<div class="fragment hint-box">
-
-**Hint:** set the parameter's `requires_grad` attribute to `False`.
-
-</div>
-
-<div class="fragment note">
-
-**Answer:**
-
-```python
-p.requires_grad = False
-```
-
-</div>
-
----
-
-<section id="exercise-output-steps4-6">
-  <h2>Steps 4&ndash;6: Output</h2>
+<section id="exercise-output-steps4-5">
+  <h2>Steps 4&ndash;5: Output</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
@@ -2720,18 +2704,18 @@ p.requires_grad = False
         <span class="terminal-title">uv run python module_06_finetuning/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;LoRA (r=8, alpha=32, scale=4) wraps 16 linear layers&amp;#10;Every B starts at zero, so on 'uppercase: hello' the wrapped model matches the base model:&amp;#10;  max logit difference 0.00e+00&amp;#10;  <span class="success">CORRECT</span>    x=[1,2], A=[[1,1]], B=[[2],[0],[1]], scale=0.5 gives [3, 0, 1.5]&amp;#10;  <span class="success">CORRECT</span>    equals x @ (scale * B @ A).t() on a random (2, 5, 8) batch, output shape (2, 5, 6)&amp;#10;  <span class="success">CORRECT</span>    B = 0 (how LoRA starts) gives an all-zero update, so the adapter begins as a no-op&amp;#10;  <span class="success">CORRECT</span>    passes x through dropout first (nn.Dropout(p=1.0) drops every input, so the update is 0)&amp;#10;&amp;#10;<span class="header">=== Step 6: freeze_base_param() ===</span> <span class="success">CORRECT</span>&amp;#10;Base tensors frozen:     52 of 52 (embeddings, layer norms, and every wrapped Linear)&amp;#10;LoRA tensors trainable:  32 of 32 (A and B in each of the 16 LoRA layers)&amp;#10;  <span class="success">CORRECT</span>    sets requires_grad to False on the parameter it is given&amp;#10;  <span class="success">CORRECT</span>    leaves the parameter's values unchanged&amp;#10;  <span class="success">CORRECT</span>    backward() then skips it: weight.grad stays None, the unfrozen bias still gets one&amp;#10;  <span class="success">CORRECT</span>    real model: all 52 base tensors are frozen and all 32 LoRA tensors (A and B) still train&amp;#10;&amp;#10;<span class="header">=== Step 7: sft_train_step() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: zero the gradients and backpropagate the loss</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;  <span class="success">CORRECT</span>    returns a torch.optim.AdamW optimizer&amp;#10;  <span class="success">CORRECT</span>    holds only the trainable tensors (2 frozen + 2 trainable gives just those 2)&amp;#10;  <span class="success">CORRECT</span>    uses the learning rate it is given (lr=0.01)&amp;#10;&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;LoRA (r=8, alpha=32, scale=4) wraps 16 linear layers&amp;#10;Every B starts at zero, so on 'uppercase: hello' the wrapped model matches the base model:&amp;#10;  max logit difference 0.00e+00&amp;#10;  <span class="success">CORRECT</span>    x=[1,2], A=[[1,1]], B=[[2],[0],[1]], scale=0.5 gives [3, 0, 1.5]&amp;#10;  <span class="success">CORRECT</span>    equals x @ (scale * B @ A).t() on a random (2, 5, 8) batch, output shape (2, 5, 6)&amp;#10;  <span class="success">CORRECT</span>    B = 0 (how LoRA starts) gives an all-zero update, so the adapter begins as a no-op&amp;#10;  <span class="success">CORRECT</span>    passes x through dropout first (nn.Dropout(p=1.0) drops every input, so the update is 0)&amp;#10;&amp;#10;<span class="header">=== Step 6: sft_train_step() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: zero the gradients and backpropagate the loss</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">Every B starts at zero, so wrapping 16 layers with LoRA changes no logit. After the freeze, only the 32 adapter tensors can train.</p>
+    <p class="text-lg terminal-caption">Every B starts at zero, so wrapping 16 layers with LoRA changes no logit.</p>
   </div>
 </section>
 
 ---
 
-<!-- .slide: id="exercise-step7" -->
+<!-- .slide: id="exercise-step6" -->
 
-## Step 7: sft_train_step()
+## Step 6: sft_train_step()
 
 ```python
     logits = model(x)
@@ -2765,8 +2749,8 @@ loss.backward()
 
 ---
 
-<section id="exercise-output-step7">
-  <h2>Step 7: Finetuning</h2>
+<section id="exercise-output-step6">
+  <h2>Step 6: Finetuning</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
@@ -2776,7 +2760,7 @@ loss.backward()
         <span class="terminal-title">uv run python module_06_finetuning/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: freeze_base_param() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 7: sft_train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;  step      loss&amp;#10;     0    6.1116&amp;#10;    25    2.9740&amp;#10;    50    1.3169&amp;#10;    75    0.7570&amp;#10;   100    0.3835&amp;#10;   125    0.3708&amp;#10;   150    0.3092&amp;#10;  <span class="success">CORRECT</span>    returns the batch loss as a float: uniform logits over 4 tokens give ln 4 = 1.3863&amp;#10;  <span class="success">CORRECT</span>    one SGD step (lr=1) on a zero embedding moves row 1 to [-0.125, -0.125, 0.375, -0.125]&amp;#10;  <span class="success">CORRECT</span>    clears the previous step's gradients first (a leftover .grad of 100 changes nothing)&amp;#10;  <span class="success">CORRECT</span>    finetuning drives the masked loss below 0.5 (from 6.11 at step 0)&amp;#10;&amp;#10;<span class="header">=== Step 8: count_trainable_params() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: count the trainable parameters</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 6: sft_train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;  step      loss&amp;#10;     0    6.1116&amp;#10;    25    2.9740&amp;#10;    50    1.3169&amp;#10;    75    0.7570&amp;#10;   100    0.3835&amp;#10;   125    0.3708&amp;#10;   150    0.3092&amp;#10;  <span class="success">CORRECT</span>    returns the batch loss as a float: uniform logits over 4 tokens give ln 4 = 1.3863&amp;#10;  <span class="success">CORRECT</span>    one SGD step (lr=1) on a zero embedding moves row 1 to [-0.125, -0.125, 0.375, -0.125]&amp;#10;  <span class="success">CORRECT</span>    clears the previous step's gradients first (a leftover .grad of 100 changes nothing)&amp;#10;  <span class="success">CORRECT</span>    finetuning drives the masked loss below 0.5 (from 6.11 at step 0)&amp;#10;&amp;#10;<span class="header">=== Step 7: count_trainable_params() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: count the trainable parameters</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">The masked loss falls from 6.11 to 0.38 by step 100 and then levels off around 0.3. The first three tests grade <code>sft_train_step()</code> on a 4-token toy model worked out by hand; the last one checks this run.</p>
@@ -2785,9 +2769,9 @@ loss.backward()
 
 ---
 
-<!-- .slide: id="exercise-step8" -->
+<!-- .slide: id="exercise-step7" -->
 
-## Step 8: count_trainable_params()
+## Step 7: count_trainable_params()
 
 ```python
 def count_trainable_params(model: torch.nn.Module) -> int:
@@ -2814,8 +2798,8 @@ return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 ---
 
-<section id="exercise-output-step8">
-  <h2>Step 8: Output</h2>
+<section id="exercise-output-step7">
+  <h2>Step 7: Output</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
@@ -2825,18 +2809,18 @@ return sum(p.numel() for p in model.parameters() if p.requires_grad)
         <span class="terminal-title">uv run python module_06_finetuning/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: freeze_base_param() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 7: sft_train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 8: count_trainable_params() ===</span> <span class="success">CORRECT</span>&amp;#10;Trainable (LoRA adapters):  65,536&amp;#10;Total (base + adapters):    884,096&amp;#10;Fraction trainable:         7.41%&amp;#10;  <span class="success">CORRECT</span>    counts every element: nn.Linear(3, 2) has 2*3 + 2 = 8 trainable numbers&amp;#10;  <span class="success">CORRECT</span>    skips frozen tensors: a rank-2 adapter on a frozen 4 -&gt; 3 layer gives 2*4 + 3*2 = 14&amp;#10;  <span class="success">CORRECT</span>    a fully frozen layer has 0 trainable parameters&amp;#10;  <span class="success">CORRECT</span>    real model: the count is exactly the LoRA A and B matrices, 65,536 numbers&amp;#10;&amp;#10;<span class="header">=== Step 9: build_generation_prompt() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: assemble the generation prompt up to the assistant marker</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: sft_train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 7: count_trainable_params() ===</span> <span class="success">CORRECT</span>&amp;#10;Frozen base tensors:        52 (embeddings, layer norms, every wrapped Linear)&amp;#10;Trainable LoRA tensors:     32 (A and B in each of the 16 LoRA layers)&amp;#10;Trainable (LoRA adapters):  65,536&amp;#10;Total (base + adapters):    884,096&amp;#10;Fraction trainable:         7.41%&amp;#10;  <span class="success">CORRECT</span>    counts every element: nn.Linear(3, 2) has 2*3 + 2 = 8 trainable numbers&amp;#10;  <span class="success">CORRECT</span>    skips frozen tensors: a rank-2 adapter on a frozen 4 -&gt; 3 layer gives 2*4 + 3*2 = 14&amp;#10;  <span class="success">CORRECT</span>    a fully frozen layer has 0 trainable parameters&amp;#10;  <span class="success">CORRECT</span>    real model: the count is exactly the LoRA A and B matrices, 65,536 numbers&amp;#10;&amp;#10;<span class="header">=== Step 8: build_generation_prompt() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: assemble the generation prompt up to the assistant marker</span>&amp;#10;&amp;#10;<span class="skipped">...</span></pre>
       </div>
     </div>
-    <p class="text-lg terminal-caption">LoRA trains 65,536 of 884,096 numbers, 7.41% of the model. The real-model test checks that the count is exactly the size of the A and B matrices.</p>
+    <p class="text-lg terminal-caption">The runner froze every base tensor right after injecting the adapters, so only the 32 A and B tensors train: 65,536 of 884,096 numbers, 7.41% of the model. The real-model test checks that the count is exactly the size of the A and B matrices.</p>
   </div>
 </section>
 
 ---
 
-<!-- .slide: id="exercise-step9" -->
+<!-- .slide: id="exercise-step8" -->
 
-## Step 9: build_generation_prompt()
+## Step 8: build_generation_prompt()
 
 ```python
 def build_generation_prompt(
@@ -2885,8 +2869,8 @@ return (
 
 ---
 
-<section id="exercise-output-step9">
-  <h2>Step 9: The Behavioral Flip</h2>
+<section id="exercise-output-step8">
+  <h2>Step 8: The Behavioral Flip</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
@@ -2896,7 +2880,7 @@ return (
         <span class="terminal-title">uv run python module_06_finetuning/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: freeze_base_param() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 7: sft_train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 8: count_trainable_params() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 9: build_generation_prompt() ===</span> <span class="success">CORRECT</span>&amp;#10;prompt: 'uppercase: hello'&amp;#10;Base model (before finetuning):&amp;#10;  full:     '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;ers\nIn the father '&amp;#10;  response: 'ers\nIn the father '   &lt;- ignores the instruction&amp;#10;Finetuned model (after Step 7):&amp;#10;  full:     '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;HELLO&lt;|end|&gt;d god\nTo god'&amp;#10;  response: 'HELLO'   &lt;- answers the instruction&amp;#10;  <span class="success">CORRECT</span>    prompt 'ab' gives [user, a, b, end, assistant], with no response yet&amp;#10;  <span class="success">CORRECT</span>    ends on the assistant marker, so the next generated token starts the answer&amp;#10;  <span class="success">CORRECT</span>    real vocabulary: 'uppercase: hello' decodes to '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;'&amp;#10;&amp;#10;<span class="header">=== Step 10: merge_lora_weight() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: merge the LoRA update into the base weight</span></pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: sft_train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 7: count_trainable_params() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 8: build_generation_prompt() ===</span> <span class="success">CORRECT</span>&amp;#10;prompt: 'uppercase: hello'&amp;#10;Base model (before finetuning):&amp;#10;  full:     '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;ers\nIn the father '&amp;#10;  response: 'ers\nIn the father '   &lt;- ignores the instruction&amp;#10;Finetuned model (after Step 6):&amp;#10;  full:     '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;HELLO&lt;|end|&gt;d god\nTo god'&amp;#10;  response: 'HELLO'   &lt;- answers the instruction&amp;#10;  <span class="success">CORRECT</span>    prompt 'ab' gives [user, a, b, end, assistant], with no response yet&amp;#10;  <span class="success">CORRECT</span>    ends on the assistant marker, so the next generated token starts the answer&amp;#10;  <span class="success">CORRECT</span>    real vocabulary: 'uppercase: hello' decodes to '&lt;|user|&gt;uppercase: hello&lt;|end|&gt;&lt;|assistant|&gt;'&amp;#10;&amp;#10;<span class="header">=== Step 9: merge_lora_weight() ===</span> <span class="skipped">INCOMPLETE</span>&amp;#10;  <span class="skipped">TODO: merge the LoRA update into the base weight</span></pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Same prompt, same sampling seed. The base model continues Shakespeare-style text. The finetuned model answers <code>HELLO</code> and closes its turn with <code>&lt;|end|&gt;</code>; it keeps generating past that marker, so the runner cuts the response at the first one.</p>
@@ -2905,9 +2889,9 @@ return (
 
 ---
 
-<!-- .slide: id="exercise-step10" -->
+<!-- .slide: id="exercise-step9" -->
 
-## Step 10: merge_lora_weight()
+## Step 9: merge_lora_weight()
 
 ```python
 def merge_lora_weight(base_W: torch.Tensor, A: torch.Tensor, B: torch.Tensor, scale: float) -> torch.Tensor:
@@ -2945,7 +2929,7 @@ return base_W + scale * (B @ A)
 ---
 
 <section id="exercise-output-all">
-  <h2>All Ten Steps: Output</h2>
+  <h2>All Nine Steps: Output</h2>
   <div class="content" style="justify-content: center;">
     <div class="terminal-output dense" style="max-width: 1000px;">
       <div class="terminal-bar">
@@ -2955,7 +2939,7 @@ return base_W + scale * (B @ A)
         <span class="terminal-title">uv run python module_06_finetuning/src/main.py</span>
       </div>
       <div class="terminal-body">
-        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: freeze_base_param() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 7: sft_train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 8: count_trainable_params() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 9: build_generation_prompt() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">Base model (before finetuning):</span>&amp;#10;<span class="t-gray">  response: 'ers\nIn the father '   &lt;- ignores the instruction</span>&amp;#10;<span class="t-gray">Finetuned model (after Step 7):</span>&amp;#10;<span class="t-gray">  response: 'HELLO'   &lt;- answers the instruction</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 10: merge_lora_weight() ===</span> <span class="success">CORRECT</span>&amp;#10;Merged 16 LoRA layers into plain nn.Linear weights: 884,096 -&gt; 818,560 parameters&amp;#10;  Max logit difference (adapter vs merged): 8.40e-06&amp;#10;  <span class="success">CORRECT</span>    W = I, A = [[1, 2]], B = [[1], [0]], scale = 0.5 gives [[1.5, 1], [0, 1]]&amp;#10;  <span class="success">CORRECT</span>    returns a new tensor and leaves base_W itself unchanged&amp;#10;  <span class="success">CORRECT</span>    one merged layer gives the same output as base layer + adapter (random 8 -&gt; 6 layer, r = 4)&amp;#10;  <span class="success">CORRECT</span>    real model: merged and adapter logits agree (max difference under 1e-4)</pre>
+        <pre class="terminal-pre"><span class="header">=== Step 1: format_example() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 2: build_targets() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 3: masked_cross_entropy() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 4: build_optimizer() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 5: lora_forward_delta() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 6: sft_train_step() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 7: count_trainable_params() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="header">=== Step 8: build_generation_prompt() ===</span> <span class="success">CORRECT</span>&amp;#10;<span class="t-gray">Base model (before finetuning):</span>&amp;#10;<span class="t-gray">  response: 'ers\nIn the father '   &lt;- ignores the instruction</span>&amp;#10;<span class="t-gray">Finetuned model (after Step 6):</span>&amp;#10;<span class="t-gray">  response: 'HELLO'   &lt;- answers the instruction</span>&amp;#10;<span class="skipped">  ...</span>&amp;#10;&amp;#10;<span class="header">=== Step 9: merge_lora_weight() ===</span> <span class="success">CORRECT</span>&amp;#10;Merged 16 LoRA layers into plain nn.Linear weights: 884,096 -&gt; 818,560 parameters&amp;#10;  Max logit difference (adapter vs merged): 8.40e-06&amp;#10;  <span class="success">CORRECT</span>    W = I, A = [[1, 2]], B = [[1], [0]], scale = 0.5 gives [[1.5, 1], [0, 1]]&amp;#10;  <span class="success">CORRECT</span>    returns a new tensor and leaves base_W itself unchanged&amp;#10;  <span class="success">CORRECT</span>    one merged layer gives the same output as base layer + adapter (random 8 -&gt; 6 layer, r = 4)&amp;#10;  <span class="success">CORRECT</span>    real model: merged and adapter logits agree (max difference under 1e-4)</pre>
       </div>
     </div>
     <p class="text-lg terminal-caption">Merging folds each <code>scale * (B @ A)</code> back into its weight. The model is back to 818,560 parameters with no adapters, and its logits move by only 8.40e-06, float32 rounding.</p>
@@ -2968,7 +2952,7 @@ return base_W + scale * (B @ A)
 
 ## Extra Credit
 
-- **Full finetuning vs LoRA.** Unfreeze the whole model (skip the freeze step), compare the trainable-parameter count and the sample quality against the LoRA run.
+- **Full finetuning vs LoRA.** In `src/main.py`, replace `freeze_base_(model)` with `model.requires_grad_(True)` so every tensor trains, then compare the trainable-parameter count and the sample quality against the LoRA run.
 - **Vary the rank `r`.** Try `r = 1, 2, 4, 16`. Watch the quality-vs-size trade-off: how small can the adapter get before the flip stops working?
 - **Catastrophic-forgetting probe.** After finetuning, feed a raw base-style prompt (e.g. `To be, or not to be`) and check whether the model still continues text or only answers instructions.
 - **Loss-mask ablation.** Build targets **without** masking the prompt, retrain, and watch the model start hallucinating its own `<|user|>` prompts. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
@@ -3154,6 +3138,8 @@ Next: Module 7 &mdash; Reinforcement Learning Post-Training
       <li>Zhou et al., "LIMA: Less Is More for Alignment," <a href="https://arxiv.org/abs/2305.11206">arXiv:2305.11206</a></li>
       <li>Wang et al., "Self-Instruct," <a href="https://arxiv.org/abs/2212.10560">arXiv:2212.10560</a></li>
       <li>Stanford Alpaca, <a href="https://crfm.stanford.edu/2023/03/13/alpaca.html">crfm.stanford.edu/2023/03/13/alpaca.html</a></li>
+      <li>Gudibande et al., "The False Promise of Imitating Proprietary LLMs," <a href="https://arxiv.org/abs/2305.15717">arXiv:2305.15717</a></li>
+      <li>Shumailov et al., "AI Models Collapse When Trained on Recursively Generated Data," <a href="https://www.nature.com/articles/s41586-024-07566-y">Nature 631</a></li>
     </ul>
   </div>
   <div>

@@ -124,7 +124,7 @@ Checkpoints shrink from **gigabytes to megabytes**. Finetuning fits on **consume
 
 <!-- .slide: id="side-quest-adapters-as-diffs" -->
 
-## Side Quest: Adapters as Diffs for Weights
+## <span class="side-quest-badge">Side Quest</span> Adapters as Diffs for Weights
 
 A LoRA adapter is a **diff** against the frozen base: a code patch for model weights.
 

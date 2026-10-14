@@ -14,13 +14,12 @@ answers it. Read top to bottom, the steps follow the finetuning recipe:
     3. score the response tokens with a masked loss
     4. build the optimizer
     5. the LoRA adapter's forward pass
-    6. freeze the base model so only the adapters train
-    7. the training step, then the finetuning loop
-    8. count how few parameters LoRA trains
-    9. prompt the model for an answer, before and after finetuning
-   10. merge the adapters back into plain weight matrices
+    6. the training step, then the finetuning loop
+    7. count how few parameters LoRA trains
+    8. prompt the model for an answer, before and after finetuning
+    9. merge the adapters back into plain weight matrices
 
-Add --step N to run one step (1-10).
+Add --step N to run one step (1-9).
 Add --solution to run the finished answers from solution/exercise.py.
 """
 
@@ -48,7 +47,6 @@ from exercise import (
     build_targets,
     count_trainable_params,
     format_example,
-    freeze_base_param,
     lora_forward_delta,
     masked_cross_entropy,
     merge_lora_weight,
@@ -66,11 +64,10 @@ from tests.test_step2_build_targets import check_build_targets
 from tests.test_step3_masked_loss import check_masked_cross_entropy
 from tests.test_step4_optimizer import check_build_optimizer
 from tests.test_step5_lora_delta import check_lora_forward_delta
-from tests.test_step6_freeze import check_freeze_base_param, check_freeze_on_model
-from tests.test_step7_train_step import check_sft_train_step, check_sft_training
-from tests.test_step8_count_params import check_count_on_model, check_count_trainable_params
-from tests.test_step9_generation_prompt import check_build_generation_prompt
-from tests.test_step10_merge import check_merge_lora_weight, check_merge_on_model
+from tests.test_step6_train_step import check_sft_train_step, check_sft_training
+from tests.test_step7_count_params import check_count_on_model, check_count_trainable_params
+from tests.test_step8_generation_prompt import check_build_generation_prompt
+from tests.test_step9_merge import check_merge_lora_weight, check_merge_on_model
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -112,6 +109,9 @@ base = copy.deepcopy(model)
 # Every B starts at zero, so the wrapped model still behaves exactly like the base.
 inject_lora(model, r=RANK, alpha=ALPHA, dropout=DROPOUT)
 
+# Freeze every base tensor (requires_grad = False), so only the adapters train (provided)
+freeze_base_(model)
+
 dataset = load_dataset(DATA_DIR / "sft_pairs.jsonl")    # list of {"prompt": ..., "response": ...}
 special = {tok: stoi[tok] for tok in SPECIAL_TOKENS}    # e.g. "<|user|>" -> 65
 
@@ -126,7 +126,7 @@ def dec(ids) -> str:
     return decode(ids, itos)
 
 
-# Step 7 fills this with the loss at every report, so later steps can tell
+# Step 6 fills this with the loss at every report, so later steps can tell
 # whether the adapters were trained in this run
 training_losses: list[float] = []
 
@@ -148,8 +148,8 @@ def build_batch(generator) -> tuple[torch.Tensor, torch.Tensor]:
 
 
 def sample(some_model) -> tuple[str, str]:
-    """Generate a completion for SAMPLE_PROMPT (uses Step 9). Returns (full_text, response_only)."""
-    ids = build_generation_prompt(SAMPLE_PROMPT, special, enc)  # Step 9
+    """Generate a completion for SAMPLE_PROMPT (uses Step 8). Returns (full_text, response_only)."""
+    ids = build_generation_prompt(SAMPLE_PROMPT, special, enc)  # Step 8
     idx = torch.tensor([ids], dtype=torch.long)
     gen = torch.Generator().manual_seed(SEED)
     out = generate(some_model, idx, SAMPLE_TOKENS, BLOCK_SIZE, temperature=SAMPLE_TEMPERATURE, generator=gen)
@@ -224,7 +224,7 @@ def step_3() -> str:
 
 
 # ---------------------------------------------------------------------------
-# Step 4: build the optimizer (used for real in Step 7, so no demo here)
+# Step 4: build the optimizer (used for real in Step 6, so no demo here)
 # ---------------------------------------------------------------------------
 
 
@@ -252,31 +252,11 @@ def step_5() -> str:
 
 
 # ---------------------------------------------------------------------------
-# Step 6: freeze the base model so only the adapters train
+# Step 6: the training step, then the finetuning loop (the only slow step)
 # ---------------------------------------------------------------------------
 
 
 def step_6() -> str:
-    def show():
-        freeze_base_(model)  # calls your freeze_base_param() on every base tensor
-        # Split the tensors into LoRA adapters (named .A and .B) and everything else
-        lora = [p for name, p in model.named_parameters() if name.endswith((".A", ".B"))]
-        frozen = [p for name, p in model.named_parameters() if not name.endswith((".A", ".B"))]
-        print(f"Base tensors frozen:     {sum(not p.requires_grad for p in frozen)} of {len(frozen)} "
-              "(embeddings, layer norms, and every wrapped Linear)")
-        print(f"LoRA tensors trainable:  {sum(p.requires_grad for p in lora)} of {len(lora)} "
-              f"(A and B in each of the {len(lora) // 2} LoRA layers)")
-
-    return run_step("Step 6: freeze_base_param()", show,
-                    lambda: check_freeze_base_param(freeze_base_param) + check_freeze_on_model(model))
-
-
-# ---------------------------------------------------------------------------
-# Step 7: the training step, then the finetuning loop (the only slow step)
-# ---------------------------------------------------------------------------
-
-
-def step_7() -> str:
     own_checks = []  # this step's own tests, run before training (see below)
 
     def show():
@@ -287,10 +267,8 @@ def step_7() -> str:
                        "2": "build the masked training targets",
                        "3": "compute the training loss",
                        "4": "build the optimizer",
-                       "5": "run the LoRA layers",
-                       "6": "freeze the base model before training"})
+                       "5": "run the LoRA layers"})
 
-        freeze_base_(model)                       # no-op if Step 6 already froze it
         optimizer = build_optimizer(model, LR)    # AdamW over the adapters only
         batch_gen = torch.Generator().manual_seed(SEED)
         print(f"{'step':>6}  {'loss':>8}")
@@ -307,36 +285,39 @@ def step_7() -> str:
             xb, yb = build_batch(batch_gen)
             sft_train_step(model, optimizer, xb, yb, GRAD_CLIP)  # one update of the adapters
 
-    return run_step("Step 7: sft_train_step()", show,
+    return run_step("Step 6: sft_train_step()", show,
                     lambda: own_checks + check_sft_training(training_losses))
 
 
 # ---------------------------------------------------------------------------
-# Step 8: count how few parameters LoRA trains
+# Step 7: count how few parameters LoRA trains
 # ---------------------------------------------------------------------------
 
 
-def step_8() -> str:
+def step_7() -> str:
     def show():
-        require("8", needs={"6": "freeze the base before counting what still trains"})
-        freeze_base_(model)  # no-op if Step 6 already froze it
         trainable = count_trainable_params(model)
         total = model.num_params()
+        # Split the tensors into LoRA adapters (named .A and .B) and the frozen base
+        lora = [p for name, p in model.named_parameters() if name.endswith((".A", ".B"))]
+        frozen = [p for name, p in model.named_parameters() if not name.endswith((".A", ".B"))]
+        print(f"Frozen base tensors:        {len(frozen)} (embeddings, layer norms, every wrapped Linear)")
+        print(f"Trainable LoRA tensors:     {len(lora)} (A and B in each of the {len(lora) // 2} LoRA layers)")
         print(f"Trainable (LoRA adapters):  {trainable:,}")
         print(f"Total (base + adapters):    {total:,}")
         print(f"Fraction trainable:         {trainable / total:.2%}")
 
-    return run_step("Step 8: count_trainable_params()", show,
+    return run_step("Step 7: count_trainable_params()", show,
                     lambda: check_count_trainable_params(count_trainable_params)
                     + check_count_on_model(count_trainable_params, model))
 
 
 # ---------------------------------------------------------------------------
-# Step 9: prompt the model for an answer, before and after finetuning
+# Step 8: prompt the model for an answer, before and after finetuning
 # ---------------------------------------------------------------------------
 
 
-def step_9() -> str:
+def step_8() -> str:
     def show():
         # The base model has no adapters, so it only needs this step's prompt builder
         full, response = sample(base)
@@ -345,28 +326,28 @@ def step_9() -> str:
         print(f"  full:     {full!r}")
         print(f"  response: {response!r}   <- ignores the instruction")
 
-        print("Finetuned model (after Step 7):")
+        print("Finetuned model (after Step 6):")
         if not training_losses:
-            print("  not finetuned in this run (Step 7 has not trained the adapters)")
+            print("  not finetuned in this run (Step 6 has not trained the adapters)")
             return
         full, response = sample(model)
         print(f"  full:     {full!r}")
         print(f"  response: {response!r}   <- answers the instruction")
 
-    return run_step("Step 9: build_generation_prompt()", show,
+    return run_step("Step 8: build_generation_prompt()", show,
                     lambda: check_build_generation_prompt(build_generation_prompt, special, enc, dec))
 
 
 # ---------------------------------------------------------------------------
-# Step 10: merge the adapters back into plain weight matrices
+# Step 9: merge the adapters back into plain weight matrices
 # ---------------------------------------------------------------------------
 
 
-def step_10() -> str:
+def step_9() -> str:
     idx = torch.tensor([enc(SAMPLE_PROMPT)], dtype=torch.long)
 
     def show():
-        require("10", needs={"5": "run the adapter model the merge is compared against"})
+        require("9", needs={"5": "run the adapter model the merge is compared against"})
         # Merge a deep copy so the adapter model is left intact for the comparison
         merged = merge_lora(copy.deepcopy(model))  # calls your merge_lora_weight() on every layer
         n_layers = sum(isinstance(m, LoRALinear) for m in model.modules())
@@ -376,9 +357,9 @@ def step_10() -> str:
               f"{model.num_params():,} -> {merged.num_params():,} parameters")
         print(f"  Max logit difference (adapter vs merged): {diff:.2e}")
         if not training_losses:
-            print("  (Step 7 has not trained the adapters in this run, so every B is still zero)")
+            print("  (Step 6 has not trained the adapters in this run, so every B is still zero)")
 
-    return run_step("Step 10: merge_lora_weight()", show,
+    return run_step("Step 9: merge_lora_weight()", show,
                     lambda: check_merge_lora_weight(merge_lora_weight)
                     + check_merge_on_model(model, merge_lora(copy.deepcopy(model)), idx))
 
@@ -388,7 +369,7 @@ def step_10() -> str:
 # ---------------------------------------------------------------------------
 
 STEPS = {"1": step_1, "2": step_2, "3": step_3, "4": step_4, "5": step_5,
-         "6": step_6, "7": step_7, "8": step_8, "9": step_9, "10": step_10}
+         "6": step_6, "7": step_7, "8": step_8, "9": step_9}
 
 
 def main():

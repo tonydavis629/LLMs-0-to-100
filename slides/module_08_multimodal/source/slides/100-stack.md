@@ -46,7 +46,7 @@ Multimodal LLMs are not a new architecture. They are the **same model with compo
 
 <!-- .slide: id="sq-one-or-many" -->
 
-## Side Quest: One Model, or a System of Models?
+## <span class="side-quest-badge">Side Quest</span> One Model, or a System of Models?
 
 <div class="compare-table">
 <table>

@@ -118,7 +118,7 @@ The exercise uses synthetic, **balanced** scenes for this reason: every color an
 
 <!-- .slide: id="sq-ocr-trap" -->
 
-## Side Quest: The OCR Trap
+## <span class="side-quest-badge">Side Quest</span> The OCR Trap
 
 The answer depends on a **tiny** word or axis label. The model gets it wrong. Which failure was it?
 

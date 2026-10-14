@@ -1,7 +1,7 @@
 """
 Module 6 Exercise: Finetuning NanoGPT into an instruct model
 
-You implement the ten finetuning pieces below. Everything else (the TinyGPT
+You implement the nine finetuning pieces below. Everything else (the TinyGPT
 model, the LoRA injection/merge plumbing, the tokenizer, the dataset, and the
 runner) is provided. Each blank is one line or one short expression.
 
@@ -60,6 +60,10 @@ def build_targets(ids: list[int], prompt_span: int) -> list[int]:
     predicted at position prompt_span - 1 (the assistant marker), so positions
     0 .. prompt_span - 2 are masked, the response targets are ids[prompt_span:],
     and the final position is -100 (no token follows the last one).
+
+    -100 is not a token id or a logit. It is a placeholder target: real token ids
+    start at 0, and F.cross_entropy skips every position whose target equals its
+    ignore_index, which defaults to -100.
 
     Args:
         ids: The full formatted token sequence.
@@ -134,7 +138,10 @@ def lora_forward_delta(
 ) -> torch.Tensor:
     """Compute the low-rank update added to the frozen layer's output.
 
-    The update is:  scale * (dropout(x) @ A.t() @ B.t())
+    For a single column vector x, LoRA adds scale * B A x to the layer's output
+    (the lecture's alpha / r times BA). Here x holds a batch of ROW vectors, the
+    way nn.Linear sees its input, so each matrix has to act from the right.
+    Dropout is applied to x before the adapter sees it.
 
     Args:
         x: The layer input, shape (..., in_features).
@@ -146,25 +153,14 @@ def lora_forward_delta(
     Returns:
         The low-rank delta, shape (..., out_features).
     """
-    # TODO: Return the low-rank update scale * (dropout(x) @ A.t() @ B.t()).
-    # HINT: apply dropout to x, matrix-multiply by A.t() then B.t(), scale the result.
+    # TODO: Return the low-rank update for the batch x: dropout first, then A
+    #       (down to rank r), then B (back up to out_features), times scale.
+    # HINT: for a batch of row vectors, applying a matrix M is written x @ M.t().
     raise NotImplementedError("TODO: compute the LoRA low-rank delta")
 
 
 # ---------------------------------------------------------------------------
-# Step 6: Freeze a base parameter (called inside freeze_base_ in src/model.py)
-# ---------------------------------------------------------------------------
-
-
-def freeze_base_param(p: torch.nn.Parameter) -> None:
-    """Freeze a single base parameter so the optimizer never updates it."""
-    # TODO: Freeze this parameter so it receives no gradient updates.
-    # HINT: set the parameter's requires_grad attribute to False.
-    raise NotImplementedError("TODO: freeze this base parameter")
-
-
-# ---------------------------------------------------------------------------
-# Step 7: One SFT training step
+# Step 6: One SFT training step
 # ---------------------------------------------------------------------------
 
 
@@ -202,7 +198,7 @@ def sft_train_step(
 
 
 # ---------------------------------------------------------------------------
-# Step 8: Count trainable parameters
+# Step 7: Count trainable parameters
 # ---------------------------------------------------------------------------
 
 
@@ -214,7 +210,7 @@ def count_trainable_params(model: torch.nn.Module) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Step 9: Build a generation prompt (assistant turn prefix)
+# Step 8: Build a generation prompt (assistant turn prefix)
 # ---------------------------------------------------------------------------
 
 
@@ -243,7 +239,7 @@ def build_generation_prompt(
 
 
 # ---------------------------------------------------------------------------
-# Step 10: Merge LoRA weight
+# Step 9: Merge LoRA weight
 # ---------------------------------------------------------------------------
 
 

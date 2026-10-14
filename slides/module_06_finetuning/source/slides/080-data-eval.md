@@ -37,10 +37,10 @@ The expensive part of SFT is not compute. It is **curating good demonstrations**
 - People write good responses
 - Highest quality, slowest, most expensive
 +++
-**Distillation**
+**Synthetic**
 
-- Generate data from a **stronger model**
-- Self-Instruct, Alpaca
+- **Distillation**: a stronger model writes the data (Alpaca)
+- **Self-instruction**: the model writes its own (Self-Instruct)
 +++
 **Filtered logs**
 
@@ -104,7 +104,7 @@ Every option is partial and noisy. (How to evaluate: Module 11.) <!-- .element: 
 
 <!-- .slide: id="side-quest-superficial-alignment" -->
 
-## Side Quest: The Superficial Alignment Hypothesis
+## <span class="side-quest-badge">Side Quest</span> The Superficial Alignment Hypothesis
 
 LIMA's claim: the base model **already contains** the knowledge; alignment teaches **format, style, and which behaviors to surface**.
 
@@ -112,8 +112,6 @@ LIMA's claim: the base model **already contains** the knowledge; alignment teach
 - If true, finetuning **reveals** capability more than it teaches
 - It would explain why ~1,000 examples can align a model that saw trillions of tokens
 +++
-**Critical-thinking question** (compare Module 5's "emergence: real or mirage?"):
-
 If 1,000 examples align a model, how much is finetuning **teaching** vs **unlocking**?
 :::
 
@@ -121,14 +119,21 @@ If 1,000 examples align a model, how much is finetuning **teaching** vs **unlock
 
 <!-- .slide: id="side-quest-model-collapse" -->
 
-## Side Quest: Synthetic Data and Model Collapse
-
-Alpaca and Self-Instruct generate finetuning data from a **stronger model**. Cheap and scalable, with hard questions:
+## <span class="side-quest-badge">Side Quest</span> Two Kinds of Synthetic Data
 
 :::columns cols="2" gap="34px"
-- **Quality and licensing**: the teacher's errors propagate; proprietary-model outputs may violate terms
-- **Model collapse**: repeated training on model-generated text erodes diversity
+**Distillation** (Alpaca, 2023)
+
+- A **stronger teacher** (text-davinci-003) wrote 52K demonstrations; a **smaller student** (LLaMA 7B) imitated them
+- The student copies the teacher's style more readily than its facts (Gudibande et al., 2023)
+- The teacher's errors and terms of use come along with the data
 +++
-- Ties to Module 5's **data-wall** side quest: scarce human data pushes models toward synthetic text
-- Open question: how much synthetic data before the snake eats its own tail?
+**Self-instruction** (Self-Instruct, 2022)
+
+- The **same model** (GPT-3) wrote new tasks and answers from 175 seeds, filtered them, then trained on them
+- No stronger model needed: the model bootstraps itself
+- Loop it and you risk **model collapse**: each generation loses more of the rare outputs (Shumailov et al., 2024)
 :::
+
+Module 5's data wall pushes labs toward both. How much synthetic text can a model train on before the loop starts to degrade it? <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+

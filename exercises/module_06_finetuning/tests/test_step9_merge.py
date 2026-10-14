@@ -1,4 +1,4 @@
-"""Step 10: merge_lora_weight()
+"""Step 9: merge_lora_weight()
 
 Run by src/main.py. You do NOT need to edit this file.
 """

@@ -98,7 +98,7 @@ Remaining interference: a newcomer's prefill is a compute burst that stalls ever
 
 <!-- .slide: id="batching-side-quest-cost" -->
 
-## Side Quest: What Does a Token Actually Cost?
+## <span class="side-quest-badge">Side Quest</span> What Does a Token Actually Cost?
 
 Work backward from a rented H100 at about $3/hour and a realistic batched throughput for an 8B model:
 

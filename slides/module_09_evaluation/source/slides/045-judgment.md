@@ -85,7 +85,7 @@ A judge is a **proxy**. Validate it against a few hundred human-labeled examples
 
 <!-- .slide: id="sq-swap-answers" -->
 
-## Side Quest: Swap the Answers
+## <span class="side-quest-badge">Side Quest</span> Swap the Answers
 
 Ask a judge model which of two answers is better. Record the verdict. Present **the same answers in the opposite order** and ask again.
 

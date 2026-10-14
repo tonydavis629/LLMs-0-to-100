@@ -66,7 +66,7 @@ Product lesson: expose uncertainty when perceptual evidence is weak; never overc
 
 <!-- .slide: id="sq-photography-bias" -->
 
-## Side Quest: Photography Bias
+## <span class="side-quest-badge">Side Quest</span> Photography Bias
 
 Photography is not a neutral sample of reality.
 

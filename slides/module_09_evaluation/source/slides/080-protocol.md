@@ -24,7 +24,7 @@ The same checkpoint can move several points on MMLU from choices unrelated to th
 
 <!-- .slide: id="sq-two-scores" -->
 
-## Side Quest: One Model, Two Scores
+## <span class="side-quest-badge">Side Quest</span> One Model, Two Scores
 
 Take one checkpoint. Run it twice, changing exactly one thing about the protocol.
 
@@ -53,7 +53,7 @@ If test items (or near-duplicates) appear in the training data, a high score mea
 
 <!-- .slide: id="sq-in-training" -->
 
-## Side Quest: Was the Test in the Training Set?
+## <span class="side-quest-badge">Side Quest</span> Was the Test in the Training Set?
 
 The exercise bundles the finetuning data and the evaluation cases, so you can **look**.
 

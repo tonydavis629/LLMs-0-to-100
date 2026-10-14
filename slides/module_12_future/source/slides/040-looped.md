@@ -204,7 +204,7 @@ You cannot audit reasoning that was never written down. <!-- .element: class="te
 
 <!-- .slide: id="sidequest-hardware" -->
 
-## Side Quest: The Hardware Lottery
+## <span class="side-quest-badge">Side Quest</span> The Hardware Lottery
 
 Sara Hooker (2020): ideas win or lose partly on **how well they fit the hardware of their era**. Transformers saturate GPUs; recurrent models do not, and lost the 2010s partly for it.
 

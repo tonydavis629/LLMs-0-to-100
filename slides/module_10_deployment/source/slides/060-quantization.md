@@ -5,7 +5,7 @@
 
 <!-- .slide: id="quant-side-quest-home" -->
 
-## Side Quest: Can You Run It at Home?
+## <span class="side-quest-badge">Side Quest</span> Can You Run It at Home?
 
 What fewer bytes buys. Weight memory at three precisions, against real machines:
 

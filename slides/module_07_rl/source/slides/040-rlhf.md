@@ -186,7 +186,7 @@ This recipe is how a **1.3B** InstructGPT model beat **175B** GPT-3 in human pre
 
 <!-- .slide: id="side-quest-kl-leash" -->
 
-## Side Quest: The KL Penalty as a Leash
+## <span class="side-quest-badge">Side Quest</span> The KL Penalty as a Leash
 
 Run the same RLHF objective **with** and **without** the KL term.
 

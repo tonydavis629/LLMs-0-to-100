@@ -1,4 +1,4 @@
-"""Step 7: sft_train_step()
+"""Step 6: sft_train_step()
 
 Run by src/main.py. You do NOT need to edit this file.
 """

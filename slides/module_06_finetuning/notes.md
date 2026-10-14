@@ -85,7 +85,12 @@ on, and record the historical context. Module 6 owns the **supervised finetuning
 - The example holds both prompt and response, but we only want to teach the model
   to produce the **response**. So we compute cross-entropy **only over the response
   tokens** and set the target at every prompt position to a sentinel (`-100`), which
-  `F.cross_entropy(..., ignore_index=-100)` skips. If we trained on the whole
+  `F.cross_entropy(..., ignore_index=-100)` skips. The `-100` is neither a logit
+  nor the id of a prompt token. It is a placeholder written into the *target*
+  tensor: real token ids start at 0, so a negative value can never collide with
+  one, and PyTorch's `cross_entropy` uses `ignore_index=-100` as its default, so
+  positions holding it add nothing to the loss or the gradient. Hugging Face
+  `transformers` follows the same convention for its `labels`. If we trained on the whole
   sequence, the model would also learn to generate the user's turns &mdash; at
   inference it would hallucinate its own prompts (the side quest below, reused as
   exercise extra credit).
@@ -223,10 +228,12 @@ $$W' = W + \frac{\alpha}{r} BA, \qquad B \in \mathbb{R}^{d \times r}, \quad A \i
   format and style, which a small clean set can convey.
 
 ### Where SFT data comes from
-- **Human-written** demonstrations (highest quality, slowest). **Distillation** from
-  a stronger model: Self-Instruct (Wang et al., 2022, arXiv:2212.10560) and Stanford
-  Alpaca (Taori et al., 2023, crfm.stanford.edu/2023/03/13/alpaca.html) generate
-  instructions and responses from a teacher. **Filtered real conversations**.
+- **Human-written** demonstrations (highest quality, slowest). **Synthetic** data,
+  which comes in two kinds that are easy to blur together. **Distillation**: a
+  stronger model writes the data for a weaker one, as in Stanford Alpaca (Taori et
+  al., 2023, crfm.stanford.edu/2023/03/13/alpaca.html). **Self-instruction**: a
+  model writes data for itself, as in Self-Instruct (Wang et al., 2022,
+  arXiv:2212.10560). **Filtered real conversations**.
 
 ### Hyperparameters and evaluation
 - What matters: a small learning rate, only 1-3 epochs (more overfits and forgets),
@@ -238,17 +245,33 @@ $$W' = W + \frac{\alpha}{r} BA, \qquad B \in \mathbb{R}^{d \times r}, \quad A \i
 ### Side quest: the superficial alignment hypothesis
 - LIMA's claim: a base model already contains the knowledge and skills, and
   alignment mostly teaches format, style, and which subset of behaviors to surface.
-  As a critical-thinking exercise (in the spirit of Module 5's "emergence: real or
-  mirage?"): if 1,000 examples can align a model that saw trillions of tokens, how
-  much is finetuning teaching versus revealing?
+  The slide asks the open question in the spirit of Module 5's "emergence: real or
+  mirage?" side quest: if 1,000 examples can align a model that saw trillions of
+  tokens, how much is finetuning teaching versus revealing?
 
-### Side quest: synthetic data and model collapse
-- Alpaca and Self-Instruct generate finetuning data from a stronger model, which
-  raises quality, licensing, and **model-collapse** questions: training repeatedly
-  on model-generated text narrows the distribution toward the model's own quirks
-  (Shumailov et al., 2023/2024, "The Curse of Recursion" / "AI models collapse when
-  trained on recursively generated data," Nature). Ties back to Module 5's
-  data-wall side quest.
+### Side quest: two kinds of synthetic data
+- **Distillation (Alpaca).** Taori et al. (2023) used OpenAI's text-davinci-003 as
+  the teacher. Starting from Self-Instruct's 175 seed tasks, it generated 52K
+  instruction-following demonstrations, and the team finetuned LLaMA 7B (the
+  student) on them. Gudibande et al. (2023, arXiv:2305.15717, "The False Promise of
+  Imitating Proprietary LLMs") found that such imitation models pick up the
+  teacher's style and confident tone much more than its factual accuracy. The
+  teacher's mistakes carry into the student, and OpenAI's terms of use restrict
+  training competing models on its outputs, which is why Alpaca was released for
+  research use only.
+- **Self-instruction (Self-Instruct).** Wang et al. (2022) prompted vanilla GPT-3
+  with 175 human-written seed tasks to write new instructions, inputs, and outputs,
+  filtered out low-quality and near-duplicate generations, and finetuned the same
+  GPT-3 on the roughly 52K results. No stronger model is involved: the model
+  bootstraps its own instruction-following data.
+- **Model collapse** belongs to the second kind when it is repeated: a model trained
+  on its own outputs, generation after generation, loses the tails of the original
+  distribution and drifts toward its own quirks (Shumailov et al., 2024, "AI models
+  collapse when trained on recursively generated data," Nature 631; preprint "The
+  Curse of Recursion," 2023). Distillation from a fixed teacher is one step, not a
+  loop, so its main risks are the inherited errors and the style-over-substance gap
+  above. Both kinds tie back to Module 5's data-wall side quest: scarce human text
+  pushes labs toward synthetic data.
 
 ## f. The Limits of SFT, and the Handoff to Module 7
 
@@ -269,10 +292,11 @@ $$W' = W + \frac{\alpha}{r} BA, \qquad B \in \mathbb{R}^{d \times r}, \quad A \i
 
 - The bundled Module 5 base checkpoint is finetuned (frozen, never re-pretrained)
   into a toy instruct model via from-scratch LoRA (pure PyTorch, no `peft`). The
-  ten student steps are: format the chat template, build the masked targets,
+  nine student steps are: format the chat template, build the masked targets,
   masked cross-entropy, build the optimizer over adapters, the LoRA forward delta,
-  freeze a base parameter, one SFT step, count trainable parameters, build the
-  generation prompt, and merge the LoRA weight.
+  one SFT step, count trainable parameters, build the generation prompt, and merge
+  the LoRA weight. Freezing the base (setting `requires_grad = False` on every
+  non-adapter tensor) is provided in `src/`, right after the adapters are injected.
 - The runner tags every step CORRECT, INCORRECT, or INCOMPLETE. Each step has its
   own test file in `tests/` that calls the student's function on small inputs with
   hand-computed answers: for example, one SGD step (learning rate 1) on a zero
@@ -304,6 +328,7 @@ $$W' = W + \frac{\alpha}{r} BA, \qquad B \in \mathbb{R}^{d \times r}, \quad A \i
 - Zhou et al., 2023, "LIMA: Less Is More for Alignment," arXiv:2305.11206.
 - Wang et al., 2022, "Self-Instruct," arXiv:2212.10560.
 - Taori et al., 2023, "Stanford Alpaca," crfm.stanford.edu/2023/03/13/alpaca.html.
+- Gudibande et al., 2023, "The False Promise of Imitating Proprietary LLMs," arXiv:2305.15717.
 - Askell et al., 2021, "A General Language Assistant as a Laboratory for Alignment" (HHH), arXiv:2112.00861.
 - Houlsby et al., 2019, "Parameter-Efficient Transfer Learning for NLP" (adapters), arXiv:1902.00751.
 - Li and Liang, 2021, "Prefix-Tuning," arXiv:2101.00190; Lester et al., 2021, "The Power of Scale for Parameter-Efficient Prompt Tuning," arXiv:2104.08691.

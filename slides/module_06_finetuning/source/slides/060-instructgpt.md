@@ -90,7 +90,7 @@ Finetuning turns these into a **data problem**: which demonstrations you show, w
 
 <!-- .slide: id="side-quest-alignment-tax" -->
 
-## Side Quest: The Alignment Tax
+## <span class="side-quest-badge">Side Quest</span> The Alignment Tax
 
 **Alignment tax**: finetuning for helpfulness and safety can **reduce raw benchmark scores**.
 

@@ -455,7 +455,7 @@ fp16 needs this; bf16 does not, because it has fp32's range. That is why bf16 re
 
 <!-- .slide: id="side-quest-llama3-noon" -->
 
-## Side Quest: Llama 3 Trained Slower at Noon
+## <span class="side-quest-badge">Side Quest</span> Llama 3 Trained Slower at Noon
 
 Meta's log of a 54-day stretch of Llama 3 405B pretraining on 16K H100 GPUs:
 

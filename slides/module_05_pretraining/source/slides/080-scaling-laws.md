@@ -105,7 +105,7 @@ Model size, data size, batch size, sequence length, hardware, and wall-clock tim
 
 <!-- .slide: id="side-quest-emergence" -->
 
-## Side Quest: Emergent Abilities, Real or Mirage?
+## <span class="side-quest-badge">Side Quest</span> Emergent Abilities, Real or Mirage?
 
 :::columns cols="2" gap="34px"
 **Sharp emergence (Wei et al., 2022)**

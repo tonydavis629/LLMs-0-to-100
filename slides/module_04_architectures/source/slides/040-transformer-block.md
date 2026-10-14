@@ -178,7 +178,7 @@ Every sub-layer reads the current vector, computes an update, and **adds** it ba
 
 <!-- .slide: id="side-quest-induction-heads" -->
 
-## Side Quest: Induction Heads
+## <span class="side-quest-badge">Side Quest</span> Induction Heads
 
 <div class="emb-svg">
 <svg viewBox="0 40 1000 260" role="img" aria-label="Induction head example: at the second Mr, the head attends to Dursley, the token that followed the first Mr, and copies it as the prediction.">

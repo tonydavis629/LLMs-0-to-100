@@ -139,7 +139,7 @@ The power laws still hold. The supply of cheap training data does not.
 
 <!-- .slide: id="sidequest-gnn" -->
 
-## Side Quest: Transformers Are Graph Neural Networks
+## <span class="side-quest-badge">Side Quest</span> Transformers Are Graph Neural Networks
 
 Attention is **message passing on a fully connected graph:**
 

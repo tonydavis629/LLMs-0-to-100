@@ -143,7 +143,7 @@ Yue et al. (2025), *"Does RL Really Incentivize Reasoning Capacity in LLMs Beyon
 
 <!-- .slide: id="side-quest-r1-debate" -->
 
-## Side Quest: R1-Zero and the Skeptic
+## <span class="side-quest-badge">Side Quest</span> R1-Zero and the Skeptic
 
 :::columns cols="2" gap="34px"
 **The R1-Zero claim**

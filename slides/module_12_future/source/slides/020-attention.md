@@ -219,7 +219,7 @@ Attention only where random access is needed. The same pattern appears in the ne
 
 <!-- .slide: id="sidequest-bitter" -->
 
-## Side Quest: The Bitter Lesson, Applied Here
+## <span class="side-quest-badge">Side Quest</span> The Bitter Lesson, Applied Here
 
 Sutton's essay: for seventy years, general methods that leverage computation beat methods built on human insight. Discussion questions:
 

@@ -2,7 +2,7 @@
 Module 6 Solution: Finetuning NanoGPT into an instruct model
 
 Complete reference implementation: chat-template formatting, loss masking,
-LoRA layer, adapter injection / freezing / merging, and the SFT training step.
+LoRA layer, adapter merging, and the SFT training step.
 """
 
 from __future__ import annotations
@@ -59,6 +59,10 @@ def build_targets(ids: list[int], prompt_span: int) -> list[int]:
     predicted at position prompt_span - 1 (the assistant marker), so positions
     0 .. prompt_span - 2 are masked, the response targets are ids[prompt_span:],
     and the final position is -100 (no token follows the last one).
+
+    -100 is not a token id or a logit. It is a placeholder target: real token ids
+    start at 0, and F.cross_entropy skips every position whose target equals its
+    ignore_index, which defaults to -100.
 
     Args:
         ids: The full formatted token sequence.
@@ -120,7 +124,7 @@ def lora_forward_delta(
     scale: float,
     dropout: torch.nn.Module,
 ) -> torch.Tensor:
-    """Compute the low-rank update: scale * (dropout(x) @ A.t() @ B.t()).
+    """Compute the low-rank update scale * B A x for a batch of row vectors x.
 
     This is the expression the student fills inside LoRALinear.forward.
     It is extracted here so the step list is complete.
@@ -129,17 +133,7 @@ def lora_forward_delta(
 
 
 # ---------------------------------------------------------------------------
-# Step 6: Freeze base parameters (filled inside freeze_base_ in src/model.py)
-# ---------------------------------------------------------------------------
-
-
-def freeze_base_param(p: torch.nn.Parameter) -> None:
-    """Set requires_grad=False on a single parameter. Student step 6."""
-    p.requires_grad = False
-
-
-# ---------------------------------------------------------------------------
-# Step 7: One SFT training step
+# Step 6: One SFT training step
 # ---------------------------------------------------------------------------
 
 
@@ -174,7 +168,7 @@ def sft_train_step(
 
 
 # ---------------------------------------------------------------------------
-# Step 8: Count trainable parameters
+# Step 7: Count trainable parameters
 # ---------------------------------------------------------------------------
 
 
@@ -184,7 +178,7 @@ def count_trainable_params(model: torch.nn.Module) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Step 9: Build a generation prompt (assistant turn prefix)
+# Step 8: Build a generation prompt (assistant turn prefix)
 # ---------------------------------------------------------------------------
 
 
@@ -215,7 +209,7 @@ def build_generation_prompt(
 
 
 # ---------------------------------------------------------------------------
-# Step 10: Merge LoRA weight
+# Step 9: Merge LoRA weight
 # ---------------------------------------------------------------------------
 
 

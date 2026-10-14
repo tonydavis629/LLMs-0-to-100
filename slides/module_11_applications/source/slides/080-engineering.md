@@ -49,7 +49,7 @@ The security problem this architecture creates:
 
 <!-- .slide: id="sq-injection-demo" -->
 
-## Side Quest: The Demo Worth a Hundred Warnings
+## <span class="side-quest-badge">Side Quest</span> The Demo Worth a Hundred Warnings
 
 Take a toy RAG pipeline like the exercise's. Add one document:
 

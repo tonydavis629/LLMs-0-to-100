@@ -1,4 +1,4 @@
-"""Step 8: count_trainable_params()
+"""Step 7: count_trainable_params()
 
 Run by src/main.py. You do NOT need to edit this file.
 """

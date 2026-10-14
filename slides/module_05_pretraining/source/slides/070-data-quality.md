@@ -21,7 +21,7 @@ Beyond a point, **what** you train on matters more than how much:
 
 <!-- .slide: id="side-quest-memorization" -->
 
-## Side Quest: Memorization vs Generalization
+## <span class="side-quest-badge">Side Quest</span> Memorization vs Generalization
 
 Repeat one passage many times in a tiny dataset, and the model **memorizes that exact string**.
 

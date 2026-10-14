@@ -6,8 +6,8 @@ Take the tiny base model from Module 5 and **finetune** it into a small instruct
 model on prompt-response pairs. The model, the LoRA plumbing, the tokenizer, and
 the dataset are all provided &mdash; your job is the **finetuning loop**: format a
 chat template, mask the loss to the response, compute masked cross-entropy,
-implement a LoRA adapter, freeze the base, run a supervised-finetuning step, count
-the trainable parameters, and merge the adapter back in.
+implement a LoRA adapter, run a supervised-finetuning step, count the trainable
+parameters, and merge the adapter back in.
 
 The goal is not a useful assistant. The goal is to make finetuning **visible**: the
 loss mask, the LoRA adapter, the trainable-parameter savings, and the behavioral
@@ -31,7 +31,7 @@ From the `exercises/` directory:
 uv run python module_06_finetuning/src/main.py
 ```
 
-The runner goes through the ten steps in order. Each step's header line carries a tag, and the step's output follows: what your code produced on the real model, then one line per test from `tests/`. The tags are:
+The runner goes through the nine steps in order. Each step's header line carries a tag, and the step's output follows: what your code produced on the real model, then one line per test from `tests/`. The tags are:
 
 | Tag | Meaning |
 |-----|---------|
@@ -40,7 +40,9 @@ The runner goes through the ten steps in order. Each step's header line carries 
 | `INCOMPLETE` | the function still raises `NotImplementedError` |
 
 ```
-=== Step 8: count_trainable_params() === CORRECT
+=== Step 7: count_trainable_params() === CORRECT
+Frozen base tensors:        52 (embeddings, layer norms, every wrapped Linear)
+Trainable LoRA tensors:     32 (A and B in each of the 16 LoRA layers)
 Trainable (LoRA adapters):  65,536
 Total (base + adapters):    884,096
 Fraction trainable:         7.41%
@@ -50,13 +52,13 @@ Fraction trainable:         7.41%
   CORRECT    real model: the count is exactly the LoRA A and B matrices, 65,536 numbers
 ```
 
-Step 7 finetunes the model for 150 steps, which takes under 30 seconds on a laptop CPU. Every other step takes a few seconds. Run a single step with `--step` (1 to 10):
+Step 6 finetunes the model for 150 steps, which takes under 30 seconds on a laptop CPU. Every other step takes a few seconds. Run a single step with `--step` (1 to 9):
 
 ```bash
 uv run python module_06_finetuning/src/main.py --step 3
 ```
 
-Step 9 samples the base model and, if Step 7 finetuned it in the same run, the finetuned model too. Step 10 merges whatever adapters the run has trained. Run on their own, both steps note that nothing has been finetuned yet.
+Step 8 samples the base model and, if Step 6 finetuned it in the same run, the finetuned model too. Step 9 merges whatever adapters the run has trained. Run on their own, both steps note that nothing has been finetuned yet.
 
 `exercise.py` at the module root is the only file you edit. Everything already written for you lives in `src/`. Run the finished answers with `--solution`:
 
@@ -75,27 +77,26 @@ needs only one expression or one short block.
 | 2 | `build_targets()` | Next-token targets with the prompt predictions masked to `-100` |
 | 3 | `masked_cross_entropy()` | Cross-entropy over response tokens only (`ignore_index=-100`) |
 | 4 | `build_optimizer()` | AdamW over only the trainable (adapter) parameters |
-| 5 | `lora_forward_delta()` | The low-rank update `scale * (dropout(x) @ A.t() @ B.t())` |
-| 6 | `freeze_base_param()` | Freeze one base parameter (`requires_grad = False`) |
-| 7 | `sft_train_step()` | Zero gradients, backpropagate (clip + step provided) |
-| 8 | `count_trainable_params()` | Count parameters with `requires_grad=True` |
-| 9 | `build_generation_prompt()` | The template up to the assistant marker (no response) |
-| 10 | `merge_lora_weight()` | The merged weight `base_W + scale * (B @ A)` |
+| 5 | `lora_forward_delta()` | The low-rank update `scale * B A x`, written for a batch of row vectors |
+| 6 | `sft_train_step()` | Zero gradients, backpropagate (clip + step provided) |
+| 7 | `count_trainable_params()` | Count parameters with `requires_grad=True` |
+| 8 | `build_generation_prompt()` | The template up to the assistant marker (no response) |
+| 9 | `merge_lora_weight()` | The merged weight `base_W + scale * (B @ A)` |
 
 The model (`src/model.py`), tokenizer (`src/tokenizer.py`), dataset builder
-(`src/data.py`), and runner (`src/main.py`, which reads top to bottom as the ten
+(`src/data.py`), and runner (`src/main.py`, which reads top to bottom as the nine
 steps) are all provided. The runner's bookkeeping lives in `src/reporting.py` (the
 CORRECT/INCORRECT/INCOMPLETE output), `src/prerequisites.py` (the "needs Step N"
 checks) and `src/solution.py` (the `--solution` switch). The LoRA injection,
-freezing loop, and merge loop live in `src/model.py` and call back into the three
-functions you write (steps 5, 6, 10). You only edit `exercise.py`.
+base freezing, and merge loop live in `src/model.py`; the LoRA layer and the merge
+loop call back into two functions you write (steps 5 and 9). You only edit `exercise.py`.
 
 The tests live in `tests/`, one file per step (`test_step1_format_example.py`
-through `test_step10_merge.py`). Each calls your function on small, hand-made
+through `test_step9_merge.py`). Each calls your function on small, hand-made
 inputs with a known answer, so you can read the test for the step you are on to
 see exactly what is expected. Some steps add one check on the real model, such as
-the trainable-parameter count. The Step 7 tests use PyTorch's loss in place of
-your Step 3 function, so Step 7 is graded on its own.
+the trainable-parameter count. The Step 6 tests use PyTorch's loss in place of
+your Step 3 function, so Step 6 is graded on its own.
 
 ## Data
 
@@ -113,8 +114,8 @@ a vocabulary of 69.
 
 ## Extra credit
 
-- **Full finetuning vs LoRA.** Skip the freeze step (or unfreeze everything),
-  compare the trainable-parameter count and the sample quality against the LoRA run.
+- **Full finetuning vs LoRA.** In `src/main.py`, replace `freeze_base_(model)` with
+  `model.requires_grad_(True)` so every tensor trains, then compare the trainable-parameter count and the sample quality against the LoRA run.
 - **Vary the rank `r`.** Try `r = 1, 2, 4, 16`. Watch the quality-vs-size trade-off:
   how small can the adapter get before the flip stops working?
 - **Catastrophic-forgetting probe.** After finetuning, feed a raw base-style prompt

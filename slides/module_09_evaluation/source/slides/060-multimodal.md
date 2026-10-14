@@ -54,7 +54,7 @@ The instruction-tuned pattern repeats: with a reference, compare to it; without 
 
 <!-- .slide: id="sq-no-image" -->
 
-## Side Quest: Can It Be Answered Without the Image?
+## <span class="side-quest-badge">Side Quest</span> Can It Be Answered Without the Image?
 
 Many visual benchmarks can be **partly answered from language priors alone**. "What color is the banana?" has a good guess that never looks at the picture.
 
