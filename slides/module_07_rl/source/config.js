@@ -1,6 +1,121 @@
 (function () {
-  // Module 7 config. Manim steppers are keyed by the `scene` slug used in the
-  // :::manim fences; each maps to its ordered list of section clips.
+  function dpoTrainingDiagram() {
+    return String.raw`<div class="loop-diagram dpo-diagram" role="img" aria-label="DPO: fixed preference pair, trainable LLM and frozen reference log-probabilities, preference margin, loss, and optimizer update">
+      <svg class="loop-wires" viewBox="0 0 1120 430" aria-hidden="true">
+        <defs><marker id="dpo-detail-arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>
+        <g fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#dpo-detail-arrow)">
+          <path class="flow-sample" d="M205 93 H255"/>
+          <path class="flow-score" d="M465 93 H525"/>
+          <path class="flow-score" d="M465 300 H495 V180 H525"/>
+          <path class="flow-advantage" d="M660 220 V270"/>
+          <path class="flow-advantage" d="M795 320 H845"/>
+          <path class="flow-gradient" d="M970 371 V410 H125 V368"/>
+          <path class="flow-update" d="M125 270 V205 H360 V170"/>
+        </g>
+      </svg>
+      <div class="loop-node dpo-pair"><p class="loop-label">Fixed dataset pair</p><p>Prompt: reverse: cat</p><p><b class="positive">tac: chosen</b><br/><b class="negative">tca: rejected</b></p></div>
+      <div class="loop-node loop-model dpo-policy"><p class="loop-label">LLM policy π<sub>θ</sub></p><p>Trainable weights θ</p><div class="weight-grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p class="loop-small loop-direction">Push ↑ chosen; ↓ rejected</p></div>
+      <div class="loop-node dpo-reference"><p class="loop-label">Frozen reference π<sub>ref</sub></p><p>Scores both responses</p><p class="loop-small">No weight updates</p></div>
+      <div class="loop-node dpo-logprobs"><p class="loop-label">Score the fixed responses under both models</p>
+        <table><thead><tr><th>Response</th><th>log π<sub>θ</sub><br/>before → after</th><th>log π<sub>ref</sub><br/>frozen</th><th class="loop-math" data-tex="s=\log\frac{\pi_\theta}{\pi_{\rm ref}}"></th></tr></thead><tbody>
+        <tr><td class="positive">tac</td><td>−1.386 → −0.511</td><td>−1.386</td><td>0 → +0.875</td></tr>
+        <tr><td class="negative">tca</td><td>−0.288 → −0.916</td><td>−0.288</td><td>0 → −0.629</td></tr></tbody></table>
+        <p class="loop-small">Toy probabilities: chosen 0.25 → 0.60; rejected 0.75 → 0.40</p>
+      </div>
+      <div class="loop-node loop-advantage dpo-margin"><p class="loop-label">Preference margin · β = 1</p><p class="loop-math" data-tex="m=\beta(s_w-s_l)"></p><p>0 → 1.504</p></div>
+      <div class="loop-node loop-loss dpo-loss"><p class="loop-label">Minimize the DPO loss</p><p class="loop-math" data-tex="\mathcal L=-\log\sigma(m)"></p><p>0.693 → 0.201</p></div>
+      <div class="loop-node loop-optimizer dpo-optimizer"><p class="loop-label">Optimizer updates θ</p><p class="loop-math" data-tex="\theta\leftarrow\theta-\eta\nabla_\theta\mathcal L"></p><p class="loop-small">Policy gradients only</p></div>
+      <p class="loop-edge-label dpo-gradient-label">Gradient returns to the LLM; the reference stays frozen</p>
+    </div>`;
+  }
+
+  // All algorithms use the same layout so only the learning signal changes.
+  function mountTrainingLoops(reveal) {
+    var added = false;
+    document.querySelectorAll('.training-loop:not([data-mounted])').forEach(function (host) {
+      var algorithm = host.dataset.algorithm;
+      var dpo = algorithm === 'dpo';
+      var ppo = algorithm === 'ppo';
+      var grpo = algorithm === 'grpo';
+      var baseline = grpo ? 'Group: mean 0.5; std 0.5'
+        : ppo ? 'Critic Vψ(x) predicts 0.5' : 'Running baseline b = 0.5';
+      var advantages = grpo ? 'A = [+1, −1, +1, −1]'
+        : 'A = [+0.5, −0.5, +0.5, −0.5]';
+      var stages = dpo
+        ? ['Load fixed pair', 'Score log-probs', 'Compare preferences', 'Update weights', 'Load next pair']
+        : ['Sample; hold θ fixed', 'Score; hold θ fixed', 'Compute advantages', 'Update weights', 'Sample with new θ'];
+
+      host.dataset.mounted = 'yes';
+      host.dataset.phase = '0';
+      host.innerHTML =
+        '<div class="loop-diagram" role="img" aria-label="' + algorithm.toUpperCase() + ' training loop: inputs, LLM weights, responses, scoring, learning signal, and optimizer feedback">' +
+          '<svg class="loop-wires" viewBox="0 0 1120 380" aria-hidden="true">' +
+            '<defs><marker id="loop-arrow-' + algorithm + '" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>' +
+            '<g fill="none" stroke="currentColor" stroke-width="2" marker-end="url(#loop-arrow-' + algorithm + ')">' +
+              '<path class="flow-sample" d="M174 82 H230"/>' +
+              '<path class="flow-sample" d="M430 82 H490"/>' +
+              '<path class="flow-score" d="M690 82 H782"/>' +
+              '<path class="flow-advantage" d="M940 164 V232"/>' +
+              '<path class="flow-gradient" d="M782 286 H706"/>' +
+              '<path class="flow-gradient" d="M486 286 H430"/>' +
+              '<path class="flow-update" d="M330 236 V182"/>' +
+              (grpo ? '<path class="flow-kl" d="M87 340 V365 H596 V340"/>' : '') +
+            '</g>' +
+            '<path class="critic-learning" d="M330 340 V365 H940 V340" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 6" marker-end="url(#loop-arrow-' + algorithm + ')"/>' +
+          '</svg>' +
+          '<div class="loop-node loop-prompt"><p class="loop-label">Prompt x</p><p>reverse: cat</p></div>' +
+          '<div class="loop-node loop-model"><p class="loop-label">LLM policy π<sub>θ</sub></p><p>Trainable weights θ</p><div class="weight-grid" aria-hidden="true">' + '<i></i>'.repeat(15) + '</div><p class="loop-small loop-direction">Push ↑ tac; ↓ tca, cta</p></div>' +
+          '<div class="loop-node loop-responses"><p class="loop-label">' + (dpo ? 'Fixed preference pair' : 'Responses y') + '</p>' +
+            (dpo ? '<p class="loop-completions">tac <b class="positive">chosen</b><br/>tca <b class="negative">rejected</b></p>'
+              : '<p class="loop-completions">tac &nbsp; tca &nbsp; tac &nbsp; cta</p><p class="loop-small">Same prompt, four attempts</p>') + '</div>' +
+          '<div class="loop-node loop-checker"><p class="loop-label">' + (dpo ? 'Frozen reference πref' : 'Fixed Python checker') + '</p>' +
+            (dpo ? '<p>Compare policy and reference<br/>log-probabilities for both answers</p><p class="loop-small">Preferences were collected earlier</p>'
+              : '<p>answer == input[::-1]</p><p class="loop-rewards">Rewards R = [1, 0, 1, 0]</p><p class="loop-small">The checker determines the score</p>') + '</div>' +
+          '<div class="loop-node loop-advantage"><p class="loop-label">' + (dpo ? 'Preference margin' : baseline) + '</p>' +
+            (dpo ? '<p>Chosen vs rejected<br/>relative to the reference</p>'
+              : '<p>' + advantages + '</p><p class="loop-small">' + (ppo ? 'Toy value; full PPO uses token states' : grpo ? 'Population std shown; no critic' : 'Estimate from earlier batches') + '</p>') + '</div>' +
+          '<div class="loop-node loop-loss"><p class="loop-label">' + (dpo ? 'Preference loss' : 'Policy loss') + '</p>' +
+            (grpo ? String.raw`<p class="loop-math" data-tex="\begin{gathered}\mathcal L=-J_{\mathrm{clip}}\\+\beta D_{\mathrm{KL}}(\pi_\theta\Vert\pi_{\mathrm{ref}})\end{gathered}"></p>`
+              : '<p>' + (dpo ? '−log σ(margin)' : ppo ? 'Clipped-ratio objective' : '−A log πθ(y | x)') + '</p><p class="loop-small">LLM forward + backprop<br/>on the fixed response tokens</p>') + '</div>' +
+          (grpo ? '<div class="loop-node loop-reference"><p class="loop-label">Frozen π<sub>ref</sub></p><p>Same tokens</p><p class="loop-small">No weight updates</p></div><p class="loop-edge-label edge-kl">Reference scores for KL</p>' : '') +
+          '<div class="loop-node loop-optimizer"><p class="loop-label">Optimizer step</p><p>θ ← θ − η ∇<sub>θ</sub>L</p><p class="loop-small">' + (ppo ? 'Actor and critic both learn' : 'Update LLM weights here') + '</p></div>' +
+          '<p class="loop-edge-label edge-gradient">gradient</p>' +
+          '<p class="loop-edge-label edge-critic">Critic also trains on observed returns</p>' +
+        '</div>' +
+        '<div class="loop-stages">' + stages.map(function (stage, i) {
+          return '<p class="fragment loop-stage" data-fragment-index="' + i + '"><b>' + (i + 1) + '</b>' + stage + '</p>';
+        }).join('') + '</div>' +
+        '<p class="loop-note">' + (dpo ? 'Fixed pairs; no online generation and no reward checker in this update. The reference stays frozen.'
+          : grpo ? 'J<sub>clip</sub> compares πθ with the sampling snapshot πold. KL penalizes drift from frozen πref; β sets its strength. Only θ is updated.'
+          : ppo ? 'Toy rewards for comparison. Full PPO uses clipped ratios to the sampling snapshot πold; LLM post-training can add KL to a frozen πref.'
+          : 'Toy rewards for comparison. A is detached: no gradient through the checker or discrete sampling. Each click traces one phase.') + '</p>';
+      if (dpo) host.querySelector('.loop-diagram').outerHTML = dpoTrainingDiagram();
+      host.querySelectorAll('[data-tex]').forEach(function (node) {
+        if (window.katex) katex.render(node.dataset.tex, node, { throwOnError: false });
+        else node.textContent = '$' + node.dataset.tex + '$';
+      });
+      added = true;
+    });
+    if (added) reveal.sync();
+    updateTrainingLoops();
+  }
+
+  function updateTrainingLoops() {
+    document.querySelectorAll('.training-loop').forEach(function (host) {
+      host.dataset.phase = String(host.querySelectorAll('.loop-stage.visible').length);
+    });
+  }
+
+  function trainingLoopsReady(reveal) {
+    mountTrainingLoops(reveal);
+    reveal.on('fragmentshown', updateTrainingLoops);
+    reveal.on('fragmenthidden', updateTrainingLoops);
+    reveal.on('slidechanged', function () { mountTrainingLoops(reveal); });
+    document.querySelectorAll('.training-loop').forEach(function (host) {
+      host.addEventListener('click', function () { reveal.nextFragment(); });
+    });
+  }
+
   // ===================================================================
   // WIDGET: grpoGroup — set the rewards for a group of completions and
   // read off the advantages the group baseline produces.
@@ -126,32 +241,8 @@
 
   window.MODULE_CONFIG = {
     title: 'LLMs 0 to 100 - Module 7',
+    onReady: trainingLoopsReady,
     manimSections: {
-      'reinforce': [
-        'REINFORCEScene_0000_samples.mp4',
-        'REINFORCEScene_0001_reward.mp4',
-        'REINFORCEScene_0002_weight.mp4',
-        'REINFORCEScene_0003_estimator.mp4'
-      ],
-      'ppo': [
-        'PPOScene_0000_actor.mp4',
-        'PPOScene_0001_critic.mp4',
-        'PPOScene_0002_advantage.mp4',
-        'PPOScene_0003_clip.mp4'
-      ],
-      'dpo': [
-        'DPOScene_0000_pair.mp4',
-        'DPOScene_0001_reward.mp4',
-        'DPOScene_0002_margin.mp4',
-        'DPOScene_0003_update.mp4'
-      ],
-      'grpo': [
-        'GRPOScene_0000_prompt.mp4',
-        'GRPOScene_0001_group.mp4',
-        'GRPOScene_0002_reward.mp4',
-        'GRPOScene_0003_advantage.mp4',
-        'GRPOScene_0004_update.mp4'
-      ],
       'passk': [
         'PassKScene_0000_axes.mp4',
         'PassKScene_0001_base.mp4',

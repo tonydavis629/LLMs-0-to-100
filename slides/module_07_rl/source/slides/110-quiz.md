@@ -16,14 +16,14 @@ Why can RL improve on a task that SFT learned only imperfectly, when **both star
 
 ---
 
-:::quiz id="quiz-grpo-baseline" title="The GRPO Baseline"
-You sample a group of four completions for one prompt and the verifier returns rewards $[1, 1, 0, 0]$. GRPO sets the baseline to the **group mean**. What advantage does each completion receive, and why does subtracting this baseline **reduce variance without biasing** the gradient?
+:::quiz id="quiz-grpo-baseline" title="The Reward Did Not Change"
+An answer earns reward **1** in two different groups. In one group every answer earns 1; in the other, most earn 0. Should GRPO give that answer the **same learning signal** in both groups?
 +++
-**Short answer: the advantages are $[+0.5, +0.5, -0.5, -0.5]$; a baseline independent of the sampled completion is unbiased, and recentering shrinks the update magnitude.**
+**No. Its advantage depends on how it compares with the other attempts at the same prompt.**
 
-- Group mean $= 0.5$, so $A_i = R_i - 0.5 = [+0.5, +0.5, -0.5, -0.5]$, then normalized by the group std
-- Any baseline independent of the sampled completion leaves the gradient's **expectation unchanged**, because $\mathbb{E}[\nabla_\theta \log \pi_\theta] = 0$
-- Recentering weights better-than-average completions positive and worse-than-average negative, shrinking update magnitude and cutting variance
+- In the all-correct group, it ties the mean: its advantage is **zero**.
+- In the mixed group, it beats the mean: its advantage is **positive**.
+- The checker supplies an absolute score; GRPO turns it into a **relative training signal**.
 :::
 
 ---
@@ -31,25 +31,26 @@ You sample a group of four completions for one prompt and the verifier returns r
 :::quiz id="quiz-why-group" title="Why a Group?"
 Why sample a **group** of completions per prompt instead of just one?
 +++
-**Short answer: one sample has no reference point; a group supplies the baseline (its mean) and the scale (its spread), and guarantees a within-group learning signal.**
+**Short answer: a group supplies a reference point and a scale when its rewards differ.**
 
 - One sample gives a reward but no reference: is that reward good or bad for this prompt?
 - No baseline to subtract means a high-variance gradient
 - A group lets completions **compete**: the mean is the baseline, the spread sets the scale
 - When some succeed and others fail, the within-group variance is exactly the signal that says which behaviors to raise and which to lower
+- When every reward ties, every relative advantage is zero
 :::
 
 ---
 
 :::quiz id="quiz-kl-leash" title="The KL Leash"
-What is the KL-to-reference penalty protecting against, and what happens to the completions if you remove it?
+What is the KL-to-reference penalty protecting against? Does removing it guarantee that training will fail?
 +++
-**Short answer: it protects against reward over-optimization; remove it and the policy drifts into high-reward gibberish that games the proxy.**
+**It discourages excessive drift from the reference. Removing it changes the trade-off; failure is not guaranteed.**
 
 - The reward is only a proxy; a strong optimizer drifts far from the reference to find outputs that score highly but are not what we want
 - The KL term penalizes moving away from the frozen reference, keeping the policy on fluent, sensible text
-- Set $\beta = 0$ and the policy drifts into **degenerate, high-reward gibberish** that games the verifier or reward model
-- The exercise extra credit shows exactly this
+- With $\beta = 0$, the reward and other training choices determine how far the policy moves
+- Measure held-out quality and diversity; a rising reward alone does not establish improvement
 :::
 
 ---
@@ -57,10 +58,10 @@ What is the KL-to-reference penalty protecting against, and what happens to the 
 :::quiz id="quiz-verifier-hack" title="Hacking a Verifier"
 Why is a **verifiable** reward harder to hack than a learned reward model, and what can **still** be hacked?
 +++
-**Short answer: a verifier is deterministic ground truth with no learned proxy to fool, but the gap between what the checker accepts and what you meant can still be exploited.**
+**A verifier implements explicit checks, but those checks can leave gaps between acceptance and the intended task.**
 
 - A learned reward model is a neural network with blind spots; hard optimization finds inputs that light up the proxy without being good
-- A verifier is **deterministic ground truth** for a checkable answer: no learned proxy to fool
+- A verifier applies specified tests or comparisons: there is no learned reward model to fool
 - Still hackable: the **gap between the check and the intent** (passing visible tests without solving the problem, exploiting a parser)
 - And verifiable rewards only exist for domains you can actually check
 :::
@@ -72,7 +73,7 @@ How does GRPO avoid the separate **value network** that PPO requires?
 +++
 **Short answer: it replaces PPO's learned value network with an empirical baseline &mdash; the mean reward of a sampled group.**
 
-- PPO's critic estimates the baseline (expected reward from a state) for computing advantages; it is roughly policy-sized and trained alongside
+- PPO's critic estimates expected return for computing advantages and is trained alongside the policy
 - GRPO replaces the learned estimate with an **empirical** one: the mean (and std) of a sampled group for the same prompt
 - The baseline comes from samples you already drew: no value network to build, train, or tune
 - That cuts memory and a major source of instability
@@ -83,10 +84,10 @@ How does GRPO avoid the separate **value network** that PPO requires?
 :::quiz id="quiz-instability" title="Why RL Is Harder Than SFT"
 Why is RL training less stable and harder to debug than the supervised finetuning of Module 6?
 +++
-**Short answer: RL is online and on-policy, so the model generates its own training data and the data distribution moves as the weights change &mdash; there is no fixed loss curve to watch.**
+**The online RL methods here generate their own training data, so the sample distribution changes with the weights.**
 
 - SFT: fixed data, stable cross-entropy against known labels
-- RL is **online and on-policy**: the model generates its own training data, so the **distribution moves** as the weights change
+- Fresh data follows the changing policy, so reward and loss must be interpreted alongside held-out evaluation
 - The reward is sparse and noisy; the gradient is high-variance; temperature, group size, KL weight, and learning rate all interact
 - A bad setting triggers entropy collapse or reward hacking that surfaces only after many steps; you debug a moving target
 :::
@@ -96,11 +97,11 @@ Why is RL training less stable and harder to debug than the supervised finetunin
 :::quiz id="quiz-passk" title="pass@1 Rises, pass@k Does Not"
 A model's pass@1 rises after GRPO but its pass@k at large k does **not**. What does this tell you about whether RL created new ability or reweighted existing ability, and how does it connect to **entropy collapse**?
 +++
-**Short answer: RL reweighted existing ability rather than creating new ability; entropy collapse raises pass@1 while shrinking the diversity that large-k pass@k depends on.**
+**This is evidence of more reliable sampling without broader coverage. It does not establish that RL can never learn new abilities.**
 
 - Flat pass@k at large k means the set of problems solvable **with enough tries** has not grown
 - RL **reweighted** probability toward paths the base model could already sample; one sample now lands on them more often
-- The mechanism is entropy collapse: concentrating mass on a few high-reward outputs raises pass@1 but **shrinks the diversity** large-k pass@k depends on
+- One possible mechanism is reduced diversity: concentrating probability can improve common successes while losing rare successful paths
 - The Yue et al. (2025) finding: RL trades coverage for sampling efficiency
 :::
 
@@ -119,13 +120,12 @@ Rejection-sampling finetuning and GRPO both use reward to improve the model. Wha
 
 ---
 
-:::quiz id="quiz-bandit-mdp" title="Bandit vs MDP"
-Why is single-turn LLM RL usually framed as a one-step **bandit** rather than a multi-step **MDP**, and what changes when the model can call **tools** mid-generation?
+:::quiz id="quiz-bandit-mdp" title="What Makes a Task Multi-Step?"
+An assistant runs code, reads an error, revises its code, and receives **one score at the end**. Is this still a one-step problem because it has only one reward?
 +++
-**Short answer: single-turn generation is one action earning one terminal reward (a bandit); tool calls add real intermediate states and rewards, making it a multi-step MDP.**
+**No. There are multiple decisions separated by observations from the environment.**
 
-- Single-turn generation: **one action**, **one terminal reward**, no intermediate states from the environment (the model just samples its own tokens)
-- That is a contextual bandit, which is why GRPO assigns one advantage to the whole sequence
-- A **tool call** produces a genuine **intermediate state** (the tool's output) the model must react to, plus possible **intermediate rewards**
-- The problem becomes a real multi-step **MDP**: harder credit assignment, and the agentic frontier beyond single-turn RLVR
+- The error changes what the assistant observes before its next action.
+- A multi-step task can use only a **terminal reward**.
+- Credit must still be assigned across the earlier tool calls and revisions.
 :::

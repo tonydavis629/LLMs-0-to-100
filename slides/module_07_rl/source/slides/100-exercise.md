@@ -510,7 +510,7 @@ Reward climbs as the policy concentrates probability on reversals it could alrea
 
 ## Extra Credit
 
-- **KL-penalty ablation.** Set `BETA = 0`: reward climbs while completions drift into gibberish that games the verifier. The reward-hacking demo, reproduced.
+- **KL-penalty ablation.** Set `BETA = 0` and compare reward, held-out accuracy, and diversity. This exact verifier rejects incorrect reversals; removing KL does not guarantee reward hacking.
 - **Group-size sweep.** Vary `GROUP_SIZE`: a larger group gives a less noisy advantage estimate at higher cost.
 - **Rejection-sampling baseline.** Keep only the best completion per group and SFT on it (Best-of-N). Compare to GRPO: what does the **negative signal** buy?
 - **pass@k probe.** Track pass@1 and pass@k across training. Does GRPO raise pass@1 while pass@k stays flat? The Yue et al. claim, in miniature. <!-- .element: class="text-lg" style="margin-top: 10px;" -->

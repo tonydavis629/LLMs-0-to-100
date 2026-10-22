@@ -47,6 +47,15 @@ GRPO, RLVR, and the alignment concerns that come with optimizing a proxy.
   **credit-assignment problem**, the central challenge of the module.
 
 ### Bandit vs MDP
+- **What a bandit is** (slide "Bandits: Choose, Get Paid, Repeat"): the name comes from
+  the "one-armed bandit" slot machine. In a **multi-armed bandit** the agent repeatedly
+  picks one of $k$ arms and receives a reward drawn from that arm's unknown
+  distribution; there is no state, so the problem is purely which arm to prefer, and it
+  is the standard setting for the exploration/exploitation trade-off (Sutton and Barto,
+  2018, ch. 2). A **contextual bandit** (Sutton and Barto's "associative search,"
+  sec. 2.9) adds an observed context before each choice, so the best action depends on
+  the context, but the action does not influence the next context. An MDP drops that
+  last restriction: actions change the next state.
 - Classical RL is a multi-step **Markov decision process (MDP)**: each action lands in
   a new state with its own reward. LLM post-training almost always collapses this to a
   one-step **contextual bandit**: the whole completion is a single action earning one
@@ -57,6 +66,15 @@ GRPO, RLVR, and the alignment concerns that come with optimizing a proxy.
   e.g., the TRL and OpenRLHF documentation and Ziegler et al., 2019, arXiv:1909.08593.)
 
 ### Policy gradient and REINFORCE
+- The objective (slide "Improve the Average Reward") is
+  $J(\theta) = \mathbb{E}_{y \sim \pi_\theta(\cdot \mid x)}[R(x, y)]$, shared by REINFORCE,
+  PPO, and GRPO; the algorithms differ only in how they estimate its gradient and limit
+  each step. The obstacle is that $\theta$ enters $J$ only through the sampling
+  distribution: a sampled token sequence is discrete, and the reward is often a
+  non-differentiable program (an exact-match check, a unit test), so there is no
+  computation graph from $R$ back to $\theta$. The score-function (log-derivative)
+  identity below moves the gradient onto $\log \pi_\theta$, which the network can
+  differentiate.
 - REINFORCE (Williams, 1992, *Machine Learning* 8:229-256,
   doi:10.1007/BF00992696): the score-function estimator on the slide
   "Policy Gradient: REINFORCE" is
@@ -154,6 +172,24 @@ GRPO, RLVR, and the alignment concerns that come with optimizing a proxy.
   $$\max_{\pi_\theta} \mathbb E_{y \sim \pi_\theta}\big[ r_\phi(x, y) \big] - \beta \mathrm{KL}\big(\pi_\theta(\cdot \mid x) \| \pi_{\text{ref}}(\cdot \mid x)\big).$$
   The KL term keeps the policy from drifting into degenerate text that games the
   proxy (Ziegler et al., 2019; Stiennon et al., 2020).
+- **KL divergence vs. cross-entropy** (slide "KL Divergence vs. Cross-Entropy"): for
+  distributions $p$ and $q$ over the same outcomes,
+  $$H(p, q) = -\sum_x p(x) \log q(x) = H(p) + \mathrm{KL}(p \Vert q), \qquad \mathrm{KL}(p \Vert q) = \sum_x p(x) \log \frac{p(x)}{q(x)}.$$
+  KL (Kullback and Leibler, 1951) is non-negative and zero only when $p = q$ (Gibbs'
+  inequality; Cover and Thomas, 2006, ch. 2), so cross-entropy is bounded below by
+  $H(p)$, the cost that remains when the model is perfect but the source is random. When
+  $p$ is one-hot, as for an SFT or pretraining label, $H(p) = 0$ and the two quantities
+  coincide. In the RLHF penalty the trained policy occupies the $p$ slot, so
+  $\mathrm{KL}(\pi_\theta \Vert \pi_{\text{ref}}) = H(\pi_\theta, \pi_{\text{ref}}) - H(\pi_\theta)$.
+  The slide's example is a fair coin with $p = q = [0.5, 0.5]$: the model matches
+  exactly, yet the cross-entropy is $H(p) = 1$ bit, while the KL is 0. A penalty for
+  drifting from the reference should vanish when there is no drift, which only KL
+  does. Against a uniform reference the cross-entropy is 1 bit for every policy, even
+  one collapsed onto a single outcome (whose KL is 1 bit). More generally, minimizing cross-entropy alone would
+  push the policy onto the reference's most likely token, while minimizing KL requires
+  matching the whole distribution. The exercise estimates KL with the single-sample
+  estimator $\log \pi_\theta(y) - \log \pi_{\text{ref}}(y)$ summed over completion tokens
+  sampled from $\pi_\theta$; its expectation under $\pi_\theta$ is exactly the KL.
 - **PPO conceptually** (slide "PPO, Conceptually"): an actor-critic method (Schulman et
   al., 2017) with a separate value network (critic), a clipped surrogate objective, and
   generalized advantage estimation (GAE, Schulman et al., 2015, arXiv:1506.02438). We
@@ -254,7 +290,7 @@ GRPO, RLVR, and the alignment concerns that come with optimizing a proxy.
 - **Goodhart's law** (Goodhart, 1975; Strathern, 1997): when a measure becomes a
   target it ceases to be a good measure. Every reward here is a proxy; optimize it hard
   enough and the policy games it.
-- **Reward over-optimization** (slide "Reward Over-Optimization, Quantified"): as the
+- **Reward over-optimization** (slide "Reward Over-Optimization"): as the
   policy's KL from the reference grows, proxy reward keeps rising while true held-out
   reward eventually falls. Gao et al. (2023, arXiv:2210.10760) fit scaling laws to this
   gap. The KL penalty (section c) is the leash.
@@ -274,6 +310,22 @@ GRPO, RLVR, and the alignment concerns that come with optimizing a proxy.
   reasoning boundary. Honest limits: reward models are imperfect proxies for contested
   values; verifiable rewards exist only for checkable domains; RL is less stable, more
   compute-hungry, and harder to debug than SFT.
+- **RL training is a distributed system** (slide "RL Training Is a Distributed
+  System"): a pretraining or SFT step reads a fixed batch and runs forward, backward,
+  and an optimizer step. An online RL step must first produce its data: generator
+  workers sample completions autoregressively (usually in a dedicated inference engine
+  such as vLLM), scorers run verifiers, code sandboxes, or reward models, the trainer
+  computes the loss with the policy and frozen reference (plus a critic for PPO), and
+  updated weights are synchronized back to the generators. PPO-style RLHF therefore
+  keeps four models resident (policy, reference, reward model, critic), which motivated
+  frameworks that place them across GPU groups: OpenRLHF (Hu et al., 2024,
+  arXiv:2405.11143) and HybridFlow/verl (Sheng et al., 2024, arXiv:2409.19256).
+  Generation is the bottleneck, and variable response lengths leave workers idle while
+  the longest rollout finishes. Asynchronous RLHF (Noukhovitch et al., 2024,
+  arXiv:2410.18252) overlaps generation with training, at the cost of training on
+  samples from a policy one or more updates old, which is off-policy and needs
+  importance-ratio corrections such as PPO's clipping. The exercise avoids all of this
+  by running generation, scoring, and training in one process on a tiny model.
 
 ## h. The Post-Training Stack
 
@@ -298,16 +350,22 @@ GRPO, RLVR, and the alignment concerns that come with optimizing a proxy.
 - **Rafael Rafailov and collaborators**: introduced DPO (2023). Section d.
 - **The DeepSeek team (Zhihong Shao and collaborators)**: introduced GRPO (2024) and
   DeepSeek-R1 (2025). Sections e and f.
-- **Yuntao Bai and the Anthropic team**: introduced RLAIF and Constitutional AI (2022).
+- **Yuntao Bai and the Anthropic team**: introduced RLAIF and Constitutional AI (2022), a form of rubric learning: the reward comes from an AI judge applying a written list of principles (the constitution) rather than from human labels.
   Section g.
 
 ## Side Quests
 
 These are genuine asides &mdash; interesting but not on the critical path.
 
-- **The KL penalty as a leash** (near section c): the same run with and without the KL
-  term; without it the policy drifts into high-reward gibberish. Reproduced in the
-  exercise extra credit ($\beta = 0$).
+- **What the KL leash protects against** (slide "What the KL Leash Protects Against",
+  section g): with a learned reward model, the policy drifts toward text the reward
+  model overrates because it lies outside the reward model's training distribution;
+  proxy reward keeps rising while true quality falls (Gao et al., 2023; Stiennon et al.,
+  2020). With an exact verifier, wrong outputs earn 0, so drift cannot buy reward with
+  gibberish; the remaining risk is entropy collapse and unmeasured behavior degrading.
+  In the exercise ($\beta = 0.01$ vs. $\beta = 0$, solution, seed fixed) held-out
+  sampled accuracy reached 54.1% and 60.3%, greedy accuracy 75.0% in both, so removing
+  KL does not cause failure on this task.
 - **R1-Zero and the skeptic** (near section f): staged as a debate between the R1-Zero
   emergence claim and the Yue et al. (2025) pass@k rebuttal. pass@1 and pass@k can point
   in opposite directions because RL reweights probability mass rather than adding paths.
@@ -349,8 +407,8 @@ Regular lecture slides (not side quests), interleaved where relevant.
   `hgkus` (correct). This is the module's thesis in miniature: RL **sharpens** the
   distribution onto reversals the model could already occasionally sample, which is why
   the sampled-accuracy (pass@1) gain is dramatic.
-- **Extra credit** maps onto the lecture: the $\beta = 0$ ablation reproduces reward
-  hacking (section g); the rejection-sampling baseline shows what the negative signal
+- **Extra credit** maps onto the lecture: the $\beta = 0$ ablation shows that an exact
+  verifier cannot be gamed by drift (section g); the rejection-sampling baseline shows what the negative signal
   buys over keep-the-winner (section b); the pass@k probe reproduces the Yue et al.
   finding (section f) in miniature.
 
@@ -359,6 +417,9 @@ Regular lecture slides (not side quests), interleaved where relevant.
 - Williams, "Simple Statistical Gradient-Following Algorithms for Connectionist
   Reinforcement Learning," *Machine Learning*, 1992. doi:10.1007/BF00992696
 - Sutton and Barto, *Reinforcement Learning: An Introduction*, 2nd ed., 2018.
+- Kullback and Leibler, "On Information and Sufficiency," *Annals of Mathematical
+  Statistics*, 1951. doi:10.1214/aoms/1177729694
+- Cover and Thomas, *Elements of Information Theory*, 2nd ed., 2006, ch. 2.
 - Christiano et al., "Deep Reinforcement Learning from Human Preferences," 2017.
   arXiv:1706.03741
 - Ziegler et al., "Fine-Tuning Language Models from Human Preferences," 2019.
@@ -379,6 +440,12 @@ Regular lecture slides (not side quests), interleaved where relevant.
   Model?", 2025. limit-of-rlvr.github.io
 - Gao et al., "Scaling Laws for Reward Model Overoptimization," 2023. arXiv:2210.10760
 - Bai et al., "Constitutional AI: Harmlessness from AI Feedback," 2022. arXiv:2212.08073
+- Hu et al., "OpenRLHF: An Easy-to-use, Scalable and High-performance RLHF Framework,"
+  2024. arXiv:2405.11143
+- Sheng et al., "HybridFlow: A Flexible and Efficient RLHF Framework," 2024.
+  arXiv:2409.19256
+- Noukhovitch et al., "Asynchronous RLHF: Faster and More Efficient Off-Policy RL for
+  Language Models," 2024. arXiv:2410.18252
 - Lightman et al., "Let's Verify Step by Step," 2023. arXiv:2305.20050
 - Zelikman et al., "STaR: Bootstrapping Reasoning with Reasoning," 2022.
   arXiv:2203.14465

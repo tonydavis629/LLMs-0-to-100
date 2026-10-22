@@ -1,43 +1,171 @@
-/* Module 7 overrides: RL post-training.
-   The manim animations carry the dynamic processes (GRPO loop, pass@k, REINFORCE,
-   PPO, DPO); this file styles the agent-environment loop diagram, the resources
-   grid, and the 2x2 axis tables used to place DPO / PPO / GRPO. Notable figures
-   use the shared :::figure card from the master stylesheet. */
+/* Module 7 uses native Reveal fragments for training flows and Manim for pass@k. */
 
-/* 2x2 axis grid: places methods on the online/offline x on/off-policy axes. */
-.axes-grid {
+.example-pair,
+.interaction-row {
   display: flex;
-  justify-content: center;
-  margin: 10px 0;
+  align-items: stretch;
+  gap: 24px;
+  margin: 30px 0;
 }
 
-.axes-grid table {
-  border-collapse: collapse;
-  color: var(--text-color);
+.example-pair > div,
+.interaction-row > div {
+  flex: 1;
+  padding: 24px;
+  border: 1px solid #2a3450;
+  border-radius: 12px;
+  background: #10192b;
+}
+
+.reveal p.example-label {
+  color: #4a9eff;
+  font-size: 18pt;
+  font-weight: 600;
+  margin: 0 0 16px;
+}
+
+.reveal p.example-detail {
+  font-size: 15pt;
+  color: #aab4c6;
+  margin-top: 18px;
+}
+
+.reveal p.interaction-arrow {
+  align-self: center;
+  flex-shrink: 0;
   font-size: 16pt;
-  min-width: 820px;
-}
-
-.axes-grid th,
-.axes-grid td {
-  border: 2px solid var(--secondary-color);
-  padding: 16px 20px;
+  color: #f5a623;
   text-align: center;
+}
+
+.reveal .positive { color: #50c878; }
+.reveal .negative { color: #ff8a8a; }
+
+.reveal .method-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 24px 0;
+  font-size: 16pt;
+}
+
+.reveal .method-table th,
+.reveal .method-table td {
+  font-size: inherit;
+  border-bottom: 1px solid #34415a;
+  padding: 17px 15px;
   vertical-align: middle;
+  text-align: left;
+  line-height: 1.4;
 }
 
-.axes-grid thead th {
-  color: var(--secondary-color);
-  font-weight: 700;
+.reveal .method-table th { color: #f5a623; }
+.reveal .method-table td:first-child { color: #78b7ff; }
+.reveal .reward-table { font-size: 15pt; }
+.reveal #reward-spectrum > p { font-size: 17pt; }
+
+/* The same five phases are traced on each dedicated animation slide. */
+.training-loop {
+  width: 1120px;
+  max-width: 100%;
+  margin: 20px auto 0;
+  cursor: pointer;
 }
 
-.axes-grid tbody th {
-  color: var(--secondary-color);
-  font-weight: 700;
+.loop-diagram { position: relative; width: 1120px; height: 380px; }
+.loop-wires { position: absolute; inset: 0; width: 100%; height: 100%; color: #53647e; }
+.loop-wires path { transition: stroke 300ms; }
+.loop-node {
+  position: absolute;
+  box-sizing: border-box;
+  background: #10192b;
+  border: 2px solid #34415a;
+  border-radius: 12px;
+  padding: 15px 12px;
+  text-align: center;
+  transition: border-color 350ms, background-color 350ms;
 }
 
-.axes-grid td strong {
-  color: var(--primary-color);
+.loop-prompt { left: 0; top: 35px; width: 174px; height: 106px; }
+.loop-model { left: 230px; top: 24px; width: 200px; height: 158px; }
+.loop-responses { left: 490px; top: 24px; width: 200px; height: 152px; }
+.loop-checker { left: 782px; top: 24px; width: 316px; height: 140px; }
+.loop-advantage { left: 782px; top: 232px; width: 316px; height: 108px; }
+.loop-loss { left: 486px; top: 232px; width: 220px; height: 108px; padding: 10px; }
+.loop-optimizer { left: 230px; top: 236px; width: 200px; height: 104px; }
+
+.reveal .loop-node p { font-size: 12pt; line-height: 1.4; margin: 0 0 6px; }
+.reveal .loop-node p.loop-label { font-size: 13pt; font-weight: 600; color: #78b7ff; }
+.reveal .loop-node p.loop-small { font-size: 10pt; line-height: 1.3; color: #aab4c6; }
+.reveal .loop-node p.loop-completions { font-size: 13pt; line-height: 1.8; }
+.reveal .loop-node p.loop-rewards { color: #f5a623; font-size: 13pt; }
+.loop-responses b { font-size: 10pt; }
+.loop-advantage { border-color: #76603a; }
+.reveal .loop-advantage p.loop-label { color: #f5a623; }
+
+.weight-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; margin: 10px auto 0; width: 115px; }
+.weight-grid i { height: 10px; border-radius: 2px; background: #356aa6; transition: background-color 600ms; }
+.weight-grid i:nth-child(3n) { background: #88add6; }
+.weight-grid i:nth-child(4n) { background: #233f61; }
+
+.reveal p.loop-edge-label { position: absolute; margin: 0; font-size: 10pt; color: #aab4c6; }
+.edge-gradient { left: 431px; top: 263px; }
+.edge-critic { left: 468px; top: 347px; }
+.loop-reference { left: 0; top: 232px; width: 174px; height: 108px; padding: 10px; border-style: dashed; }
+.edge-kl { left: 230px; top: 347px; }
+.reveal [data-algorithm="grpo"] .loop-loss .katex { font-size: 12pt; }
+.critic-learning, .edge-critic { display: none; }
+[data-algorithm="ppo"] .critic-learning, [data-algorithm="ppo"] .edge-critic { display: block; }
+
+.loop-stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 9px; margin-top: 10px; }
+.reveal p.loop-stage.fragment {
+  visibility: visible;
+  opacity: 1;
+  font-size: 11pt;
+  color: #aab4c6;
+  line-height: 1.4;
+  margin: 0;
+  border-top: 3px solid #34415a;
+  padding-top: 9px;
+  transition: color 250ms, border-color 250ms;
+}
+.loop-stage b { display: inline-block; margin-right: 6px; }
+.reveal p.loop-stage.fragment.visible { color: #e8eaf0; border-color: #4a9eff; }
+.reveal p.loop-stage.fragment.current-fragment { color: #f5a623; border-color: #f5a623; }
+.reveal p.loop-note { font-size: 11pt; color: #aab4c6; line-height: 1.4; margin: 22px 0 0; }
+
+.training-loop[data-phase="1"] .loop-model,
+.training-loop[data-phase="1"] .loop-responses,
+.training-loop[data-phase="5"] .loop-model,
+.training-loop[data-phase="5"] .loop-responses { border-color: #4a9eff; background: #132640; }
+.training-loop[data-phase="2"] .loop-checker,
+.training-loop[data-phase="3"] .loop-advantage { border-color: #f5a623; background: #292419; }
+.training-loop[data-phase="4"] .loop-loss,
+.training-loop[data-phase="4"] .loop-optimizer,
+.training-loop[data-phase="4"] .loop-model { border-color: #50c878; background: #102a24; }
+.training-loop[data-phase="4"] .weight-grid i,
+.training-loop[data-phase="5"] .weight-grid i { background: #50c878; }
+.training-loop[data-phase="4"] .weight-grid i:nth-child(3n),
+.training-loop[data-phase="5"] .weight-grid i:nth-child(3n) { background: #a2ddbc; }
+.training-loop[data-phase="4"] .weight-grid i:nth-child(4n),
+.training-loop[data-phase="5"] .weight-grid i:nth-child(4n) { background: #237554; }
+
+.training-loop[data-phase="1"] .flow-sample,
+.training-loop[data-phase="2"] .flow-score,
+.training-loop[data-phase="3"] .flow-advantage,
+.training-loop[data-phase="4"] .flow-gradient,
+.training-loop[data-phase="4"] .flow-update,
+.training-loop[data-phase="4"][data-algorithm="ppo"] .critic-learning,
+.training-loop[data-phase="4"] .flow-kl,
+.training-loop[data-phase="5"] .flow-sample {
+  stroke: #f5a623;
+  stroke-width: 3px;
+  stroke-dasharray: 9 5;
+  animation: loop-trace 900ms linear 2;
+}
+@keyframes loop-trace { to { stroke-dashoffset: -56; } }
+@media (prefers-reduced-motion: reduce) {
+  .loop-wires path { animation: none !important; }
+  .loop-node, .weight-grid i { transition: none; }
 }
 
 /* Resources grid (three themed columns). */
@@ -110,3 +238,88 @@
   max-height: 66vh;
   height: auto;
 }
+
+.reveal .loop-model p.loop-direction { margin-top: 7px; font-size: 9pt; }
+
+.critic-cost-diagram { display: flex; align-items: center; gap: 28px; margin: 28px 0 10px; }
+.cost-model { flex: 1; background: #10192b; border: 2px solid #4a9eff; border-radius: 14px; padding: 22px 24px; text-align: center; }
+.cost-critic { border-color: #f5a623; }
+.reveal .cost-model p { font-size: 15pt; margin: 0 0 10px; }
+.reveal .cost-critic p.example-label { color: #f5a623; }
+.reveal p.cost-plus { color: #aab4c6; font-size: 34pt; margin: 0; }
+.cost-weights { display: grid; grid-template-columns: repeat(6, 1fr); width: 170px; margin: 20px auto 12px; gap: 7px; }
+.cost-weights i { height: 18px; border-radius: 3px; background: #4a9eff; }
+.cost-weights i:nth-child(3n) { background: #9fc9ff; }
+.cost-critic .cost-weights i { background: #b87b1a; }
+.cost-critic .cost-weights i:nth-child(3n) { background: #f4c676; }
+.reveal .cost-model p.cost-parameter { font-size: 17pt; }
+.cost-training { border-top: 1px solid #34415a; padding-top: 18px; margin-top: 20px; }
+.reveal .cost-training p { font-size: 14pt; }
+.reveal #ppo-cost > p { font-size: 17pt; }
+
+/* DPO exposes both models' scores and the actual preference-loss arithmetic. */
+.dpo-diagram { height: 430px; }
+.dpo-pair { left: 0; top: 24px; width: 205px; height: 146px; }
+.dpo-policy { left: 255px; top: 24px; width: 210px; height: 146px; }
+.dpo-reference { left: 255px; top: 270px; width: 210px; height: 98px; border-style: dashed; }
+.dpo-logprobs { left: 525px; top: 24px; width: 580px; height: 196px; padding: 12px; }
+.dpo-margin { left: 525px; top: 270px; width: 270px; height: 101px; padding: 10px; }
+.dpo-loss { left: 845px; top: 270px; width: 260px; height: 101px; padding: 10px; }
+.dpo-optimizer { left: 15px; top: 270px; width: 220px; height: 98px; padding: 10px; }
+.reveal .dpo-logprobs table { width: 100%; border-collapse: collapse; margin: 5px 0 7px; }
+.reveal .dpo-logprobs td, .reveal .dpo-logprobs th { font-size: 10pt; line-height: 1.4; padding: 6px; text-align: center; border-bottom: 1px solid #34415a; }
+.reveal .dpo-logprobs th { color: #aab4c6; }
+.reveal .dpo-logprobs th .katex { font-size: 11pt; }
+.reveal .loop-math .katex { font-size: 14pt; }
+.reveal .dpo-optimizer .katex { font-size: 12pt; }
+.dpo-gradient-label { left: 480px; top: 388px; }
+[data-algorithm="dpo"][data-phase="1"] .dpo-pair,
+[data-algorithm="dpo"][data-phase="2"] .dpo-logprobs,
+[data-algorithm="dpo"][data-phase="2"] .dpo-reference { border-color: #f5a623; }
+[data-algorithm="dpo"][data-phase="3"] .dpo-loss { border-color: #f5a623; background: #292419; }
+[data-algorithm="dpo"][data-phase="4"] .dpo-logprobs { border-color: #50c878; }
+
+.critic-replacement { margin: 20px 0; }
+.replacement-kept { padding: 10px 20px; border: 1px solid #34415a; border-radius: 10px; background: #10192b; text-align: center; }
+.reveal .replacement-kept p { font-size: 16pt; margin: 0; }
+.replacement-row { display: flex; align-items: center; gap: 24px; margin-top: 12px; }
+.replacement-method { width: 100px; flex-shrink: 0; }
+.reveal .replacement-method p { font-size: 22pt; font-weight: 600; color: #78b7ff; }
+.replacement-source { flex: 1.1; padding: 12px; border: 2px solid #50c878; background: #10251f; border-radius: 12px; text-align: center; }
+.replacement-result { flex: 1; padding: 26px 20px; border: 1px solid #34415a; border-radius: 12px; background: #10192b; text-align: center; }
+.reveal .replacement-source p, .reveal .replacement-result p { font-size: 16pt; margin: 0 0 7px; }
+.reveal .replacement-source p.example-label { font-size: 17pt; }
+.removed-critic { border: 2px dashed #f08686; background: #25191e; }
+.removed-network { display: flex; position: relative; gap: 6px; justify-content: center; width: 150px; margin: 8px auto; }
+.removed-network i { width: 20px; height: 18px; background: #8b6470; border-radius: 2px; }
+.removed-network::after { content: ''; position: absolute; width: 165px; height: 3px; background: #ff8a8a; top: 8px; transform: rotate(-12deg); }
+.reveal p.replacement-arrow { font-size: 28pt; color: #f5a623; margin: 0; }
+.reveal p.replacement-change { font-size: 15pt; color: #ffaaaa; margin: 12px 0 0 145px; }
+.reward-chips { display: flex; justify-content: center; gap: 14px; margin: 10px 0; }
+.reveal .reward-chips p { border: 1px solid currentColor; padding: 3px 17px; border-radius: 6px; font-size: 16pt; margin: 0; }
+.reveal #grpo-insight > p { font-size: 16pt; }
+
+/* Keep the comparison diagrams within the 720-point lecture frame. */
+.reveal .reward-table th, .reveal .reward-table td { padding-top: 12px; padding-bottom: 12px; }
+.cost-model { padding-top: 18px; padding-bottom: 18px; }
+.cost-weights { margin-top: 14px; }
+.cost-training { margin-top: 14px; }
+#grpo-insight .critic-replacement { margin: 12px 0; }
+#grpo-insight .replacement-result { padding-top: 18px; padding-bottom: 18px; }
+#grpo-insight .replacement-source { padding-top: 10px; padding-bottom: 10px; }
+#rlhf-pipeline .rlhf-flow svg { max-width: 860px; }
+.reveal .slides #kl-vs-cross-entropy { padding-bottom: 36px !important; }
+#passk-anim .video-container { min-height: 0; }
+#passk-anim video { width: 100%; height: 100%; object-fit: contain; }
+
+/* Show complete exercise code, hint, and answer together without scrolling. */
+.reveal .slides section[id^="exercise-step"] { padding-bottom: 28px !important; }
+.reveal section[id^="exercise-step"] pre { margin: 10px 0 0; }
+.reveal section[id^="exercise-step"] pre code { font-size: 11pt; line-height: 1.1; max-height: none; padding: 9px 14px; }
+.reveal #exercise-step1 pre code { font-size: 10.5pt; }
+.reveal section[id^="exercise-step"] .hint-box { margin-top: 12px; }
+.reveal section[id^="exercise-step"] .hint-box p { font-size: 14pt; line-height: 1.3; }
+.reveal section[id^="exercise-step"] .note { margin-top: 10px; padding: 8px 14px; }
+.reveal section[id^="exercise-step"] .note p { font-size: 14pt; line-height: 1.3; }
+.reveal pre code .hljs-comment { color: #aab4c6; }
+.reveal #quiz-passk .quiz-answer { margin-top: 15px; }

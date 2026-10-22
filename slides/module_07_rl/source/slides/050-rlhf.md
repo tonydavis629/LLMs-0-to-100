@@ -7,7 +7,7 @@
 
 ## Completing the InstructGPT Recipe
 
-Module 6 covered **stage 1**. Stages 2 and 3 turned a base model into ChatGPT.
+Module 6 covered **stage 1**. InstructGPT added preference learning and PPO in stages 2 and 3.
 
 :::columns cols="3" gap="22px"
 **1. SFT** &check;
@@ -137,7 +137,7 @@ The reward model is a **learned, imperfect proxy** for human judgment. <!-- .ele
 
 ## Stage 3: Optimize the Policy
 
-PPO maximizes the learned reward. A **KL penalty** to the frozen SFT reference blocks drift into degenerate text that games it.
+PPO maximizes the learned reward. A **KL penalty** discourages drift away from the frozen SFT reference.
 
 $$\max_{\textcolor{#4a9eff}{\pi_\theta}} \textcolor{#f5a623}{\mathbb E_{y \sim \pi_\theta}\big[ r_\phi(x, y) \big]} - \textcolor{#50c878}{\beta \mathrm{KL}\big(\pi_\theta(\cdot \mid x) \| \pi_{\text{ref}}(\cdot \mid x)\big)}$$
 
@@ -146,31 +146,37 @@ $$\max_{\textcolor{#4a9eff}{\pi_\theta}} \textcolor{#f5a623}{\mathbb E_{y \sim \
 - Second term: $\textcolor{#50c878}{\mathrm{KL}}$ means **stay close** to the reference policy
 +++
 - $\textcolor{#50c878}{\beta}$: how hard to pull back toward the reference
-- Without the KL leash, the policy finds gibberish the proxy loves
+- The reference stays fixed; it is different from the sampling-policy snapshot used for PPO clipping
 :::
 
 ---
 
-<!-- .slide: id="ppo-conceptually" -->
+<!-- .slide: id="kl-vs-cross-entropy" -->
 
-## PPO, Conceptually
+## KL Divergence vs. Cross-Entropy
 
-PPO is the algorithm behind the original RLHF recipe.
+$$H(p, q) = H(p) + \textcolor{#50c878}{\mathrm{KL}(p \Vert q)}$$
 
 :::columns cols="2" gap="34px"
-- **Actor-critic**: a separate **value network** (critic) estimates expected reward as the baseline
-- **Clipped surrogate objective**: limits how far the policy moves per update (the off-policy leash again)
+- **Cross-entropy**: bits to encode samples from $p$ with a code built for $q$
+- **Entropy** $H(p)$: bits even a perfect model pays, because $p$ is random
+- $\textcolor{#50c878}{\mathrm{KL}}$: the extra bits from using $q$ in place of $p$
 +++
-- **Generalized advantage estimation (GAE)**: a smoothed advantage estimate
-- The takeaway is the **shape** of the objective, not the clipping algebra
+**Fair coin, model matches exactly**
+
+$p = q = [0.5, 0.5]$
+
+- Cross-entropy: 1 bit
+- $\textcolor{#50c878}{\mathrm{KL}}$: 0
 :::
 
-This recipe is how a **1.3B** InstructGPT model beat **175B** GPT-3 in human preference (Module 6). <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+A drift penalty should be zero when the policy matches the reference. Only KL is. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
----
+With one-hot SFT targets, $H(p) = 0$, so the two are equal. <!-- .element: class="text-muted" -->
 
-:::manim id="ppo-anim" scene="ppo"
-:::
+**Measured by sampling:** draw responses from the policy, score each under both models, and average the log-ratio.
+
+$$\textcolor{#50c878}{\mathrm{KL}(\pi_\theta \Vert \pi_{\text{ref}})} = \mathbb E_{y \sim \pi_\theta}\big[\log \pi_\theta(y) - \log \pi_{\text{ref}}(y)\big]$$
 
 ---
 
@@ -182,22 +188,29 @@ This recipe is how a **1.3B** InstructGPT model beat **175B** GPT-3 in human pre
 - The direct technical ancestor of ChatGPT
 :::
 
+
 ---
 
-<!-- .slide: id="side-quest-kl-leash" -->
+<!-- .slide: id="rlaif" -->
 
-## <span class="side-quest-badge">Side Quest</span> The KL Penalty as a Leash
+## RLAIF and Constitutional AI
 
-Run the same RLHF objective **with** and **without** the KL term.
+Bai et al. (2022): replace or augment human feedback with an **AI judge** guided by written principles (a **constitution**).
 
 :::columns cols="2" gap="34px"
-**With the leash**
-
-The policy improves reward while its text stays fluent and on-distribution.
+- Human labeling does **not scale** to every comparison
+- **AI feedback does**: a route toward **scalable oversight**
 +++
-**Without it**
-
-The policy drifts into **high-reward gibberish**: repetitive, malformed text the reward model scores highly. Over-optimization, demonstrated.
+- The model critiques and revises its own outputs against the principles
+- A learned judge for the open-ended tasks no verifier can check
 :::
 
-The exercise extra credit reproduces this: set $\beta = 0$. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+---
+
+<!-- .slide: id="figure-bai" -->
+
+:::figure img="images/anthropic.svg" name="Yuntao Bai and the Anthropic team" kicker="Constitutional AI: Harmlessness from AI Feedback (2022)" alt="Anthropic logo"
+- Introduced **RLAIF**, a form of **rubric learning**: an AI judge scores outputs against written principles
+- Showed an assistant could be made harmless with far less human labeling
+- A concrete step toward **scalable oversight** of models that may exceed us
+:::

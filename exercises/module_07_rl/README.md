@@ -115,9 +115,11 @@ tokens (`<|user|>`, `<|assistant|>`, `<|end|>`, `<|pad|>`), for a vocabulary of 
 
 ## Extra credit
 
-- **KL-penalty ablation.** Set `BETA = 0` and watch reward climb while the completions
-  drift into gibberish that games the verifier &mdash; the reward-hacking demo from the
-  lecture's "dark side" section.
+- **KL-penalty ablation.** Set `BETA = 0` and compare held-out accuracy and the
+  diversity of the completions. The exact-match verifier gives a wrong string 0 reward,
+  so gibberish cannot game it, and in a 100-step run held-out accuracy does not drop.
+  Removing the leash is far riskier with a learned reward model, which can be fooled by
+  text far from the reference (the lecture's "dark side" section).
 - **Group-size sweep.** Vary `GROUP_SIZE` and observe how a larger group gives a less
   noisy advantage estimate at higher cost.
 - **Reward shaping.** Replace the binary reward with a partial-credit reward (fraction

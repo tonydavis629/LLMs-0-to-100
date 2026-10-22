@@ -1,4 +1,4 @@
-:::divider id="divider-what-is-rl" title="What Reinforcement Learning Is, Really"
+:::divider id="divider-what-is-rl" title="Learning From Reward"
 :::
 
 ---
@@ -42,238 +42,162 @@ No labeled "correct action." The agent learns only from the **reward** its own c
 
 ---
 
-<!-- .slide: id="rl-as-llm" -->
+<!-- .slide: id="figure-sutton-barto" -->
 
-## Mapping RL Onto a Language Model
-
-:::columns cols="2" gap="30px"
-**Classical RL**
-
-- Policy
-- State
-- Action
-- Episode
-- Reward
-+++
-**Language model**
-
-- The **model** itself, $\pi_\theta$
-- The **prompt + tokens so far**
-- Emitting the **next token**
-- One full **completion**
-- A scalar **score on the finished output**
+:::figure img="images/sutton_barto.jpg" name="Richard Sutton and Andrew Barto" kicker="Reinforcement Learning: An Introduction (1998, 2018); 2024 Turing Award" alt="Richard Sutton and Andrew Barto"
+- Established the vocabulary of agents, policies, rewards, and returns
+- RL studies how choices improve through interaction and feedback
+- We will apply that framework to a language model
 :::
-
-The policy *is* the model. Training the policy *is* updating the weights. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
-<!-- .slide: id="credit-assignment" -->
+<!-- .slide: id="rl-as-llm" -->
 
-## The Defining Difference: Credit Assignment
+## The Policy Is the LLM
 
-:::columns cols="2" gap="34px"
-**Supervised finetuning (Module 6)**
+<div class="interaction-row">
+<div><p class="example-label">Input</p><p>Prompt x</p></div>
+<p class="interaction-arrow">→</p>
+<div><p class="example-label">Policy π<sub>θ</sub></p><p>LLM with weights θ</p></div>
+<p class="interaction-arrow">→</p>
+<div><p class="example-label">Output</p><p>Completion y</p></div>
+</div>
 
-- Every position has a **known correct token**
-- Minimize cross-entropy against it
-- Dense, local signal
+$$y \sim \pi_\theta(\cdot \mid x)$$
+
+The policy is a **distribution over possible completions**. Updating the policy means updating the LLM's weights.
+
+---
+
+<!-- .slide: id="what-is-bandit" -->
+
+## Bandits: Choose, Get Paid, Repeat
+
+The name comes from slot machines, once called **one-armed bandits**. Facing a row of machines with unknown payout rates, you pull an arm, see what it pays, and choose again.
+
+:::columns cols="3" gap="25px"
+**Multi-armed bandit**
+
+- No state: the same arms every round
+- Learn which arm pays best
 +++
-**Reinforcement learning**
+**Contextual bandit**
 
-- **No correct token**
-- One scalar reward on the **whole** output
-- One number must become a per-token gradient
+- See a **context** first, then act
+- The best action depends on the context
+- Your action does **not** affect the next context
++++
+**MDP**
+
+- Your action **changes the next state**
+- Decisions chain into an episode, so credit spreads across steps
 :::
 
-Turning one end-of-sequence reward into an update for every token is the **credit-assignment problem**: the central challenge of this module. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+Every bandit faces the same tension: keep pulling the arm that looks best (**exploit**), or try others that might pay more (**explore**). <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
 <!-- .slide: id="bandit-vs-mdp" -->
 
-## The Resolution: Collapse to a Bandit
+## One Prompt, One Scored Response
 
-Classical RL is a multi-step **Markov decision process (MDP)**: every action lands in a new state and earns its own reward. LLM post-training **collapses this to a one-step contextual bandit**:
+For now, each training example has one prompt, one complete response, and one score.
 
-:::columns cols="2" gap="34px"
-- The whole completion is a **single action**
-- **One terminal reward** at the end
-- **No** intermediate rewards; discount factor effectively **1**
-+++
-- This is why GRPO assigns **one advantage** to the sequence and broadcasts it to **every token**
-- Multi-step RL returns later: **process rewards** and **agentic RL**
-:::
-
-The credit-assignment problem is sidestepped: no per-token credit at all. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
-
----
-
-<!-- .slide: id="figure-sutton-barto" -->
-
-:::figure img="images/sutton_barto.jpg" name="Richard Sutton and Andrew Barto" kicker="Reinforcement Learning: An Introduction (1998, 2018); 2024 Turing Award" alt="Richard Sutton and Andrew Barto"
-- Wrote the foundational textbook that defined modern RL vocabulary
-- Sutton's **"The Bitter Lesson"**: general methods that scale with **search and learning** beat hand-engineered knowledge
-- RL post-training is that lesson applied to language models
-:::
-
----
-
-<!-- .slide: id="policy-gradient" -->
-
-## Policy Gradient: REINFORCE
-
-The objective: the policy's **expected reward** over its own samples.
-
-$$J(\theta) = \mathbb{E}_{y \sim \textcolor{#4a9eff}{\pi_\theta(\cdot \mid x)}}\big[ \textcolor{#f5a623}{R(x, y)} \big]$$
-
-- One sampled completion earns an **actual reward** $R(x,y)$
-- Training changes a **distribution**, so we optimize the **average** reward over its possible samples
-
-With a baseline $b$, the REINFORCE estimator:
-
-$$\nabla_\theta J(\theta) = \mathbb{E}_{y \sim \pi_\theta}\big[ \textcolor{#50c878}{(R(x,y) - b)} \nabla_\theta \log \textcolor{#4a9eff}{\pi_\theta(y \mid x)} \big]$$
-
-:::columns cols="2" gap="34px"
-- $\textcolor{#50c878}{R(x,y) - b}$ is the **advantage**: better or worse than expected
-- $\nabla_\theta \log \textcolor{#4a9eff}{\pi_\theta(y)}$: the direction that makes $y$ more likely
-- Positive advantage pushes probability **up**; negative pushes it **down**
-+++
-- The baseline reduces variance **without adding bias**
-- PPO learns $b$ with a value network; GRPO uses the group mean
-- Same gradient machinery as Module 2g, now doing ascent on reward
-:::
-
----
-
-:::manim id="reinforce-anim" scene="reinforce"
-:::
-
----
-
-<!-- .slide: id="figure-williams" -->
-
-:::figure img="images/williams.jpg" name="Ronald J. Williams" kicker="Simple Statistical Gradient-Following Algorithms for Connectionist Reinforcement Learning (REINFORCE, 1992)"
-- Introduced the **policy-gradient** estimator used by every method here
-- The score-function trick: differentiate $\log \pi_\theta$, weight by reward
-- Thirty years later it is the engine of RLHF, GRPO, and reasoning models
-:::
-
----
-
-<!-- .slide: id="two-axes" -->
-
-## Two Axes, Often Conflated
-
-Every method in this module sits on **two orthogonal axes**:
-
-:::columns cols="2" gap="34px"
-**Online vs offline** &mdash; *where does the data come from?*
-
-- **Online**: generate fresh data during training (sample, score, update, repeat)
-- **Offline**: learn from a **fixed dataset** collected ahead of time, like SFT
-+++
-**On-policy vs off-policy** &mdash; *who produced the data?*
-
-- **On-policy**: the **current** policy (or one negligibly different)
-- **Off-policy**: a **different or older** policy; the update must correct for the mismatch
-:::
-
----
-
-<!-- .slide: id="two-axes-grid" -->
-
-## The Two Axes as a Grid
-
-<div class="axes-grid">
-<table>
-<thead>
-<tr><th></th><th>On-policy</th><th>Off-policy</th></tr>
-</thead>
-<tbody>
-<tr>
-<th>Online</th>
-<td><strong>REINFORCE, PPO, GRPO</strong><br/>sample from the live policy, score, update</td>
-<td>PPO with stale batches<br/>(importance-ratio clipping)</td>
-</tr>
-<tr>
-<th>Offline</th>
-<td>rare in practice</td>
-<td><strong>DPO</strong> and SFT<br/>a fixed, pre-collected dataset</td>
-</tr>
-</tbody>
-</table>
+<div class="interaction-row">
+<div><p class="example-label">Context</p><p>reverse: cat</p></div>
+<p class="interaction-arrow">→</p>
+<div><p class="example-label">One response</p><p>tac</p></div>
+<p class="interaction-arrow">→</p>
+<div><p class="example-label">Reward</p><p>1</p></div>
 </div>
 
-The common cases **pair up**. PPO's importance-ratio clipping exists to reuse each batch for a few steps **without drifting off-policy**. <!-- .element: class="text-lg" style="margin-top: 14px;" -->
+The prompt is the context and the whole response is one action. The next prompt comes from the dataset no matter what the model wrote, so this is a **contextual bandit**, even though the LLM generates the response **one token at a time**.
 
 ---
 
-<!-- .slide: id="why-axes-matter" -->
+<!-- .slide: id="credit-assignment" -->
 
-## Why The Axes Matter
+## One Score Must Train Many Tokens
 
-:::columns cols="2" gap="34px"
-**Online + on-policy**
+The checker scores the completed response. It does not label which generated tokens helped.
 
-- Explores **beyond** any fixed dataset
-- Can **exceed the demonstrations** and discover reasoning strategies
-- Cost: the data distribution **moves** as the model changes; less stable, harder to debug
-+++
-**Offline + off-policy**
+$$\log \pi_\theta(y \mid x) = \sum_t \log \pi_\theta(y_t \mid x, y_{<t})$$
 
-- **Cheaper and more stable**: reuses the SFT machinery exactly
-- Cost: can only **rank the responses already in its data**
-- No exploration, no exceeding the dataset
+A response-level learning signal can weight **every generated token's log-probability**.
+
+:::note
+This gives a trainable objective. It does not tell us which individual token caused success or failure.
 :::
+
+---
+
+<!-- .slide: id="agentic-rl" -->
+
+## Tools Add Decisions Between Observations
+
+<div class="interaction-row">
+<div><p class="example-label">LLM action</p><p>Run some code</p></div>
+<p class="interaction-arrow">→</p>
+<div><p class="example-label">Tool observation</p><p>Read the error</p></div>
+<p class="interaction-arrow">→</p>
+<div><p class="example-label">LLM action</p><p>Revise the code</p></div>
+</div>
+
+The next decision depends on what the environment returns. We model this as a **multi-step decision process (MDP)**, using the relevant interaction history as the state.
+
+It can still receive **only a final reward**. Multiple decisions do not require intermediate rewards.
+
+---
+
+<!-- .slide: id="online-sampling" -->
+
+## RL Collects Fresh Attempts During Training
+
+<div class="interaction-row">
+<div><p class="example-label">Sample</p><p>Current LLM</p></div>
+<p class="interaction-arrow">→</p>
+<div><p class="example-label">Score</p><p>Reward function</p></div>
+<p class="interaction-arrow">→</p>
+<div><p class="example-label">Update</p><p>LLM weights</p></div>
+</div>
+
+Then sample again from the updated LLM. This is **online data collection**.
+
+**Offline training** reuses a fixed dataset. Standard SFT and the original DPO recipe follow that pattern.
+
+---
+
+<!-- .slide: id="on-policy-sampling" -->
+
+## After an Update, Old Samples Become Stale
+
+**On-policy:** the samples match the policy used in the learning objective.
+
+Changing the weights changes the distribution. Samples from an older or different policy create a **policy mismatch**.
+
+:::note
+The methods here collect fresh samples online to stay close to on-policy. PPO and GRPO track the sampling policy when reusing a batch for several updates.
+:::
+
+Online collection and policy matching are **related properties**. An online system can also reuse old, off-policy data.
 
 ---
 
 <!-- .slide: id="exploration-exploitation" -->
 
-## Exploration vs Exploitation
+## Sampling Supplies Exploration
 
-The oldest tension in RL: try **varied** outputs to discover high-reward ones (explore), or lean on **what already works** (exploit).
+The model must try varied responses to find ones that earn higher reward.
 
 :::columns cols="2" gap="34px"
-- In LLM RL, exploration happens through **sampling**
-- The decoding knobs from Module 4f (**temperature, top-k, top-p**) are now **training hyperparameters**
+**Explore**
+
+Sample alternatives, including less likely answers.
 +++
-- Too little exploration: the policy never finds better answers
-- Too much: the gradient is pure noise
-- The sampling distribution **is** the search strategy
+**Exploit**
+
+Make answers that already score well more likely.
 :::
 
----
-
-<!-- .slide: id="entropy-collapse" -->
-
-## The Failure Mode: Entropy Collapse
-
-Training sharpens the policy toward a few high-reward outputs, so the distribution's **entropy falls**.
-
-<div class="rl-loop-figure">
-<svg viewBox="0 0 960 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Entropy collapse chain">
-<defs>
-<marker id="ec-ah" markerWidth="10" markerHeight="8" refX="7.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#8892a4"></path></marker>
-</defs>
-<rect x="10" y="30" width="200" height="60" rx="12" fill="#f5a623" fill-opacity="0.12" stroke="#f5a623" stroke-width="1.8"></rect>
-<text x="110" y="66" text-anchor="middle" fill="#e8eaf0" font-size="17" font-weight="600">diversity dries up</text>
-<path d="M212,60 L248,60" fill="none" stroke="#8892a4" stroke-width="2.2" marker-end="url(#ec-ah)"></path>
-<rect x="254" y="30" width="200" height="60" rx="12" fill="#f5a623" fill-opacity="0.12" stroke="#f5a623" stroke-width="1.8"></rect>
-<text x="354" y="66" text-anchor="middle" fill="#e8eaf0" font-size="17" font-weight="600">exploration stops</text>
-<path d="M456,60 L492,60" fill="none" stroke="#8892a4" stroke-width="2.2" marker-end="url(#ec-ah)"></path>
-<rect x="498" y="30" width="200" height="60" rx="12" fill="#f5a623" fill-opacity="0.12" stroke="#f5a623" stroke-width="1.8"></rect>
-<text x="598" y="66" text-anchor="middle" fill="#e8eaf0" font-size="17" font-weight="600">narrow behavior</text>
-<path d="M700,60 L736,60" fill="none" stroke="#8892a4" stroke-width="2.2" marker-end="url(#ec-ah)"></path>
-<rect x="742" y="30" width="200" height="60" rx="12" fill="#ff6b6b" fill-opacity="0.14" stroke="#ff6b6b" stroke-width="2"></rect>
-<text x="842" y="66" text-anchor="middle" fill="#e8eaf0" font-size="17" font-weight="600">learning stalls</text>
-</svg>
-</div>
-
-**Countermeasures**
-
-- An **entropy bonus** in the objective, rewarding spread
-- The **KL-to-reference leash** used by RLHF, keeping the policy near the broad base distribution
-
-Entropy collapse returns when we reach reasoning models, behind a surprising result. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+Temperature and other decoding choices now affect **the training data the model discovers**.

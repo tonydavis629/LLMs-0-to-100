@@ -10,14 +10,14 @@ SFT turned the base model into an **instruct model**: it treats a prompt as a re
 - Imitates good demonstrations
 - Same machinery as pretraining: cross-entropy on fixed target tokens
 +++
-**Three limits SFT cannot fix**
+**Three motivations for RL**
 
-- Can only **imitate** demonstrations, never exceed them
-- No way to use **negative** signal ("this answer is worse")
+- Optimizes imitation, rather than an explicit outcome score
+- Ordinary SFT has no explicit chosen-versus-rejected signal
 - **Exposure bias**: trained on ground-truth prefixes, generates from its own outputs
 :::
 
-This module fixes all three by changing the **training signal**, not the machinery. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+This module changes the **training signal** while reusing the same optimization machinery. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
