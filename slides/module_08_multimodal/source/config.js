@@ -15,6 +15,19 @@
         'VideoBudgetScene_0001_frames.mp4',
         'VideoBudgetScene_0002_budget.mp4',
         'VideoBudgetScene_0003_overflow.mp4'
+      ],
+      'posembed': [
+        'PosEmbedScene_0000_grid.mp4',
+        'PosEmbedScene_0001_flatten.mp4',
+        'PosEmbedScene_0002_add.mp4',
+        'PosEmbedScene_0003_similarity.mp4'
+      ],
+      'audiotokens': [
+        'AudioTokensScene_0000_wave.mp4',
+        'AudioTokensScene_0001_spectrogram.mp4',
+        'AudioTokensScene_0002_encoder.mp4',
+        'AudioTokensScene_0003_codec.mp4',
+        'AudioTokensScene_0004_sequence.mp4'
       ]
     },
     widgets: {}

@@ -134,3 +134,16 @@
   padding-left: 18px;
 }
 .reveal ul.resource-list li::before { width: 6px; height: 6px; }
+
+/* ---- Adversarial example row (panda + noise = gibbon) ---- */
+.adv-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin: 8px 0;
+}
+.adv-row figure { margin: 0; text-align: center; }
+.adv-row img { width: 200px; height: 200px; border-radius: 6px; }
+.adv-row figcaption { font-size: 13pt; color: var(--text-color); margin-top: 6px; line-height: 1.3; }
+.adv-op { font-size: 22pt; color: var(--text-color); }

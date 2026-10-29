@@ -1182,6 +1182,19 @@
 }
 .reveal ul.resource-list li::before { width: 6px; height: 6px; }
 
+/* ---- Adversarial example row (panda + noise = gibbon) ---- */
+.adv-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  margin: 8px 0;
+}
+.adv-row figure { margin: 0; text-align: center; }
+.adv-row img { width: 200px; height: 200px; border-radius: 6px; }
+.adv-row figcaption { font-size: 13pt; color: var(--text-color); margin-top: 6px; line-height: 1.3; }
+.adv-op { font-size: 22pt; color: var(--text-color); }
+
   </style>
 </head>
 <body>
@@ -1241,7 +1254,7 @@ This module's question: **how do we turn non-text data into tokens or embeddings
 
 <!-- .slide: id="review-callback" -->
 
-## Review: The Through-Line Still Holds
+## Review: What Carries Over
 
 Module 5: **next-token pretraining**. Module 6: **response format**. Module 7: **behavior from feedback**. Module 8 adds **perceptual conditions** to the context.
 
@@ -1249,7 +1262,7 @@ Module 5: **next-token pretraining**. Module 6: **response format**. Module 7: *
 
 <div>
 
-**Reused wholesale**
+**Reused**
 
 - The Module 4 transformer, unchanged
 - Cross-entropy and the masked SFT loss of Modules 5 and 6
@@ -1259,14 +1272,24 @@ Module 5: **next-token pretraining**. Module 6: **response format**. Module 7: *
 
 <div>
 
-**Newly hard**
+**New**
 
-- **Reward and evaluation**
-- Visual and audio mistakes can be subtle, spatial, temporal, or safety-critical
+- Encoders and connectors for non-text input
+- Harder evaluation: visual and audio mistakes can be small, spatial, or tied to timing
+
+</div>
 
 </div>
 
-</div>
+---
+
+<!-- .slide: id="review-slots" -->
+
+## One Template for Every Architecture
+
+<div class="img-figure"><img src="module_08_multimodal/images/arch_text_only.svg" alt="The template: a modality lane (image or audio, encoder, connector) above the familiar text lane (prompt, token embedding), both feeding the language model" style="max-height: 360px;"></div>
+
+Modules 4 to 7 used only the bottom lane. The top lane is new. Every architecture in this module is drawn on this template, so you can compare them by what sits in each box. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1305,18 +1328,18 @@ Many real tasks connect **language to perception**:
 - Read a chart, debug a screenshot, describe a medical image
 - Transcribe speech, understand a lecture video, use a computer
 
-The unifying abstraction: **every modality gets compressed into a sequence**, either
+Every modality gets **compressed into a sequence** of either
 
 - **discrete tokens** (text tokens, audio codec tokens), or
 - continuous **embedding vectors** (image patch features projected into the LLM's hidden size)
 
-The recipe: **choose a representation, align it with language, train the model to use it.** <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+The rest is choosing that representation, aligning it with language, and training the model to use it. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
 <!-- .slide: id="what-tensions" -->
 
-## Two Tensions That Shape Everything
+## Two Tensions
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
@@ -1342,7 +1365,7 @@ The recipe: **choose a representation, align it with language, train the model t
 
 </div>
 
-The whole module answers these two tensions: **compress the high-bandwidth signal, keep its structure once flattened.** <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+Most of this module deals with these two problems: shrink the signal to a manageable length, and keep its layout after flattening. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -1404,7 +1427,6 @@ To feed an image to a transformer, cut it into a sequence. <!-- .element: class=
 
 - Split the image into fixed patches and treated each one as a token
 - With enough training data, a plain transformer matches or beats convolutional networks
-- The rest of the module builds on this framing
 
 </div>
 
@@ -1439,6 +1461,16 @@ $$z_i = W_{\text{patch}}\ \mathrm{flatten}(p_i) + b_{\text{patch}}$$
 
 ---
 
+<!-- .slide: id="tok-three-tokens" -->
+
+## Three Things Called "Tokens"
+
+<div class="img-figure"><img src="module_08_multimodal/images/token_types.svg" alt="Three rows: a text token is an id looked up in an embedding table; a discrete image token is an id looked up in a learned codebook; a patch embedding is pixels flattened and multiplied by a matrix with no id and no table" style="max-height: 400px;"></div>
+
+All three end as a vector of the same width. Only the first two have a vocabulary. The ViT patch from the last slide is the third kind: a continuous vector with no id behind it. The next section shows where the codebook for the second kind comes from. <!-- .element: class="text-lg" -->
+
+---
+
 <!-- .slide: id="tok-position-resolution" -->
 
 ## Position and Resolution Are Not Optional
@@ -1465,7 +1497,15 @@ $$z_i = W_{\text{patch}}\ \mathrm{flatten}(p_i) + b_{\text{patch}}$$
 
 </div>
 
-A model can be "looking at" the image and still be blind to the part that matters. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+If preprocessing shrank the small print to a few pixels, the model cannot read it. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+
+---
+
+<section id="tok-posembed">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="posembed" preload="auto"></video>
+  </div>
+</section>
 
 ---
 
@@ -1482,6 +1522,80 @@ A model can be "looking at" the image and still be blind to the part that matter
 - Attention over patches does not guarantee every patch token has a readable meaning
 
 Darcet et al., "Vision Transformers Need Registers," <a href="https://arxiv.org/abs/2309.16588">arXiv:2309.16588</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
+
+---
+
+<!-- .slide: id="divider-vqvae" class="section-divider" data-state="is-section-divider" -->
+
+# From Vectors to Ids
+
+VQ-VAE and discrete image tokens
+
+
+---
+
+<!-- .slide: id="vq-why" -->
+
+## Why Make Image Tokens Discrete?
+
+A ViT patch embedding is a continuous vector. The LLM can attend to it, so it works for **reading** an image. It does not work for **writing** one.
+
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**An LLM's output is a choice from a list**
+
+- The last layer produces logits over a fixed vocabulary
+- Softmax picks one id, and cross-entropy scores that pick
+- A continuous vector has no list to put a softmax over
+
+</div>
+
+<div>
+
+**So give images a vocabulary**
+
+- Learn a finite set of $K$ vectors, the **codebook**
+- Describe each region of the image by the index of its closest codebook vector
+- Those indices are tokens in the same sense as word ids
+
+</div>
+
+</div>
+
+This is vector quantization. The **VQ-VAE** (van den Oord et al., 2017) learns the codebook together with an encoder and a decoder. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+
+---
+
+<!-- .slide: id="vq-diagram" -->
+
+## VQ-VAE: Snap Each Vector to a Code
+
+<div class="img-figure"><img src="module_08_multimodal/images/vqvae.svg" alt="VQ-VAE: an encoder turns the image into a 3 by 3 grid of continuous vectors, each is replaced by the id of its nearest codebook vector, and a decoder rebuilds the image from the codebook vectors those ids point to" style="max-height: 300px;"></div>
+
+$$k\_i = \arg\min\_j \lVert z\_i - e\_j \rVert \qquad z^q\_i = e\_{k\_i}$$
+
+The encoder vector $z\_i$ is replaced by its nearest codebook vector $e\_{k\_i}$. The image becomes a grid of integers, and the decoder rebuilds the picture from the codebook vectors those integers point to. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="vq-tradeoff" -->
+
+## Continuous or Discrete?
+
+<div class="compare-table">
+<table>
+<thead><tr><th>Continuous patch embeddings</th><th>Discrete codebook ids</th></tr></thead>
+<tbody>
+<tr><td>Any pixel values give a new vector, so fine detail survives</td><td>Every region becomes one of $K$ codes; with $K = 8{,}192$ that is 13 bits per id</td></tr>
+<tr><td>The LLM can read images but cannot write them</td><td>Ids join the vocabulary, so the LLM can read <strong>and</strong> write images</td></tr>
+<tr><td>LLaVA, BLIP-2, Flamingo (next sections)</td><td>Chameleon's image tokens, codec audio (later in this module)</td></tr>
+</tbody>
+</table>
+</div>
+
+The loss of detail is real: the Chameleon authors report that their tokenizer struggles to reconstruct images with a lot of text. Neural audio codecs such as EnCodec apply the same idea to sound, with a stack of codebooks called residual vector quantization. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1548,7 +1662,7 @@ CLIP **does not generate language**. It only learns where images and text sit re
 
 </div>
 
-Result: an **alignment foundation**, a coordinate system where "a photo of a dog" lands near pictures of dogs. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+The result is a shared space where the text "a photo of a dog" lands near pictures of dogs. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -1581,36 +1695,35 @@ Rows are images, columns are captions. The **diagonal** is the matched pairs: ma
 
 <!-- .slide: id="clip-loss" -->
 
-## The Loss Is Cross-Entropy You Already Know
+## The Loss Uses Every Other Pair as a Negative
 
-The contrastive loss is **two** cross-entropies over the similarity matrix, one per direction:
+For image $i$, take a softmax over all $B$ captions in the batch:
 
-$$\mathcal{L} = \tfrac{1}{2}\left( \mathrm{CE}(\text{image} \to \text{text}) + \mathrm{CE}(\text{text} \to \text{image}) \right)$$
+$$\mathcal{L}\_i = -\log \frac{\exp(\textcolor{#50c878}{s\_{ii}})}{\exp(\textcolor{#50c878}{s\_{ii}}) + \sum\_{j \neq i} \exp(\textcolor{#e05252}{s\_{ij}})}$$
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
 <div>
 
-**Same math, new classes**
+**One positive (diagonal)**
 
-- The cross-entropy of Modules 2 and 5
-- The "classes" are the **other examples in the batch**, not vocabulary tokens
+- Caption $i$, the one actually paired with image $i$
+- The gradient pushes its similarity **up**
 
 </div>
 
 <div>
 
-**The target**
+**$B-1$ negatives (off-diagonal)**
 
-- Row $i$: correct class is caption $i$
-- Column $j$: correct class is image $j$
-- The question: *"which caption belongs with this image?"*
-
-</div>
+- Every other caption in the batch
+- The gradient pushes each one **down**, the most similar (hardest) ones the most
 
 </div>
 
-Larger batches: **harder negatives**, sharper embedding space. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+</div>
+
+The full loss averages this over rows (image to text) and columns (text to image). CLIP trained with $B = 32{,}768$, so each image was contrasted against 32,767 wrong captions per step. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -1633,14 +1746,24 @@ CLIP has no classifier head, yet it can classify:
 
 ## What CLIP Is Not
 
-CLIP aligns **global** image and text embeddings. That is all.
+CLIP aligns one **global** image vector with one global caption vector, and nothing finer.
 
 <div class="card-grid cols-2">
-<div class="card"><h4>It cannot, by itself</h4><p>Produce detailed answers, follow instructions, count reliably, localize objects precisely, or reason over multiple images.</p></div>
-<div class="card"><h4>What it is</h4><p>An <strong>alignment foundation</strong>: a shared space to build on, not a full visual assistant.</p></div>
+<div class="card"><h4>A bag of words</h4><p>CLIP often scores "the horse is eating the grass" and "the grass is eating the horse" almost the same. It matches which words appear, not how they relate (Yuksekgonul et al., 2023).</p></div>
+<div class="card"><h4>Not an assistant</h4><p>By itself it cannot produce detailed answers, follow instructions, count reliably, localize objects precisely, or reason over multiple images.</p></div>
 </div>
 
-An assistant needs the language model to **condition on visual information while it generates**. Next section. <!-- .element: class="text-lg" -->
+Why: the contrastive task rarely needs word order. A batch almost never contains two captions with the same words in a different order, so ignoring order costs nothing during training. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="clip-slot" -->
+
+## Where CLIP Fits in the Diagram
+
+<div class="img-figure"><img src="module_08_multimodal/images/arch_clip.svg" alt="The carried diagram with only the image encoder slot filled: a CLIP or SigLIP encoder trained contrastively; connector and language model still to come" style="max-height: 360px;"></div>
+
+CLIP fills one slot: a pretrained **image encoder** whose features already sit near related text. An assistant also needs the language model to read those features while it generates, which is the next section. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1652,7 +1775,7 @@ An assistant needs the language model to **condition on visual information while
 - Contrastive learning still works: **scale and diversity** create useful pressure across millions of pairs
 - The cost: **caption bias**, missing whatever the captions systematically leave out
 
-Weak, abundant supervision beats strong, scarce supervision. A recurring theme across web-scale pretraining. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+Lots of noisy labels beat a few clean ones here. Whisper, later in this module, makes the same trade for speech. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -1667,24 +1790,13 @@ The bridge
 
 <!-- .slide: id="bridge-recipe" -->
 
-## The Stitched Recipe: Three Pieces
+## Encoder, Connector, Language Model
 
-The language model must **condition on an image while generating text autoregressively**. The cascaded recipe bolts together three parts:
+To answer a question about an image, the language model has to read the image while it generates text. The usual recipe joins three parts:
 
-<div class="diagram"><svg viewBox="0 0 1000 210" width="1000" role="img" aria-label="pipeline: image to vision encoder to connector to language model to text, with each arrow labeled by what flows">
-<g text-anchor="middle">
-<rect x="15" y="80" width="110" height="70" rx="8" fill="#1b2436" stroke="#4a9eff" stroke-width="2"/><text x="70" y="110" fill="#e8eaf0" font-size="14">Image</text><text x="70" y="130" fill="#8fa0bd" font-size="11">H x W x C</text>
-<rect x="200" y="80" width="150" height="70" rx="8" fill="#1b2436" stroke="#f5a623" stroke-width="2"/><text x="275" y="110" fill="#e8eaf0" font-size="14">Vision encoder</text><text x="275" y="130" fill="#8fa0bd" font-size="11">pixels to features</text>
-<rect x="425" y="80" width="150" height="70" rx="8" fill="#1b2436" stroke="#50c878" stroke-width="2"/><text x="500" y="110" fill="#e8eaf0" font-size="14">Connector</text><text x="500" y="130" fill="#8fa0bd" font-size="11">features to LLM width</text>
-<rect x="650" y="80" width="160" height="70" rx="8" fill="#1b2436" stroke="#4a9eff" stroke-width="2"/><text x="730" y="106" fill="#e8eaf0" font-size="14">Language model</text><text x="730" y="126" fill="#8fa0bd" font-size="11">attends over all vectors</text>
-<rect x="885" y="80" width="100" height="70" rx="8" fill="#1b2436" stroke="#a06bd4" stroke-width="2"/><text x="935" y="115" fill="#e8eaf0" font-size="14">Text</text></g>
-<g stroke="#8fa0bd" stroke-width="2" fill="none" marker-end="url(#ah8)"><line x1="125" y1="115" x2="197" y2="115"/><line x1="350" y1="115" x2="422" y2="115"/><line x1="575" y1="115" x2="647" y2="115"/><line x1="810" y1="115" x2="882" y2="115"/></g>
-<g text-anchor="middle" fill="#c7d0e0" font-size="10.5"><text x="161" y="66">raw</text><text x="161" y="78">pixels</text><text x="386" y="66">patch</text><text x="386" y="78">features</text><text x="611" y="66">LLM-width</text><text x="611" y="78">vectors</text><text x="846" y="66">next-token</text><text x="846" y="78">logits</text></g>
-<g text-anchor="middle" font-size="11" fill="#6f7f9c"><text x="70" y="172">input</text><text x="935" y="172">output</text></g>
-<defs><marker id="ah8" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#8fa0bd"/></marker></defs>
-</svg></div>
+<div class="img-figure"><img src="module_08_multimodal/images/arch_generic.svg" alt="The carried diagram filled in: image to vision encoder to connector to language model, alongside the text prompt lane" style="max-height: 340px;"></div>
 
-The vision encoder is often **pretrained separately** (like CLIP). The connector and how the LLM reads visual features are the new work. <!-- .element: class="text-lg" -->
+The vision encoder is usually **pretrained separately** (like CLIP). The new work is the connector and how the LLM reads its output. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1709,7 +1821,7 @@ Then **prepend** the projected vectors ahead of the text:
 <defs><marker id="ahp" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#8fa0bd"/></marker></defs>
 </svg></div>
 
-The LLM never learns whether the first vectors came from words or pixels. Attention mixes vectors; a visual prefix is just a prefix the text attends back to. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+Nothing tells the LLM whether a vector came from a word or a patch. Attention treats the visual vectors like any other earlier positions in the context. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -1743,85 +1855,60 @@ $$\mathcal{L} = -\frac{1}{|R|}\sum_{t \in R}\log p_\theta\left(x_t \mid \textcol
 </table>
 </div>
 
-They differ in **how much of the stack is trained** and **where the visual information enters**. All four end at a transformer predicting the next text token. <!-- .element: class="text-lg" -->
+They differ in **how much of the stack is trained** and **where the visual information enters**. All four still train a transformer with next-token prediction. <!-- .element: class="text-lg" -->
 
 ---
 
-<!-- .slide: id="fig-flamingo-blip" -->
+<!-- .slide: id="bridge-llava" -->
 
-<div class="figure-card">
+## LLaVA: Project Every Patch Into the Prompt
 
-![Jean-Baptiste Alayrac and the Flamingo team](module_08_multimodal/images/alayrac.png)
+<div class="img-figure"><img src="module_08_multimodal/images/arch_llava.svg" alt="LLaVA in the carried diagram: frozen CLIP ViT-L/14, trained two-layer MLP projector, trained Vicuna LLM; 576 visual tokens enter the input sequence" style="max-height: 330px;"></div>
 
-<div class="figure-info">
+- All 576 patch features become prefix tokens, so the LLM attends to every patch directly
+- Simple and strong, but the visual prefix is long, and it grows with resolution
 
-## Jean-Baptiste Alayrac and the Flamingo team <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### Flamingo: a Visual Language Model for Few-Shot Learning (DeepMind, 2022)
-
-- Connected **frozen** language models to visual inputs with gated cross-attention
-- Learns few-shot from a handful of interleaved image-text examples in context
-- <a href="https://arxiv.org/abs/2204.14198">arXiv:2204.14198</a>
-
-</div>
-
-</div>
-
-</div>
+Liu et al., "Visual Instruction Tuning" (2023), <a href="https://arxiv.org/abs/2304.08485">arXiv:2304.08485</a>; LLaVA-1.5, <a href="https://arxiv.org/abs/2310.03744">arXiv:2310.03744</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
 ---
 
-<!-- .slide: id="fig-blip2" -->
+<!-- .slide: id="bridge-blip2" -->
 
-<div class="figure-card">
+## BLIP-2: Compress Before the LLM Sees It
 
-![Junnan Li and collaborators](module_08_multimodal/images/junnan_li.jpg)
+<div class="img-figure"><img src="module_08_multimodal/images/arch_blip2.svg" alt="BLIP-2 in the carried diagram: frozen EVA-CLIP encoder, trained Q-Former with 32 learned queries, frozen LLM; only 32 visual tokens enter" style="max-height: 330px;"></div>
 
-<div class="figure-info">
+- 32 learned queries cross-attend to the patch features and pull out what matters for language
+- Both large models stay frozen; only the Q-Former and a linear layer train
 
-## Junnan Li and collaborators <!-- .element: class="fragment fade-in" -->
-
-<div class="fragment fade-in">
-
-### BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Encoders and LLMs (Salesforce Research, 2023)
-
-- Introduced the **Q-Former**: a lightweight bridge that queries a frozen image encoder
-- Hands a compact set of vectors to a frozen LLM, so neither large model is retrained
-- Strong results at a fraction of the training cost &mdash; <a href="https://arxiv.org/abs/2301.12597">arXiv:2301.12597</a>
-
-</div>
-
-</div>
-
-</div>
+Li et al., "BLIP-2" (Salesforce, 2023), <a href="https://arxiv.org/abs/2301.12597">arXiv:2301.12597</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
 ---
 
-<!-- .slide: id="fig-llava" -->
+<!-- .slide: id="bridge-flamingo" -->
 
-<div class="figure-card">
+## Flamingo: Visual Tokens as Keys and Values
 
-![Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee](module_08_multimodal/images/haotian_liu.jpg)
+<div class="img-figure"><img src="module_08_multimodal/images/arch_flamingo.svg" alt="Flamingo in the carried diagram: frozen NFNet encoder, trained Perceiver Resampler, frozen Chinchilla LLM with trained gated cross-attention layers inserted between its blocks" style="max-height: 330px;"></div>
 
-<div class="figure-info">
+- The image never joins the text sequence; new cross-attention layers read it at several depths
+- Each new layer starts gated to zero, so on day one the frozen LLM behaves exactly as before
 
-## Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee <!-- .element: class="fragment fade-in" -->
+Alayrac et al., "Flamingo" (DeepMind, 2022), <a href="https://arxiv.org/abs/2204.14198">arXiv:2204.14198</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
-<div class="fragment fade-in">
+---
 
-### Visual Instruction Tuning (LLaVA, 2023)
+<!-- .slide: id="bridge-fusion" -->
 
-- Popularized **visual instruction tuning**: a simple projector from a frozen CLIP vision encoder into an LLM
-- Finetuned on image-dialogue data, much of it generated by a stronger model
-- Cheap, effective, and the template this module's exercise follows &mdash; <a href="https://arxiv.org/abs/2304.08485">arXiv:2304.08485</a>
+## Early Fusion: Image Ids in the Vocabulary
 
-</div>
+<div class="img-figure"><img src="module_08_multimodal/images/arch_fusion.svg" alt="Early fusion in the carried diagram: a VQ image tokenizer turns the image into 1,024 discrete ids that go into a shared embedding table; no connector, because the ids go straight into the embedding table; one transformer trained from scratch" style="max-height: 330px;"></div>
 
-</div>
+- A VQ tokenizer (the VQ-VAE section) turns the image into codebook ids
+- The ids are added to the vocabulary and looked up in the same embedding table as text ids, so there is nothing for a connector to do
+- One transformer trains on the mixed sequences and can **output** image tokens too
 
-</div>
+Chameleon Team, "Chameleon: Mixed-Modal Early-Fusion Foundation Models" (Meta, 2024), <a href="https://arxiv.org/abs/2405.09818">arXiv:2405.09818</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
 ---
 
@@ -1848,33 +1935,43 @@ A main architecture shift of 2024&ndash;2025.
 
 <!-- .slide: id="bridge-projector-matters" -->
 
-## The Projector Is Small but Not Trivial
+## A Small Projector Still Matters
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
 <div>
 
-**Why it looks trivial**
+**It is tiny**
 
-- Often a single linear layer
-- A few hundred thousand parameters against a multi-billion-parameter LLM
+- Often a single linear layer or a two-layer MLP
+- About 5M to 30M parameters in LLaVA, against a 7B or 13B LLM
 
 </div>
 
 <div>
 
-**Why it is not**
+**It does the translation**
 
-- It learns a **coordinate transformation** from vision-feature space to LLM language space
-- A bad projector makes a strong vision encoder **useless** to the LLM
-
-</div>
+- Its weights are **trained** to map vision-feature space into the LLM's embedding space, a learned change of coordinates
+- If that mapping is poor, the LLM cannot use even a strong vision encoder
 
 </div>
 
-Tradeoff: **freezing** large encoders is cheaper and more stable; **jointly tuning** more of the stack can improve alignment at higher cost. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+</div>
+
+Freezing the large encoder is cheaper and more stable. Tuning more of the stack can improve alignment but costs more. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 The exercise builds this bridge: project a tiny image embedding into NanoGPT's hidden size, train it to caption. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="bridge-train-stages" -->
+
+## Multimodal Training Adds a Stage
+
+<div class="img-figure"><img src="module_08_multimodal/images/train_stages.svg" alt="Four training stages: pretrained encoder and LLM; modality alignment where only the projector trains on image-caption pairs; multimodal SFT where projector and LLM train on image conversations; preference tuning" style="max-height: 370px;"></div>
+
+The text model already went through pretraining, SFT, and RL. Before it can follow image instructions, a new **alignment** stage teaches it to read the encoder's output at all. Then comes assistant behavior. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1944,11 +2041,11 @@ Chat templates gain a **placeholder** for the non-text input:
 
 <div class="card-grid cols-3">
 <div class="card"><h4>Captions and alt text</h4><p>Broad image-language alignment</p></div>
-<div class="card"><h4>Interleaved documents</h4><p>PDFs, notebooks, manuals &mdash; multi-image context</p></div>
+<div class="card"><h4>Interleaved documents</h4><p>PDFs, notebooks, and manuals with several images</p></div>
 <div class="card"><h4>Visual QA</h4><p>Targeted answers to specific questions</p></div>
 <div class="card"><h4>OCR and documents</h4><p>Reading text, forms, and layout in images</p></div>
 <div class="card"><h4>Referring expressions</h4><p>Locating objects named by language</p></div>
-<div class="card"><h4>Synthetic dialogue</h4><p>Generated by a stronger model, filtered, then finetuned &mdash; echoing Module 6</p></div>
+<div class="card"><h4>Synthetic dialogue</h4><p>Written by a stronger model and filtered</p></div>
 </div>
 
 The synthetic route repeats Module 6: a stronger model writes the training data, a filter keeps the good parts. <!-- .element: class="text-lg" -->
@@ -1972,7 +2069,7 @@ The stress test is **spatial language**:
 <div class="card"><p>nearest / farthest</p></div>
 </div>
 
-Trivial for humans; they expose whether the model **uses visual layout** or guesses from language patterns. <!-- .element: class="text-lg" -->
+These are easy for people. For a model, they show whether it **uses the visual layout** or guesses from language patterns. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2010,30 +2107,56 @@ Instruction tuning makes the model more helpful. It can also teach **shortcut be
 
 ## The Language-Prior Shortcut
 
-If training answers carry **strong language priors**, the model learns to answer from **text patterns**, not the image.
+If training answers carry **strong language priors**, the model learns to answer from text patterns instead of the image. If 90% of "what color is the banana?" answers are "yellow," a model scores well without looking.
 
-- If 90% of "what color is the banana?" answers are "yellow," a model scores well without looking
-- Defense: **controlled data**. Balance the answers so language alone cannot solve the task
-- Then a correct answer is **evidence the image was used**
+<div class="slide-columns" style="grid-template-columns: 0.7fr 1.5fr; gap: 22px; align-items: center;">
 
-The exercise uses synthetic, **balanced** scenes for this reason: every color and shape is equally likely, so only reading the image answers "what color is on top?" <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+<div>
+
+<div class="img-figure"><img src="module_08_multimodal/images/vlm_biased_zebra.png" alt="A photo of a zebra edited to have five legs" style="max-height: 200px;"></div>
+
+"How many legs does this animal have?" The edited zebra has **5**. Models tend to answer with the prior, **4**.
+
+</div>
+
+<div>
+
+<div class="img-figure"><img src="module_08_multimodal/images/vlm_biased_overview.png" alt="VLMBias examples: a three-legged chicken, a four-pointed Mercedes star, a 14-stripe US flag; Gemini 2.5 Pro, Claude Sonnet 3.7, GPT-4.1, o3 and o4-mini mostly give the textbook count" style="max-height: 320px;"></div>
+
+</div>
+
+</div>
+
+Across 7 domains, frontier models averaged **17% accuracy** counting edited subjects (Vo et al., "Vision Language Models are Biased," 2025, <a href="https://arxiv.org/abs/2505.23941">arXiv:2505.23941</a>). The defense is **balanced data**, like the exercise's synthetic scenes. <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
 ---
 
-<!-- .slide: id="sq-ocr-trap" -->
+<!-- .slide: id="sq-perception-reasoning" -->
 
-## <span class="side-quest-badge">Side Quest</span> The OCR Trap
+## <span class="side-quest-badge">Side Quest</span> Perception or Reasoning?
 
-The answer depends on a **tiny** word or axis label. The model gets it wrong. Which failure was it?
+<div class="slide-columns" style="grid-template-columns: 0.9fr 1.1fr; gap: 30px; align-items: center;">
 
-<div class="card-grid cols-4">
-<div class="card"><h4>Reasoning</h4><p>It read everything but reasoned wrongly</p></div>
-<div class="card"><h4>Perception</h4><p>It never encoded the relevant region</p></div>
-<div class="card"><h4>Resolution</h4><p>Resizing erased the pixels entirely</p></div>
-<div class="card"><h4>OCR</h4><p>It saw the text but misread the characters</p></div>
+<div>
+
+<div class="img-figure"><img src="module_08_multimodal/images/chart_probe.svg" alt="Bar chart of revenue: Q1 42, Q2 47, Q3 61, Q4 58" style="max-height: 300px;"></div>
+
 </div>
 
-Each has a **different fix**. Calling every visual mistake a "reasoning failure" hides that the model may never have had the information. <!-- .element: class="text-lg" -->
+<div>
+
+"How much did revenue grow from Q2 to Q3?" The right answer is **14**. The model says **19**. Two different bugs give that answer:
+
+- **Perception**: it read Q3 as 66, then subtracted correctly
+- **Reasoning**: it read 47 and 61 correctly, then subtracted wrong
+
+To tell them apart, ask it to list every bar's value first, or hand it the numbers as text. If the text version is right, the model never had the right numbers.
+
+</div>
+
+</div>
+
+The fixes differ: higher resolution or a tighter crop when perception failed, reasoning-focused training when the arithmetic failed. Calling every miss a "reasoning failure" hides which one you need. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2055,30 +2178,18 @@ A waveform is a **sequence of amplitude values**, thousands per second. Too raw 
 <div class="card-grid cols-3">
 <div class="card"><h4>Spectrograms</h4><p>Time-frequency images the model can patch like a picture</p></div>
 <div class="card"><h4>Learned embeddings</h4><p>Continuous features from an audio encoder</p></div>
-<div class="card"><h4>Codec tokens</h4><p>Discrete codebook entries &mdash; audio as a token sequence</p></div>
+<div class="card"><h4>Codec tokens</h4><p>Discrete codebook ids, so audio becomes a token sequence</p></div>
 </div>
 
 Same pattern as images: **compress the high-bandwidth signal into a sequence**, discrete or continuous. <!-- .element: class="text-lg" -->
 
 ---
 
-<!-- .slide: id="beyond-speech" -->
-
-## Speech, Several Ways
-
-<div class="taxonomy-table">
-<table>
-<thead><tr><th>Framing</th><th>Maps</th></tr></thead>
-<tbody>
-<tr><td><strong>ASR</strong> (recognition)</td><td>audio &rarr; text</td></tr>
-<tr><td><strong>TTS</strong> (synthesis)</td><td>text &rarr; audio</td></tr>
-<tr><td><strong>Speech-language model</strong></td><td>speech &rarr; text or speech</td></tr>
-<tr><td><strong>Spoken assistant</strong></td><td>handles content <em>and</em> paralinguistics: timing, tone, speaker turns</td></tr>
-</tbody>
-</table>
-</div>
-
-A spoken assistant models more than the words: **how** something is said carries meaning too. <!-- .element: class="text-lg" -->
+<section id="beyond-audio-anim">
+  <div class="video-container">
+    <video class="manim-stepper" data-manim-scene="audiotokens" preload="auto"></video>
+  </div>
+</section>
 
 ---
 
@@ -2098,7 +2209,7 @@ A spoken assistant models more than the words: **how** something is said carries
 
 - Trained speech recognition on 680,000 hours of noisy, multilingual web audio
 - Reached robust transcription without a small, clean, hand-labeled corpus
-- The same lesson as CLIP: weak, abundant supervision at scale wins
+- Same trade as CLIP: many noisy labels instead of a few clean ones
 
 </div>
 
@@ -2108,16 +2219,38 @@ A spoken assistant models more than the words: **how** something is said carries
 
 ---
 
+<!-- .slide: id="beyond-audio-continuous" -->
+
+## Audio as Continuous Vectors
+
+<div class="img-figure"><img src="module_08_multimodal/images/arch_audio_enc.svg" alt="The carried diagram for audio: waveform to a Whisper-style encoder to pooling and projector to the language model" style="max-height: 330px;"></div>
+
+- Audio becomes continuous vectors, so it needs a projector to reach the LLM's width, just as image patches did
+- Whisper's encoder turns 30 s into 1,500 vectors; pooling halves that before the LLM
+- Good for **understanding** speech, but the LLM can only answer in text
+
+---
+
+<!-- .slide: id="beyond-audio-codec" -->
+
+## Audio as Discrete Codec Tokens
+
+<div class="img-figure"><img src="module_08_multimodal/images/arch_audio_codec.svg" alt="The carried diagram for codec audio: a neural codec turns audio into codebook ids that share the embedding table with text; the model can output audio tokens that a codec decoder turns back into sound" style="max-height: 330px;"></div>
+
+- A neural codec quantizes audio the way a VQ-VAE quantizes images; the ids join the vocabulary, so the model can **speak** by predicting audio tokens
+- The tokens keep tone, timing, and speaker identity, which a transcript throws away
+- Spoken assistants such as Moshi (Kyutai, 2024) work this way
+- The two audio slides differ in **representation**, not training recipe. Moshi adds codec tokens to a pretrained text LLM; it is not trained from scratch like Chameleon
+
+---
+
 <!-- .slide: id="beyond-video" -->
 
 ## Video Adds a Time Axis
 
-- **Sample frames**, often sparsely
-- Encode each with an image encoder
-- Add **temporal** position information
-- Feed the features into the language model
+<div class="img-figure"><img src="module_08_multimodal/images/arch_video.svg" alt="The carried diagram for video: sample frames, encode each with an image encoder, pool over time, project into the language model" style="max-height: 320px;"></div>
 
-The catch: tokens grow with **frames &times; resolution &times; patch density**. A short clip can dwarf a long text document. <!-- .element: class="text-lg" style="margin-top: 8px;" -->
+Sample frames, encode each with an image encoder, add **temporal** positions, pool, project. Tokens grow with **frames &times; resolution &times; patch density**, so a short clip can outweigh a long document. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2126,22 +2259,6 @@ The catch: tokens grow with **frames &times; resolution &times; patch density**.
     <video class="manim-stepper" data-manim-scene="videobudget" preload="auto"></video>
   </div>
 </section>
-
----
-
-<!-- .slide: id="beyond-budget-math" -->
-
-## Brutal Token Cost
-
-A 10-second clip at 30 fps is **300 frames**. At $224 \times 224$ with $16 \times 16$ patches, each frame is 196 tokens:
-
-$$300 \times 196 = \textcolor{#f5a623}{58{,}800} \text{ visual tokens}$$
-
-**More than half** a 100k context window, before the prompt, answer, or audio. Double the resolution to $448 \times 448$ and each frame is 784 tokens:
-
-$$300 \times 784 = \textcolor{#e05252}{235{,}200} \text{ visual tokens}$$
-
-Now it **does not fit** in 100k at all. Attention cost scales with the **square** of sequence length. <!-- .element: class="text-lg" style="margin-top: 8px;" -->
 
 ---
 
@@ -2158,20 +2275,27 @@ Now it **does not fit** in 100k at all. Attention cost scales with the **square*
 <div class="card"><h4>Longer context</h4><p>Gemini-scale windows push the ceiling up</p></div>
 </div>
 
-Context length is only half the problem. The quadratic attention cost comes with it. <!-- .element: class="text-lg" -->
+Context length is only half the problem: attention cost grows with the square of the sequence length. <!-- .element: class="text-lg" -->
 
 ---
 
 <!-- .slide: id="beyond-temporal" -->
 
-## The Hard Part Is Time, Not Objects
+## Why Time Is Hard for a Sequence Model
 
-Seeing objects frame by frame is easy. Many questions require **temporal reasoning**:
+LLMs handle sequences well when each token carries meaning. Video frames do not:
 
-- What **changed** between these moments?
-- Which event **caused** another?
-- What happened **before** the person opened the door?
-- Did the action **complete** successfully?
+<div class="img-figure"><img src="module_08_multimodal/images/frame_sampling.svg" alt="To-scale ten second timeline: frames sampled once per second; a half-second door-opening event falls between the 4 s and 5 s samples" style="max-height: 230px;"></div>
+
+- Neighboring frames are nearly identical. The information is in the small **differences**, and sampling and pooling discard those first
+- Each frame is encoded on its own, so motion must be inferred from a few compressed snapshots
+- Training rarely demands more: many video benchmarks can be answered from **one frame** (Lei et al., 2022; Buch et al., 2022)
+
+---
+
+<!-- .slide: id="beyond-sensors" -->
+
+## Other Streams, Same Bridge
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 30px;">
 
@@ -2179,7 +2303,7 @@ Seeing objects frame by frame is easy. Many questions require **temporal reasoni
 
 **Rate mismatch**
 
-- Audio-video models align streams at different rates
+- Audio-video models align streams that arrive at different rates
 - A frame every ~33 ms; audio samples thousands of times per second
 
 </div>
@@ -2189,7 +2313,7 @@ Seeing objects frame by frame is easy. Many questions require **temporal reasoni
 **Sensors generalize the idea**
 
 - Depth, thermal, radar/RF, lidar, robot joint states, medical images, time series
-- The representation changes; the **bridge problem stays the same**
+- The representation changes; the **bridge problem stays the same**: an encoder, a connector, and the same language model
 
 </div>
 
@@ -2201,7 +2325,7 @@ Seeing objects frame by frame is easy. Many questions require **temporal reasoni
 
 # Evaluation, Safety, and Failure Modes
 
-Why seeing is not believing
+Measuring and attacking multimodal models
 
 
 ---
@@ -2227,11 +2351,11 @@ Ground truth often depends on **visual detail, spatial relations, OCR, temporal 
 
 <!-- .slide: id="eval-hallucination" -->
 
-## Hallucination Is Worse When It Looks Like Evidence
+## Visual Hallucination Follows the Language Prior
 
-- Users treat image-grounded answers as **observational**: the model saw it, so it must be true
-- The model can sound certain about an object, person, or detail **absent** from the image
-- The danger: it borrows the credibility of a photograph for a claim the pixels never supported
+<div class="img-figure"><img src="module_08_multimodal/images/pope_probe.svg" alt="POPE probing: a table with a plate, fork, and cup; asking about a random absent object is easy, a popular absent object is harder, and an absent object that co-occurs with the scene, like a knife, is hardest" style="max-height: 300px;"></div>
+
+POPE (Li et al., 2023) asks yes/no questions about objects that are **not** in the image. Models say "yes" most often for objects that usually appear with what is there. The model is filling in the scene it expects, the same shortcut as the five-legged zebra. A caption that reads like an observation can still come from the prior. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2241,7 +2365,7 @@ Ground truth often depends on **visual detail, spatial relations, OCR, temporal 
 
 <div class="card-grid cols-3">
 <div class="card"><h4>Privacy</h4><p>Faces, addresses, screens, documents, children, bystanders</p></div>
-<div class="card"><h4>Identity and biometrics</h4><p>Face recognition, emotion inference, attribute guessing &mdash; stricter rules than object description</p></div>
+<div class="card"><h4>Identity and biometrics</h4><p>Face recognition, emotion inference, and attribute guessing carry stricter rules than object description</p></div>
 <div class="card"><h4>Prompt injection</h4><p>Text inside an image or document tries to override the user</p></div>
 <div class="card"><h4>Adversarial examples</h4><p>Small pixel changes flip the prediction</p></div>
 <div class="card"><h4>Deepfakes</h4><p>Generation can manufacture persuasive false evidence</p></div>
@@ -2250,11 +2374,29 @@ Ground truth often depends on **visual detail, spatial relations, OCR, temporal 
 
 ---
 
+<!-- .slide: id="eval-adversarial" -->
+
+## An Adversarial Example
+
+<div class="adv-row">
+<figure><img src="module_08_multimodal/images/adv_panda.png" alt="A photo of a panda"><figcaption>"panda"<br>57.7% confidence</figcaption></figure>
+<div class="adv-op">+ 0.007 &times;</div>
+<figure><img src="module_08_multimodal/images/adv_noise.png" alt="Noise pattern: the sign of the gradient of the panda classification loss with respect to each pixel"><figcaption>sign of the gradient of<br>the "panda" loss</figcaption></figure>
+<div class="adv-op">=</div>
+<figure><img src="module_08_multimodal/images/adv_gibbon.png" alt="The same panda photo, visually unchanged"><figcaption>"gibbon"<br>99.3% confidence</figcaption></figure>
+</div>
+
+$$\tilde{x} = x + \epsilon \cdot \mathrm{sign}\left(\nabla_x \mathcal{L}(\theta, x, y)\right)$$
+
+$\mathcal{L}(\theta, x, y)$ is the classifier's cross-entropy loss for the correct label $y$ = panda. Its gradient with respect to the image $x$ tells each **pixel** which way to move to make "panda" less likely, so this is gradient descent run in reverse on the input. The change is invisible to people. The same attack works on a vision encoder inside a multimodal LLM, and there the target can be a whole sentence, such as an injected instruction. Goodfellow et al., 2015, <a href="https://arxiv.org/abs/1412.6572">arXiv:1412.6572</a> <!-- .element: class="text-lg" style="margin-top: 4px;" -->
+
+---
+
 <!-- .slide: id="eval-preprocessing" -->
 
-## Failures Before the Weights
+## Preprocessing
 
-**Preprocessing** can cause the failure before the model runs at all.
+Some failures happen before the model runs.
 
 <div class="card-grid cols-2">
 <div class="card"><h4>Resizing</h4><p>Erases small text before the encoder ever sees it</p></div>
@@ -2263,7 +2405,7 @@ Ground truth often depends on **visual detail, spatial relations, OCR, temporal 
 <div class="card"><h4>Compression</h4><p>Distorts the details the answer depends on</p></div>
 </div>
 
-Product lesson: expose uncertainty when perceptual evidence is weak; never overclaim on **identity, medical, legal, or safety-critical** decisions. <!-- .element: class="text-lg" -->
+A product built on these models should say when the visual evidence is weak, and should not overclaim on **identity, medical, legal, or safety-critical** decisions. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2277,7 +2419,7 @@ Photography is not a neutral sample of reality.
 - Cameras and datasets over-represent some subjects, viewpoints, lighting conditions, and skin tones
 - The model inherits those blind spots and fails hardest on what was rarely photographed
 
-More images do not make a model more objective. They bake in the **bias of who and what gets photographed.** <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+Adding more images does not remove this bias. It adds more of the **same skew in who and what gets photographed.** <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -2294,22 +2436,15 @@ And what evaluation and deployment inherit
 
 ## Name the Full Stack
 
-<div class="card-grid cols-3">
-<div class="card"><h4>1. Encoders</h4><p>Modality-specific front ends: vision, audio, and more</p></div>
-<div class="card"><h4>2. Connector</h4><p>A projector, cross-attention bridge, or shared tokenizer</p></div>
-<div class="card"><h4>3. Language model</h4><p>The transformer that ties it all together</p></div>
-<div class="card"><h4>4. Multimodal SFT</h4><p>Instruction tuning on image-conditioned dialogue</p></div>
-<div class="card"><h4>5. Preference / RL</h4><p>Post-training with feedback (Module 7)</p></div>
-<div class="card"><h4>6. Retrieval and tools</h4><p>Plus the deployment infrastructure around it</p></div>
-</div>
+<div class="img-figure"><img src="module_08_multimodal/images/arch_full_stack.svg" alt="The carried diagram with every slot filled: image, audio, and video encoders (1) feed connectors (2) into one language model (3) beside the text lane; the model calls tools (5) and reads results back; a training loop (4) runs pretraining, alignment, multimodal SFT, and preference tuning, then repeats with new data" style="max-height: 420px;"></div>
 
-**Same transformer, larger interface.** The model still moves vectors through attention layers; the new work is deciding **which vectors represent the non-text input.** <!-- .element: class="text-lg" -->
+(1) encoders, (2) connectors, (3) the same transformer, (4) the training loop from Modules 5 to 7 plus an alignment stage, (5) tools the model calls at run time. The new work is deciding **which vectors represent the non-text input**. <!-- .element: class="text-lg" -->
 
 ---
 
 <!-- .slide: id="stack-throughline" -->
 
-## The Through-Line Is Intact
+## What Changed and What Didn't
 
 <div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
 
@@ -2337,7 +2472,7 @@ And what evaluation and deployment inherit
 
 </div>
 
-Multimodal LLMs are not a new architecture. They are the **same model with components trained on other modalities**. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+A multimodal LLM is the **same model** with extra components that turn other modalities into vectors. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -2349,13 +2484,13 @@ Multimodal LLMs are not a new architecture. They are the **same model with compo
 <table>
 <thead><tr><th>Unified mixed-token model</th><th>Routed product stack</th></tr></thead>
 <tbody>
-<tr><td>One transformer over text, image, audio, video tokens</td><td>A language model, an image encoder, an OCR model, a retriever, and an image generator &mdash; wired together</td></tr>
+<tr><td>One transformer over text, image, audio, video tokens</td><td>A language model wired to an image encoder, an OCR model, a retriever, and an image generator</td></tr>
 <tr><td>The cleanest <strong>research</strong> objective</td><td>Often the cheaper, more <strong>reliable</strong> product</td></tr>
 </tbody>
 </table>
 </div>
 
-The cleanest research architecture is often **not** the best product architecture. A shipping system optimizes reliability, not elegance. <!-- .element: class="text-lg" -->
+Products often choose the routed stack because each part can be tested, swapped, and fixed on its own. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2370,7 +2505,7 @@ Two things get harder once the model reads more than text:
 
 <div class="card-grid cols-2">
 <div class="card"><h4>Vision encoders add latency</h4><p>Extra forward passes before the LLM even starts</p></div>
-<div class="card"><h4>Images add preprocessing</h4><p>Resize, patch, encode &mdash; per request</p></div>
+<div class="card"><h4>Images add preprocessing</h4><p>Resize, patch, and encode on every request</p></div>
 <div class="card"><h4>Visual tokens inflate context</h4><p>Bigger KV cache, more attention cost</p></div>
 <div class="card"><h4>Video and audio strain memory</h4><p>Bandwidth becomes the bottleneck</p></div>
 </div>
@@ -2964,6 +3099,29 @@ What is the difference between a **text token**, a **patch embedding**, and a **
 
 ---
 
+<!-- .slide: id="quiz-vq" -->
+
+## Continuous or Discrete?
+
+<div class="quiz-prompt">
+
+You want one model that can both describe a photo and draw a new one. Why would you tokenize images with a VQ-VAE instead of feeding it projected ViT patch embeddings, and what do you give up?
+
+</div>
+
+<div class="fragment note quiz-answer">
+
+**Short answer: generating an image means predicting tokens with a softmax, which needs a finite vocabulary; VQ codebook ids provide one. The price is detail lost to quantization.**
+
+- A projected patch embedding can be read by the LLM, but there is no list of possible patch vectors to choose from at the output
+- VQ ids join the text vocabulary, so the same next-token loss trains both reading and writing images
+- Each region is forced onto one of $K$ codes, so fine detail such as small text can be lost
+- For understanding-only tasks, continuous features usually keep more of the image
+
+</div>
+
+---
+
 <!-- .slide: id="quiz-clip-diagonal" -->
 
 ## CLIP's Diagonal
@@ -3077,24 +3235,24 @@ What failure would suggest the model is answering from **language priors** inste
 
 ---
 
-<!-- .slide: id="quiz-ocr" -->
+<!-- .slide: id="quiz-perception" -->
 
-## Not Always Reasoning
+## Perception or Reasoning?
 
 <div class="quiz-prompt">
 
-Why are **OCR and chart-reading** failures not always **reasoning** failures?
+A model looks at a photo of a parking lot and answers "How many red cars are there?" with **3**. There are **4**. Describe one experiment that tells you whether it failed at **perception** or at **reasoning**.
 
 </div>
 
 <div class="fragment note quiz-answer">
 
-**Short answer: the model may never have encoded the relevant pixels; if the text was erased by resizing or too small to represent, the information was gone before any reasoning happened.**
+**Short answer: remove the perception step. Give the model the same question with the scene described in text (or ask it to list every car and its color first). If it now counts 4, the miss was perception; if it still says 3, the counting itself is wrong.**
 
-- Resizing can erase a tiny axis label; a coarse patch grid blurs small characters; compression destroys fine detail
-- If the pixels carrying the answer were **never represented**, no reasoning can recover them
-- The failure is perception, resolution, or OCR, not logic
-- The distinction matters because the fixes differ: higher resolution, tighter cropping, or a dedicated OCR path, versus better reasoning
+- Counting has two steps: find each red car (perception), then count them (reasoning)
+- A text description or a listed inventory isolates the second step
+- Also try a higher-resolution crop: if the fourth car was tiny or cut off, the pixels never reached the encoder
+- The two failures need different fixes, so a single accuracy number cannot tell you what to change
 
 </div>
 
@@ -3104,7 +3262,7 @@ Why are **OCR and chart-reading** failures not always **reasoning** failures?
 
 # Questions?
 
-Next: Module 9 &mdash; Evaluation and Benchmarking
+Next: Module 9, Evaluation and Benchmarking
 
 
 ---
@@ -3117,10 +3275,12 @@ Next: Module 9 &mdash; Evaluation and Benchmarking
   <div>
     <h3>Vision Encoders and Alignment</h3>
     <ul class="resource-list">
+      <li>van den Oord et al., "Neural Discrete Representation Learning" (VQ-VAE), <a href="https://arxiv.org/abs/1711.00937">arXiv:1711.00937</a></li>
       <li>Dosovitskiy et al., "An Image is Worth 16x16 Words" (ViT), <a href="https://arxiv.org/abs/2010.11929">arXiv:2010.11929</a></li>
       <li>Radford et al., "Learning Transferable Visual Models From Natural Language Supervision" (CLIP), <a href="https://arxiv.org/abs/2103.00020">arXiv:2103.00020</a></li>
       <li>Jia et al., "Scaling Up Visual and Vision-Language Representation Learning" (ALIGN), <a href="https://arxiv.org/abs/2102.05918">arXiv:2102.05918</a></li>
       <li>Darcet et al., "Vision Transformers Need Registers," <a href="https://arxiv.org/abs/2309.16588">arXiv:2309.16588</a></li>
+      <li>Yuksekgonul et al., "When and Why Vision-Language Models Behave like Bags-of-Words," <a href="https://arxiv.org/abs/2210.01936">arXiv:2210.01936</a></li>
       <li>Girdhar et al., "ImageBind: One Embedding Space To Bind Them All," <a href="https://arxiv.org/abs/2305.05665">arXiv:2305.05665</a></li>
     </ul>
   </div>
@@ -3130,6 +3290,7 @@ Next: Module 9 &mdash; Evaluation and Benchmarking
       <li>Alayrac et al., "Flamingo: a Visual Language Model for Few-Shot Learning," <a href="https://arxiv.org/abs/2204.14198">arXiv:2204.14198</a></li>
       <li>Li et al., "BLIP-2," <a href="https://arxiv.org/abs/2301.12597">arXiv:2301.12597</a></li>
       <li>Liu et al., "Visual Instruction Tuning" (LLaVA), <a href="https://arxiv.org/abs/2304.08485">arXiv:2304.08485</a></li>
+      <li>Liu et al., "Improved Baselines with Visual Instruction Tuning" (LLaVA-1.5), <a href="https://arxiv.org/abs/2310.03744">arXiv:2310.03744</a></li>
       <li>Dai et al., "InstructBLIP," <a href="https://arxiv.org/abs/2305.06500">arXiv:2305.06500</a></li>
       <li>Team Chameleon, "Mixed-Modal Early-Fusion Foundation Models," <a href="https://arxiv.org/abs/2405.09818">arXiv:2405.09818</a></li>
       <li>OpenAI, "Hello GPT-4o," <a href="https://openai.com/index/hello-gpt-4o/">openai.com</a></li>
@@ -3139,9 +3300,12 @@ Next: Module 9 &mdash; Evaluation and Benchmarking
     <h3>Audio, Video, and Evaluation</h3>
     <ul class="resource-list">
       <li>Radford et al., "Robust Speech Recognition" (Whisper), <a href="https://arxiv.org/abs/2212.04356">arXiv:2212.04356</a></li>
+      <li>D&eacute;fossez et al., "High Fidelity Neural Audio Compression" (EnCodec), <a href="https://arxiv.org/abs/2210.13438">arXiv:2210.13438</a></li>
       <li>Rubenstein et al., "AudioPaLM," <a href="https://arxiv.org/abs/2306.12925">arXiv:2306.12925</a></li>
       <li>Lin et al., "Video-LLaVA," <a href="https://arxiv.org/abs/2311.10122">arXiv:2311.10122</a></li>
       <li>Gemini Team, "Gemini 1.5," <a href="https://arxiv.org/abs/2403.05530">arXiv:2403.05530</a></li>
+      <li>Vo et al., "Vision Language Models are Biased," <a href="https://arxiv.org/abs/2505.23941">arXiv:2505.23941</a> &middot; Li et al., "POPE," <a href="https://arxiv.org/abs/2305.10355">arXiv:2305.10355</a></li>
+      <li>Goodfellow et al., "Explaining and Harnessing Adversarial Examples," <a href="https://arxiv.org/abs/1412.6572">arXiv:1412.6572</a></li>
       <li>Yue et al., "MMMU," <a href="https://arxiv.org/abs/2311.16502">arXiv:2311.16502</a> &middot; Lu et al., "MathVista," <a href="https://arxiv.org/abs/2310.02255">arXiv:2310.02255</a></li>
     </ul>
   </div>
@@ -3175,6 +3339,19 @@ window.ASSET_BASE = "module_08_multimodal/";
         'VideoBudgetScene_0001_frames.mp4',
         'VideoBudgetScene_0002_budget.mp4',
         'VideoBudgetScene_0003_overflow.mp4'
+      ],
+      'posembed': [
+        'PosEmbedScene_0000_grid.mp4',
+        'PosEmbedScene_0001_flatten.mp4',
+        'PosEmbedScene_0002_add.mp4',
+        'PosEmbedScene_0003_similarity.mp4'
+      ],
+      'audiotokens': [
+        'AudioTokensScene_0000_wave.mp4',
+        'AudioTokensScene_0001_spectrogram.mp4',
+        'AudioTokensScene_0002_encoder.mp4',
+        'AudioTokensScene_0003_codec.mp4',
+        'AudioTokensScene_0004_sequence.mp4'
       ]
     },
     widgets: {}

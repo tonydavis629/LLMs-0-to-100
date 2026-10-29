@@ -28,6 +28,19 @@ What is the difference between a **text token**, a **patch embedding**, and a **
 
 ---
 
+:::quiz id="quiz-vq" title="Continuous or Discrete?"
+You want one model that can both describe a photo and draw a new one. Why would you tokenize images with a VQ-VAE instead of feeding it projected ViT patch embeddings, and what do you give up?
++++
+**Short answer: generating an image means predicting tokens with a softmax, which needs a finite vocabulary; VQ codebook ids provide one. The price is detail lost to quantization.**
+
+- A projected patch embedding can be read by the LLM, but there is no list of possible patch vectors to choose from at the output
+- VQ ids join the text vocabulary, so the same next-token loss trains both reading and writing images
+- Each region is forced onto one of $K$ codes, so fine detail such as small text can be lost
+- For understanding-only tasks, continuous features usually keep more of the image
+:::
+
+---
+
 :::quiz id="quiz-clip-diagonal" title="CLIP's Diagonal"
 In CLIP, why does the similarity matrix have exactly **one correct caption per image** and **one correct image per caption**?
 +++
@@ -91,13 +104,13 @@ What failure would suggest the model is answering from **language priors** inste
 
 ---
 
-:::quiz id="quiz-ocr" title="Not Always Reasoning"
-Why are **OCR and chart-reading** failures not always **reasoning** failures?
+:::quiz id="quiz-perception" title="Perception or Reasoning?"
+A model looks at a photo of a parking lot and answers "How many red cars are there?" with **3**. There are **4**. Describe one experiment that tells you whether it failed at **perception** or at **reasoning**.
 +++
-**Short answer: the model may never have encoded the relevant pixels; if the text was erased by resizing or too small to represent, the information was gone before any reasoning happened.**
+**Short answer: remove the perception step. Give the model the same question with the scene described in text (or ask it to list every car and its color first). If it now counts 4, the miss was perception; if it still says 3, the counting itself is wrong.**
 
-- Resizing can erase a tiny axis label; a coarse patch grid blurs small characters; compression destroys fine detail
-- If the pixels carrying the answer were **never represented**, no reasoning can recover them
-- The failure is perception, resolution, or OCR, not logic
-- The distinction matters because the fixes differ: higher resolution, tighter cropping, or a dedicated OCR path, versus better reasoning
+- Counting has two steps: find each red car (perception), then count them (reasoning)
+- A text description or a listed inventory isolates the second step
+- Also try a higher-resolution crop: if the fourth car was tiny or cut off, the pixels never reached the encoder
+- The two failures need different fixes, so a single accuracy number cannot tell you what to change
 :::

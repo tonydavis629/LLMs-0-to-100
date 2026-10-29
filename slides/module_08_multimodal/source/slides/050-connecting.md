@@ -5,24 +5,13 @@
 
 <!-- .slide: id="bridge-recipe" -->
 
-## The Stitched Recipe: Three Pieces
+## Encoder, Connector, Language Model
 
-The language model must **condition on an image while generating text autoregressively**. The cascaded recipe bolts together three parts:
+To answer a question about an image, the language model has to read the image while it generates text. The usual recipe joins three parts:
 
-<div class="diagram"><svg viewBox="0 0 1000 210" width="1000" role="img" aria-label="pipeline: image to vision encoder to connector to language model to text, with each arrow labeled by what flows">
-<g text-anchor="middle">
-<rect x="15" y="80" width="110" height="70" rx="8" fill="#1b2436" stroke="#4a9eff" stroke-width="2"/><text x="70" y="110" fill="#e8eaf0" font-size="14">Image</text><text x="70" y="130" fill="#8fa0bd" font-size="11">H x W x C</text>
-<rect x="200" y="80" width="150" height="70" rx="8" fill="#1b2436" stroke="#f5a623" stroke-width="2"/><text x="275" y="110" fill="#e8eaf0" font-size="14">Vision encoder</text><text x="275" y="130" fill="#8fa0bd" font-size="11">pixels to features</text>
-<rect x="425" y="80" width="150" height="70" rx="8" fill="#1b2436" stroke="#50c878" stroke-width="2"/><text x="500" y="110" fill="#e8eaf0" font-size="14">Connector</text><text x="500" y="130" fill="#8fa0bd" font-size="11">features to LLM width</text>
-<rect x="650" y="80" width="160" height="70" rx="8" fill="#1b2436" stroke="#4a9eff" stroke-width="2"/><text x="730" y="106" fill="#e8eaf0" font-size="14">Language model</text><text x="730" y="126" fill="#8fa0bd" font-size="11">attends over all vectors</text>
-<rect x="885" y="80" width="100" height="70" rx="8" fill="#1b2436" stroke="#a06bd4" stroke-width="2"/><text x="935" y="115" fill="#e8eaf0" font-size="14">Text</text></g>
-<g stroke="#8fa0bd" stroke-width="2" fill="none" marker-end="url(#ah8)"><line x1="125" y1="115" x2="197" y2="115"/><line x1="350" y1="115" x2="422" y2="115"/><line x1="575" y1="115" x2="647" y2="115"/><line x1="810" y1="115" x2="882" y2="115"/></g>
-<g text-anchor="middle" fill="#c7d0e0" font-size="10.5"><text x="161" y="66">raw</text><text x="161" y="78">pixels</text><text x="386" y="66">patch</text><text x="386" y="78">features</text><text x="611" y="66">LLM-width</text><text x="611" y="78">vectors</text><text x="846" y="66">next-token</text><text x="846" y="78">logits</text></g>
-<g text-anchor="middle" font-size="11" fill="#6f7f9c"><text x="70" y="172">input</text><text x="935" y="172">output</text></g>
-<defs><marker id="ah8" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#8fa0bd"/></marker></defs>
-</svg></div>
+<div class="img-figure"><img src="images/arch_generic.svg" alt="The carried diagram filled in: image to vision encoder to connector to language model, alongside the text prompt lane" style="max-height: 340px;"></div>
 
-The vision encoder is often **pretrained separately** (like CLIP). The connector and how the LLM reads visual features are the new work. <!-- .element: class="text-lg" -->
+The vision encoder is usually **pretrained separately** (like CLIP). The new work is the connector and how the LLM reads its output. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -47,7 +36,7 @@ Then **prepend** the projected vectors ahead of the text:
 <defs><marker id="ahp" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#8fa0bd"/></marker></defs>
 </svg></div>
 
-The LLM never learns whether the first vectors came from words or pixels. Attention mixes vectors; a visual prefix is just a prefix the text attends back to. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+Nothing tells the LLM whether a vector came from a word or a patch. Attention treats the visual vectors like any other earlier positions in the context. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -81,37 +70,60 @@ $$\mathcal{L} = -\frac{1}{|R|}\sum_{t \in R}\log p_\theta\left(x_t \mid \textcol
 </table>
 </div>
 
-They differ in **how much of the stack is trained** and **where the visual information enters**. All four end at a transformer predicting the next text token. <!-- .element: class="text-lg" -->
+They differ in **how much of the stack is trained** and **where the visual information enters**. All four still train a transformer with next-token prediction. <!-- .element: class="text-lg" -->
 
 ---
 
-<!-- .slide: id="fig-flamingo-blip" -->
+<!-- .slide: id="bridge-llava" -->
 
-:::figure img="images/alayrac.png" name="Jean-Baptiste Alayrac and the Flamingo team" kicker="Flamingo: a Visual Language Model for Few-Shot Learning (DeepMind, 2022)"
-- Connected **frozen** language models to visual inputs with gated cross-attention
-- Learns few-shot from a handful of interleaved image-text examples in context
-- <a href="https://arxiv.org/abs/2204.14198">arXiv:2204.14198</a>
-:::
+## LLaVA: Project Every Patch Into the Prompt
 
----
+<div class="img-figure"><img src="images/arch_llava.svg" alt="LLaVA in the carried diagram: frozen CLIP ViT-L/14, trained two-layer MLP projector, trained Vicuna LLM; 576 visual tokens enter the input sequence" style="max-height: 330px;"></div>
 
-<!-- .slide: id="fig-blip2" -->
+- All 576 patch features become prefix tokens, so the LLM attends to every patch directly
+- Simple and strong, but the visual prefix is long, and it grows with resolution
 
-:::figure img="images/junnan_li.jpg" name="Junnan Li and collaborators" kicker="BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Encoders and LLMs (Salesforce Research, 2023)"
-- Introduced the **Q-Former**: a lightweight bridge that queries a frozen image encoder
-- Hands a compact set of vectors to a frozen LLM, so neither large model is retrained
-- Strong results at a fraction of the training cost &mdash; <a href="https://arxiv.org/abs/2301.12597">arXiv:2301.12597</a>
-:::
+Liu et al., "Visual Instruction Tuning" (2023), <a href="https://arxiv.org/abs/2304.08485">arXiv:2304.08485</a>; LLaVA-1.5, <a href="https://arxiv.org/abs/2310.03744">arXiv:2310.03744</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
 ---
 
-<!-- .slide: id="fig-llava" -->
+<!-- .slide: id="bridge-blip2" -->
 
-:::figure img="images/haotian_liu.jpg" name="Haotian Liu, Chunyuan Li, Yuheng Li, and Yong Jae Lee" kicker="Visual Instruction Tuning (LLaVA, 2023)"
-- Popularized **visual instruction tuning**: a simple projector from a frozen CLIP vision encoder into an LLM
-- Finetuned on image-dialogue data, much of it generated by a stronger model
-- Cheap, effective, and the template this module's exercise follows &mdash; <a href="https://arxiv.org/abs/2304.08485">arXiv:2304.08485</a>
-:::
+## BLIP-2: Compress Before the LLM Sees It
+
+<div class="img-figure"><img src="images/arch_blip2.svg" alt="BLIP-2 in the carried diagram: frozen EVA-CLIP encoder, trained Q-Former with 32 learned queries, frozen LLM; only 32 visual tokens enter" style="max-height: 330px;"></div>
+
+- 32 learned queries cross-attend to the patch features and pull out what matters for language
+- Both large models stay frozen; only the Q-Former and a linear layer train
+
+Li et al., "BLIP-2" (Salesforce, 2023), <a href="https://arxiv.org/abs/2301.12597">arXiv:2301.12597</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
+
+---
+
+<!-- .slide: id="bridge-flamingo" -->
+
+## Flamingo: Visual Tokens as Keys and Values
+
+<div class="img-figure"><img src="images/arch_flamingo.svg" alt="Flamingo in the carried diagram: frozen NFNet encoder, trained Perceiver Resampler, frozen Chinchilla LLM with trained gated cross-attention layers inserted between its blocks" style="max-height: 330px;"></div>
+
+- The image never joins the text sequence; new cross-attention layers read it at several depths
+- Each new layer starts gated to zero, so on day one the frozen LLM behaves exactly as before
+
+Alayrac et al., "Flamingo" (DeepMind, 2022), <a href="https://arxiv.org/abs/2204.14198">arXiv:2204.14198</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
+
+---
+
+<!-- .slide: id="bridge-fusion" -->
+
+## Early Fusion: Image Ids in the Vocabulary
+
+<div class="img-figure"><img src="images/arch_fusion.svg" alt="Early fusion in the carried diagram: a VQ image tokenizer turns the image into 1,024 discrete ids that go into a shared embedding table; no connector, because the ids go straight into the embedding table; one transformer trained from scratch" style="max-height: 330px;"></div>
+
+- A VQ tokenizer (the VQ-VAE section) turns the image into codebook ids
+- The ids are added to the vocabulary and looked up in the same embedding table as text ids, so there is nothing for a connector to do
+- One transformer trains on the mixed sequences and can **output** image tokens too
+
+Chameleon Team, "Chameleon: Mixed-Modal Early-Fusion Foundation Models" (Meta, 2024), <a href="https://arxiv.org/abs/2405.09818">arXiv:2405.09818</a> <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
 ---
 
@@ -138,20 +150,30 @@ A main architecture shift of 2024&ndash;2025.
 
 <!-- .slide: id="bridge-projector-matters" -->
 
-## The Projector Is Small but Not Trivial
+## A Small Projector Still Matters
 
 :::columns cols="2" gap="34px"
-**Why it looks trivial**
+**It is tiny**
 
-- Often a single linear layer
-- A few hundred thousand parameters against a multi-billion-parameter LLM
+- Often a single linear layer or a two-layer MLP
+- About 5M to 30M parameters in LLaVA, against a 7B or 13B LLM
 +++
-**Why it is not**
+**It does the translation**
 
-- It learns a **coordinate transformation** from vision-feature space to LLM language space
-- A bad projector makes a strong vision encoder **useless** to the LLM
+- Its weights are **trained** to map vision-feature space into the LLM's embedding space, a learned change of coordinates
+- If that mapping is poor, the LLM cannot use even a strong vision encoder
 :::
 
-Tradeoff: **freezing** large encoders is cheaper and more stable; **jointly tuning** more of the stack can improve alignment at higher cost. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+Freezing the large encoder is cheaper and more stable. Tuning more of the stack can improve alignment but costs more. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 The exercise builds this bridge: project a tiny image embedding into NanoGPT's hidden size, train it to caption. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="bridge-train-stages" -->
+
+## Multimodal Training Adds a Stage
+
+<div class="img-figure"><img src="images/train_stages.svg" alt="Four training stages: pretrained encoder and LLM; modality alignment where only the projector trains on image-caption pairs; multimodal SFT where projector and LLM train on image conversations; preference tuning" style="max-height: 370px;"></div>
+
+The text model already went through pretraining, SFT, and RL. Before it can follow image instructions, a new **alignment** stage teaches it to read the encoder's output at all. Then comes assistant behavior. <!-- .element: class="text-lg" -->

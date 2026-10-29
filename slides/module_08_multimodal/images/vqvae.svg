@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1030 300" width="1030" height="300" role="img" aria-label="VQ-VAE: an encoder turns the image into a grid of continuous vectors, each is replaced by the id of its nearest codebook vector, and a decoder rebuilds the image from those codebook vectors" font-family="Inter, Helvetica Neue, Helvetica, Arial, sans-serif">
+<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#8fa0bd"/></marker><marker id="ahs" markerWidth="9" markerHeight="9" refX="2" refY="4.5" orient="auto"><path d="M9,0 L0,4.5 L9,9 Z" fill="#8fa0bd"/></marker></defs>
+<rect x="20.0" y="80.0" width="24.0" height="24.0" fill="#2f6db3"/>
+<rect x="44.0" y="80.0" width="24.0" height="24.0" fill="#4a9eff"/>
+<rect x="68.0" y="80.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="92.0" y="80.0" width="24.0" height="24.0" fill="#2f6db3"/>
+<rect x="20.0" y="104.0" width="24.0" height="24.0" fill="#4a9eff"/>
+<rect x="44.0" y="104.0" width="24.0" height="24.0" fill="#c7d0e0"/>
+<rect x="68.0" y="104.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="92.0" y="104.0" width="24.0" height="24.0" fill="#4a9eff"/>
+<rect x="20.0" y="128.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="44.0" y="128.0" width="24.0" height="24.0" fill="#c7d0e0"/>
+<rect x="68.0" y="128.0" width="24.0" height="24.0" fill="#f5a623"/>
+<rect x="92.0" y="128.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="20.0" y="152.0" width="24.0" height="24.0" fill="#2f6db3"/>
+<rect x="44.0" y="152.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="68.0" y="152.0" width="24.0" height="24.0" fill="#4a9eff"/>
+<rect x="92.0" y="152.0" width="24.0" height="24.0" fill="#2f6db3"/>
+<rect x="20" y="80" width="96" height="96" fill="none" stroke="#c7d0e0" stroke-width="1.5"/>
+<text x="68" y="200" fill="#8fa0bd" font-size="12" text-anchor="middle" font-weight="normal">image</text>
+<polyline points="116,128 147,128" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="150" y="88" width="100" height="80" rx="8" fill="#141a28" stroke="#c7d0e0" stroke-width="2"/>
+<text x="200.0" y="124.0" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">Encoder</text>
+<text x="200.0" y="141.0" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">neural net</text>
+<polyline points="250,128 287,128" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="290" y="66" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="334" y="66" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="378" y="66" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="290" y="110" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="334" y="110" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="378" y="110" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="290" y="154" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="334" y="154" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="378" y="154" width="40" height="40" rx="4" fill="#141a28" stroke="#4a9eff" stroke-width="1.5"/>
+<rect x="297" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.88"/>
+<rect x="304" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.42"/>
+<rect x="311" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.65"/>
+<rect x="318" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.35"/>
+<rect x="341" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.42"/>
+<rect x="348" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.65"/>
+<rect x="355" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.35"/>
+<rect x="362" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.76"/>
+<rect x="385" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.65"/>
+<rect x="392" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.35"/>
+<rect x="399" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.76"/>
+<rect x="406" y="74" width="5" height="24" fill="#4a9eff" fill-opacity="0.54"/>
+<rect x="297" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.35"/>
+<rect x="304" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.76"/>
+<rect x="311" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.54"/>
+<rect x="318" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.31"/>
+<rect x="341" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.76"/>
+<rect x="348" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.54"/>
+<rect x="355" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.31"/>
+<rect x="362" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.80"/>
+<rect x="385" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.54"/>
+<rect x="392" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.31"/>
+<rect x="399" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.80"/>
+<rect x="406" y="118" width="5" height="24" fill="#4a9eff" fill-opacity="0.57"/>
+<rect x="297" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.31"/>
+<rect x="304" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.80"/>
+<rect x="311" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.57"/>
+<rect x="318" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.88"/>
+<rect x="341" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.80"/>
+<rect x="348" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.57"/>
+<rect x="355" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.88"/>
+<rect x="362" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.42"/>
+<rect x="385" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.57"/>
+<rect x="392" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.88"/>
+<rect x="399" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.42"/>
+<rect x="406" y="162" width="5" height="24" fill="#4a9eff" fill-opacity="0.65"/>
+<text x="354" y="54" fill="#4a9eff" font-size="12.5" text-anchor="middle" font-weight="600">continuous vectors</text>
+<text x="354" y="218" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">one d-dim vector per cell</text>
+<polyline points="422,128 567,128" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<text x="494" y="108" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">replace each vector</text>
+<text x="494" y="120" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">with its nearest code</text>
+<rect x="434" y="172" width="120" height="9" rx="2" fill="#1b2436"/>
+<rect x="434" y="183" width="120" height="9" rx="2" fill="#1b2436"/>
+<rect x="434" y="194" width="120" height="9" rx="2" fill="#1b2436"/>
+<rect x="434" y="205" width="120" height="9" rx="2" fill="#f5a623"/>
+<rect x="434" y="216" width="120" height="9" rx="2" fill="#1b2436"/>
+<rect x="434" y="227" width="120" height="9" rx="2" fill="#1b2436"/>
+<text x="494" y="252" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">codebook: K learned vectors</text>
+<line x1="494" y1="132" x2="494" y2="168" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="4 3"/>
+<rect x="570" y="66" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="614" y="66" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="658" y="66" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="570" y="110" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="614" y="110" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="658" y="110" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="570" y="154" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="614" y="154" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<rect x="658" y="154" width="40" height="40" rx="4" fill="#141a28" stroke="#f5a623" stroke-width="1.5"/>
+<text x="590" y="91" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">317</text>
+<text x="634" y="91" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">12</text>
+<text x="678" y="91" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">4090</text>
+<text x="590" y="135" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">7</text>
+<text x="634" y="135" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">317</text>
+<text x="678" y="135" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">88</text>
+<text x="590" y="179" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">2051</text>
+<text x="634" y="179" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">12</text>
+<text x="678" y="179" fill="#e8eaf0" font-size="12" text-anchor="middle" font-weight="600">930</text>
+<text x="634" y="54" fill="#f5a623" font-size="12.5" text-anchor="middle" font-weight="600">discrete ids</text>
+<text x="634" y="218" fill="#f5a623" font-size="11" text-anchor="middle" font-weight="normal">what an LLM reads and writes</text>
+<polyline points="702,128 773,128" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<text x="737" y="120" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">look up</text>
+<rect x="776" y="88" width="100" height="80" rx="8" fill="#141a28" stroke="#c7d0e0" stroke-width="2"/>
+<text x="826.0" y="124.0" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">Decoder</text>
+<text x="826.0" y="141.0" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">neural net</text>
+<polyline points="876,128 907,128" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<rect x="910.0" y="80.0" width="24.0" height="24.0" fill="#2f6db3"/>
+<rect x="934.0" y="80.0" width="24.0" height="24.0" fill="#4a9eff"/>
+<rect x="958.0" y="80.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="982.0" y="80.0" width="24.0" height="24.0" fill="#2f6db3"/>
+<rect x="910.0" y="104.0" width="24.0" height="24.0" fill="#4a9eff"/>
+<rect x="934.0" y="104.0" width="24.0" height="24.0" fill="#c7d0e0"/>
+<rect x="958.0" y="104.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="982.0" y="104.0" width="24.0" height="24.0" fill="#4a9eff"/>
+<rect x="910.0" y="128.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="934.0" y="128.0" width="24.0" height="24.0" fill="#c7d0e0"/>
+<rect x="958.0" y="128.0" width="24.0" height="24.0" fill="#f5a623"/>
+<rect x="982.0" y="128.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="910.0" y="152.0" width="24.0" height="24.0" fill="#2f6db3"/>
+<rect x="934.0" y="152.0" width="24.0" height="24.0" fill="#7fb8ff"/>
+<rect x="958.0" y="152.0" width="24.0" height="24.0" fill="#4a9eff"/>
+<rect x="982.0" y="152.0" width="24.0" height="24.0" fill="#2f6db3"/>
+<rect x="910" y="80" width="96" height="96" fill="none" stroke="#c7d0e0" stroke-width="1.5"/>
+<text x="958" y="200" fill="#8fa0bd" font-size="12" text-anchor="middle" font-weight="normal">reconstruction</text>
+<text x="20" y="288" fill="#8fa0bd" font-size="12" text-anchor="start" font-weight="normal">Training: rebuild the image well, and keep encoder vectors close to their codes.</text>
+</svg>

@@ -31,7 +31,6 @@ To feed an image to a transformer, cut it into a sequence. <!-- .element: class=
 :::figure img="images/dosovitskiy.png" name="Alexey Dosovitskiy and the ViT team" kicker="An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT, Google Research, 2020)"
 - Split the image into fixed patches and treated each one as a token
 - With enough training data, a plain transformer matches or beats convolutional networks
-- The rest of the module builds on this framing
 :::
 
 ---
@@ -58,6 +57,16 @@ $$z_i = W_{\text{patch}}\ \mathrm{flatten}(p_i) + b_{\text{patch}}$$
 
 ---
 
+<!-- .slide: id="tok-three-tokens" -->
+
+## Three Things Called "Tokens"
+
+<div class="img-figure"><img src="images/token_types.svg" alt="Three rows: a text token is an id looked up in an embedding table; a discrete image token is an id looked up in a learned codebook; a patch embedding is pixels flattened and multiplied by a matrix with no id and no table" style="max-height: 400px;"></div>
+
+All three end as a vector of the same width. Only the first two have a vocabulary. The ViT patch from the last slide is the third kind: a continuous vector with no id behind it. The next section shows where the codebook for the second kind comes from. <!-- .element: class="text-lg" -->
+
+---
+
 <!-- .slide: id="tok-position-resolution" -->
 
 ## Position and Resolution Are Not Optional
@@ -74,7 +83,12 @@ $$z_i = W_{\text{patch}}\ \mathrm{flatten}(p_i) + b_{\text{patch}}$$
 - If the relevant pixels were never represented, the model fails
 :::
 
-A model can be "looking at" the image and still be blind to the part that matters. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+If preprocessing shrank the small print to a few pixels, the model cannot read it. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+
+---
+
+:::manim id="tok-posembed" scene="posembed"
+:::
 
 ---
 

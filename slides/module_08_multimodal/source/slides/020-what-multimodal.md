@@ -29,18 +29,18 @@ Many real tasks connect **language to perception**:
 - Read a chart, debug a screenshot, describe a medical image
 - Transcribe speech, understand a lecture video, use a computer
 
-The unifying abstraction: **every modality gets compressed into a sequence**, either
+Every modality gets **compressed into a sequence** of either
 
 - **discrete tokens** (text tokens, audio codec tokens), or
 - continuous **embedding vectors** (image patch features projected into the LLM's hidden size)
 
-The recipe: **choose a representation, align it with language, train the model to use it.** <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+The rest is choosing that representation, aligning it with language, and training the model to use it. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
 <!-- .slide: id="what-tensions" -->
 
-## Two Tensions That Shape Everything
+## Two Tensions
 
 :::columns cols="2" gap="34px"
 **Bandwidth**
@@ -56,4 +56,4 @@ The recipe: **choose a representation, align it with language, train the model t
 - Flattening into a sequence throws away structure unless positional information restores it
 :::
 
-The whole module answers these two tensions: **compress the high-bandwidth signal, keep its structure once flattened.** <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+Most of this module deals with these two problems: shrink the signal to a manageable length, and keep its layout after flattening. <!-- .element: class="text-lg" style="margin-top: 12px;" -->

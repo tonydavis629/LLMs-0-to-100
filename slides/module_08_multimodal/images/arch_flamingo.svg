@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 335" width="1060" height="335" role="img" aria-label="Flamingo: frozen encoder, Perceiver Resampler, gated cross-attention inside a frozen LLM" font-family="Inter, Helvetica Neue, Helvetica, Arial, sans-serif">
+<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#8fa0bd"/></marker><marker id="ahs" markerWidth="9" markerHeight="9" refX="2" refY="4.5" orient="auto"><path d="M9,0 L0,4.5 L9,9 Z" fill="#8fa0bd"/></marker></defs>
+<rect x="10" y="40" width="120" height="84" rx="8" fill="#141a28" stroke="#4a9eff" stroke-width="2"/>
+<text x="70.0" y="78.0" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">Image</text>
+<text x="70.0" y="95.0" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">H x W x C</text>
+<rect x="200" y="40" width="170" height="84" rx="8" fill="#141a28" stroke="#8fa0bd" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="285.0" y="70.0" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">NFNet encoder</text>
+<text x="285.0" y="87.0" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">contrastively</text>
+<text x="285.0" y="104.0" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">pretrained</text>
+<rect x="317.6" y="31" width="46.400000000000006" height="18" rx="9" fill="#0a0e1a" stroke="#8fa0bd" stroke-width="1.5"/>
+<text x="340.8" y="44" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">frozen</text>
+<rect x="440" y="40" width="165" height="84" rx="8" fill="#141a28" stroke="#f5a623" stroke-width="3"/>
+<text x="522.5" y="78.0" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">Perceiver Resampler</text>
+<text x="522.5" y="95.0" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">64 learned latents</text>
+<rect x="546.2" y="31" width="52.800000000000004" height="18" rx="9" fill="#0a0e1a" stroke="#f5a623" stroke-width="1.5"/>
+<text x="572.6" y="44" fill="#f5a623" font-size="10.5" text-anchor="middle" font-weight="normal">trained</text>
+<rect x="10" y="196" width="120" height="84" rx="8" fill="#141a28" stroke="#e8eaf0" stroke-width="2"/>
+<text x="70.0" y="234.0" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">Text prompt</text>
+<text x="70.0" y="251.0" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">tokenizer</text>
+<rect x="200" y="196" width="170" height="84" rx="8" fill="#141a28" stroke="#e8eaf0" stroke-width="2"/>
+<text x="285.0" y="234.0" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">Token embedding</text>
+<text x="285.0" y="251.0" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">lookup table</text>
+<rect x="690" y="30" width="175" height="262" rx="8" fill="#141a28" stroke="#8fa0bd" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="777.5" y="56" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">Chinchilla LLM</text>
+<text x="777.5" y="74" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">frozen blocks, new</text>
+<text x="777.5" y="89" fill="#8fa0bd" font-size="11" text-anchor="middle" font-weight="normal">cross-attn between</text>
+<rect x="706" y="104" width="143" height="24" rx="5" fill="#1b2436" stroke="#3a4560" stroke-width="1.5"/>
+<text x="777.5" y="120.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">transformer block</text>
+<rect x="706" y="135" width="143" height="24" rx="5" fill="#0a0e1a" stroke="#f5a623" stroke-width="2"/>
+<text x="777.5" y="151.0" fill="#f5a623" font-size="10.5" text-anchor="middle" font-weight="normal">gated cross-attn</text>
+<rect x="706" y="166" width="143" height="24" rx="5" fill="#1b2436" stroke="#3a4560" stroke-width="1.5"/>
+<text x="777.5" y="182.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">transformer block</text>
+<rect x="706" y="197" width="143" height="24" rx="5" fill="#0a0e1a" stroke="#f5a623" stroke-width="2"/>
+<text x="777.5" y="213.0" fill="#f5a623" font-size="10.5" text-anchor="middle" font-weight="normal">gated cross-attn</text>
+<rect x="706" y="228" width="143" height="24" rx="5" fill="#1b2436" stroke="#3a4560" stroke-width="1.5"/>
+<text x="777.5" y="244.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">transformer block</text>
+<rect x="812.6" y="21" width="46.400000000000006" height="18" rx="9" fill="#0a0e1a" stroke="#8fa0bd" stroke-width="1.5"/>
+<text x="835.8000000000001" y="34" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">frozen</text>
+<rect x="935" y="126" width="115" height="70" rx="8" fill="#141a28" stroke="#a06bd4" stroke-width="2"/>
+<text x="992.5" y="165.0" fill="#e8eaf0" font-size="14" text-anchor="middle" font-weight="600">Text</text>
+<polyline points="130,82.0 197,82.0" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<text x="165.0" y="74.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">pixels</text>
+<polyline points="370,82.0 437,82.0" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<text x="405.0" y="74.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">features</text>
+<polyline points="605,82.0 668,82.0 668,147.0 703,147.0" fill="none" stroke="#f5a623" stroke-width="2" marker-end="url(#ah)"/>
+<polyline points="668,147.0 668,209.0 703,209.0" fill="none" stroke="#f5a623" stroke-width="2" marker-end="url(#ah)"/>
+<text x="636.5" y="62.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">64 visual</text>
+<text x="636.5" y="74.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">tokens</text>
+<polyline points="130,238.0 197,238.0" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<text x="165.0" y="230.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">token ids</text>
+<polyline points="370,238.0 687,238.0" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<text x="530.0" y="230.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">text vectors</text>
+<polyline points="865,161.0 932,161.0" fill="none" stroke="#8fa0bd" stroke-width="2" marker-end="url(#ah)"/>
+<text x="900.0" y="153.0" fill="#8fa0bd" font-size="10.5" text-anchor="middle" font-weight="normal">next token</text>
+<text x="20" y="322" fill="#8fa0bd" font-size="12" text-anchor="start" font-weight="normal">Visual tokens never enter the text sequence; they are keys and values for the new layers.</text>
+<rect x="864.8" y="311" width="22" height="14" rx="3" fill="#141a28" stroke="#8fa0bd" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="892.8" y="322" fill="#8fa0bd" font-size="11.5" text-anchor="start" font-weight="normal">frozen (weights fixed)</text>
+<rect x="672.1999999999999" y="311" width="22" height="14" rx="3" fill="#141a28" stroke="#f5a623" stroke-width="2"/>
+<text x="700.1999999999999" y="322" fill="#8fa0bd" font-size="11.5" text-anchor="start" font-weight="normal">trained in this stage</text>
+</svg>

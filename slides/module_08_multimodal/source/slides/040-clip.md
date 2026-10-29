@@ -31,7 +31,7 @@ CLIP **does not generate language**. It only learns where images and text sit re
 - Push **mismatched** pairs apart
 :::
 
-Result: an **alignment foundation**, a coordinate system where "a photo of a dog" lands near pictures of dogs. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+The result is a shared space where the text "a photo of a dog" lands near pictures of dogs. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -64,26 +64,25 @@ Rows are images, columns are captions. The **diagonal** is the matched pairs: ma
 
 <!-- .slide: id="clip-loss" -->
 
-## The Loss Is Cross-Entropy You Already Know
+## The Loss Uses Every Other Pair as a Negative
 
-The contrastive loss is **two** cross-entropies over the similarity matrix, one per direction:
+For image $i$, take a softmax over all $B$ captions in the batch:
 
-$$\mathcal{L} = \tfrac{1}{2}\left( \mathrm{CE}(\text{image} \to \text{text}) + \mathrm{CE}(\text{text} \to \text{image}) \right)$$
+$$\mathcal{L}\_i = -\log \frac{\exp(\textcolor{#50c878}{s\_{ii}})}{\exp(\textcolor{#50c878}{s\_{ii}}) + \sum\_{j \neq i} \exp(\textcolor{#e05252}{s\_{ij}})}$$
 
 :::columns cols="2" gap="34px"
-**Same math, new classes**
+**One positive (diagonal)**
 
-- The cross-entropy of Modules 2 and 5
-- The "classes" are the **other examples in the batch**, not vocabulary tokens
+- Caption $i$, the one actually paired with image $i$
+- The gradient pushes its similarity **up**
 +++
-**The target**
+**$B-1$ negatives (off-diagonal)**
 
-- Row $i$: correct class is caption $i$
-- Column $j$: correct class is image $j$
-- The question: *"which caption belongs with this image?"*
+- Every other caption in the batch
+- The gradient pushes each one **down**, the most similar (hardest) ones the most
 :::
 
-Larger batches: **harder negatives**, sharper embedding space. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+The full loss averages this over rows (image to text) and columns (text to image). CLIP trained with $B = 32{,}768$, so each image was contrasted against 32,767 wrong captions per step. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -106,14 +105,24 @@ CLIP has no classifier head, yet it can classify:
 
 ## What CLIP Is Not
 
-CLIP aligns **global** image and text embeddings. That is all.
+CLIP aligns one **global** image vector with one global caption vector, and nothing finer.
 
 <div class="card-grid cols-2">
-<div class="card"><h4>It cannot, by itself</h4><p>Produce detailed answers, follow instructions, count reliably, localize objects precisely, or reason over multiple images.</p></div>
-<div class="card"><h4>What it is</h4><p>An <strong>alignment foundation</strong>: a shared space to build on, not a full visual assistant.</p></div>
+<div class="card"><h4>A bag of words</h4><p>CLIP often scores "the horse is eating the grass" and "the grass is eating the horse" almost the same. It matches which words appear, not how they relate (Yuksekgonul et al., 2023).</p></div>
+<div class="card"><h4>Not an assistant</h4><p>By itself it cannot produce detailed answers, follow instructions, count reliably, localize objects precisely, or reason over multiple images.</p></div>
 </div>
 
-An assistant needs the language model to **condition on visual information while it generates**. Next section. <!-- .element: class="text-lg" -->
+Why: the contrastive task rarely needs word order. A batch almost never contains two captions with the same words in a different order, so ignoring order costs nothing during training. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="clip-slot" -->
+
+## Where CLIP Fits in the Diagram
+
+<div class="img-figure"><img src="images/arch_clip.svg" alt="The carried diagram with only the image encoder slot filled: a CLIP or SigLIP encoder trained contrastively; connector and language model still to come" style="max-height: 360px;"></div>
+
+CLIP fills one slot: a pretrained **image encoder** whose features already sit near related text. An assistant also needs the language model to read those features while it generates, which is the next section. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -125,4 +134,4 @@ An assistant needs the language model to **condition on visual information while
 - Contrastive learning still works: **scale and diversity** create useful pressure across millions of pairs
 - The cost: **caption bias**, missing whatever the captions systematically leave out
 
-Weak, abundant supervision beats strong, scarce supervision. A recurring theme across web-scale pretraining. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+Lots of noisy labels beat a few clean ones here. Whisper, later in this module, makes the same trade for speech. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
