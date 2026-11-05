@@ -27,17 +27,17 @@ Most modern evaluation effort goes into moving questions from the right column t
 
 <!-- .slide: id="instruct-accuracy" -->
 
-## The Simplest Metric, and Why It Breaks
+## Why Exact Match Breaks
 
 $$\mathrm{accuracy} = \frac{\text{number correct}}{\text{number evaluated}}$$
 
 Exact match is the most transparent metric and the most brittle. Same answer, four strings:
 
 <div class="card-grid cols-4">
-<div class="card"><h4>"4"</h4><p>The key</p></div>
-<div class="card"><h4>"4."</h4><p>Trailing punctuation</p></div>
-<div class="card"><h4>" 4 "</h4><p>Whitespace</p></div>
-<div class="card warn"><h4>"The answer is 4."</h4><p>Needs answer extraction</p></div>
+<div class="card"><h4><code style="white-space: pre;">"4"</code></h4><p>The key</p></div>
+<div class="card"><h4><code style="white-space: pre;">"4."</code></h4><p>Trailing punctuation</p></div>
+<div class="card"><h4><code style="white-space: pre;">" 4 "</code></h4><p>Whitespace</p></div>
+<div class="card warn"><h4><code style="white-space: pre;">"The answer is 4."</code></h4><p>Needs answer extraction</p></div>
 </div>
 
 Every benchmark ships two rules before it compares anything: <!-- .element: class="text-lg" -->
@@ -49,11 +49,11 @@ Every benchmark ships two rules before it compares anything: <!-- .element: clas
 
 <!-- .slide: id="instruct-f1" -->
 
-## Partial Credit: Token-Level F1
+## Token-Level F1 Gives Partial Credit
 
 When the answer is a phrase, exact match throws away information. Precision, recall, and F1 give partial credit:
 
-$$\mathrm{precision} = \frac{TP}{TP+FP}, \qquad \mathrm{recall} = \frac{TP}{TP+FN}$$
+$$\mathrm{precision} = \frac{TP}{TP+FP} \qquad \mathrm{recall} = \frac{TP}{TP+FN}$$
 
 $$F_1 = 2 \cdot \frac{\mathrm{precision}\cdot\mathrm{recall}}{\mathrm{precision}+\mathrm{recall}}$$
 
@@ -75,18 +75,18 @@ Her often-quoted view that computing is too important to be left to men came wit
 
 <!-- .slide: id="instruct-checkable" -->
 
-## Better Than String Comparison: Run the Answer
+## Grade the Answer With a Program
 
-If the answer can be **executed**, do not compare strings:
+When an answer has a structure a program can check, write that check instead of comparing strings:
 
 <div class="card-grid cols-4">
-<div class="card"><h4>Parse the number</h4><p>Extract the final numeric answer and compare it as a number, not text.</p></div>
-<div class="card"><h4>Validate the schema</h4><p>Does the JSON parse, and does it match the required fields and types?</p></div>
-<div class="card"><h4>Run the tests</h4><p>Execute the generated function against hidden unit tests.</p></div>
-<div class="card"><h4>Check the constraint</h4><p>Exactly three bullet points? No use of the letter "e"? A parser can tell.</p></div>
+<div class="card"><h4>Math</h4><p>Pull out the final number and compare it numerically, so <code>4.0</code> and <code>4</code> both count as correct.</p></div>
+<div class="card"><h4>JSON output</h4><p>Parse it. The answer fails if it does not parse, is missing a required field, or has a field of the wrong type.</p></div>
+<div class="card"><h4>Code</h4><p>Run the generated function against unit tests the model never saw. It passes only if every test passes.</p></div>
+<div class="card"><h4>Format instructions</h4><p>"Use exactly three bullet points" or "never use the letter e" can be checked with a few lines of Python.</p></div>
 </div>
 
-Module 7's **verifiable reward** (a deterministic function that decides correctness), reused here for **scoring** instead of training. <!-- .element: class="text-lg" -->
+Module 7 called this a **verifiable reward**: a function that decides whether an output is correct. There it trained the model. Here it grades the model. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -96,16 +96,18 @@ Module 7's **verifiable reward** (a deterministic function that decides correctn
 
 <div class="bench-table">
 <table>
-<thead><tr><th>Benchmark</th><th>Year</th><th>What it tests, and how it is checked</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it tests and how it is checked</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>GSM8K</strong></td><td>2021</td><td>Grade-school math word problems. Single numeric answer after a <code>####</code> marker. The canonical checkable-answer benchmark.</td></tr>
-<tr><td><strong>MATH</strong></td><td>2021</td><td>Competition mathematics, much harder. Answers checked by <strong>symbolic equivalence</strong>, not string match.</td></tr>
-<tr><td><strong>HumanEval, MBPP</strong></td><td>2021</td><td>Write a Python function from a docstring. Scored by <strong>running hidden tests</strong>.</td></tr>
-<tr><td><strong>IFEval</strong></td><td>2023</td><td>Instructions with programmatically checkable constraints. Measures <strong>instruction-following itself</strong>, separately from knowledge.</td></tr>
-<tr><td><strong>BBH, MMLU-Pro</strong></td><td>2022, 2024</td><td>Harder successors, built once the originals stopped separating models.</td></tr>
+<tr><td><strong>GSM8K</strong></td><td>2021</td><td>Grade-school math word problems. Single numeric answer after a <code>####</code> marker. The canonical checkable-answer benchmark.</td><td>2023</td></tr>
+<tr><td><strong>MATH</strong></td><td>2021</td><td>Competition mathematics, much harder. Answers checked by <strong>symbolic equivalence</strong>, not string match.</td><td>2024</td></tr>
+<tr><td><strong>HumanEval, MBPP</strong></td><td>2021</td><td>Write a Python function from a docstring. Scored by <strong>running hidden tests</strong>.</td><td>2024</td></tr>
+<tr><td><strong>IFEval</strong></td><td>2023</td><td>Instructions with programmatically checkable constraints. Measures <strong>instruction-following itself</strong>, separately from knowledge.</td><td>2025</td></tr>
+<tr><td><strong>BBH, MMLU-Pro</strong></td><td>2022, 2024</td><td>Harder successors, built once the originals stopped separating models.</td><td>2025, ~2026</td></tr>
 </tbody>
 </table>
 </div>
+
+Every row is saturated or close to it for frontier models. They still work for small models like the one in the exercise. <!-- .element: class="text-lg" -->
 
 ---
 

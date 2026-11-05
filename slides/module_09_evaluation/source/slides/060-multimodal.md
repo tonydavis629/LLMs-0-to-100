@@ -22,15 +22,31 @@ Module 8 built models that take images. Grading them is harder for two reasons:
 
 <div class="bench-table dense">
 <table>
-<thead><tr><th>Benchmark</th><th>Year</th><th>What it stresses</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it stresses</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>VQAv2</strong></td><td>2017</td><td>Short-answer questions about natural images, scored against ten human answers. Defined visual question answering.</td></tr>
-<tr><td><strong>TextVQA, DocVQA, ChartQA, AI2D</strong></td><td>2019&ndash;2022</td><td>Reading text in images, documents, charts, and diagrams. Where OCR ability shows up, and what most business use of vision models needs.</td></tr>
-<tr><td><strong>MMMU</strong></td><td>2023</td><td>College-level multi-discipline questions with figures and diagrams. The current headline multimodal number.</td></tr>
-<tr><td><strong>MathVista</strong></td><td>2023</td><td>Mathematical reasoning over visual inputs.</td></tr>
-<tr><td><strong>MMBench, MME</strong></td><td>2023</td><td>Broad capability suites with per-ability breakdowns: recognition, spatial relations, counting, OCR.</td></tr>
-<tr><td><strong>Video-MME</strong></td><td>2024</td><td>Video understanding: temporal reasoning over much longer inputs.</td></tr>
-<tr><td><strong>POPE</strong></td><td>2023</td><td>Hallucination probe. Ask about objects that are <strong>not in the image</strong> and see whether the model agrees they are.</td></tr>
+<tr><td><strong>VQAv2</strong></td><td>2017</td><td>Short-answer questions about natural images, scored against ten human answers.</td><td>~2022</td></tr>
+<tr><td><strong>TextVQA, DocVQA, ChartQA, AI2D</strong></td><td>2019&ndash;2022</td><td>Reading text in images, documents, charts, and diagrams. What most business use needs.</td><td>Near ceiling</td></tr>
+<tr><td><strong>MMMU</strong></td><td>2023</td><td>College-level questions with figures and diagrams.</td><td>Past the median expert, 2025</td></tr>
+<tr><td><strong>MathVista</strong></td><td>2023</td><td>Mathematical reasoning over visual inputs.</td><td>2024</td></tr>
+<tr><td><strong>MMBench, MME</strong></td><td>2023</td><td>Broad suites with per-ability breakdowns: recognition, counting, OCR.</td><td>Near ceiling</td></tr>
+<tr><td><strong>Video-MME</strong></td><td>2024</td><td>Temporal reasoning over long videos.</td><td>Near ceiling</td></tr>
+<tr><td><strong>POPE</strong></td><td>2023</td><td>Hallucination probe. Ask about objects that are <strong>not in the image</strong> and see whether the model agrees they are.</td><td>Near ceiling</td></tr>
+</tbody>
+</table>
+</div>
+
+---
+
+<!-- .slide: id="mm-open" -->
+
+## Multimodal Benchmarks That Are Still Open
+
+<div class="bench-table">
+<table>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it measures</th><th>Best score, late 2026</th></tr></thead>
+<tbody>
+<tr><td><strong>MMMU-Pro</strong></td><td>2024</td><td>MMMU with ten answer options and the question embedded in the image, so text-only shortcuts fail.</td><td>Near the best human experts</td></tr>
+<tr><td><strong>Video-MME-v2</strong></td><td>2026</td><td>Harder questions over long videos.</td><td>~49%, against ~91% for human experts</td></tr>
 </tbody>
 </table>
 </div>

@@ -1,19 +1,19 @@
-:::divider id="divider-basics" title="Evaluations, Benchmarks, Leaderboards" sub="Three words, three different things"
+:::divider id="divider-basics" title="Evaluations, Benchmarks, Leaderboards" sub="What each term means"
 :::
 
 ---
 
 <!-- .slide: id="three-words" -->
 
-## Three Words, Three Different Things
+## Three Terms People Use Interchangeably
 
 <div class="card-grid cols-3">
-<div class="card"><h4>Evaluation</h4><p>A <strong>dataset plus a scoring rule</strong>. Run the model on the cases, score the outputs, report a number.</p></div>
-<div class="card"><h4>Benchmark</h4><p>An evaluation that is <strong>published and reused</strong>, so different labs can compare models on the same cases under the same rules.</p></div>
-<div class="card"><h4>Leaderboard</h4><p>A <strong>public table</strong> of benchmark results. A summary of evaluations, not an evaluation itself.</p></div>
+<div class="card"><h4>Evaluation</h4><p>A <strong>dataset and a scoring rule</strong>. You run the model on each case, score its outputs, and report a number.</p></div>
+<div class="card"><h4>Benchmark</h4><p>An evaluation that has been <strong>published</strong> so other labs can run their models on the same cases under the same rules.</p></div>
+<div class="card"><h4>Leaderboard</h4><p>A <strong>public table</strong> of benchmark results. It reports evaluations that other people ran.</p></div>
 </div>
 
-Every announced number is a benchmark result: somebody's dataset plus somebody's scoring rule. Both are choices. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+An announced score depends on which test cases someone picked and how they wrote the grader. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -34,7 +34,7 @@ Every announced number is a benchmark result: somebody's dataset plus somebody's
 - Is "The answer is 4." the same as "4"? Somebody decides and publishes the code
 :::
 
-Same benchmark, same weights, different numbers: usually the scoring rule, not fraud. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+When two labs report different scores for the same weights on the same benchmark, the cause is usually a different scoring rule. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -54,7 +54,7 @@ Same benchmark, same weights, different numbers: usually the scoring rule, not f
 
 <!-- .slide: id="two-shapes" -->
 
-## Two Scoring Shapes, and How to Tell Them Apart
+## Multiple Choice vs. Free Generation
 
 <div class="compare-table">
 <table>

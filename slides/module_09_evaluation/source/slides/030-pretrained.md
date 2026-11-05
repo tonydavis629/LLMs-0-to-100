@@ -18,7 +18,7 @@ Ask a base model "what is the capital of France?" and it may continue with more 
 
 <!-- .slide: id="base-perplexity" -->
 
-## Perplexity: Module 5's Metric, Restated
+## Perplexity From Module 5
 
 $$\mathcal{L} = -\frac{1}{T}\sum_{t=1}^{T}\log p_\theta(x_t \mid x_{<t}), \qquad \mathrm{PPL} = \exp(\mathcal{L})$$
 
@@ -54,7 +54,7 @@ Model Y looks **35% worse** and is not worse at all. It answered fewer, harder q
 
 <!-- .slide: id="base-bpb-units" -->
 
-## Bits per Byte: What the Two Units Are Doing
+## What Bits per Byte Measures
 
 $$\mathrm{BPB} = \frac{\mathcal{L}_{\text{total}}}{\ln(2) \cdot \text{number of bytes}}$$
 
@@ -89,7 +89,7 @@ A byte holds **8 bits**. Bits per byte = how many bits the model needs to store 
 <div class="card"><h4>~0.7</h4><p>A competent modern LLM on general text. Better than Shannon's humans.</p></div>
 </div>
 
-Multiply by the byte count: the compressed file size. Module 1 claimed **prediction and compression are the same operation**. This is that claim as a number. <!-- .element: class="text-lg" -->
+Multiply by the byte count: the compressed file size. Module 1 claimed **prediction and compression are the same operation**. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -104,32 +104,22 @@ Multiply by the byte count: the compressed file size. Module 1 claimed **predict
 
 ---
 
-<!-- .slide: id="base-perplexity-limits" -->
-
-## Low Perplexity Is Not Usefulness
-
-Perplexity rewards **fluent continuation**, not correct answers. Two models with nearly identical perplexity can differ by tens of points on tasks.
-
-The exercise measures this directly: the RL model has **lower** perplexity than the instruct model, and is **far worse** at three of the four tasks. This is why nobody ships a model on a perplexity number. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
-
----
-
 <!-- .slide: id="base-benchmarks" -->
 
 ## Knowledge Benchmarks for Base Models
 
-All scored by **likelihood**, so they work without instruction-following.
+All scored by **likelihood**, so they work without instruction-following. **Saturated** means frontier models reached the human or expert ceiling; small models like the exercise's still spread out on them.
 
 <div class="bench-table dense">
 <table>
-<thead><tr><th>Benchmark</th><th>Year</th><th>What it asks</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it asks</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>MMLU</strong></td><td>2020</td><td>57 subjects of multiple choice, elementary to professional. For years, <em>the</em> headline number for a base model.</td></tr>
-<tr><td><strong>HellaSwag</strong></td><td>2019</td><td>Which sentence plausibly continues this situation? Commonsense, adversarially filtered.</td></tr>
-<tr><td><strong>ARC</strong></td><td>2018</td><td>Grade-school science questions, split into Easy and Challenge sets.</td></tr>
-<tr><td><strong>WinoGrande, PIQA</strong></td><td>2019</td><td>Pronoun resolution and physical commonsense. The standard set in open-model reports.</td></tr>
-<tr><td><strong>TriviaQA, Natural Questions</strong></td><td>2017, 2019</td><td>Factual recall with short free-form answers, scored by exact match and F1.</td></tr>
-<tr><td><strong>GPQA</strong></td><td>2023</td><td>Graduate-level science, written to be hard <em>even with web search</em>. Built after MMLU began saturating.</td></tr>
+<tr><td><strong>MMLU</strong></td><td>2020</td><td>57 subjects of multiple choice. For years, <em>the</em> headline base-model number.</td><td>2024</td></tr>
+<tr><td><strong>HellaSwag</strong></td><td>2019</td><td>Which sentence plausibly continues this situation? Commonsense, adversarially filtered.</td><td>2023</td></tr>
+<tr><td><strong>ARC</strong></td><td>2018</td><td>Grade-school science questions, Easy and Challenge sets.</td><td>2023</td></tr>
+<tr><td><strong>WinoGrande, PIQA</strong></td><td>2019</td><td>Pronoun resolution and physical commonsense.</td><td>~2023</td></tr>
+<tr><td><strong>TriviaQA, Natural Questions</strong></td><td>2017, 2019</td><td>Factual recall with short free-form answers, scored by exact match and F1.</td><td>Legacy</td></tr>
+<tr><td><strong>GPQA</strong></td><td>2023</td><td>Graduate-level science, hard <em>even with web search</em>.</td><td>2025</td></tr>
 </tbody>
 </table>
 </div>

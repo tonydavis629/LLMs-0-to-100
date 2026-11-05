@@ -1140,14 +1140,14 @@
   position: absolute;
   left: 0;
   top: 8px;
-  width: 128px;
+  width: 160px;
   text-align: right;
   font-size: 12.5pt;
   color: var(--text-color);
 }
 .sat-track {
   position: absolute;
-  left: 142px;
+  left: 174px;
   right: 12px;
   top: 0;
   bottom: 0;
@@ -1173,7 +1173,7 @@
 .sat-axis {
   position: relative;
   height: 26px;
-  margin-left: 142px;
+  margin-left: 174px;
   margin-right: 12px;
   border-top: 2px solid #2a3450;
 }
@@ -1217,6 +1217,13 @@
   padding-left: 18px;
 }
 .reveal ul.resource-list li::before { width: 6px; height: 6px; }
+
+/* Divider row inside a benchmark table: separates saturated rows from open ones. */
+.bench-table tr.group td {
+  color: var(--secondary-color);
+  font-weight: 700;
+  border-top: 2px solid var(--secondary-color);
+}
 
   </style>
 </head>
@@ -1292,22 +1299,22 @@ You are handed a checkpoint. **Is it any good? How does the industry report that
 
 # Evaluations, Benchmarks, Leaderboards
 
-Three words, three different things
+What each term means
 
 
 ---
 
 <!-- .slide: id="three-words" -->
 
-## Three Words, Three Different Things
+## Three Terms People Use Interchangeably
 
 <div class="card-grid cols-3">
-<div class="card"><h4>Evaluation</h4><p>A <strong>dataset plus a scoring rule</strong>. Run the model on the cases, score the outputs, report a number.</p></div>
-<div class="card"><h4>Benchmark</h4><p>An evaluation that is <strong>published and reused</strong>, so different labs can compare models on the same cases under the same rules.</p></div>
-<div class="card"><h4>Leaderboard</h4><p>A <strong>public table</strong> of benchmark results. A summary of evaluations, not an evaluation itself.</p></div>
+<div class="card"><h4>Evaluation</h4><p>A <strong>dataset and a scoring rule</strong>. You run the model on each case, score its outputs, and report a number.</p></div>
+<div class="card"><h4>Benchmark</h4><p>An evaluation that has been <strong>published</strong> so other labs can run their models on the same cases under the same rules.</p></div>
+<div class="card"><h4>Leaderboard</h4><p>A <strong>public table</strong> of benchmark results. It reports evaluations that other people ran.</p></div>
 </div>
 
-Every announced number is a benchmark result: somebody's dataset plus somebody's scoring rule. Both are choices. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+An announced score depends on which test cases someone picked and how they wrote the grader. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -1338,7 +1345,7 @@ Every announced number is a benchmark result: somebody's dataset plus somebody's
 
 </div>
 
-Same benchmark, same weights, different numbers: usually the scoring rule, not fraud. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+When two labs report different scores for the same weights on the same benchmark, the cause is usually a different scoring rule. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -1358,7 +1365,7 @@ Same benchmark, same weights, different numbers: usually the scoring rule, not f
 
 <!-- .slide: id="two-shapes" -->
 
-## Two Scoring Shapes, and How to Tell Them Apart
+## Multiple Choice vs. Free Generation
 
 <div class="compare-table">
 <table>
@@ -1462,7 +1469,7 @@ Ask a base model "what is the capital of France?" and it may continue with more 
 
 <!-- .slide: id="base-perplexity" -->
 
-## Perplexity: Module 5's Metric, Restated
+## Perplexity From Module 5
 
 $$\mathcal{L} = -\frac{1}{T}\sum_{t=1}^{T}\log p_\theta(x_t \mid x_{<t}), \qquad \mathrm{PPL} = \exp(\mathcal{L})$$
 
@@ -1498,7 +1505,7 @@ Model Y looks **35% worse** and is not worse at all. It answered fewer, harder q
 
 <!-- .slide: id="base-bpb-units" -->
 
-## Bits per Byte: What the Two Units Are Doing
+## What Bits per Byte Measures
 
 $$\mathrm{BPB} = \frac{\mathcal{L}_{\text{total}}}{\ln(2) \cdot \text{number of bytes}}$$
 
@@ -1543,7 +1550,7 @@ A byte holds **8 bits**. Bits per byte = how many bits the model needs to store 
 <div class="card"><h4>~0.7</h4><p>A competent modern LLM on general text. Better than Shannon's humans.</p></div>
 </div>
 
-Multiply by the byte count: the compressed file size. Module 1 claimed **prediction and compression are the same operation**. This is that claim as a number. <!-- .element: class="text-lg" -->
+Multiply by the byte count: the compressed file size. Module 1 claimed **prediction and compression are the same operation**. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1558,32 +1565,22 @@ Multiply by the byte count: the compressed file size. Module 1 claimed **predict
 
 ---
 
-<!-- .slide: id="base-perplexity-limits" -->
-
-## Low Perplexity Is Not Usefulness
-
-Perplexity rewards **fluent continuation**, not correct answers. Two models with nearly identical perplexity can differ by tens of points on tasks.
-
-The exercise measures this directly: the RL model has **lower** perplexity than the instruct model, and is **far worse** at three of the four tasks. This is why nobody ships a model on a perplexity number. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
-
----
-
 <!-- .slide: id="base-benchmarks" -->
 
 ## Knowledge Benchmarks for Base Models
 
-All scored by **likelihood**, so they work without instruction-following.
+All scored by **likelihood**, so they work without instruction-following. **Saturated** means frontier models reached the human or expert ceiling; small models like the exercise's still spread out on them.
 
 <div class="bench-table dense">
 <table>
-<thead><tr><th>Benchmark</th><th>Year</th><th>What it asks</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it asks</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>MMLU</strong></td><td>2020</td><td>57 subjects of multiple choice, elementary to professional. For years, <em>the</em> headline number for a base model.</td></tr>
-<tr><td><strong>HellaSwag</strong></td><td>2019</td><td>Which sentence plausibly continues this situation? Commonsense, adversarially filtered.</td></tr>
-<tr><td><strong>ARC</strong></td><td>2018</td><td>Grade-school science questions, split into Easy and Challenge sets.</td></tr>
-<tr><td><strong>WinoGrande, PIQA</strong></td><td>2019</td><td>Pronoun resolution and physical commonsense. The standard set in open-model reports.</td></tr>
-<tr><td><strong>TriviaQA, Natural Questions</strong></td><td>2017, 2019</td><td>Factual recall with short free-form answers, scored by exact match and F1.</td></tr>
-<tr><td><strong>GPQA</strong></td><td>2023</td><td>Graduate-level science, written to be hard <em>even with web search</em>. Built after MMLU began saturating.</td></tr>
+<tr><td><strong>MMLU</strong></td><td>2020</td><td>57 subjects of multiple choice. For years, <em>the</em> headline base-model number.</td><td>2024</td></tr>
+<tr><td><strong>HellaSwag</strong></td><td>2019</td><td>Which sentence plausibly continues this situation? Commonsense, adversarially filtered.</td><td>2023</td></tr>
+<tr><td><strong>ARC</strong></td><td>2018</td><td>Grade-school science questions, Easy and Challenge sets.</td><td>2023</td></tr>
+<tr><td><strong>WinoGrande, PIQA</strong></td><td>2019</td><td>Pronoun resolution and physical commonsense.</td><td>~2023</td></tr>
+<tr><td><strong>TriviaQA, Natural Questions</strong></td><td>2017, 2019</td><td>Factual recall with short free-form answers, scored by exact match and F1.</td><td>Legacy</td></tr>
+<tr><td><strong>GPQA</strong></td><td>2023</td><td>Graduate-level science, hard <em>even with web search</em>.</td><td>2025</td></tr>
 </tbody>
 </table>
 </div>
@@ -1687,17 +1684,17 @@ Most modern evaluation effort goes into moving questions from the right column t
 
 <!-- .slide: id="instruct-accuracy" -->
 
-## The Simplest Metric, and Why It Breaks
+## Why Exact Match Breaks
 
 $$\mathrm{accuracy} = \frac{\text{number correct}}{\text{number evaluated}}$$
 
 Exact match is the most transparent metric and the most brittle. Same answer, four strings:
 
 <div class="card-grid cols-4">
-<div class="card"><h4>"4"</h4><p>The key</p></div>
-<div class="card"><h4>"4."</h4><p>Trailing punctuation</p></div>
-<div class="card"><h4>" 4 "</h4><p>Whitespace</p></div>
-<div class="card warn"><h4>"The answer is 4."</h4><p>Needs answer extraction</p></div>
+<div class="card"><h4><code style="white-space: pre;">"4"</code></h4><p>The key</p></div>
+<div class="card"><h4><code style="white-space: pre;">"4."</code></h4><p>Trailing punctuation</p></div>
+<div class="card"><h4><code style="white-space: pre;">" 4 "</code></h4><p>Whitespace</p></div>
+<div class="card warn"><h4><code style="white-space: pre;">"The answer is 4."</code></h4><p>Needs answer extraction</p></div>
 </div>
 
 Every benchmark ships two rules before it compares anything: <!-- .element: class="text-lg" -->
@@ -1709,11 +1706,11 @@ Every benchmark ships two rules before it compares anything: <!-- .element: clas
 
 <!-- .slide: id="instruct-f1" -->
 
-## Partial Credit: Token-Level F1
+## Token-Level F1 Gives Partial Credit
 
 When the answer is a phrase, exact match throws away information. Precision, recall, and F1 give partial credit:
 
-$$\mathrm{precision} = \frac{TP}{TP+FP}, \qquad \mathrm{recall} = \frac{TP}{TP+FN}$$
+$$\mathrm{precision} = \frac{TP}{TP+FP} \qquad \mathrm{recall} = \frac{TP}{TP+FN}$$
 
 $$F_1 = 2 \cdot \frac{\mathrm{precision}\cdot\mathrm{recall}}{\mathrm{precision}+\mathrm{recall}}$$
 
@@ -1751,18 +1748,18 @@ Her often-quoted view that computing is too important to be left to men came wit
 
 <!-- .slide: id="instruct-checkable" -->
 
-## Better Than String Comparison: Run the Answer
+## Grade the Answer With a Program
 
-If the answer can be **executed**, do not compare strings:
+When an answer has a structure a program can check, write that check instead of comparing strings:
 
 <div class="card-grid cols-4">
-<div class="card"><h4>Parse the number</h4><p>Extract the final numeric answer and compare it as a number, not text.</p></div>
-<div class="card"><h4>Validate the schema</h4><p>Does the JSON parse, and does it match the required fields and types?</p></div>
-<div class="card"><h4>Run the tests</h4><p>Execute the generated function against hidden unit tests.</p></div>
-<div class="card"><h4>Check the constraint</h4><p>Exactly three bullet points? No use of the letter "e"? A parser can tell.</p></div>
+<div class="card"><h4>Math</h4><p>Pull out the final number and compare it numerically, so <code>4.0</code> and <code>4</code> both count as correct.</p></div>
+<div class="card"><h4>JSON output</h4><p>Parse it. The answer fails if it does not parse, is missing a required field, or has a field of the wrong type.</p></div>
+<div class="card"><h4>Code</h4><p>Run the generated function against unit tests the model never saw. It passes only if every test passes.</p></div>
+<div class="card"><h4>Format instructions</h4><p>"Use exactly three bullet points" or "never use the letter e" can be checked with a few lines of Python.</p></div>
 </div>
 
-Module 7's **verifiable reward** (a deterministic function that decides correctness), reused here for **scoring** instead of training. <!-- .element: class="text-lg" -->
+Module 7 called this a **verifiable reward**: a function that decides whether an output is correct. There it trained the model. Here it grades the model. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1772,16 +1769,18 @@ Module 7's **verifiable reward** (a deterministic function that decides correctn
 
 <div class="bench-table">
 <table>
-<thead><tr><th>Benchmark</th><th>Year</th><th>What it tests, and how it is checked</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it tests and how it is checked</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>GSM8K</strong></td><td>2021</td><td>Grade-school math word problems. Single numeric answer after a <code>####</code> marker. The canonical checkable-answer benchmark.</td></tr>
-<tr><td><strong>MATH</strong></td><td>2021</td><td>Competition mathematics, much harder. Answers checked by <strong>symbolic equivalence</strong>, not string match.</td></tr>
-<tr><td><strong>HumanEval, MBPP</strong></td><td>2021</td><td>Write a Python function from a docstring. Scored by <strong>running hidden tests</strong>.</td></tr>
-<tr><td><strong>IFEval</strong></td><td>2023</td><td>Instructions with programmatically checkable constraints. Measures <strong>instruction-following itself</strong>, separately from knowledge.</td></tr>
-<tr><td><strong>BBH, MMLU-Pro</strong></td><td>2022, 2024</td><td>Harder successors, built once the originals stopped separating models.</td></tr>
+<tr><td><strong>GSM8K</strong></td><td>2021</td><td>Grade-school math word problems. Single numeric answer after a <code>####</code> marker. The canonical checkable-answer benchmark.</td><td>2023</td></tr>
+<tr><td><strong>MATH</strong></td><td>2021</td><td>Competition mathematics, much harder. Answers checked by <strong>symbolic equivalence</strong>, not string match.</td><td>2024</td></tr>
+<tr><td><strong>HumanEval, MBPP</strong></td><td>2021</td><td>Write a Python function from a docstring. Scored by <strong>running hidden tests</strong>.</td><td>2024</td></tr>
+<tr><td><strong>IFEval</strong></td><td>2023</td><td>Instructions with programmatically checkable constraints. Measures <strong>instruction-following itself</strong>, separately from knowledge.</td><td>2025</td></tr>
+<tr><td><strong>BBH, MMLU-Pro</strong></td><td>2022, 2024</td><td>Harder successors, built once the originals stopped separating models.</td><td>2025, ~2026</td></tr>
 </tbody>
 </table>
 </div>
+
+Every row is saturated or close to it for frontier models. They still work for small models like the one in the exercise. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1816,7 +1815,7 @@ Summaries, explanations, advice, code review, tone: no key to compare against. T
 **Old: overlap with a reference**
 
 - **BLEU** (2002, translation), **ROUGE** (2004, summarization)
-- Count n-grams shared with human-written references
+- Count how many short word sequences (**n-grams**) the output shares with a reference a person wrote
 - Drove twenty years of measurable progress
 - Cannot tell whether an answer is **true or useful**: a fluent wrong answer scores well
 
@@ -1849,15 +1848,40 @@ Summaries, explanations, advice, code review, tone: no key to compare against. T
 
 ### BLEU (IBM, 2002) and ROUGE (2004)
 
-Papineni and collaborators scored translations by **n-gram overlap with human references**. Before BLEU, comparing two translation systems meant hiring translators. After it, a research group could iterate overnight.
+Papineni and collaborators scored a translation by counting how many of its word sequences also appear in **human reference translations**. Before BLEU, comparing two translation systems meant hiring translators. After it, a research group could iterate overnight.
 
-Lin did the same for summarization. Both metrics correlate **weakly** with human judgment on modern systems and are still reported anyway: a flawed number everyone computes the same way is at least comparable.
-
-</div>
+Lin turned the count around for summarization: ROUGE asks how much of the **reference summary** the candidate recovers. Both metrics correlate **weakly** with human judgment on modern systems and are still reported anyway: a flawed number everyone computes the same way is at least comparable.
 
 </div>
 
 </div>
+
+</div>
+
+---
+
+<!-- .slide: id="judge-rouge" -->
+
+## How ROUGE Scores a Summary
+
+$$\text{ROUGE-}N = \frac{\text{n-grams shared with the reference}}{\text{n-grams in the reference}}$$
+
+An n-gram is a run of n consecutive words: ROUGE-1 counts single words, ROUGE-2 counts word pairs. This is the recall from the token F1 slide, extended to word sequences. BLEU runs the same count from the other side: it divides by the candidate's n-grams (precision) and penalizes outputs that are too short.
+
+Reference: **"the cat sat on the mat"**
+
+<div class="compare-table">
+<table>
+<thead><tr><th>Candidate</th><th>ROUGE-1</th><th>ROUGE-2</th><th>Same meaning?</th></tr></thead>
+<tbody>
+<tr><td>the cat was on the mat</td><td class="num">0.83</td><td class="num">0.60</td><td>Yes</td></tr>
+<tr><td>the cat never sat on the mat</td><td class="num">1.00</td><td class="num">0.80</td><td>No, it says the opposite</td></tr>
+<tr><td>a kitten rested on the rug</td><td class="num">0.33</td><td class="num">0.20</td><td>Yes</td></tr>
+</tbody>
+</table>
+</div>
+
+The contradiction gets the best score because it contains every word of the reference. Overlap measures shared vocabulary, and meaning is invisible to it. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1899,6 +1923,21 @@ Both rest on one shift: with no answer key, you can still ask **which of two ans
 </div>
 
 </div>
+
+---
+
+<!-- .slide: id="sq-arena-vote" -->
+
+## <span class="side-quest-badge">Side Quest</span> Cast a Vote in the Arena
+
+Chatbot Arena now runs as **Arena** at <a href="https://arena.ai/" target="_blank">arena.ai</a>. Open it, type a prompt, and vote for one of two anonymous answers. The model names appear only after you vote.
+
+<div class="card-grid cols-2">
+<div class="card"><h4>Try a question you can check</h4><p>Pick something where you know the right answer: a calculation, a fact from your field, a bug in a short function. Did you vote for the <strong>correct</strong> answer or the more convincing one?</p></div>
+<div class="card"><h4>Then try an open-ended one</h4><p>Ask for advice or an explanation. Notice what decided your vote: length, formatting, tone, or content. Your vote goes into the same rating as everyone else's.</p></div>
+</div>
+
+Every number on the leaderboard is built from votes like yours. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -1945,6 +1984,22 @@ A two-minute experiment that changes how you read every LLM-judged leaderboard. 
 
 ---
 
+<!-- .slide: id="sq-decision-judge" -->
+
+## <span class="side-quest-badge">Side Quest</span> A Judge That Writes No Text
+
+A **decision model** such as TypeSafe's Jev is closer to a text classifier than a chatbot. It answers typed questions (yes or no, pick one, a score) and returns a **probability** for each answer. <a href="https://github.com/osolmaz/switch" target="_blank">switch</a> is an open-source harness that runs one as a rubric judge.
+
+<div class="card-grid cols-3">
+<div class="card"><h4>Nothing to parse</h4><p>A chat judge writes a verdict that you then extract with a regex. A decision model returns P(yes) for each rubric item directly, so there is no answer extraction to get wrong.</p></div>
+<div class="card"><h4>Two questions per item</h4><p>Does the answer meet the item (<em>a</em>)? Does it miss or contradict a requirement (<em>b</em>)? The item passes when min(<em>a</em>, 1 &minus; <em>b</em>) &ge; 0.5.</p></div>
+<div class="card"><h4>Cheap</h4><p>It generates no tokens, and it picks what to read (a section of a file, a page image, a search hit) instead of loading every document into context.</p></div>
+</div>
+
+Treat it like any other judge: score it against human labels before you trust it. switch's rubric judge ships a <code>score</code> command for that. <!-- .element: class="text-lg" -->
+
+---
+
 <!-- .slide: id="divider-reasoning" class="section-divider" data-state="is-section-divider" -->
 
 # Evaluating a Reasoning or RL-Trained Model
@@ -1975,18 +2030,38 @@ Evaluate an RL model with the **same held-out benchmarks as before**, plus new o
 
 This is the RLVR setup from Module 7 used as a **test set** rather than a training signal.
 
-<div class="bench-table">
+<div class="bench-table dense">
 <table>
-<thead><tr><th>Benchmark</th><th>What it asks</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>What it asks</th><th>Status</th></tr></thead>
 <tbody>
-<tr><td><strong>AIME</strong> and competition math</td><td>Short integer answers, hard enough to be unsaturated. The standard headline number in reasoning-model announcements.</td></tr>
-<tr><td><strong>GPQA Diamond</strong></td><td>The hardest slice of GPQA: graduate science questions that resist web search.</td></tr>
-<tr><td><strong>Competitive programming</strong></td><td>Codeforces-style problems, scored by running the judge's tests. Often reported as an Elo rating.</td></tr>
-<tr><td><strong>SWE-bench</strong></td><td>Resolve a real GitHub issue so the project's test suite passes. Covered under agent evaluation.</td></tr>
-<tr><td><strong>ARC-AGI</strong></td><td>Abstract visual puzzles designed to resist memorization. The most-cited "is it really reasoning" benchmark.</td></tr>
+<tr><td><strong>AIME</strong> and competition math</td><td>Short integer answers from a hard high-school contest. The headline number in 2024&ndash;25 reasoning-model launches.</td><td>Saturated 2025: perfect scores with and without tools</td></tr>
+<tr><td><strong>GPQA Diamond</strong></td><td>The hardest slice of GPQA: graduate science questions that resist web search.</td><td>Passed the expert baseline 2024, saturated 2025</td></tr>
+<tr><td><strong>Competitive programming</strong></td><td>Codeforces-style problems, scored by running the judge's tests. Often reported as an Elo rating.</td><td>Gold-medal ICPC result 2025. The top human rating is still ahead</td></tr>
+<tr><td><strong>SWE-bench Verified</strong></td><td>Resolve a real GitHub issue so the project's test suite passes. Covered under agent evaluation.</td><td>Saturated 2025, then dropped by OpenAI in 2026 over contamination</td></tr>
+<tr><td><strong>ARC-AGI</strong></td><td>Abstract visual puzzles designed to resist memorization. The most-cited "is it really reasoning" benchmark.</td><td>Version 1 saturated 2024, version 2 in 2026. Version 3 (2026) is open</td></tr>
 </tbody>
 </table>
 </div>
+
+---
+
+<!-- .slide: id="reasoning-open" -->
+
+## Reasoning Benchmarks That Are Still Open
+
+<div class="bench-table">
+<table>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it measures</th><th>Best score, late 2026</th></tr></thead>
+<tbody>
+<tr><td><strong>Humanity's Last Exam</strong></td><td>2025</td><td>2,500 closed-ended questions written by domain experts to stump frontier models.</td><td>About half</td></tr>
+<tr><td><strong>FrontierMath</strong></td><td>2024</td><td>Unpublished research-level math, run by Epoch AI so nobody can train on it.</td><td>Near 90% on tiers 1&ndash;3</td></tr>
+<tr><td><strong>ARC-AGI-3</strong></td><td>2026</td><td>Interactive games where the model has to discover the rules with no instructions.</td><td>Under 1% for every model at launch</td></tr>
+<tr><td><strong>SimpleQA Verified</strong></td><td>2025</td><td>Short factual questions answered <strong>without tools</strong>: what the model knows, not what it can look up.</td><td>~78%</td></tr>
+</tbody>
+</table>
+</div>
+
+These scores move every few months. Check the official leaderboard before quoting one. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2005,7 +2080,7 @@ Reasoning models are **stochastic and expensive**. Without these two numbers, th
 
 <!-- .slide: id="reasoning-passk" -->
 
-## The pass@k Lesson, Restated as an Evaluation Principle
+## What pass@k Means for Evaluation
 
 Module 7: RL **sharpens** the sampling distribution rather than expanding ability. As measurement, that is a claim about the pass@1 versus pass@k gap:
 
@@ -2090,15 +2165,31 @@ Module 8 built models that take images. Grading them is harder for two reasons:
 
 <div class="bench-table dense">
 <table>
-<thead><tr><th>Benchmark</th><th>Year</th><th>What it stresses</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it stresses</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>VQAv2</strong></td><td>2017</td><td>Short-answer questions about natural images, scored against ten human answers. Defined visual question answering.</td></tr>
-<tr><td><strong>TextVQA, DocVQA, ChartQA, AI2D</strong></td><td>2019&ndash;2022</td><td>Reading text in images, documents, charts, and diagrams. Where OCR ability shows up, and what most business use of vision models needs.</td></tr>
-<tr><td><strong>MMMU</strong></td><td>2023</td><td>College-level multi-discipline questions with figures and diagrams. The current headline multimodal number.</td></tr>
-<tr><td><strong>MathVista</strong></td><td>2023</td><td>Mathematical reasoning over visual inputs.</td></tr>
-<tr><td><strong>MMBench, MME</strong></td><td>2023</td><td>Broad capability suites with per-ability breakdowns: recognition, spatial relations, counting, OCR.</td></tr>
-<tr><td><strong>Video-MME</strong></td><td>2024</td><td>Video understanding: temporal reasoning over much longer inputs.</td></tr>
-<tr><td><strong>POPE</strong></td><td>2023</td><td>Hallucination probe. Ask about objects that are <strong>not in the image</strong> and see whether the model agrees they are.</td></tr>
+<tr><td><strong>VQAv2</strong></td><td>2017</td><td>Short-answer questions about natural images, scored against ten human answers.</td><td>~2022</td></tr>
+<tr><td><strong>TextVQA, DocVQA, ChartQA, AI2D</strong></td><td>2019&ndash;2022</td><td>Reading text in images, documents, charts, and diagrams. What most business use needs.</td><td>Near ceiling</td></tr>
+<tr><td><strong>MMMU</strong></td><td>2023</td><td>College-level questions with figures and diagrams.</td><td>Past the median expert, 2025</td></tr>
+<tr><td><strong>MathVista</strong></td><td>2023</td><td>Mathematical reasoning over visual inputs.</td><td>2024</td></tr>
+<tr><td><strong>MMBench, MME</strong></td><td>2023</td><td>Broad suites with per-ability breakdowns: recognition, counting, OCR.</td><td>Near ceiling</td></tr>
+<tr><td><strong>Video-MME</strong></td><td>2024</td><td>Temporal reasoning over long videos.</td><td>Near ceiling</td></tr>
+<tr><td><strong>POPE</strong></td><td>2023</td><td>Hallucination probe. Ask about objects that are <strong>not in the image</strong> and see whether the model agrees they are.</td><td>Near ceiling</td></tr>
+</tbody>
+</table>
+</div>
+
+---
+
+<!-- .slide: id="mm-open" -->
+
+## Multimodal Benchmarks That Are Still Open
+
+<div class="bench-table">
+<table>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it measures</th><th>Best score, late 2026</th></tr></thead>
+<tbody>
+<tr><td><strong>MMMU-Pro</strong></td><td>2024</td><td>MMMU with ten answer options and the question embedded in the image, so text-only shortcuts fail.</td><td>Near the best human experts</td></tr>
+<tr><td><strong>Video-MME-v2</strong></td><td>2026</td><td>Harder questions over long videos.</td><td>~49%, against ~91% for human experts</td></tr>
 </tbody>
 </table>
 </div>
@@ -2163,19 +2254,36 @@ Evaluation stops being a metric on outputs and becomes an **integration test**: 
 
 ## The Agent Benchmarks You Will Hear About
 
-<div class="bench-table">
+<div class="bench-table dense">
 <table>
-<thead><tr><th>Benchmark</th><th>Environment</th><th>How it is scored</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>Environment</th><th>How it is scored</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>SWE-bench</strong> (2023)</td><td>A real GitHub repository with a real issue</td><td>Apply the model's patch and run the project's test suite. <strong>SWE-bench Verified</strong> is the human-filtered subset everyone reports.</td></tr>
-<tr><td><strong>GAIA</strong></td><td>Browsing, files, and tools</td><td>General-assistant questions with short verifiable answers.</td></tr>
-<tr><td><strong>WebArena, OSWorld</strong></td><td>A simulated browser or desktop</td><td>Inspect the end state: was the form submitted, the file saved, the setting changed?</td></tr>
-<tr><td><strong>tau-bench</strong></td><td>Multi-turn customer service with tool calls</td><td>Did the agent follow the policy rules and reach the correct final state?</td></tr>
+<tr><td><strong>SWE-bench</strong> (2023)</td><td>A real GitHub repository with a real issue</td><td>Apply the model's patch and run the project's test suite. <strong>SWE-bench Verified</strong> is the human-filtered subset labs reported through 2025.</td><td>2025. Successors: SWE-bench Pro, Terminal-Bench</td></tr>
+<tr><td><strong>GAIA</strong></td><td>Browsing, files, and tools</td><td>General-assistant questions with short verifiable answers.</td><td>Near the 92% human baseline, 2026</td></tr>
+<tr><td><strong>WebArena, OSWorld</strong></td><td>A simulated browser or desktop</td><td>Inspect the end state: was the form submitted, the file saved, the setting changed?</td><td>OSWorld passed its 72% human baseline by early 2026</td></tr>
+<tr><td><strong>tau-bench</strong></td><td>Multi-turn customer service with tool calls</td><td>Did the agent follow the policy rules and reach the correct final state?</td><td>2026. Successor: tau3-bench</td></tr>
 </tbody>
 </table>
 </div>
 
 Modules 10 and 11 build the systems these benchmarks measure. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="agents-open" -->
+
+## Agent Benchmarks That Are Still Open
+
+<div class="bench-table">
+<table>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it measures</th><th>Best score, late 2026</th></tr></thead>
+<tbody>
+<tr><td><strong>SWE-bench Pro</strong></td><td>2025</td><td>Harder repository issues in several languages, scored by running the tests. OpenAI later found about 30% of tasks broken.</td><td>~62% on Scale's public set</td></tr>
+<tr><td><strong>Terminal-Bench</strong></td><td>2025</td><td>Long multi-step tasks in a real shell, scored by checking the end state.</td><td>~60% on version 4.0 (2026)</td></tr>
+<tr><td><strong>GDPval</strong></td><td>2025</td><td>Work products from 44 occupations, compared blind against an expert's own work.</td><td>Reported as a win-or-tie rate against experts</td></tr>
+</tbody>
+</table>
+</div>
 
 ---
 
@@ -2222,18 +2330,39 @@ The same checkpoint can move several points on MMLU from choices unrelated to th
 
 ---
 
-<!-- .slide: id="sq-two-scores" -->
+<!-- .slide: id="sq-chat-templates" -->
 
-## <span class="side-quest-badge">Side Quest</span> One Model, Two Scores
+## <span class="side-quest-badge">Side Quest</span> Chat Templates Break Evaluations
 
-Take one checkpoint. Run it twice, changing exactly one thing about the protocol.
+Every model family wraps messages in its own special tokens, and an instruct model only works well with the one it was finetuned on:
 
-<div class="card-grid cols-2">
-<div class="card"><h4>Change the template</h4><p>Add a space after the assistant marker. Reword the instruction. Keep the weights identical.</p></div>
-<div class="card"><h4>Change the scoring shape</h4><p>Score the multiple-choice set by likelihood, then by reading the generated letter.</p></div>
+<div class="slide-columns" style="grid-template-columns: repeat(2, 1fr); gap: 34px;">
+
+<div>
+
+**ChatML** (SmolLM2, Qwen 2)
+
+```text
+<|im_start|>user
+What's the weather?<|im_end|>
+<|im_start|>assistant
+```
+
 </div>
 
-The scores move; the model did not change. This is the first extra credit in the exercise, and the fastest way to stop treating a leaderboard cell as a property of the weights. <!-- .element: class="text-lg" -->
+<div>
+
+**Mistral**
+
+```text
+<s>[INST] What's the weather? [/INST]
+```
+
+</div>
+
+</div>
+
+A harness that uses the wrong template, or leaves it out, scores the model lower with no change to the weights. More in the <a href="https://huggingface.co/learn/llm-course/chapter11/2" target="_blank">Hugging Face chat templates chapter</a>. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2268,9 +2397,9 @@ This check took one `grep` on 1,500 examples. What could it mean for a model tra
 
 <!-- .slide: id="protocol-saturation-chart" -->
 
-## Saturation: How Long a Benchmark Stays Useful
+## How Long a Benchmark Stays Useful
 
-<div class="sat-chart"><div class="sat-row fragment"><div class="sat-name">MNIST</div><div class="sat-track"><div class="sat-span" style="left: 0%; width: 50.0%;"></div><div class="sat-years" style="left: 51.5%;">1998 &rarr; 2012 &middot; 14 years</div></div></div><div class="sat-row fragment"><div class="sat-name">ImageNet</div><div class="sat-track"><div class="sat-span" style="left: 39.3%; width: 21.4%;"></div><div class="sat-years" style="left: 62.2%;">2009 &rarr; 2015 &middot; 6 years</div></div></div><div class="sat-row fragment"><div class="sat-name">SQuAD</div><div class="sat-track"><div class="sat-span fast" style="left: 64.3%; width: 7.1%;"></div><div class="sat-years" style="left: 72.9%;">2016 &rarr; 2018 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GLUE</div><div class="sat-track"><div class="sat-span fast" style="left: 71.4%; width: 3.6%;"></div><div class="sat-years" style="left: 76.5%;">2018 &rarr; 2019 &middot; 1 year</div></div></div><div class="sat-row fragment"><div class="sat-name">SuperGLUE</div><div class="sat-track"><div class="sat-span fast" style="left: 75.0%; width: 7.1%;"></div><div class="sat-years" style="left: 83.6%;">2019 &rarr; 2021 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">MMLU</div><div class="sat-track"><div class="sat-span" style="left: 78.6%; width: 14.3%;"></div><div class="sat-years before" style="right: 23%;">2020 &rarr; 2024 &middot; 4 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GSM8K</div><div class="sat-track"><div class="sat-span fast" style="left: 82.1%; width: 7.1%;"></div><div class="sat-years before" style="right: 19.5%;">2021 &rarr; 2023 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GPQA Diamond</div><div class="sat-track"><div class="sat-span fast" style="left: 89.3%; width: 7.1%;"></div><div class="sat-years before" style="right: 12.5%;">2023 &rarr; 2025 &middot; 2 years</div></div></div><div class="sat-axis"><div class="sat-tick" style="left: 7.1%;">2000</div><div class="sat-tick" style="left: 25.0%;">2005</div><div class="sat-tick" style="left: 42.9%;">2010</div><div class="sat-tick" style="left: 60.7%;">2015</div><div class="sat-tick" style="left: 78.6%;">2020</div><div class="sat-tick" style="left: 96.4%;">2025</div></div></div>
+<div class="sat-chart"><div class="sat-row fragment"><div class="sat-name">MNIST</div><div class="sat-track"><div class="sat-span" style="left: 0%; width: 50.0%;"></div><div class="sat-years" style="left: 51.5%;">1998 &rarr; 2012 &middot; 14 years</div></div></div><div class="sat-row fragment"><div class="sat-name">ImageNet</div><div class="sat-track"><div class="sat-span" style="left: 39.3%; width: 21.4%;"></div><div class="sat-years" style="left: 62.2%;">2009 &rarr; 2015 &middot; 6 years</div></div></div><div class="sat-row fragment"><div class="sat-name">SQuAD</div><div class="sat-track"><div class="sat-span fast" style="left: 64.3%; width: 7.1%;"></div><div class="sat-years" style="left: 72.9%;">2016 &rarr; 2018 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GLUE</div><div class="sat-track"><div class="sat-span fast" style="left: 71.4%; width: 3.6%;"></div><div class="sat-years" style="left: 76.5%;">2018 &rarr; 2019 &middot; 1 year</div></div></div><div class="sat-row fragment"><div class="sat-name">SuperGLUE</div><div class="sat-track"><div class="sat-span fast" style="left: 75.0%; width: 7.1%;"></div><div class="sat-years" style="left: 83.6%;">2019 &rarr; 2021 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">ARC-AGI-1</div><div class="sat-track"><div class="sat-span" style="left: 75.0%; width: 17.9%;"></div><div class="sat-years before" style="right: 26.6%;">2019 &rarr; 2024 &middot; 5 years</div></div></div><div class="sat-row fragment"><div class="sat-name">MMLU</div><div class="sat-track"><div class="sat-span" style="left: 78.6%; width: 14.3%;"></div><div class="sat-years before" style="right: 23%;">2020 &rarr; 2024 &middot; 4 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GSM8K</div><div class="sat-track"><div class="sat-span fast" style="left: 82.1%; width: 7.1%;"></div><div class="sat-years before" style="right: 19.5%;">2021 &rarr; 2023 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">HumanEval</div><div class="sat-track"><div class="sat-span" style="left: 82.1%; width: 10.7%;"></div><div class="sat-years before" style="right: 19.5%;">2021 &rarr; 2024 &middot; 3 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GPQA Diamond</div><div class="sat-track"><div class="sat-span fast" style="left: 89.3%; width: 7.1%;"></div><div class="sat-years before" style="right: 12.5%;">2023 &rarr; 2025 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">SWE-bench Verified</div><div class="sat-track"><div class="sat-span fast" style="left: 92.9%; width: 3.6%;"></div><div class="sat-years before" style="right: 8.7%;">2024 &rarr; 2025 &middot; 1 year</div></div></div><div class="sat-axis"><div class="sat-tick" style="left: 7.1%;">2000</div><div class="sat-tick" style="left: 25.0%;">2005</div><div class="sat-tick" style="left: 42.9%;">2010</div><div class="sat-tick" style="left: 60.7%;">2015</div><div class="sat-tick" style="left: 78.6%;">2020</div><div class="sat-tick" style="left: 96.4%;">2025</div></div></div>
 
 Each bar runs from **publication** to the year the best systems reached the human or expert ceiling. The axis is to scale. <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
@@ -2283,11 +2412,26 @@ Each bar runs from **publication** to the year the best systems reached the huma
 Once the best models sit near the ceiling, a benchmark stops separating them. Remaining gains are mostly **noise and overfitting**.
 
 <div class="card-grid cols-2">
-<div class="card"><h4>Why the field keeps building successors</h4><p>GLUE to SuperGLUE, MMLU to MMLU-Pro and GPQA, GSM8K to AIME, ARC to ARC-AGI. Each one exists because its predecessor stopped discriminating.</p></div>
+<div class="card"><h4>Why the field keeps building successors</h4><p>GLUE to SuperGLUE, MMLU to MMLU-Pro and GPQA, GSM8K to AIME, ARC to ARC-AGI. Each one exists because its predecessor stopped discriminating, and AIME and ARC-AGI-1 have since saturated too.</p></div>
 <div class="card"><h4>Why the window keeps shrinking</h4><p>Fourteen years for MNIST. Roughly two for the recent ones. A benchmark published today should be assumed to have a <strong>short useful life</strong>.</p></div>
 </div>
 
 **Public benchmarks compare models in general. A small private test set from your own task is the only one nobody can train on.** <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="protocol-measurement-gap" -->
+
+## What the Benchmarks Leave Out
+
+Labs optimize what they can measure. After enough rounds of that, the measurable skills are strong, and whatever is still weak sits where no benchmark looks.
+
+<div class="card-grid cols-2">
+<div class="card"><h4>Measured, so optimized</h4><p>Math with a checkable answer, code with unit tests, multiple-choice knowledge, formats a parser can verify. Scores here climb until the benchmark saturates.</p></div>
+<div class="card warn"><h4>Hard to measure, so left behind</h4><p>Noticing that the question itself is wrong, judging what matters in a long document, writing that reads like a person meant it. Nothing pushes on these, and they lag.</p></div>
+</div>
+
+The result is a **spiky** model: expert-level on a benchmark task and oddly off on the task next to it, in a way that is hard to describe and harder to score. Criticizing a model that has a table of high numbers can feel unscientific. Do it anyway. The numbers tell you about the benchmarks, and the weak spots are likely in the places the benchmarks skip. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -2432,7 +2576,7 @@ The tag sits on the step's header line. A metric can print believable numbers on
 
 <!-- .slide: id="exercise-overview" -->
 
-## Exercise: Nothing Here Trains a Model
+## This Exercise Trains Nothing
 
 Both checkpoints are finished:
 
@@ -2974,7 +3118,7 @@ return 1.0 - math.comb(n - c, k) / math.comb(n, k)
 
 <!-- .slide: id="exercise-three-stories" -->
 
-## Three Benchmarks, Three Stories, Two Models
+## Three Benchmarks Disagree About the Same Two Models
 
 <div class="card-grid cols-3">
 <div class="card"><h4>Perplexity says: RL is better</h4><p>1599 versus 1986 on held-out text. Lower is better, so by this metric the RL model wins.</p></div>
@@ -3336,6 +3480,7 @@ Next: Module 10 &mdash; Deployment and Inference
       <li>Suzgun et al., "Challenging BIG-Bench Tasks" (BBH), <a href="https://arxiv.org/abs/2210.09261">arXiv:2210.09261</a></li>
       <li>Wang et al., "Self-Consistency Improves Chain of Thought Reasoning," <a href="https://arxiv.org/abs/2203.11171">arXiv:2203.11171</a></li>
       <li>Chollet, "On the Measure of Intelligence" (ARC-AGI), <a href="https://arxiv.org/abs/1911.01547">arXiv:1911.01547</a></li>
+      <li>Phan et al., "Humanity's Last Exam," <a href="https://arxiv.org/abs/2501.14249">arXiv:2501.14249</a> &middot; Glazer et al., "FrontierMath," <a href="https://arxiv.org/abs/2411.04872">arXiv:2411.04872</a></li>
     </ul>
   </div>
   <div>

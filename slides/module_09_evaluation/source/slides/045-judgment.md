@@ -8,7 +8,7 @@ Summaries, explanations, advice, code review, tone: no key to compare against. T
 **Old: overlap with a reference**
 
 - **BLEU** (2002, translation), **ROUGE** (2004, summarization)
-- Count n-grams shared with human-written references
+- Count how many short word sequences (**n-grams**) the output shares with a reference a person wrote
 - Drove twenty years of measurable progress
 - Cannot tell whether an answer is **true or useful**: a fluent wrong answer scores well
 +++
@@ -23,10 +23,35 @@ Summaries, explanations, advice, code review, tone: no key to compare against. T
 ---
 
 :::figure img="images/papineni_lin.jpg" name="Kishore Papineni &amp; Chin-Yew Lin" kicker="BLEU (IBM, 2002) and ROUGE (2004)" alt="Kishore Papineni and Chin-Yew Lin"
-Papineni and collaborators scored translations by **n-gram overlap with human references**. Before BLEU, comparing two translation systems meant hiring translators. After it, a research group could iterate overnight.
+Papineni and collaborators scored a translation by counting how many of its word sequences also appear in **human reference translations**. Before BLEU, comparing two translation systems meant hiring translators. After it, a research group could iterate overnight.
 
-Lin did the same for summarization. Both metrics correlate **weakly** with human judgment on modern systems and are still reported anyway: a flawed number everyone computes the same way is at least comparable.
+Lin turned the count around for summarization: ROUGE asks how much of the **reference summary** the candidate recovers. Both metrics correlate **weakly** with human judgment on modern systems and are still reported anyway: a flawed number everyone computes the same way is at least comparable.
 :::
+
+---
+
+<!-- .slide: id="judge-rouge" -->
+
+## How ROUGE Scores a Summary
+
+$$\text{ROUGE-}N = \frac{\text{n-grams shared with the reference}}{\text{n-grams in the reference}}$$
+
+An n-gram is a run of n consecutive words: ROUGE-1 counts single words, ROUGE-2 counts word pairs. This is the recall from the token F1 slide, extended to word sequences. BLEU runs the same count from the other side: it divides by the candidate's n-grams (precision) and penalizes outputs that are too short.
+
+Reference: **"the cat sat on the mat"**
+
+<div class="compare-table">
+<table>
+<thead><tr><th>Candidate</th><th>ROUGE-1</th><th>ROUGE-2</th><th>Same meaning?</th></tr></thead>
+<tbody>
+<tr><td>the cat was on the mat</td><td class="num">0.83</td><td class="num">0.60</td><td>Yes</td></tr>
+<tr><td>the cat never sat on the mat</td><td class="num">1.00</td><td class="num">0.80</td><td>No, it says the opposite</td></tr>
+<tr><td>a kitten rested on the rug</td><td class="num">0.33</td><td class="num">0.20</td><td>Yes</td></tr>
+</tbody>
+</table>
+</div>
+
+The contradiction gets the best score because it contains every word of the reference. Overlap measures shared vocabulary, and meaning is invisible to it. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -52,6 +77,21 @@ Their **MT-Bench** paper is the standard reference for LLM-as-a-judge: a strong 
 
 Both rest on one shift: with no answer key, you can still ask **which of two answers is better.**
 :::
+
+---
+
+<!-- .slide: id="sq-arena-vote" -->
+
+## <span class="side-quest-badge">Side Quest</span> Cast a Vote in the Arena
+
+Chatbot Arena now runs as **Arena** at <a href="https://arena.ai/" target="_blank">arena.ai</a>. Open it, type a prompt, and vote for one of two anonymous answers. The model names appear only after you vote.
+
+<div class="card-grid cols-2">
+<div class="card"><h4>Try a question you can check</h4><p>Pick something where you know the right answer: a calculation, a fact from your field, a bug in a short function. Did you vote for the <strong>correct</strong> answer or the more convincing one?</p></div>
+<div class="card"><h4>Then try an open-ended one</h4><p>Ask for advice or an explanation. Notice what decided your vote: length, formatting, tone, or content. Your vote goes into the same rating as everyone else's.</p></div>
+</div>
+
+Every number on the leaderboard is built from votes like yours. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -95,3 +135,19 @@ Ask a judge model which of two answers is better. Record the verdict. Present **
 </div>
 
 A two-minute experiment that changes how you read every LLM-judged leaderboard. The extra credit builds a rule-based version you can watch flip. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="sq-decision-judge" -->
+
+## <span class="side-quest-badge">Side Quest</span> A Judge That Writes No Text
+
+A **decision model** such as TypeSafe's Jev is closer to a text classifier than a chatbot. It answers typed questions (yes or no, pick one, a score) and returns a **probability** for each answer. <a href="https://github.com/osolmaz/switch" target="_blank">switch</a> is an open-source harness that runs one as a rubric judge.
+
+<div class="card-grid cols-3">
+<div class="card"><h4>Nothing to parse</h4><p>A chat judge writes a verdict that you then extract with a regex. A decision model returns P(yes) for each rubric item directly, so there is no answer extraction to get wrong.</p></div>
+<div class="card"><h4>Two questions per item</h4><p>Does the answer meet the item (<em>a</em>)? Does it miss or contradict a requirement (<em>b</em>)? The item passes when min(<em>a</em>, 1 &minus; <em>b</em>) &ge; 0.5.</p></div>
+<div class="card"><h4>Cheap</h4><p>It generates no tokens, and it picks what to read (a section of a file, a page image, a search hit) instead of loading every document into context.</p></div>
+</div>
+
+Treat it like any other judge: score it against human labels before you trust it. switch's rubric judge ships a <code>score</code> command for that. <!-- .element: class="text-lg" -->

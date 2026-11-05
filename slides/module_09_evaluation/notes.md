@@ -370,6 +370,27 @@ depends on the gap between them.
   reported; both are also known to correlate weakly with human judgment on modern
   systems, because n-gram overlap cannot express whether an answer is true or
   useful.
+- **How the overlap metrics compute** (slide `judge-rouge`). An n-gram is a run
+  of n consecutive tokens. ROUGE-N (Lin, 2004) is recall over n-grams:
+
+  $$\text{ROUGE-}N = \frac{\sum_{g} \min(\text{count}_{c}(g), \text{count}_{r}(g))}{\sum_{g} \text{count}_{r}(g)}$$
+
+  where the sums run over n-grams g, c is the candidate, and r is the reference.
+  The min clips repeated n-grams, so saying "the" five times earns credit only
+  for as many "the"s as the reference has. ROUGE-L replaces fixed n-grams with
+  the longest common subsequence. BLEU (Papineni et al., 2002) uses the same
+  clipped counts but divides by the candidate's n-grams (modified precision),
+  takes a geometric mean over n = 1 to 4, and multiplies by a brevity penalty so
+  a very short output cannot score high precision by saying little. ROUGE-1 on a
+  single reference is the recall half of the SQuAD token F1 from slide
+  `instruct-f1`.
+- **The worked example** on `judge-rouge` uses reference "the cat sat on the mat"
+  (6 unigrams, 5 bigrams). "the cat was on the mat" shares 5 unigrams and 3
+  bigrams (the cat, on the, the mat): 0.83 and 0.60. "the cat never sat on the
+  mat" shares all 6 unigrams and 4 bigrams (the cat, sat on, on the, the mat):
+  1.00 and 0.80. "a kitten rested on the rug" shares 2 unigrams and 1 bigram:
+  0.33 and 0.20. The contradiction outscores both faithful paraphrases. The
+  numbers were computed with clipped counts as in the formula above.
 - **The comparison era.** Show two answers to the same prompt and ask which is
   better. No reference text is required and the quantity measured is closer to
   what users care about.
@@ -406,6 +427,37 @@ Known biases, all easy to demonstrate:
 
 The practical rule on the slide: validate any judge against a few hundred
 human-labeled examples from your own task before trusting its numbers.
+
+### Decision models as judges (side quest)
+
+Slide `sq-decision-judge` points to switch (github.com/osolmaz/switch, MIT
+license), a TypeScript harness for **decision models**: models that answer typed
+questions (`bool`, `choice`, `score`) with probabilities and generate no text.
+TypeSafe calls these "System One models," and its Jev was the first; llama.cpp
+also serves open decision models through the same API (switch README).
+
+Its rubric-judge example grades a saved answer against a rubric. The model first
+gathers evidence step by step (read part of a file, look at a page image, search
+a rubric term, count words, and so on) until it picks stop. Then it answers two
+bool questions per rubric item: whether the answer meets it (probability a) and
+whether it misses or contradicts any requirement (probability b). The item's pass
+probability is
+
+$$P(\text{pass}) = \min(a, 1 - b)$$
+
+because for any two events $P(A \cap B) \le \min(P(A), P(B))$, and the product
+a(1 &minus; b) would wrongly assume the two checks are independent when both read the
+same evidence. The verdict is pass when this is at least 0.5, which holds exactly
+when a &ge; 0.5 and b &le; 0.5. The harness's `score` and `compare` commands
+measure a judge against human pass/fail labels.
+
+Why it connects to this section: a judge that returns a probability for a fixed
+question removes answer extraction (section c) and free-text verbosity from the
+judging step, and it costs less because it generates nothing and reads only the
+evidence it selects. The switch README is explicit that Jev "is not yet good
+enough to replace the strongest chat models" as a judge, and that the larger gain
+is expected from fine-tuning an open decision model on one narrow domain. That is
+why the slide ends with "score it against human labels before you trust it."
 
 ## d. Evaluating a reasoning or RL-trained model
 
@@ -598,6 +650,24 @@ The side quest "One model, two scores" is the hands-on version, and it is the
 first extra credit in the exercise: change the chat template in `_prefix_ids()`,
 keep the weights identical, and report how far the numbers move.
 
+### Chat templates (side quest)
+
+Slide `sq-chat-templates` expands the "Prompt template" card on `protocol-knobs`.
+An instruct model was finetuned on one serialization of roles into special tokens
+(Module 6), so at evaluation time the harness must reproduce it. The two renderings
+on the slide follow the Hugging Face LLM Course, chapter 11.2 ("Chat Templates"):
+ChatML, used by SmolLM2 and Qwen 2, wraps each turn in `<|im_start|>role ...
+<|im_end|>`; the Mistral format wraps user turns in `[INST] ... [/INST]`. The
+course recommends checking the template in the model's tokenizer configuration on
+the Hub, because the wrong template degrades performance.
+
+In `transformers`, `tokenizer.apply_chat_template(messages, tokenize=False,
+add_generation_prompt=True)` renders the conversation and appends the opening of
+an assistant turn so the model answers instead of continuing the user's text.
+Leaving the generation prompt off, or using another family's template, is a
+protocol change of exactly the kind this section describes: same weights,
+different number.
+
 ### Contamination
 
 If test items or near-duplicates appear in the training data, a high score
@@ -652,6 +722,60 @@ MMLU to MMLU-Pro and GPQA, GSM8K to AIME, ARC to ARC-AGI.
 The practical consequence: public benchmarks compare models in general and are not
 a substitute for a small private test set drawn from your own task — which is also
 the only set nobody else can train on.
+
+### Saturation status of every benchmark named in this module (as of November 2026)
+
+The "Saturated" columns on `base-benchmarks`, `instruct-benchmarks`, `reasoning-benchmarks`, `mm-understanding`, and `agents-benchmarks` use one definition: frontier models reached the human or expert baseline, or the top scores sit so close to 100% that the remaining errors are mostly label noise and the benchmark no longer separates frontier models. These benchmarks still separate small models, which is why the exercise and most open-model reports for small checkpoints keep using them.
+
+| Benchmark | Saturated | What marked it |
+|---|---|---|
+| HellaSwag | 2023 | GPT-4 95.3% (10-shot) vs 95.6% human (OpenAI, GPT-4 Technical Report, arXiv:2303.08774) |
+| ARC-Challenge | 2023 | GPT-4 96.3% (same report) |
+| WinoGrande, PIQA | ~2023 | No longer separates frontier models; reported less often after GPT-4. No single dated event |
+| TriviaQA, Natural Questions | Legacy | Dropped from frontier reports; NQ also has heavy test/train overlap (Lewis et al., EACL 2021) |
+| MMLU | 2024 | GPT-4o and Claude 3.5 Sonnet both ~88.7%, against an estimated ~89.8% expert ceiling and known label errors |
+| GSM8K | 2023 | GPT-4 above 90%; all frontier models above 95% by 2024 |
+| MATH | 2024 | o1 above 94% (OpenAI, September 2024) |
+| HumanEval, MBPP | 2024 | Above 90% for frontier models |
+| IFEval | 2025 | Top models ~95%, top-10 spread under 3 points; IFBench is the successor |
+| BBH | 2025 | Reasoning models near-perfect; replaced by BIG-Bench Extra Hard (arXiv:2502.19187) |
+| MMLU-Pro | ~2026 | Top models ~90%; reports now treat it as a legacy baseline |
+| GPQA Diamond | 2025 | o1 passed the expert baseline in September 2024 (78% vs ~70% for OpenAI's PhD panel); top models in the high 80s to 90s by 2025 |
+| AIME | 2025 | Perfect scores with tools (August 2025) and without tools (December 2025) |
+| Competitive programming | Partly | OpenAI's system solved 12/12 at the ICPC World Finals, September 2025. The best human Codeforces rating has not been matched |
+| SWE-bench Verified | 2025 | Claude Opus 4.5 at 80.9% (November 2025). OpenAI stopped reporting it on February 23, 2026, citing contamination and flawed tests ("Why we no longer evaluate SWE-bench Verified," openai.com) |
+| ARC-AGI-1 | 2024 | o3 at 87.5% (high compute) in December 2024; ARC Prize called it saturating |
+| ARC-AGI-2 | 2026 | Reported ~85% in spring 2026 (aggregator figures; confirm on arcprize.org) |
+| VQAv2 | ~2022 | Models above the 80.8% human-agreement figure; label noise documented |
+| TextVQA, DocVQA, ChartQA, AI2D | Near ceiling | Top scores in the 90s by 2026 |
+| MMMU | 2025 (median expert) | Top models ~85% passed the median expert (82.6%); still below the best expert (88.6%). Reports moved to MMMU-Pro |
+| MathVista | 2024 | GPT-4o 63.8% passed the 60.3% human baseline (May 2024) |
+| MMBench, MME, Video-MME, POPE | Near ceiling | Top scores near 90%; POPE is yes/no with a 50% chance floor. Video-MME-v2 (2026) is unsaturated |
+| GAIA | ~2026 | Self-submitted leaderboard entries near the 92% human baseline; independent runs are lower |
+| OSWorld-Verified | Early 2026 | Passed the 72.36% human baseline (Agent S, December 2025; Claude Opus 4.6, February 2026) |
+| WebArena | Borderline | Best closed systems at or above the 78% human baseline in 2026 |
+| tau2-bench | 2026 | ~99% on the telecom domain; Sierra released tau3-bench |
+| MT-Bench, AlpacaEval | ~2024 | Judge-scored and saturated; replaced by Arena-Hard and similar |
+
+Slides `reasoning-open`, `mm-open`, and `agents-open` list the unsaturated benchmarks frontier labs report instead (SimpleQA Verified sits on `reasoning-open`; Arena, which has no ceiling, is covered on `judge-arena`). The status column is deliberately coarse because these numbers move monthly and depend on the harness:
+
+- **Humanity's Last Exam** (Phan et al., arXiv:2501.14249): about half answered by the best model on the official Scale/CAIS leaderboard in fall 2026; vendor-reported scores with tools run higher.
+- **FrontierMath** (Glazer et al., arXiv:2411.04872): Epoch AI reported the hardest tier (Tier 4) solved by a frontier model in September 2026. Confirm on epoch.ai before quoting a number.
+- **ARC-AGI-3** (ARC Prize, March 2026): interactive environments; every model scored under 1% at launch. Later scores depend heavily on the agent harness.
+- **SWE-bench Pro** (Scale AI, arXiv:2509.16941): reported scores range widely by harness. OpenAI reported in July 2026 that roughly 30% of tasks were broken.
+- **Terminal-Bench**: version 2.0 top scores passed 80% in 2026; harder later versions followed.
+- **GDPval** (OpenAI, arXiv:2510.04374): expert-graded work products from 44 occupations; parity with experts is a 50% win-or-tie rate.
+- **Arena** (renamed from LMArena/Chatbot Arena in January 2026): a relative Elo ranking, so it has no ceiling to saturate.
+
+The 2026 entries come from secondary trackers (benchlm.ai, llm-stats.com, Killed by LLM) and vendor announcements. Check them against the primary leaderboards before quoting specific numbers in class.
+
+### What the benchmarks leave out
+
+Slide `protocol-measurement-gap` takes Goodhart's law (see section d) to the scale of the whole field. Labs train and tune against the benchmarks they report, so capability grows fastest where a score exists. Skills that have an automatic checker (math with a final numeric answer, code with unit tests, multiple-choice knowledge, formatting that a parser can verify) get pushed hardest. Skills with no cheap scorer, such as recognizing a badly posed question or judging what matters in a long document, get no direct training pressure from benchmarks and improve only as a side effect.
+
+The slide calls the resulting profile "spiky": very strong on measured tasks and uneven on nearby unmeasured ones. Dell'Acqua et al. (2023) describe the same unevenness as a "jagged technological frontier." In their field experiment with BCG consultants using GPT-4, the model raised performance on tasks inside its frontier and lowered it on a task of similar apparent difficulty that fell outside it.
+
+The point for students is about evidence, not anti-measurement. A high benchmark score is strong evidence about the benchmark's distribution and weak evidence about everything else. A qualitative complaint about a model ("it feels off when it summarizes our contracts") is a hypothesis to turn into a private test set, which is the advice from the saturation slides.
 
 ## h. Running evaluations in practice, and the handoff to Module 10
 
@@ -904,6 +1028,15 @@ Carried over from earlier modules
   `base-bpb-compression`)
 - Gao et al., "The Pile," arXiv:2101.00027 (bits per byte as the reported
   cross-tokenizer metric)
+- Dell'Acqua et al., "Navigating the Jagged Technological Frontier," Harvard
+  Business School Working Paper 24-013, 2023 (the uneven capability profile on
+  `protocol-measurement-gap`)
+- Phan et al., "Humanity's Last Exam," arXiv:2501.14249
+- Glazer et al., "FrontierMath," arXiv:2411.04872
+- Deng et al., "SWE-Bench Pro," arXiv:2509.16941
+- Patwardhan et al., "GDPval," arXiv:2510.04374
+- OpenAI, "Why we no longer evaluate SWE-bench Verified," openai.com, February 2026
+- Killed by LLM, a tracker of saturated benchmarks, r0bk.github.io/killedbyllm
 
 ## Image credits
 
@@ -917,7 +1050,7 @@ institutional or personal page except where noted:
 - `papineni_lin.jpg` — Custom.MT's MT-leaders profile and Microsoft Research's
   people directory
 - `chiang_zheng.jpg` — Wei-Lin Chiang's and Lianmin Zheng's personal pages
-- `percy_liang.jpg` — Stanford CS faculty page
+- `percy_liang.jpg` — Stanford CS faculty page (cs.stanford.edu/~pliang/resources/percy3.jpeg, cropped to 2:3)
 
 Two contributors named on these slides could not be given a photograph and are
 credited in the body text instead: **Alex Wang** (GLUE) and **Ying Sheng**

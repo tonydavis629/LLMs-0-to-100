@@ -22,18 +22,29 @@ The same checkpoint can move several points on MMLU from choices unrelated to th
 
 ---
 
-<!-- .slide: id="sq-two-scores" -->
+<!-- .slide: id="sq-chat-templates" -->
 
-## <span class="side-quest-badge">Side Quest</span> One Model, Two Scores
+## <span class="side-quest-badge">Side Quest</span> Chat Templates Break Evaluations
 
-Take one checkpoint. Run it twice, changing exactly one thing about the protocol.
+Every model family wraps messages in its own special tokens, and an instruct model only works well with the one it was finetuned on:
 
-<div class="card-grid cols-2">
-<div class="card"><h4>Change the template</h4><p>Add a space after the assistant marker. Reword the instruction. Keep the weights identical.</p></div>
-<div class="card"><h4>Change the scoring shape</h4><p>Score the multiple-choice set by likelihood, then by reading the generated letter.</p></div>
-</div>
+:::columns cols="2" gap="34px"
+**ChatML** (SmolLM2, Qwen 2)
 
-The scores move; the model did not change. This is the first extra credit in the exercise, and the fastest way to stop treating a leaderboard cell as a property of the weights. <!-- .element: class="text-lg" -->
+```text
+<|im_start|>user
+What's the weather?<|im_end|>
+<|im_start|>assistant
+```
++++
+**Mistral**
+
+```text
+<s>[INST] What's the weather? [/INST]
+```
+:::
+
+A harness that uses the wrong template, or leaves it out, scores the model lower with no change to the weights. More in the <a href="https://huggingface.co/learn/llm-course/chapter11/2" target="_blank">Hugging Face chat templates chapter</a>. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -68,9 +79,9 @@ This check took one `grep` on 1,500 examples. What could it mean for a model tra
 
 <!-- .slide: id="protocol-saturation-chart" -->
 
-## Saturation: How Long a Benchmark Stays Useful
+## How Long a Benchmark Stays Useful
 
-<div class="sat-chart"><div class="sat-row fragment"><div class="sat-name">MNIST</div><div class="sat-track"><div class="sat-span" style="left: 0%; width: 50.0%;"></div><div class="sat-years" style="left: 51.5%;">1998 &rarr; 2012 &middot; 14 years</div></div></div><div class="sat-row fragment"><div class="sat-name">ImageNet</div><div class="sat-track"><div class="sat-span" style="left: 39.3%; width: 21.4%;"></div><div class="sat-years" style="left: 62.2%;">2009 &rarr; 2015 &middot; 6 years</div></div></div><div class="sat-row fragment"><div class="sat-name">SQuAD</div><div class="sat-track"><div class="sat-span fast" style="left: 64.3%; width: 7.1%;"></div><div class="sat-years" style="left: 72.9%;">2016 &rarr; 2018 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GLUE</div><div class="sat-track"><div class="sat-span fast" style="left: 71.4%; width: 3.6%;"></div><div class="sat-years" style="left: 76.5%;">2018 &rarr; 2019 &middot; 1 year</div></div></div><div class="sat-row fragment"><div class="sat-name">SuperGLUE</div><div class="sat-track"><div class="sat-span fast" style="left: 75.0%; width: 7.1%;"></div><div class="sat-years" style="left: 83.6%;">2019 &rarr; 2021 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">MMLU</div><div class="sat-track"><div class="sat-span" style="left: 78.6%; width: 14.3%;"></div><div class="sat-years before" style="right: 23%;">2020 &rarr; 2024 &middot; 4 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GSM8K</div><div class="sat-track"><div class="sat-span fast" style="left: 82.1%; width: 7.1%;"></div><div class="sat-years before" style="right: 19.5%;">2021 &rarr; 2023 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GPQA Diamond</div><div class="sat-track"><div class="sat-span fast" style="left: 89.3%; width: 7.1%;"></div><div class="sat-years before" style="right: 12.5%;">2023 &rarr; 2025 &middot; 2 years</div></div></div><div class="sat-axis"><div class="sat-tick" style="left: 7.1%;">2000</div><div class="sat-tick" style="left: 25.0%;">2005</div><div class="sat-tick" style="left: 42.9%;">2010</div><div class="sat-tick" style="left: 60.7%;">2015</div><div class="sat-tick" style="left: 78.6%;">2020</div><div class="sat-tick" style="left: 96.4%;">2025</div></div></div>
+<div class="sat-chart"><div class="sat-row fragment"><div class="sat-name">MNIST</div><div class="sat-track"><div class="sat-span" style="left: 0%; width: 50.0%;"></div><div class="sat-years" style="left: 51.5%;">1998 &rarr; 2012 &middot; 14 years</div></div></div><div class="sat-row fragment"><div class="sat-name">ImageNet</div><div class="sat-track"><div class="sat-span" style="left: 39.3%; width: 21.4%;"></div><div class="sat-years" style="left: 62.2%;">2009 &rarr; 2015 &middot; 6 years</div></div></div><div class="sat-row fragment"><div class="sat-name">SQuAD</div><div class="sat-track"><div class="sat-span fast" style="left: 64.3%; width: 7.1%;"></div><div class="sat-years" style="left: 72.9%;">2016 &rarr; 2018 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GLUE</div><div class="sat-track"><div class="sat-span fast" style="left: 71.4%; width: 3.6%;"></div><div class="sat-years" style="left: 76.5%;">2018 &rarr; 2019 &middot; 1 year</div></div></div><div class="sat-row fragment"><div class="sat-name">SuperGLUE</div><div class="sat-track"><div class="sat-span fast" style="left: 75.0%; width: 7.1%;"></div><div class="sat-years" style="left: 83.6%;">2019 &rarr; 2021 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">ARC-AGI-1</div><div class="sat-track"><div class="sat-span" style="left: 75.0%; width: 17.9%;"></div><div class="sat-years before" style="right: 26.6%;">2019 &rarr; 2024 &middot; 5 years</div></div></div><div class="sat-row fragment"><div class="sat-name">MMLU</div><div class="sat-track"><div class="sat-span" style="left: 78.6%; width: 14.3%;"></div><div class="sat-years before" style="right: 23%;">2020 &rarr; 2024 &middot; 4 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GSM8K</div><div class="sat-track"><div class="sat-span fast" style="left: 82.1%; width: 7.1%;"></div><div class="sat-years before" style="right: 19.5%;">2021 &rarr; 2023 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">HumanEval</div><div class="sat-track"><div class="sat-span" style="left: 82.1%; width: 10.7%;"></div><div class="sat-years before" style="right: 19.5%;">2021 &rarr; 2024 &middot; 3 years</div></div></div><div class="sat-row fragment"><div class="sat-name">GPQA Diamond</div><div class="sat-track"><div class="sat-span fast" style="left: 89.3%; width: 7.1%;"></div><div class="sat-years before" style="right: 12.5%;">2023 &rarr; 2025 &middot; 2 years</div></div></div><div class="sat-row fragment"><div class="sat-name">SWE-bench Verified</div><div class="sat-track"><div class="sat-span fast" style="left: 92.9%; width: 3.6%;"></div><div class="sat-years before" style="right: 8.7%;">2024 &rarr; 2025 &middot; 1 year</div></div></div><div class="sat-axis"><div class="sat-tick" style="left: 7.1%;">2000</div><div class="sat-tick" style="left: 25.0%;">2005</div><div class="sat-tick" style="left: 42.9%;">2010</div><div class="sat-tick" style="left: 60.7%;">2015</div><div class="sat-tick" style="left: 78.6%;">2020</div><div class="sat-tick" style="left: 96.4%;">2025</div></div></div>
 
 Each bar runs from **publication** to the year the best systems reached the human or expert ceiling. The axis is to scale. <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
@@ -83,8 +94,23 @@ Each bar runs from **publication** to the year the best systems reached the huma
 Once the best models sit near the ceiling, a benchmark stops separating them. Remaining gains are mostly **noise and overfitting**.
 
 <div class="card-grid cols-2">
-<div class="card"><h4>Why the field keeps building successors</h4><p>GLUE to SuperGLUE, MMLU to MMLU-Pro and GPQA, GSM8K to AIME, ARC to ARC-AGI. Each one exists because its predecessor stopped discriminating.</p></div>
+<div class="card"><h4>Why the field keeps building successors</h4><p>GLUE to SuperGLUE, MMLU to MMLU-Pro and GPQA, GSM8K to AIME, ARC to ARC-AGI. Each one exists because its predecessor stopped discriminating, and AIME and ARC-AGI-1 have since saturated too.</p></div>
 <div class="card"><h4>Why the window keeps shrinking</h4><p>Fourteen years for MNIST. Roughly two for the recent ones. A benchmark published today should be assumed to have a <strong>short useful life</strong>.</p></div>
 </div>
 
 **Public benchmarks compare models in general. A small private test set from your own task is the only one nobody can train on.** <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="protocol-measurement-gap" -->
+
+## What the Benchmarks Leave Out
+
+Labs optimize what they can measure. After enough rounds of that, the measurable skills are strong, and whatever is still weak sits where no benchmark looks.
+
+<div class="card-grid cols-2">
+<div class="card"><h4>Measured, so optimized</h4><p>Math with a checkable answer, code with unit tests, multiple-choice knowledge, formats a parser can verify. Scores here climb until the benchmark saturates.</p></div>
+<div class="card warn"><h4>Hard to measure, so left behind</h4><p>Noticing that the question itself is wrong, judging what matters in a long document, writing that reads like a person meant it. Nothing pushes on these, and they lag.</p></div>
+</div>
+
+The result is a **spiky** model: expert-level on a benchmark task and oddly off on the task next to it, in a way that is hard to describe and harder to score. Criticizing a model that has a table of high numbers can feel unscientific. Do it anyway. The numbers tell you about the benchmarks, and the weak spots are likely in the places the benchmarks skip. <!-- .element: class="text-lg" -->

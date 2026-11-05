@@ -22,19 +22,36 @@ Evaluation stops being a metric on outputs and becomes an **integration test**: 
 
 ## The Agent Benchmarks You Will Hear About
 
-<div class="bench-table">
+<div class="bench-table dense">
 <table>
-<thead><tr><th>Benchmark</th><th>Environment</th><th>How it is scored</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>Environment</th><th>How it is scored</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>SWE-bench</strong> (2023)</td><td>A real GitHub repository with a real issue</td><td>Apply the model's patch and run the project's test suite. <strong>SWE-bench Verified</strong> is the human-filtered subset everyone reports.</td></tr>
-<tr><td><strong>GAIA</strong></td><td>Browsing, files, and tools</td><td>General-assistant questions with short verifiable answers.</td></tr>
-<tr><td><strong>WebArena, OSWorld</strong></td><td>A simulated browser or desktop</td><td>Inspect the end state: was the form submitted, the file saved, the setting changed?</td></tr>
-<tr><td><strong>tau-bench</strong></td><td>Multi-turn customer service with tool calls</td><td>Did the agent follow the policy rules and reach the correct final state?</td></tr>
+<tr><td><strong>SWE-bench</strong> (2023)</td><td>A real GitHub repository with a real issue</td><td>Apply the model's patch and run the project's test suite. <strong>SWE-bench Verified</strong> is the human-filtered subset labs reported through 2025.</td><td>2025. Successors: SWE-bench Pro, Terminal-Bench</td></tr>
+<tr><td><strong>GAIA</strong></td><td>Browsing, files, and tools</td><td>General-assistant questions with short verifiable answers.</td><td>Near the 92% human baseline, 2026</td></tr>
+<tr><td><strong>WebArena, OSWorld</strong></td><td>A simulated browser or desktop</td><td>Inspect the end state: was the form submitted, the file saved, the setting changed?</td><td>OSWorld passed its 72% human baseline by early 2026</td></tr>
+<tr><td><strong>tau-bench</strong></td><td>Multi-turn customer service with tool calls</td><td>Did the agent follow the policy rules and reach the correct final state?</td><td>2026. Successor: tau3-bench</td></tr>
 </tbody>
 </table>
 </div>
 
 Modules 10 and 11 build the systems these benchmarks measure. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="agents-open" -->
+
+## Agent Benchmarks That Are Still Open
+
+<div class="bench-table">
+<table>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it measures</th><th>Best score, late 2026</th></tr></thead>
+<tbody>
+<tr><td><strong>SWE-bench Pro</strong></td><td>2025</td><td>Harder repository issues in several languages, scored by running the tests. OpenAI later found about 30% of tasks broken.</td><td>~62% on Scale's public set</td></tr>
+<tr><td><strong>Terminal-Bench</strong></td><td>2025</td><td>Long multi-step tasks in a real shell, scored by checking the end state.</td><td>~60% on version 4.0 (2026)</td></tr>
+<tr><td><strong>GDPval</strong></td><td>2025</td><td>Work products from 44 occupations, compared blind against an expert's own work.</td><td>Reported as a win-or-tie rate against experts</td></tr>
+</tbody>
+</table>
+</div>
 
 ---
 

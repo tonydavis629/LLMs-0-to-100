@@ -93,14 +93,14 @@
   position: absolute;
   left: 0;
   top: 8px;
-  width: 128px;
+  width: 160px;
   text-align: right;
   font-size: 12.5pt;
   color: var(--text-color);
 }
 .sat-track {
   position: absolute;
-  left: 142px;
+  left: 174px;
   right: 12px;
   top: 0;
   bottom: 0;
@@ -126,7 +126,7 @@
 .sat-axis {
   position: relative;
   height: 26px;
-  margin-left: 142px;
+  margin-left: 174px;
   margin-right: 12px;
   border-top: 2px solid #2a3450;
 }
@@ -170,3 +170,10 @@
   padding-left: 18px;
 }
 .reveal ul.resource-list li::before { width: 6px; height: 6px; }
+
+/* Divider row inside a benchmark table: separates saturated rows from open ones. */
+.bench-table tr.group td {
+  color: var(--secondary-color);
+  font-weight: 700;
+  border-top: 2px solid var(--secondary-color);
+}

@@ -54,7 +54,7 @@ The tag sits on the step's header line. A metric can print believable numbers on
 
 <!-- .slide: id="exercise-overview" -->
 
-## Exercise: Nothing Here Trains a Model
+## This Exercise Trains Nothing
 
 Both checkpoints are finished:
 
@@ -570,7 +570,7 @@ return 1.0 - math.comb(n - c, k) / math.comb(n, k)
 
 <!-- .slide: id="exercise-three-stories" -->
 
-## Three Benchmarks, Three Stories, Two Models
+## Three Benchmarks Disagree About the Same Two Models
 
 <div class="card-grid cols-3">
 <div class="card"><h4>Perplexity says: RL is better</h4><p>1599 versus 1986 on held-out text. Lower is better, so by this metric the RL model wins.</p></div>

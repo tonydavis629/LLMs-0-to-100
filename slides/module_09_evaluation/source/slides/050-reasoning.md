@@ -24,18 +24,38 @@ Evaluate an RL model with the **same held-out benchmarks as before**, plus new o
 
 This is the RLVR setup from Module 7 used as a **test set** rather than a training signal.
 
-<div class="bench-table">
+<div class="bench-table dense">
 <table>
-<thead><tr><th>Benchmark</th><th>What it asks</th></tr></thead>
+<thead><tr><th>Benchmark</th><th>What it asks</th><th>Status</th></tr></thead>
 <tbody>
-<tr><td><strong>AIME</strong> and competition math</td><td>Short integer answers, hard enough to be unsaturated. The standard headline number in reasoning-model announcements.</td></tr>
-<tr><td><strong>GPQA Diamond</strong></td><td>The hardest slice of GPQA: graduate science questions that resist web search.</td></tr>
-<tr><td><strong>Competitive programming</strong></td><td>Codeforces-style problems, scored by running the judge's tests. Often reported as an Elo rating.</td></tr>
-<tr><td><strong>SWE-bench</strong></td><td>Resolve a real GitHub issue so the project's test suite passes. Covered under agent evaluation.</td></tr>
-<tr><td><strong>ARC-AGI</strong></td><td>Abstract visual puzzles designed to resist memorization. The most-cited "is it really reasoning" benchmark.</td></tr>
+<tr><td><strong>AIME</strong> and competition math</td><td>Short integer answers from a hard high-school contest. The headline number in 2024&ndash;25 reasoning-model launches.</td><td>Saturated 2025: perfect scores with and without tools</td></tr>
+<tr><td><strong>GPQA Diamond</strong></td><td>The hardest slice of GPQA: graduate science questions that resist web search.</td><td>Passed the expert baseline 2024, saturated 2025</td></tr>
+<tr><td><strong>Competitive programming</strong></td><td>Codeforces-style problems, scored by running the judge's tests. Often reported as an Elo rating.</td><td>Gold-medal ICPC result 2025. The top human rating is still ahead</td></tr>
+<tr><td><strong>SWE-bench Verified</strong></td><td>Resolve a real GitHub issue so the project's test suite passes. Covered under agent evaluation.</td><td>Saturated 2025, then dropped by OpenAI in 2026 over contamination</td></tr>
+<tr><td><strong>ARC-AGI</strong></td><td>Abstract visual puzzles designed to resist memorization. The most-cited "is it really reasoning" benchmark.</td><td>Version 1 saturated 2024, version 2 in 2026. Version 3 (2026) is open</td></tr>
 </tbody>
 </table>
 </div>
+
+---
+
+<!-- .slide: id="reasoning-open" -->
+
+## Reasoning Benchmarks That Are Still Open
+
+<div class="bench-table">
+<table>
+<thead><tr><th>Benchmark</th><th>Year</th><th>What it measures</th><th>Best score, late 2026</th></tr></thead>
+<tbody>
+<tr><td><strong>Humanity's Last Exam</strong></td><td>2025</td><td>2,500 closed-ended questions written by domain experts to stump frontier models.</td><td>About half</td></tr>
+<tr><td><strong>FrontierMath</strong></td><td>2024</td><td>Unpublished research-level math, run by Epoch AI so nobody can train on it.</td><td>Near 90% on tiers 1&ndash;3</td></tr>
+<tr><td><strong>ARC-AGI-3</strong></td><td>2026</td><td>Interactive games where the model has to discover the rules with no instructions.</td><td>Under 1% for every model at launch</td></tr>
+<tr><td><strong>SimpleQA Verified</strong></td><td>2025</td><td>Short factual questions answered <strong>without tools</strong>: what the model knows, not what it can look up.</td><td>~78%</td></tr>
+</tbody>
+</table>
+</div>
+
+These scores move every few months. Check the official leaderboard before quoting one. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -54,7 +74,7 @@ Reasoning models are **stochastic and expensive**. Without these two numbers, th
 
 <!-- .slide: id="reasoning-passk" -->
 
-## The pass@k Lesson, Restated as an Evaluation Principle
+## What pass@k Means for Evaluation
 
 Module 7: RL **sharpens** the sampling distribution rather than expanding ability. As measurement, that is a claim about the pass@1 versus pass@k gap:
 
