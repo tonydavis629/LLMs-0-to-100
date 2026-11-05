@@ -7,14 +7,14 @@
 
 ## A Reward Curve Is Not an Evaluation
 
-Module 7's climbing reward curve says **the optimizer works**. The reward is exactly what was optimized, so the curve says nothing about whether the model got better.
+A rising reward curve (Module 7) shows **the optimizer works**. It cannot show the model got better.
 
 <div class="card-grid cols-2">
-<div class="card"><h4>What the reward curve measures</h4><p>Training progress on the training prompts, under the training reward. A <strong>diagnostic</strong>.</p></div>
-<div class="card warn"><h4>What it cannot measure</h4><p>Whether the ability generalizes, whether other abilities survived, or whether the model found a way to score without solving anything.</p></div>
+<div class="card"><h4>What it measures</h4><p>Progress on the training prompts, under the training reward.</p></div>
+<div class="card warn"><h4>What it misses</h4><p>Generalization, other abilities, and reward hacking.</p></div>
 </div>
 
-Evaluate an RL model with the **same held-out benchmarks as before**, plus new ones for RL's failure modes. <!-- .element: class="text-lg" -->
+Evaluate an RL model on the **same held-out benchmarks as before**, plus checks for RL's failure modes. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -22,20 +22,33 @@ Evaluate an RL model with the **same held-out benchmarks as before**, plus new o
 
 ## Hard Problems With Checkable Answers
 
-This is the RLVR setup from Module 7 used as a **test set** rather than a training signal.
+Module 7's verifiable rewards, used as a **test set**.
 
 <div class="bench-table dense">
 <table>
 <thead><tr><th>Benchmark</th><th>What it asks</th><th>Status</th></tr></thead>
 <tbody>
-<tr><td><strong>AIME</strong> and competition math</td><td>Short integer answers from a hard high-school contest. The headline number in 2024&ndash;25 reasoning-model launches.</td><td>Saturated 2025: perfect scores with and without tools</td></tr>
-<tr><td><strong>GPQA Diamond</strong></td><td>The hardest slice of GPQA: graduate science questions that resist web search.</td><td>Passed the expert baseline 2024, saturated 2025</td></tr>
-<tr><td><strong>Competitive programming</strong></td><td>Codeforces-style problems, scored by running the judge's tests. Often reported as an Elo rating.</td><td>Gold-medal ICPC result 2025. The top human rating is still ahead</td></tr>
-<tr><td><strong>SWE-bench Verified</strong></td><td>Resolve a real GitHub issue so the project's test suite passes. Covered under agent evaluation.</td><td>Saturated 2025, then dropped by OpenAI in 2026 over contamination</td></tr>
-<tr><td><strong>ARC-AGI</strong></td><td>Abstract visual puzzles designed to resist memorization. The most-cited "is it really reasoning" benchmark.</td><td>Version 1 saturated 2024, version 2 in 2026. Version 3 (2026) is open</td></tr>
+<tr><td><strong>AIME</strong></td><td>Hard high-school contest math; integer answers.</td><td>Saturated 2025</td></tr>
+<tr><td><strong>GPQA Diamond</strong></td><td>Graduate science that resists web search.</td><td>Passed experts 2024, saturated 2025</td></tr>
+<tr><td><strong>Competitive programming</strong></td><td>Codeforces-style problems, run against the judge's tests.</td><td>ICPC gold 2025; top human rating still ahead</td></tr>
+<tr><td><strong>SWE-bench Verified</strong></td><td>Fix a real GitHub issue so the tests pass.</td><td>Saturated 2025, dropped by OpenAI 2026</td></tr>
+<tr><td><strong>ARC-AGI</strong></td><td>Abstract visual puzzles that resist memorization.</td><td>v1 saturated 2024, v2 2026</td></tr>
+<tr><td><strong>FrontierMath</strong></td><td>Unpublished research-level math, run by Epoch AI.</td><td>Hardest tier hit 100% in 2026</td></tr>
 </tbody>
 </table>
 </div>
+
+---
+
+<!-- .slide: id="reasoning-example" -->
+
+## What an AIME Problem Looks Like
+
+<div class="metric-box">
+<p>Every morning Aya goes for a 9-kilometer-long walk and stops at a coffee shop afterwards. When she walks at a constant speed of <em>s</em> kilometers per hour, the walk takes her 4 hours, including <em>t</em> minutes spent in the coffee shop. When she walks <em>s</em>+2 kilometers per hour, the walk takes her 2 hours and 24 minutes, including <em>t</em> minutes spent in the coffee shop. Suppose Aya walks at <em>s</em>+&frac12; kilometers per hour. Find the number of minutes the walk takes her, including the <em>t</em> minutes spent in the coffee shop.</p>
+</div>
+
+**Answer: 204.** Every AIME answer is an integer from 0 to 999, so grading is exact match. (AIME 2024 I, Problem 1) <!-- .element: class="text-lg" -->
 
 ---
 
@@ -47,15 +60,15 @@ This is the RLVR setup from Module 7 used as a **test set** rather than a traini
 <table>
 <thead><tr><th>Benchmark</th><th>Year</th><th>What it measures</th><th>Best score, late 2026</th></tr></thead>
 <tbody>
-<tr><td><strong>Humanity's Last Exam</strong></td><td>2025</td><td>2,500 closed-ended questions written by domain experts to stump frontier models.</td><td>About half</td></tr>
-<tr><td><strong>FrontierMath</strong></td><td>2024</td><td>Unpublished research-level math, run by Epoch AI so nobody can train on it.</td><td>Near 90% on tiers 1&ndash;3</td></tr>
-<tr><td><strong>ARC-AGI-3</strong></td><td>2026</td><td>Interactive games where the model has to discover the rules with no instructions.</td><td>Under 1% for every model at launch</td></tr>
-<tr><td><strong>SimpleQA Verified</strong></td><td>2025</td><td>Short factual questions answered <strong>without tools</strong>: what the model knows, not what it can look up.</td><td>~78%</td></tr>
+<tr><td><strong>Humanity's Last Exam</strong></td><td>2025</td><td>2,500 expert-written questions meant to stump frontier models.</td><td>~61%</td></tr>
+<tr><td><strong>FrontierMath Erd&odblac;s</strong></td><td>2026</td><td>68 <strong>unsolved</strong> Erd&odblac;s problems. Answers must be proofs in Lean, checked by machine.</td><td>2 of 68 (3%)</td></tr>
+<tr><td><strong>ARC-AGI-3</strong></td><td>2026</td><td>Games where the model must discover the rules.</td><td>Under 1% at launch, 63% by October</td></tr>
+<tr><td><strong>SimpleQA Verified</strong></td><td>2025</td><td>Short factual questions, <strong>no tools</strong>.</td><td>~78%</td></tr>
 </tbody>
 </table>
 </div>
 
-These scores move every few months. Check the official leaderboard before quoting one. <!-- .element: class="text-lg" -->
+These scores change every few months. Check the official leaderboard before quoting one. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -63,12 +76,12 @@ These scores move every few months. Check the official leaderboard before quotin
 
 ## Two Reporting Rules That Matter More Here
 
-Reasoning models are **stochastic and expensive**. Without these two numbers, the score is meaningless:
-
 <div class="card-grid cols-2">
-<div class="card"><h4>1. How the samples were combined</h4><p>Is this <strong>pass@1</strong>, <strong>majority vote</strong> over n samples (self-consistency), or <strong>best-of-n with a verifier</strong>?</p><p style="margin-top: 8px;">These can differ by tens of points on the same model and the same benchmark.</p></div>
-<div class="card"><h4>2. The reasoning budget</h4><p>Test-time compute is a dial (Module 7). The same model at 2,000 thinking tokens and at 32,000 is not the same system.</p><p style="margin-top: 8px;">A score without a token budget is <strong>not reproducible</strong>.</p></div>
+<div class="card"><h4>1. How samples were combined</h4><p><strong>pass@1</strong>, <strong>majority vote</strong>, or <strong>best-of-n</strong>? These can differ by tens of points.</p></div>
+<div class="card"><h4>2. The reasoning budget</h4><p>The same model at 2,000 and 32,000 thinking tokens is a different system.</p></div>
 </div>
+
+Without both, the score cannot be reproduced. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -76,15 +89,13 @@ Reasoning models are **stochastic and expensive**. Without these two numbers, th
 
 ## What pass@k Means for Evaluation
 
-Module 7: RL **sharpens** the sampling distribution rather than expanding ability. As measurement, that is a claim about the pass@1 versus pass@k gap:
-
 <div class="card-grid cols-3">
-<div class="card"><h4>pass@1 rises sharply</h4><p>The model now puts its probability mass on the answer it could already sometimes find.</p></div>
-<div class="card"><h4>pass@k at large k stays flat</h4><p>The set of problems it can solve <em>at all</em> did not grow.</p></div>
-<div class="card warn"><h4>The consequence</h4><p>Measuring only pass@1 <strong>systematically overstates</strong> what RL added.</p></div>
+<div class="card"><h4>pass@1</h4><p>How often the <strong>first try</strong> is right.</p></div>
+<div class="card"><h4>pass@k, large k</h4><p>Can the model solve it <strong>at all</strong>, given many tries?</p></div>
+<div class="card warn"><h4>What RL does</h4><p>Raises pass@1 but barely moves pass@k. It makes the model pick answers it could already find; it does not solve new problems.</p></div>
 </div>
 
-In the exercise: the RL model's QA pass@1 falls to 70% while pass@5 stays at 100%. The right answer is still in there, just no longer on top. <!-- .element: class="text-lg" -->
+Report both. pass@1 alone makes RL look like it added ability (Module 7). <!-- .element: class="text-lg" -->
 
 ---
 
@@ -93,13 +104,11 @@ In the exercise: the RL model's QA pass@1 falls to 70% while pass@5 stays at 100
 ## What RL Breaks That the Target Benchmark Will Not Show
 
 <div class="card-grid cols-2">
-<div class="card warn"><h4>Regressions on other tasks</h4><p>Training hard on one objective degrades unrelated behavior: the <strong>alignment tax</strong> from Module 7. The fix is boring. Keep running the old evaluations.</p></div>
-<div class="card warn"><h4>Reward hacking that survives to test time</h4><p>Padding, hedging, and formatting tricks that scored well during training do not disappear when training stops.</p></div>
+<div class="card warn"><h4>Other tasks regress</h4><p>The <strong>alignment tax</strong> (Module 7). Keep running the old evaluations.</p></div>
+<div class="card warn"><h4>Reward hacks persist</h4><p>Tricks that scored during training are still there at test time.</p></div>
 </div>
 
-> The exercise makes this concrete: GRPO on the reverse task alone gains **+17 points** on reverse and loses **50 to 75 points** on the three tasks nobody was watching.
-
-The KL penalty does not save you: it constrains the policy on training prompts and does nothing on prompts it never sees. <!-- .element: class="text-lg" style="margin-top: 8px;" -->
+In the exercise, RL on the reverse task gains **+17 points** there and loses **50 to 75 points** on the other three tasks. <!-- .element: class="text-lg" style="margin-top: 8px;" -->
 
 ---
 
@@ -108,11 +117,11 @@ The KL penalty does not save you: it constrains the policy on training prompts a
 ## Behavior Evaluations Always Come in Pairs
 
 <div class="card-grid cols-2">
-<div class="card"><h4>Refusal rate</h4><p>Does the model decline genuinely harmful requests? Measured on harmful-instruction suites and jailbreak-robustness tests.</p></div>
-<div class="card"><h4>False-refusal rate</h4><p>Does it also decline <strong>benign</strong> requests that merely sound alarming? Measured on over-refusal suites such as <strong>XSTest</strong>.</p></div>
+<div class="card"><h4>Refusal rate</h4><p>Does it decline harmful requests?</p></div>
+<div class="card"><h4>False-refusal rate</h4><p>Does it also decline <strong>harmless</strong> ones that sound alarming? (e.g. <strong>XSTest</strong>)</p></div>
 </div>
 
-Either number alone is trivially gamed: refuse everything, or refuse nothing. **Only the pair means anything.** <!-- .element: class="text-lg" -->
+Refuse everything and you ace the first. Refuse nothing and you ace the second. **Only the pair means anything.** <!-- .element: class="text-lg" -->
 
 ---
 
@@ -121,10 +130,10 @@ Either number alone is trivially gamed: refuse everything, or refuse nothing. **
 ## Goodhart's Law Is the Theme of This Section
 
 > When a measure becomes a target, it ceases to be a good measure.
+>
+> Marilyn Strathern (1997), restating Charles Goodhart
 
 <div class="card-grid cols-2">
-<div class="card"><h4>Training-side (Module 7)</h4><p><strong>Reward hacking.</strong> The policy finds a way to score that the reward designer did not intend.</p></div>
-<div class="card"><h4>Industry-side (this module)</h4><p><strong>Benchmark chasing.</strong> The field optimizes what is published, and the published number stops predicting real usefulness.</p></div>
+<div class="card"><h4>In training (Module 7)</h4><p><strong>Reward hacking</strong>: the policy scores in ways nobody intended.</p></div>
+<div class="card"><h4>In the industry</h4><p><strong>Benchmark chasing</strong>: the published number stops predicting usefulness.</p></div>
 </div>
-
-Same mechanism, different scale. It is why the practical advice ends with "build your own held-out set." <!-- .element: class="text-lg" -->

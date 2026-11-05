@@ -8,9 +8,9 @@
 ## Three Terms People Use Interchangeably
 
 <div class="card-grid cols-3">
-<div class="card"><h4>Evaluation</h4><p>A <strong>dataset and a scoring rule</strong>. You run the model on each case, score its outputs, and report a number.</p></div>
-<div class="card"><h4>Benchmark</h4><p>An evaluation that has been <strong>published</strong> so other labs can run their models on the same cases under the same rules.</p></div>
-<div class="card"><h4>Leaderboard</h4><p>A <strong>public table</strong> of benchmark results. It reports evaluations that other people ran.</p></div>
+<div class="card"><h4>Evaluation</h4><p>A <strong>dataset and a scoring rule</strong>. Run the model, score the outputs, report a number.</p></div>
+<div class="card"><h4>Benchmark</h4><p>A <strong>published</strong> evaluation, so every lab runs the same cases under the same rules.</p></div>
+<div class="card"><h4>Leaderboard</h4><p>A <strong>public table</strong> of benchmark results.</p></div>
 </div>
 
 An announced score depends on which test cases someone picked and how they wrote the grader. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
@@ -24,17 +24,16 @@ An announced score depends on which test cases someone picked and how they wrote
 :::columns cols="2" gap="34px"
 **Held-out data**
 
-- Test cases in training data: the score measures **memorization**, not ability
-- Same idea as the Module 2 train/test split
-- The web-scale version is **contamination**, later in this module
+- Test cases seen in training measure **memorization**
+- Same idea as Module 2's train/test split
 +++
 **An agreed scoring rule**
 
-- "Accuracy" means nothing until you define **answer extraction** and **what counts as a match**
-- Is "The answer is 4." the same as "4"? Somebody decides and publishes the code
+- Is "The answer is 4." the same as "4"?
+- Someone decides, and publishes the code
 :::
 
-When two labs report different scores for the same weights on the same benchmark, the cause is usually a different scoring rule. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+When two labs report different scores for the same model, the scoring rule is usually why. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -43,12 +42,12 @@ When two labs report different scores for the same weights on the same benchmark
 ## Three Ways to Score an Output
 
 <div class="card-grid cols-3">
-<div class="card"><h4>Automatic and exact</h4><p>Compare against a key, run code against tests, check a number.</p><p style="margin-top: 8px;"><strong>Cheap and objective.</strong> Only works when there is a right answer.</p></div>
-<div class="card"><h4>Human judgment</h4><p>People read the outputs and rate or rank them.</p><p style="margin-top: 8px;"><strong>Expensive and slow.</strong> Still the ground truth for open-ended work.</p></div>
-<div class="card"><h4>Model judgment</h4><p>A strong model grades the outputs against a rubric.</p><p style="margin-top: 8px;"><strong>Cheap and scalable.</strong> A proxy that has to be checked against humans.</p></div>
+<div class="card"><h4>Automatic</h4><p>Compare to a key, run tests, check a number.</p><p style="margin-top: 8px;"><strong>Cheap.</strong> Needs a right answer.</p></div>
+<div class="card"><h4>Human judgment</h4><p>People rate or rank the outputs.</p><p style="margin-top: 8px;"><strong>Slow and expensive.</strong> The ground truth for open-ended work.</p></div>
+<div class="card"><h4>Model judgment</h4><p>A strong model grades against a rubric.</p><p style="margin-top: 8px;"><strong>Cheap.</strong> Must be checked against humans.</p></div>
 </div>
 
-**Which one you can use depends on the model you are measuring.** That is the rest of the module. <!-- .element: class="text-lg" -->
+Which one you can use depends on the model you are measuring. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -60,13 +59,13 @@ When two labs report different scores for the same weights on the same benchmark
 <table>
 <thead><tr><th>Shape</th><th>What happens</th><th>Works on</th><th>Examples</th></tr></thead>
 <tbody>
-<tr><td><strong>Multiple choice, scored by likelihood</strong></td><td>Paste each choice onto the question; read the probability the model assigns to it. <strong>Most probable choice wins.</strong> Nothing is generated: one forward pass per choice.</td><td>Any model, including a base model that cannot follow instructions</td><td>MMLU, HellaSwag, ARC, WinoGrande</td></tr>
-<tr><td><strong>Free generation, scored by a checker</strong></td><td>The model writes an answer; <strong>extract and check it</strong> against a key, a parser, or a test suite.</td><td>Instruction-tuned models that answer prompts</td><td>GSM8K, HumanEval, IFEval, most instruct benchmarks</td></tr>
+<tr><td><strong>Multiple choice, by likelihood</strong></td><td>Score each option by the probability the model gives it. <strong>Most probable wins.</strong> Nothing is generated.</td><td>Any model, even a base model</td><td>MMLU, HellaSwag, ARC</td></tr>
+<tr><td><strong>Free generation, by a checker</strong></td><td>The model writes an answer; <strong>extract and check it</strong>.</td><td>Instruction-tuned models</td><td>GSM8K, HumanEval, IFEval</td></tr>
 </tbody>
 </table>
 </div>
 
-The exercise implements both. They can disagree completely about the same two models. <!-- .element: class="text-lg" -->
+The exercise implements both, and they disagree about the same two models. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -74,28 +73,26 @@ The exercise implements both. They can disagree completely about the same two mo
 
 ## Where This Whole Practice Came From
 
-**ImageNet (2009)** showed that a shared test set with a public leaderboard can organize a field. AlexNet (Module 1) was an ImageNet result. NLP copied the pattern:
+**ImageNet (2009)** showed that a shared test set and a public leaderboard can organize a field. NLP copied it:
 
 <div class="card-grid cols-3">
-<div class="card"><h4>SQuAD (2016)</h4><p>100,000 reading-comprehension questions with a shared scoring script. Brought <strong>exact match and token F1</strong> into NLP.</p></div>
-<div class="card"><h4>GLUE (2018)</h4><p>Nine tasks bundled into <strong>one score</strong>. Human performance was passed in about a year.</p></div>
+<div class="card"><h4>SQuAD (2016)</h4><p>Reading comprehension with a shared scoring script: <strong>exact match and token F1</strong>.</p></div>
+<div class="card"><h4>GLUE (2018)</h4><p>Nine tasks, <strong>one score</strong>. Humans passed in about a year.</p></div>
 <div class="card"><h4>SuperGLUE (2019)</h4><p>Built because GLUE saturated. Passed in about <strong>eighteen months</strong>.</p></div>
 </div>
-
-Every benchmark in this module descends from this: **a shared test set, a shared scoring rule, a public table.** <!-- .element: class="text-lg" -->
 
 ---
 
 :::figure img="images/feifei_li.jpg" name="Fei-Fei Li" kicker="ImageNet and the ILSVRC competition (2009-2017)" alt="Fei-Fei Li"
-Built the dataset and annual competition that established the shared-benchmark-plus-leaderboard model. ImageNet was not an algorithm; it was a **measurement instrument**.
+Built ImageNet and its yearly competition: the first **shared benchmark with a leaderboard** at scale.
 
-Without the benchmark there is no scoreboard, and the 2012 AlexNet jump is just one lab's claim.
+Without it, the 2012 AlexNet jump would have been one lab's claim.
 :::
 
 ---
 
 :::figure img="images/bowman_rajpurkar.jpg" name="Samuel Bowman &amp; Pranav Rajpurkar" kicker="GLUE and SuperGLUE (2018, 2019); SQuAD (2016)" alt="Samuel Bowman and Pranav Rajpurkar"
-Bowman, with **Alex Wang** and collaborators, bundled nine tasks into **one headline number** behind a public leaderboard with a held-out test server, so nobody could tune on the answers. Later suites copy that template.
+Bowman and collaborators built GLUE: nine tasks, **one number**, and a hidden test set.
 
-Rajpurkar and collaborators published SQuAD. Its **official scoring script** (normalize, then exact match and token F1) became the default grader for short free-form answers. You write that script in the exercise.
+Rajpurkar and collaborators built SQuAD. Its **scoring script** is the one you write in the exercise.
 :::

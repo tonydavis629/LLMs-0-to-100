@@ -276,6 +276,27 @@ scaling law predicted (Kaplan et al., 2020, arXiv:2001.08361; Hoffmann et al.,
   model comparison for years, both deliberately built harder than contemporary
   models could handle.
 
+### Example items on the slides
+
+The example questions on `base-examples`, `instruct-examples`, and
+`reasoning-example` are copied verbatim from the public datasets on the Hugging
+Face Hub (fetched November 2026 through the datasets-server rows API):
+
+- **MMLU**, `cais/mmlu`, config `high_school_physics`, test split, row 0. Answer
+  index 1 (B, 0.01 C): Q = CV = (2 mF)(5 V) = 0.01 C.
+- **HellaSwag**, `Rowan/hellaswag`, validation split (activity "Clean and jerk",
+  ind 92). Label 3 (D). The lowercase "the lady" is how the dataset stores the
+  second context fragment.
+- **GSM8K**, `openai/gsm8k`, config `main`, test split, row 0. The reference
+  solution ends in `#### 18`, the marker the grader extracts.
+- **HumanEval/2** (`truncate_number`), `openai/openai_humaneval`. The slide
+  paraphrases the docstring; the hidden tests are
+  `candidate(3.5) == 0.5`, `abs(candidate(1.33) - 0.33) < 1e-6`, and
+  `abs(candidate(123.456) - 0.456) < 1e-6`.
+- **IFEval**, `google/IFEval`, key 1001, instruction id `punctuation:no_comma`.
+- **AIME 2024 I, Problem 1**, `HuggingFaceH4/aime_2024`, id 60, answer 204.
+  AIME answers are integers from 0 to 999.
+
 ## c. Evaluating an instruction-tuned model
 
 ### Two families of question
@@ -745,7 +766,7 @@ The "Saturated" columns on `base-benchmarks`, `instruct-benchmarks`, `reasoning-
 | Competitive programming | Partly | OpenAI's system solved 12/12 at the ICPC World Finals, September 2025. The best human Codeforces rating has not been matched |
 | SWE-bench Verified | 2025 | Claude Opus 4.5 at 80.9% (November 2025). OpenAI stopped reporting it on February 23, 2026, citing contamination and flawed tests ("Why we no longer evaluate SWE-bench Verified," openai.com) |
 | ARC-AGI-1 | 2024 | o3 at 87.5% (high compute) in December 2024; ARC Prize called it saturating |
-| ARC-AGI-2 | 2026 | Reported ~85% in spring 2026 (aggregator figures; confirm on arcprize.org) |
+| ARC-AGI-2 | 2026 | 95.0% (GPT-6 Astra, Max) on ARC Prize's leaderboard data, November 2026 |
 | VQAv2 | ~2022 | Models above the 80.8% human-agreement figure; label noise documented |
 | TextVQA, DocVQA, ChartQA, AI2D | Near ceiling | Top scores in the 90s by 2026 |
 | MMMU | 2025 (median expert) | Top models ~85% passed the median expert (82.6%); still below the best expert (88.6%). Reports moved to MMMU-Pro |
@@ -759,9 +780,23 @@ The "Saturated" columns on `base-benchmarks`, `instruct-benchmarks`, `reasoning-
 
 Slides `reasoning-open`, `mm-open`, and `agents-open` list the unsaturated benchmarks frontier labs report instead (SimpleQA Verified sits on `reasoning-open`; Arena, which has no ceiling, is covered on `judge-arena`). The status column is deliberately coarse because these numbers move monthly and depend on the harness:
 
-- **Humanity's Last Exam** (Phan et al., arXiv:2501.14249): about half answered by the best model on the official Scale/CAIS leaderboard in fall 2026; vendor-reported scores with tools run higher.
-- **FrontierMath** (Glazer et al., arXiv:2411.04872): Epoch AI reported the hardest tier (Tier 4) solved by a frontier model in September 2026. Confirm on epoch.ai before quoting a number.
-- **ARC-AGI-3** (ARC Prize, March 2026): interactive environments; every model scored under 1% at launch. Later scores depend heavily on the agent harness.
+- **Humanity's Last Exam** (Phan et al., arXiv:2501.14249): top score 60.6%
+  (GPT-6 Astra) on Scale's leaderboard (scale.com/leaderboard, checked
+  November 5, 2026, listed there as "Humanity's Last Exam (Diamond)").
+- **FrontierMath** (Glazer et al., arXiv:2411.04872): Epoch's hub
+  (epoch.ai/benchmarks, checked November 5, 2026) shows Tier 4 (v2, 43 problems,
+  released June 12, 2026 after fixing errors in 42% of problems) at a highest
+  score of 100%. It is therefore listed with the saturated reasoning benchmarks.
+- **FrontierMath Erdős** (Epoch AI, announced September 3, 2026): 68 unsolved
+  Erdős problems; systems must write solutions in Lean. Epoch: "No prior model
+  solved any of them; GPT-6 Astra solved 2 of 68, scoring 3%."
+- **ARC-AGI-3** (ARC Prize, March 2026): from ARC Prize's own leaderboard data
+  (arcprize.org/media/data/leaderboard/v3.json, generated November 2, 2026). Early
+  2026 models scored under 1% (Claude Opus 4.6 Max 0.51%). The best score on the
+  standard harness is 62.7% (GPT-6 Astra, Max). Entries run with
+  provider-specific adapters reach 99.9%, which is why the harness has to be
+  stated with any ARC-AGI-3 number. ARC-AGI-2 on the same data: 95.0% (GPT-6
+  Astra, Max) against a 100% human panel.
 - **SWE-bench Pro** (Scale AI, arXiv:2509.16941): reported scores range widely by harness. OpenAI reported in July 2026 that roughly 30% of tasks were broken.
 - **Terminal-Bench**: version 2.0 top scores passed 80% in 2026; harder later versions followed.
 - **GDPval** (OpenAI, arXiv:2510.04374): expert-graded work products from 44 occupations; parity with experts is a 50% win-or-tie rate.
@@ -1050,6 +1085,7 @@ institutional or personal page except where noted:
 - `papineni_lin.jpg` — Custom.MT's MT-leaders profile and Microsoft Research's
   people directory
 - `chiang_zheng.jpg` — Wei-Lin Chiang's and Lianmin Zheng's personal pages
+- `precision_recall.png` — "Precisionrecall.svg" by Walber, Wikimedia Commons, CC BY-SA 4.0 (500 px PNG rendering), on slide `instruct-f1`
 - `percy_liang.jpg` — Stanford CS faculty page (cs.stanford.edu/~pliang/resources/percy3.jpeg, cropped to 2:3)
 
 Two contributors named on these slides could not be given a photograph and are

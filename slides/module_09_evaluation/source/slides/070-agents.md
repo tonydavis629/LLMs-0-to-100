@@ -7,14 +7,14 @@
 
 ## The Question Changes
 
-An agent is a model **plus tools, plus many turns**. Scoring shifts from inspecting a string to inspecting the **final state of an environment**.
+An agent is a model **plus tools, over many turns**. You grade the **final state of the environment**, not a string.
 
 <div class="card-grid cols-2">
-<div class="card"><h4>Answer evaluation</h4><p>Compare the output to a key. One turn, one string, deterministic scoring.</p></div>
-<div class="card"><h4>Task evaluation</h4><p>Run the project's test suite. Query the database. Check whether the file exists and contains what it should. <strong>The environment is the grader.</strong></p></div>
+<div class="card"><h4>Answer evaluation</h4><p>One turn. Compare the output to a key.</p></div>
+<div class="card"><h4>Task evaluation</h4><p>Run the tests, query the database, check the file. <strong>The environment is the grader.</strong></p></div>
 </div>
 
-Evaluation stops being a metric on outputs and becomes an **integration test**: engineering practice, not research practice. <!-- .element: class="text-lg" -->
+Evaluation becomes an **integration test**. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -26,15 +26,13 @@ Evaluation stops being a metric on outputs and becomes an **integration test**: 
 <table>
 <thead><tr><th>Benchmark</th><th>Environment</th><th>How it is scored</th><th>Saturated</th></tr></thead>
 <tbody>
-<tr><td><strong>SWE-bench</strong> (2023)</td><td>A real GitHub repository with a real issue</td><td>Apply the model's patch and run the project's test suite. <strong>SWE-bench Verified</strong> is the human-filtered subset labs reported through 2025.</td><td>2025. Successors: SWE-bench Pro, Terminal-Bench</td></tr>
-<tr><td><strong>GAIA</strong></td><td>Browsing, files, and tools</td><td>General-assistant questions with short verifiable answers.</td><td>Near the 92% human baseline, 2026</td></tr>
-<tr><td><strong>WebArena, OSWorld</strong></td><td>A simulated browser or desktop</td><td>Inspect the end state: was the form submitted, the file saved, the setting changed?</td><td>OSWorld passed its 72% human baseline by early 2026</td></tr>
-<tr><td><strong>tau-bench</strong></td><td>Multi-turn customer service with tool calls</td><td>Did the agent follow the policy rules and reach the correct final state?</td><td>2026. Successor: tau3-bench</td></tr>
+<tr><td><strong>SWE-bench</strong> (2023)</td><td>A real GitHub repo and issue</td><td>Apply the patch, run the tests. <strong>Verified</strong> is the human-checked subset.</td><td>2025</td></tr>
+<tr><td><strong>GAIA</strong></td><td>Browsing, files, tools</td><td>Assistant questions with short checkable answers.</td><td>Near the human baseline, 2026</td></tr>
+<tr><td><strong>WebArena, OSWorld</strong></td><td>A browser or desktop</td><td>Check the end state: was the file saved?</td><td>OSWorld passed humans, early 2026</td></tr>
+<tr><td><strong>tau-bench</strong></td><td>Customer service with tools</td><td>Did it follow policy and reach the right state?</td><td>2026</td></tr>
 </tbody>
 </table>
 </div>
-
-Modules 10 and 11 build the systems these benchmarks measure. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -46,9 +44,9 @@ Modules 10 and 11 build the systems these benchmarks measure. <!-- .element: cla
 <table>
 <thead><tr><th>Benchmark</th><th>Year</th><th>What it measures</th><th>Best score, late 2026</th></tr></thead>
 <tbody>
-<tr><td><strong>SWE-bench Pro</strong></td><td>2025</td><td>Harder repository issues in several languages, scored by running the tests. OpenAI later found about 30% of tasks broken.</td><td>~62% on Scale's public set</td></tr>
-<tr><td><strong>Terminal-Bench</strong></td><td>2025</td><td>Long multi-step tasks in a real shell, scored by checking the end state.</td><td>~60% on version 4.0 (2026)</td></tr>
-<tr><td><strong>GDPval</strong></td><td>2025</td><td>Work products from 44 occupations, compared blind against an expert's own work.</td><td>Reported as a win-or-tie rate against experts</td></tr>
+<tr><td><strong>SWE-bench Pro</strong></td><td>2025</td><td>Harder issues in several languages. About 30% of tasks later found broken.</td><td>~62% on Scale's public set</td></tr>
+<tr><td><strong>Terminal-Bench</strong></td><td>2025</td><td>Long multi-step tasks in a real shell.</td><td>~60% on version 4.0</td></tr>
+<tr><td><strong>GDPval</strong></td><td>2025</td><td>Real work from 44 occupations, judged blind against experts' work.</td><td>Reported as a win-or-tie rate</td></tr>
 </tbody>
 </table>
 </div>
@@ -60,10 +58,10 @@ Modules 10 and 11 build the systems these benchmarks measure. <!-- .element: cla
 ## Why Agent Evaluation Is Hard
 
 <div class="card-grid cols-4">
-<div class="card"><h4>Expensive</h4><p>Runs are long and multi-turn. A full sweep costs real money and hours.</p></div>
-<div class="card"><h4>Stateful and flaky</h4><p>Environments drift, networks fail, and a rerun is not the same run.</p></div>
-<div class="card"><h4>Partial progress</h4><p>Getting 80% of the way is real value and hard to score. Most suites score pass/fail anyway.</p></div>
-<div class="card warn"><h4>Right for the wrong reason</h4><p>The agent edits the tests instead of the code. The grader says pass.</p></div>
+<div class="card"><h4>Expensive</h4><p>Long runs cost hours and money.</p></div>
+<div class="card"><h4>Flaky</h4><p>Environments drift; reruns differ.</p></div>
+<div class="card"><h4>Partial progress</h4><p>80% done usually scores as a fail.</p></div>
+<div class="card warn"><h4>Wrong reason</h4><p>The agent edits the tests. The grader says pass.</p></div>
 </div>
 
-The last one is reward hacking where it is hardest to notice: **the scoring function is a program the agent can reach.** <!-- .element: class="text-lg" -->
+The grader is a program the agent can reach. <!-- .element: class="text-lg" -->
