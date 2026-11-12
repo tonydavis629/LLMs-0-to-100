@@ -1,4 +1,4 @@
-:::divider id="divider-exercise" title="Exercise" sub="Build two retrievers and find where each one wins"
+:::divider id="divider-exercise" title="Exercise"
 :::
 
 ---
@@ -60,22 +60,22 @@ Encoding 48 articles with the bundled MiniLM (CPU, a few seconds)...
 
 <!-- .slide: id="exercise-overview" -->
 
-## Exercise: Nothing Here Trains a Model
+## Exercise Overview
 
-The corpus: 48 short support articles for fictional PX-series printers. You build **two complete retrievers** and score them on 30 labeled queries. Every step has its own tests in `tests/`.
+The corpus is 48 short support articles for fictional PX-series printers. You build **two complete retrievers** and score them on 30 labeled queries. No model is trained. Every step has its own tests in `tests/`.
 
 :::columns cols="2" gap="30px"
 **You write the retrieval math**
 
-- Tokenization, IDF, TF-IDF vectors, cosine similarity, top-k ranking: one full retriever from scratch
+- Tokenization, IDF, TF-IDF vectors, cosine similarity, and top-k ranking make one full retriever from scratch
 - One pooling function turns the bundled MiniLM encoder into the second retriever, reusing your ranking code
 - recall@k and MRR score both
 +++
-**The payoff is the table**
+**What the results show**
 
-- Sparse: perfect on exact identifiers, near useless on paraphrases
-- Dense: the mirror image
-- Overall MRR is **identical to two decimal places**; only the per-category table tells them apart
+- Sparse is perfect on exact identifiers and poor on paraphrases
+- Dense is the reverse
+- Overall MRR is **identical to two decimal places**, and only the per-category table tells the two apart
 :::
 
 ---
@@ -95,7 +95,7 @@ The corpus: 48 short support articles for fictional PX-series printers. You buil
 </table>
 </div>
 
-The categories are the experiment design: one favors each retriever, the third favors both. The labels make the comparison quantitative. <!-- .element: class="text-lg" -->
+The categories are chosen on purpose. One favors each retriever and the third favors both. The labels let you score the comparison. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -586,13 +586,13 @@ return 1.0 / position
 
 <!-- .slide: id="exercise-chart" -->
 
-## The Picture
+## Results Chart
 
 <div class="img-figure">
   <img src="images/retrieval_comparison.png" alt="Grouped bar chart of recall@3 per query category for the sparse and dense retrievers, with the overall score at right">
 </div>
 
-The two rightmost bars are what a leaderboard would show. The six to their left are why it would mislead you. (Actual exercise output.) <!-- .element: class="text-lg" style="margin-top: 6px;" -->
+A leaderboard would report only the two overall bars on the right, where the retrievers look alike. The per-category bars show how different they are. (Actual exercise output.) <!-- .element: class="text-lg" style="margin-top: 6px;" -->
 
 ---
 
@@ -609,12 +609,12 @@ The two rightmost bars are what a leaderboard would show. The six to their left 
 +++
 **The case for dense**
 
-- The only one that understands symptoms described in the user's own words
-- Real users always do that
+- The only one that handles symptoms described in the user's own words
+- Users often describe problems that way
 - 100% recall@3 on paraphrase against sparse's 30%
 :::
 
-**Production systems refuse the choice and run both.** Hybrid search merges the rankings (reciprocal rank fusion, the first extra credit); a reranker cleans up the shortlist. The per-category table tells you the merge is worth the complexity. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+**Production systems run both.** Hybrid search merges the two rankings with reciprocal rank fusion (the first extra credit), and a reranker reorders the shortlist. The per-category table is the evidence that the extra complexity pays off. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -625,5 +625,5 @@ The two rightmost bars are what a leaderboard would show. The six to their left 
 - **Hybrid search.** Merge the two rankings with reciprocal rank fusion: score each document by the sum of 1/(60 + rank) across both rankings. Does the fusion beat both retrievers overall?
 - **BM25's saturating TF.** Replace the raw count with `count * (k1 + 1) / (count + k1)`, k1 = 1.5, so the tenth repetition of a term is worth less than the first.
 - **Watch IDF zero a term out.** Add "printer" to any query and confirm it changes almost nothing; then look up its IDF weight.
-- **RAG prompt assembly.** Format the top article and the query into a grounded prompt with Module 6's chat template: the exact seam where the generator attaches.
+- **RAG prompt assembly.** Format the top article and the query into a grounded prompt with Module 6's chat template. This is the point where a generator would attach.
 - **Retrieve with the course's own model.** Embed the corpus with mean-pooled hidden states from the Module 5 checkpoint and measure how far retrieval quality drops without the contrastive objective. <!-- .element: class="text-lg" style="margin-top: 8px;" -->

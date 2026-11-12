@@ -1,4 +1,4 @@
-:::divider id="divider-agents" title="Agents" sub="Put the tool call in a loop and let the world talk back"
+:::divider id="divider-agents" title="Agents"
 :::
 
 ---
@@ -7,22 +7,22 @@
 
 ## From One Call to a Loop
 
-One tool call answers a question. An **agent** is what you get when the call sits inside a loop:
+A single tool call answers a question. An **agent** runs tool calls in a loop:
 
 <div class="card-grid cols-4">
 <div class="card"><h4>Generate</h4><p>Reason about the goal and decide the next action.</p></div>
 <div class="card"><h4>Act</h4><p>Call a tool: search, read, edit, run.</p></div>
-<div class="card"><h4>Observe</h4><p>The result lands in the context as tokens.</p></div>
-<div class="card"><h4>Repeat</h4><p>Until a stop condition: goal met, budget spent, or help needed.</p></div>
+<div class="card"><h4>Observe</h4><p>The result enters the context as tokens.</p></div>
+<div class="card"><h4>Repeat</h4><p>Until a stop condition: the goal is met, the budget is spent, or the agent needs help.</p></div>
 </div>
 
-The loop turns a text predictor into a system that **acts on the world and reacts to what happens**. The rest of this section: what the loop needs to keep from falling over. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+With the loop, the model can **act, see the result, and adjust**. The rest of this section covers what keeps the loop reliable. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
 <!-- .slide: id="agents-diagram" -->
 
-## The Loop, Drawn
+## The Agent Loop
 
 <div style="text-align: center; margin: 8px 0;">
 <svg viewBox="0 0 960 340" width="100%" style="max-height: 480px;">
@@ -58,18 +58,18 @@ The loop turns a text predictor into a system that **acts on the world and react
     <line x1="170" y1="190" x2="170" y2="246"/>
   </g>
   <path d="M 795 118 L 795 60 Q 795 48 783 48 L 182 48 Q 170 48 170 60 L 170 114" stroke="#4a9eff" stroke-width="1.5" fill="none" marker-end="url(#agents-arrow-blue)"/>
-  <text x="480" y="36" text-anchor="middle" font-size="12.5" fill="#8892a4">every cycle appends to the context: the transcript is the memory</text>
+  <text x="480" y="36" text-anchor="middle" font-size="12.5" fill="#8892a4">every cycle appends to the context, which is the agent's only memory</text>
   <text x="182" y="222" text-anchor="start" font-size="12" fill="#8892a4">stop condition met</text>
 </svg>
 </div>
 
-Three arrows forward, one arrow back. The back edge is what makes it an agent: the next thought sees what the world just did. <!-- .element: class="text-lg" -->
+The arrow from Observe back to Generate is what separates an agent from a single tool call. Each new step sees the result of the last one. <!-- .element: class="text-lg" -->
 
 ---
 
 <!-- .slide: id="agents-react" -->
 
-## ReAct: Where the Pattern Comes From
+## ReAct
 
 Yao et al. (2022) interleaved **reasoning traces** with **actions** in one generation stream:
 
@@ -81,18 +81,18 @@ Observation: [search results appear here as tokens]
 Thought:  Result 2 has the code table. I can answer now.
 ```
 
-Chain-of-thought, with the world talking back between thoughts:
+This is chain-of-thought with tool results arriving between the thoughts.
 
 - Each observation informs the next reasoning step
-- The model can recover from a bad search instead of committing to it
-- ReAct (Reason + Act) is the skeleton of nearly every agent shipping today
+- The model can recover from a bad search
+- Most agents in use today follow this pattern. The name is short for Reason + Act
 
 ---
 
-:::figure img="images/shunyu_yao.jpg" name="Shunyu Yao" kicker="ReAct (2022), tau-bench (2024)" alt="Shunyu Yao"
-As a Princeton PhD student, wrote the paper that fixed reason-act-observe as the standard agent loop. ReAct's contribution was not a new model but a new **shape for the context**: reasoning and observations interleaved in one stream.
-
-Yao also built tau-bench, the Module 9f agent benchmark that scores the **end state of the environment** rather than the transcript. Yao went on to OpenAI.
+:::figure img="images/shunyu_yao.jpg" name="Shunyu Yao" kicker="ReAct: Synergizing Reasoning and Acting in Language Models (2022)" alt="Shunyu Yao"
+- Wrote ReAct as a Princeton PhD student. Reason, act, observe became the standard agent loop
+- The idea was a layout for the context: reasoning and tool results **interleaved in one stream**
+- Also built tau-bench, the Module 9 agent benchmark that scores the environment's end state
 :::
 
 ---
@@ -101,15 +101,15 @@ Yao also built tau-bench, the Module 9f agent benchmark that scores the **end st
 
 ## The Context Window as Working Memory
 
-Every thought, call, and observation accumulates in the context. On a long task the transcript **overflows the window**: the agent forgets its own history.
+Every thought, call, and observation accumulates in the context. On a long task the transcript **outgrows the window** and the agent loses its own history.
 
 <div class="card-grid cols-3">
-<div class="card"><h4>Summarize</h4><p>Periodically compress the transcript so far into a summary and continue from that.</p></div>
-<div class="card"><h4>Prune</h4><p>Drop stale tool output: yesterday's directory listing does not need to occupy today's tokens.</p></div>
-<div class="card"><h4>Pin</h4><p>Keep the goal and key constraints at a fixed place in the prompt so no amount of scrolling loses them.</p></div>
+<div class="card"><h4>Summarize</h4><p>Periodically compress the transcript into a summary and continue from that.</p></div>
+<div class="card"><h4>Prune</h4><p>Drop stale tool output. An old directory listing does not need to stay in the context.</p></div>
+<div class="card"><h4>Pin</h4><p>Keep the goal and the main constraints at a fixed place in the prompt so they are never dropped.</p></div>
 </div>
 
-The context is the agent's entire memory, and it is also the entire bill. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+The context is all the memory the agent has, and every token in it is billed on every step. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -117,15 +117,15 @@ The context is the agent's entire memory, and it is also the entire bill. <!-- .
 
 ## Errors Compound
 
-A per-step success rate that sounds excellent becomes a task failure rate that sounds broken:
+A good success rate per step turns into a poor success rate per task:
 
 $$0.95^{20} \approx 0.36$$
 
 <div class="metric-box">
-<p>Twenty steps at 95% each: the task succeeds <strong>36%</strong> of the time. This explains why agent reliability lags single-shot quality. The field's answer is <strong>verification</strong>, not slightly better steps: run the tests, check the end state, confirm before the irreversible step. A verifier lets a 95% agent catch its own 5%.</p>
+<p>Twenty steps at 95% each succeed together <strong>36%</strong> of the time, which is why agents are less reliable than single answers from the same model. Slightly better steps do not fix this. <strong>Verification</strong> does: run the tests, check the end state, confirm before an irreversible action. With a verifier, the agent can catch a failed step and retry it.</p>
 </div>
 
-Coding agents lean on the test suite because it is a verifier someone already wrote. <!-- .element: class="text-lg" -->
+Coding agents rely on the test suite because it is a verifier that already exists. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -133,18 +133,18 @@ Coding agents lean on the test suite because it is a verifier someone already wr
 
 ## The Model Context Protocol
 
-Every tool used to need a custom integration per agent. The **Model Context Protocol** is the standard interface: any client that speaks it can use any tool server that speaks it.
+Each tool used to need a custom integration for each agent. The **Model Context Protocol** (MCP) is a standard interface: any client that speaks it can use any tool server that speaks it.
 
 :::columns cols="2" gap="34px"
 **What it standardizes**
 
 - How a client discovers a server's tools
-- What a call and its result look like on the wire
-- How resources and prompts are exposed alongside tools
+- The format of a call and its result
+- How a server exposes resources and prompts alongside tools
 +++
-**What it signals**
+**Why it exists now**
 
-- Protocols appear when a pattern stops being research
-- Tool-using agents crossed that line
-- Like the web: agree on the interface, compete on everything else
+- A protocol is worth writing once many people are building the same thing
+- Tool-using agents reached that point
+- As with HTTP, vendors share the interface and compete on what sits behind it
 :::

@@ -177,3 +177,39 @@
   font-weight: 700;
   border-top: 2px solid var(--secondary-color);
 }
+
+/* ---- Unit conversion flow (bits per byte): value box, operation arrow, value box ---- */
+.unit-flow {
+  display: grid;
+  grid-template-columns: 50px repeat(5, auto);
+  justify-content: center;
+  align-items: center;
+  gap: 14px 10px;
+  margin: 18px 0;
+  color: var(--text-color);
+}
+.unit-flow .uf-head {
+  font-size: 12pt;
+  color: var(--secondary-color);
+  font-weight: 700;
+  text-align: center;
+}
+.unit-flow .uf-model { font-weight: 700; color: var(--viz-blue, #4a9eff); font-size: 16pt; }
+.unit-flow .uf-box {
+  border: 1px solid var(--secondary-color);
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-size: 16pt;
+  text-align: center;
+  min-width: 130px;
+}
+.unit-flow .uf-op {
+  font-size: 13pt;
+  color: var(--secondary-color);
+  text-align: center;
+  white-space: nowrap;
+}
+.unit-flow .uf-op::after { content: " \2192"; }
+
+/* Tables with display fractions: center plain cells against the taller math. */
+.compare-table.math td { vertical-align: middle; }

@@ -167,38 +167,54 @@ standard fix, used in the Pile and GPT-3-era reports, is **bits per byte**:
 
 $$\mathrm{BPB} = \frac{\mathcal{L}_{\text{total}}}{\ln(2) \cdot \text{number of bytes}}$$
 
-The worked figures on the slide `base-bpb` are constructed to isolate the effect.
-Two models each spend a total of 300 nats on the same 1,000-byte passage, so by
-construction they model it equally well:
+The worked figures on the slide `base-bpb` are constructed to show perplexity
+ranking two models in the wrong order. Both read the same 1,000-byte passage. A
+different tokenizer cuts it into a different number of tokens, and the model
+assigns the text a different total loss:
 
 | Model | Vocabulary | Tokens | $\mathcal{L}_{\text{total}}$ | PPL | BPB |
 | --- | --- | --- | --- | --- | --- |
-| X | 32,000 | 250 | 300 nats | $e^{300/250} = 3.32$ | 0.433 |
-| Y | 128,000 | 200 | 300 nats | $e^{300/200} = 4.48$ | 0.433 |
+| X | 32,000 | 250 | 300 nats | $e^{300/250} = 3.32$ | $300 / (\ln 2 \cdot 1000) = 0.433$ |
+| Y | 128,000 | 200 | 270 nats | $e^{270/200} = 3.86$ | $270 / (\ln 2 \cdot 1000) = 0.390$ |
 
-Perplexity differs by 35%; bits per byte is identical, because
-$300 / (\ln 2 \cdot 1000) = 0.433$ either way. Note the direction: the *larger*
-vocabulary reports the *worse* perplexity, because the same total surprisal is
-spread over fewer, individually harder predictions.
+Y assigns the passage 10% less total loss, so it is the better model of this text.
+Perplexity still reports Y as 16% worse. Perplexity is the exponential of the
+*per-token* loss, and the two models divide by different token counts:
 
-#### Why the units are not circular
+$$\text{X: } \frac{300}{250} = 1.20 \text{ nats/token}, \qquad \text{Y: } \frac{270}{200} = 1.35 \text{ nats/token}$$
 
-A recurring and reasonable student objection is that bits and bytes both measure
-information, so the ratio looks vacuous — analogous to quarts per gallon. It is
-not, because the two quantities are not being used as competing information
-measures. The slide `base-bpb-units` separates them:
+Y's larger vocabulary makes longer tokens, so it makes fewer predictions, and each
+one covers more text and carries more loss. The total goes down while the average
+per prediction goes up. Bits per byte divides both totals by the same 1,000 bytes,
+so the smaller total wins.
 
-- The **byte count** is the UTF-8 size of the held-out passage: a fixed physical
-  property of the *data*, invariant to the model, the tokenizer, and the
-  laboratory. It appears in the denominator because it is the one quantity all
-  parties compute identically.
-- The **bit count** is the model's total surprisal on that passage, converted from
-  nats by dividing by $\ln 2$: a property of the *model*.
+#### What changes and what stays fixed
 
-The ratio is therefore a cost per unit of fixed content — structurally analogous
-to dollars per mile, not to quarts per gallon. (A byte would carry a full 8 bits
-of information only if all 256 values were equiprobable, which natural text is
-not.)
+The slide `base-bpb-units` draws the formula as two divisions, one per unit:
+
+$$\mathrm{BPB} = \frac{\mathcal{L}_{\text{total}} / \ln 2}{\text{number of bytes}}$$
+
+1. **Divide by $\ln 2$: nats to bits.** Training loss uses the natural log, so it
+   is in nats. Since $\log_2 x = \ln x / \ln 2$, dividing by $\ln 2 \approx 0.693$
+   gives the same surprisal in bits. X: $300 / 0.693 = 433$ bits. Y:
+   $270 / 0.693 = 390$ bits.
+2. **Divide by the byte count: bits to bits per byte.** The byte count is the
+   UTF-8 size of the passage, a property of the data that no tokenizer touches.
+   Both models divide by the same 1,000, giving 0.433 and 0.390.
+
+Neither step depends on the model, so the only thing left to differ is the total
+loss, which depends on the weights and on how the tokenizer split the text.
+
+Perplexity's denominator is the token count, which the tokenizer controls, so two
+models with different tokenizers are divided by different numbers. Bits per byte
+divides both by the same number, which leaves the total loss as the only thing
+that can differ. That is why cross-tokenizer comparisons report BPB.
+
+A common objection is that bits and bytes both measure information, so the ratio
+looks circular, like quarts per gallon. It is not: the bytes are a fixed length of
+text and the bits are what a particular model spent encoding it. The ratio is a
+cost per unit of fixed content. (A byte would carry a full 8 bits of information
+only if all 256 values were equally likely, which natural text is not.)
 
 #### The compression reading
 

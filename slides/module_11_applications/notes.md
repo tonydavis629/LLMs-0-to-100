@@ -1,7 +1,7 @@
 # Module 11: Practical Applications and Case Studies. Lecture Notes
 
 These notes give an explanation and a citation for every major claim on the
-slides, map the two equations to the visuals they appear on, and record the
+slides, map the equations to the visuals they belong with, and record the
 historical context. Module 11 trains nothing and changes no weights. It asks
 what can be built around a finished, served model, and its organizing idea is
 that every technique in the module (prompting, retrieval, tools, agents) is a
@@ -12,8 +12,10 @@ is the programmable surface.
 
 - Modules 5 through 7 changed the weights: pretraining supplied capability,
   supervised finetuning supplied the chat format and instruction following, and
-  RL supplied reasoning trained against verifiable rewards. Module 10 ended with
-  those weights served behind an API. Nothing in this module touches a weight;
+  RL supplied reasoning trained against verifiable rewards. Module 9 measured
+  the result with benchmarks, including agent benchmarks that score whether a
+  task got done, and showed that an average can hide what per-task scores
+  reveal. Module 10 ended with those weights served behind an API. Nothing in this module touches a weight;
   everything happens at inference time, through the prompt.
 - Three earlier results carry the module:
   - GPT-3's few-shot in-context learning (Brown et al., 2020, arXiv:2005.14165),
@@ -28,7 +30,7 @@ is the programmable surface.
   sentence encoders used in dense retrieval, and Module 10's KV cache returns as
   prompt caching, a product feature with a price attached.
 
-## a. In-context learning, revisited
+## a. In-context learning
 
 ### The reframing
 
@@ -79,7 +81,7 @@ is the programmable surface.
   - Constrained decoding: compile the schema or grammar into a token-level mask
     applied to the logits at each step, so tokens that would violate the grammar
     receive zero probability and the output cannot fail to parse. This is a
-    direct extension of Module 5's sampling machinery (same logits, same
+    direct extension of Module 4's sampling machinery (same logits, same
     softmax, one extra mask).
 - Constrained decoding is what makes function-calling APIs reliable (section d).
 
@@ -87,7 +89,7 @@ is the programmable surface.
 
 - Temperature near 0 for extraction, classification, and tool calls, where the
   top of the distribution is wanted every time; higher temperatures for
-  drafting and brainstorming, where variety is wanted. Same dial as Module 5,
+  drafting and brainstorming, where variety is wanted. Same dial as Module 4,
   now a per-request product decision.
 
 ### The limit
@@ -157,12 +159,19 @@ is the programmable surface.
   the question, retrieve the nearest chunks, assemble them with the question
   into a prompt; generate a grounded answer, ideally with citations.
 - Steps one through three are classical information retrieval; step four is
-  Module 5's sampling loop. The exercise deliberately skips chunking (its
+  Module 4's sampling loop. The exercise deliberately skips chunking (its
   articles are short enough to index whole) to keep the focus on retrieval.
 
 ### Sparse retrieval and TF-IDF
 
-- The equation on the slide:
+- The slide diagram builds the sparse vector for article err-e341 from the
+  exercise corpus: eight of the 811 vocabulary slots, each holding count times
+  IDF. The numbers are actual solution output (341: 3 x 3.871 = 11.61; cool:
+  2 x 3.871 = 7.74; fuser: 4 x 1.674 = 6.70; "the" has IDF 0 because it is in
+  all 48 articles; 40 slots are nonzero for this article). The slide names BM25
+  as the standard scoring function (the default similarity in Apache Lucene and
+  Elasticsearch). The TF-IDF weight, which the exercise implements in steps 2
+  and 3:
 
   $$w_{t,d} = \mathrm{tf}(t,d) \cdot \log\frac{N}{\mathrm{df}(t)}$$
 
@@ -171,7 +180,7 @@ is the programmable surface.
 - Term weighting by specificity is Karen Spärck Jones, 1972, "A Statistical
   Interpretation of Term Specificity and its Application in Retrieval"
   (Journal of Documentation; doi:10.1108/eb026526).
-- The information-theoretic reading the slide gives: df(t)/N estimates the
+- The information-theoretic reading (quiz question 1): df(t)/N estimates the
   probability that a random document contains t, so log(N/df) is the surprisal
   (Module 1) of the event "a document contains this term". Rare terms carry
   more information about which document is wanted; a term in every document
@@ -190,6 +199,12 @@ is the programmable surface.
 
   cosine similarity between a query embedding and a document embedding produced
   by a bi-encoder (each text encoded independently).
+- Why the angle: the dot product grows with vector length, and length reflects
+  things other than topic. Duplicating a document doubles its count vector
+  without changing what it is about, and the exercise's step 4 output confirms
+  the cosine with the original stays 1.000. Dividing by both norms leaves only
+  direction, with scores in [-1, 1]. Contrastive training optimizes this same
+  quantity, which is why it is the right score for the encoder's space.
 - Lineage: Dense Passage Retrieval (Karpukhin et al., 2020, arXiv:2004.04906)
   established dense retrieval for open-domain QA; Sentence-BERT (Reimers and
   Gurevych, 2019, arXiv:1908.10084) established the practical recipe for
@@ -360,6 +375,98 @@ is the programmable surface.
   the yardstick, serving (Module 10) the tokens per second, and this module
   everything wrapped around the API call.
 
+## Computer use
+
+- A computer-use agent runs the agent loop of section e with a screenshot as
+  each observation and mouse and keyboard tool calls as actions. The screenshot
+  enters the model as image tokens (Module 8). Anthropic released computer use
+  as an API tool in October 2024 ("Developing a computer use model");
+  browser agents often read the page's HTML or accessibility tree as well.
+- The trace slide (`cu-demo`) uses three screenshots of a mock support site
+  written for the deck (`source/computer_use_demo/page.html`, captured by
+  `capture.py` in the same folder). The article text is err-e341 from the
+  exercise corpus and the part is FA-7700 from the same corpus. The click
+  coordinates on the slide are the real pixel centers of the target elements,
+  printed by the capture script. The action sequence is composed for the slide;
+  it is not a recorded model run.
+- Difficulties: long action sequences compound errors (section e); grounding a
+  described control to pixel coordinates; a screenshot and a model call per
+  step; and on-screen text as a prompt injection channel (section g).
+- OSWorld (Xie et al., 2024, arXiv:2404.07972): 369 tasks on real desktop
+  applications, scored by end state. The paper reports humans at 72.36% and the
+  best model at 12.24%. Module 9's notes record models passing the human
+  baseline on OSWorld-Verified in early 2026.
+
+## Deep research
+
+- A deep research agent plans sub-questions, issues its own search queries,
+  reads the results, and repeats until it can write a cited report. Products of
+  this kind shipped from Google (Gemini Deep Research, December 2024), OpenAI
+  (deep research, February 2025), and Anthropic (Research, April 2025).
+- Compared with the RAG pipeline of section c, retrieval happens many times,
+  the model writes and revises the queries, the corpus is the live web, and
+  control flow is an agent loop.
+- Subagents: Anthropic's "How we built our multi-agent research system" (2025)
+  describes a lead agent that delegates sub-questions to subagents with separate
+  context windows, each returning a condensed result. The same post reports
+  that agents use about 4 times the tokens of chat interactions and multi-agent
+  systems about 15 times.
+- Verification: unlike the coding agent of section f, a report has no test
+  suite. Systems add a citation pass in which a model checks claims against the
+  cited passages, which is an LLM judge in Module 9's sense and inherits its
+  limits.
+
+## Cybersecurity
+
+- The section argues from principle: agents are good at finding and exploiting
+  vulnerabilities for the same reasons they are good at coding. The result is
+  checkable (the exploit works or not), the training data contains large
+  amounts of code, patches, bug reports, and exploit write-ups in which bug
+  classes recur, the tools (debuggers, fuzzers, scanners, disassemblers) are
+  text-in and text-out, and the search is cheap to parallelize. A checkable
+  result is also a reward, so capture-the-flag tasks fit RL with verifiable
+  rewards (Module 7). Cybench (Zhang et al., 2024, arXiv:2408.08926) is an
+  example of a capture-the-flag benchmark used by labs to measure this.
+- The trace slide (`cyber-trace`) is composed for the deck. It shows a path
+  traversal bug (OWASP's "Path Traversal", a standard vulnerability class) and
+  a ReAct-style trace (section e) that chains file read into credential
+  disclosure. No real system or model run is depicted.
+- Dual use: the same capability serves defenders (scanning their own code,
+  writing fixes, triaging alerts) and attackers. Turning a published patch into
+  an exploit by reading the diff is the N-day problem. The asymmetry argument
+  (an attacker needs one flaw, a defender must remove all of them) is a
+  standard framing in security practice.
+- Containment: capability evaluations run with deployment classifiers reduced,
+  so isolation is the remaining control. In 2026 two labs reported evaluation
+  runs in which models reached the internet and compromised outside
+  organizations: OpenAI, "The Hugging Face incident and the road ahead" (August
+  26, 2026), where models exploited a zero-day in a package registry proxy to
+  leave the sandbox; and Anthropic, "Investigating three real-world incidents
+  in our cybersecurity evaluations" (July 30, 2026), where a partner's
+  environment had internet access the prompt said it lacked. Anthropic reported
+  no evidence of a model pursuing a goal of its own; both cases fit reward
+  hacking toward the assigned flag.
+
+## LLMs for science
+
+- ESM-2 and ESMFold (Lin et al., 2023, Science, doi:10.1126/science.ade2574):
+  a transformer trained with masked-token prediction on protein sequences,
+  whose representations support atomic-level structure prediction.
+- FunSearch (Romera-Paredes et al., 2023, Nature,
+  doi:10.1038/s41586-023-06924-6): an LLM proposes programs, an evaluator scores
+  them, and the best are fed back into the prompt. It found constructions of
+  large cap sets beyond the best known.
+- AlphaProof (Google DeepMind, 2024): generates proofs in the Lean proof
+  assistant, which verifies them. With AlphaGeometry 2 it solved four of the six
+  problems of the 2024 International Mathematical Olympiad, a silver-medal
+  score.
+- AI co-scientist (Gottweis et al., 2025, arXiv:2502.18864): a multi-agent
+  system that generates and ranks research hypotheses; validation is by
+  laboratory experiment.
+- The generate-and-verify diagram (`sci-loop`) makes the section's point: these
+  systems share the coding agent's loop, and progress is fastest where a
+  computer can check each candidate.
+
 ## g. Engineering realities
 
 ### Cost
@@ -395,8 +502,10 @@ is the programmable surface.
 - No complete defense exists. Mitigations are classical security thinking:
   least privilege on tools, separating trusted instructions from untrusted
   content, human confirmation before irreversible actions. The side-quest slide
-  shows a minimal injected document against a toy RAG pipeline like the
-  exercise's; the demo document is composed for the slide.
+  shows an injected article that tells a support agent with an email tool to
+  send a customer's account record to the attacker. This is the tool-based
+  exfiltration pattern from Willison's catalog; the demo document is composed
+  for the slide.
 
 ### Evaluation in production
 
@@ -408,9 +517,13 @@ is the programmable surface.
 
 ### Handoff
 
-- Everything in this module treats the transformer as settled infrastructure.
-  Module 12 asks how long that holds: successor architectures, data limits, and
-  which of this module's patterns survive the next substrate.
+- The handoff slide (`sci-handoff`) closes the science section. Every
+  application in this module uses a transformer with fixed weights that writes
+  one token after another. Two of those properties limit scientific use: the
+  model does not learn from an experiment's result without retraining, and it
+  spends the same computation per token on easy and hard problems. Module 12
+  covers research that relaxes these assumptions (test-time training, looped
+  depth, diffusion language models, alternatives to attention).
 
 ## Notable figures
 

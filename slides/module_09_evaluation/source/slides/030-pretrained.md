@@ -34,19 +34,19 @@ Lower is better. It works on any checkpoint, at any point in training. <!-- .ele
 
 ## Perplexity Does Not Compare Across Tokenizers
 
-Perplexity is **per token**, and a bigger vocabulary cuts the same text into fewer tokens. Both models below spend the same 300 nats on the same 1,000 bytes:
+A bigger vocabulary cuts the same 1,000 bytes into fewer, longer tokens. Longer tokens are harder to predict.
 
-<div class="compare-table">
+<div class="compare-table math">
 <table>
-<thead><tr><th>Model</th><th>Vocabulary</th><th>Tokens used</th><th>Total loss</th><th>Perplexity</th><th>BPB</th></tr></thead>
+<thead><tr><th>Model</th><th>Vocabulary</th><th>Tokens</th><th>Total loss</th><th>Loss per token</th><th>Perplexity</th><th>BPB</th></tr></thead>
 <tbody>
-<tr><td><strong>X</strong></td><td class="num">32,000</td><td class="num">250</td><td class="num">300 nats</td><td class="num">3.32</td><td class="num">0.433</td></tr>
-<tr><td><strong>Y</strong></td><td class="num">128,000</td><td class="num">200</td><td class="num">300 nats</td><td class="num">4.48</td><td class="num">0.433</td></tr>
+<tr><td><strong>X</strong></td><td class="num">32,000</td><td class="num">250</td><td class="num">300 nats</td><td class="num">$\dfrac{300}{250} = 1.20$</td><td class="num">$e^{1.20} = 3.32$</td><td class="num">$\dfrac{300 / \ln 2}{1000} = 0.433$</td></tr>
+<tr><td><strong>Y</strong></td><td class="num">128,000</td><td class="num">200</td><td class="num">270 nats</td><td class="num">$\dfrac{270}{200} = 1.35$</td><td class="num">$e^{1.35} = 3.86$</td><td class="num">$\dfrac{270 / \ln 2}{1000} = 0.390$</td></tr>
 </tbody>
 </table>
 </div>
 
-Y looks **35% worse** by perplexity. Bits per byte shows they are equal. <!-- .element: class="text-lg" -->
+Y has **less total loss** but **fewer tokens** to divide it by. Perplexity says Y is worse. BPB says Y is better. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -54,21 +54,23 @@ Y looks **35% worse** by perplexity. Bits per byte shows they are equal. <!-- .e
 
 ## What Bits per Byte Measures
 
-$$\mathrm{BPB} = \frac{\mathcal{L}_{\text{total}}}{\ln(2) \cdot \text{number of bytes}}$$
+$$\mathrm{BPB} = \frac{\mathcal{L}_{\text{total}} / \ln 2}{\text{number of bytes}}$$
+
+<div class="unit-flow">
+<div></div><div class="uf-head">Total loss</div><div></div><div class="uf-head">Bits</div><div></div><div class="uf-head">Bits per byte</div>
+<div class="uf-model">X</div><div class="uf-box">300 nats</div><div class="uf-op">&divide; ln(2)</div><div class="uf-box">433 bits</div><div class="uf-op">&divide; 1,000 bytes</div><div class="uf-box">0.433 bits/byte</div>
+<div class="uf-model">Y</div><div class="uf-box">270 nats</div><div class="uf-op">&divide; ln(2)</div><div class="uf-box">390 bits</div><div class="uf-op">&divide; 1,000 bytes</div><div class="uf-box">0.390 bits/byte</div>
+</div>
 
 :::columns cols="2" gap="34px"
-**Bytes: how much text there is**
+**&divide; ln(2)**
 
-- A property of the file
-- Fixed, whatever the tokenizer
+Converts nats to bits. Same for every model.
 +++
-**Bits: what the model spent**
+**&divide; bytes**
 
-- Total loss, in bits
-- Moves with the weights
+Size of the text. No tokenizer involved, so every model divides by the same 1,000.
 :::
-
-Like **dollars per mile**: a cost divided by a fixed distance. <!-- .element: class="text-lg" -->
 
 ---
 

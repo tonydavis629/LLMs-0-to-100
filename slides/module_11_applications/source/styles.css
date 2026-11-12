@@ -109,3 +109,39 @@
   padding-left: 18px;
 }
 .reveal ul.resource-list li::before { width: 6px; height: 6px; }
+
+/* ---- Screenshot strip (computer-use trace: three screens, one action each) ---- */
+.shot-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 10px 0 6px;
+}
+.shot-strip figure { margin: 0; }
+.shot-strip img {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  display: block;
+}
+.shot-strip .shot-step {
+  color: var(--muted-color);
+  font-size: 0.55em;
+  font-weight: 600;
+  margin: 0 0 4px;
+  text-align: left;
+}
+.shot-strip pre.shot-action {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  width: auto;
+  box-shadow: none;
+  text-align: left;
+  font-size: 0.5em;
+  line-height: 1.4;
+  color: var(--text-color);
+  background: rgba(74, 158, 255, 0.07);
+  border: 1px solid var(--line-color);
+  border-radius: 6px;
+  white-space: pre-wrap;
+}

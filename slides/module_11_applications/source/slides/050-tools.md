@@ -8,19 +8,19 @@
 ## How a Tool Call Works
 
 <div class="card-grid cols-4">
-<div class="card"><h4>1. Emit</h4><p>The model generates a <strong>structured call</strong> in its output: a tool name and arguments, as tokens like any others.</p></div>
+<div class="card"><h4>1. Emit</h4><p>The model generates a <strong>structured call</strong>: a tool name and arguments, written as ordinary tokens.</p></div>
 <div class="card"><h4>2. Pause</h4><p>The runtime detects the call and <strong>stops generation</strong>.</p></div>
-<div class="card"><h4>3. Execute</h4><p>Ordinary software runs the call: a search, a database query, a calculation. <strong>The model never executes anything itself.</strong></p></div>
-<div class="card"><h4>4. Resume</h4><p>The result is appended to the context <strong>as tokens</strong>, and the model continues generating, now conditioned on it.</p></div>
+<div class="card"><h4>3. Execute</h4><p>Ordinary software runs the call: a search, a database query, a calculation. <strong>The model itself executes nothing.</strong></p></div>
+<div class="card"><h4>4. Resume</h4><p>The result is appended to the context <strong>as tokens</strong>, and the model keeps generating with the result in view.</p></div>
 </div>
 
-The model is still just predicting next tokens. Tool use is a protocol layered on top of sampling, enforced by the runtime, not a new capability in the weights. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+The model is still predicting next tokens. Tool use is a protocol on top of sampling, and the runtime is what enforces it. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
 <!-- .slide: id="tools-diagram" -->
 
-## The Round Trip, Drawn
+## Tool Call Round Trip
 
 <div style="text-align: center; margin: 8px 0;">
 <svg viewBox="0 0 960 320" width="100%" style="max-height: 460px;">
@@ -57,7 +57,7 @@ The model is still just predicting next tokens. Tool use is a protocol layered o
 </svg>
 </div>
 
-The four cards from the last slide, as one round trip: tokens out, ordinary software in the middle, tokens back in. <!-- .element: class="text-lg" -->
+The same four steps as one round trip. Tokens go out, ordinary software runs, and tokens come back. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -65,37 +65,37 @@ The four cards from the last slide, as one round trip: tokens out, ordinary soft
 
 ## Where the Ability Comes From
 
-Emitting well-formed calls at the right moments is **trained in, not innate.**
+Models are **trained** to emit well-formed calls at the right moments.
 
 :::columns cols="2" gap="34px"
-**The recipe**
+**In practice**
 
-- An SFT pass (Module 6) over examples: when a question needs a tool, how to format the call, how to read the result
-- The chat template grows a **tool role** alongside system, user, assistant
+- An SFT pass (Module 6) over examples that show when a question needs a tool, how to format the call, and how to read the result
+- The chat template gains a **tool role** alongside system, user, and assistant
 +++
-**The research version**
+**In research**
 
 - Toolformer (Schick et al., 2023): the model annotates its own training text with API calls
-- Keep the calls that reduce loss on the following tokens; finetune on the result
-- The model teaches itself where a calculator would have helped
+- Calls that reduce the loss on the following tokens are kept, and the model is finetuned on the result
+- The model learns where a calculator would have helped
 :::
 
-Prompted base models imitate the format; finetuned models are reliable enough to build on. The difference is a dataset, not an architecture. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+A base model can imitate the call format from a prompt. A finetuned model does it reliably enough to build on, and the only difference between them is a dataset. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
 <!-- .slide: id="tools-set" -->
 
-## The Standard Toolbox
+## Common Tools
 
 <div class="card-grid cols-4">
-<div class="card"><h4>Calculator</h4><p>Digits are just tokens (Module 4), so models are unreliable at arithmetic. A calculator is exact for free.</p></div>
-<div class="card"><h4>Web search</h4><p>Fresh facts past the training cutoff. Retrieval, pointed at the live internet.</p></div>
-<div class="card"><h4>Code execution</h4><p>The universal escape hatch: anything computable becomes a tool call away.</p></div>
-<div class="card"><h4>Retrieval</h4><p>The RAG pipeline, packaged as just another tool the model can decide to invoke.</p></div>
+<div class="card"><h4>Calculator</h4><p>Digits are tokens like any others (Module 4), so models are unreliable at arithmetic. A calculator is exact.</p></div>
+<div class="card"><h4>Web search</h4><p>Facts from after the training cutoff. This is retrieval over the live internet.</p></div>
+<div class="card"><h4>Code execution</h4><p>The most general tool. If a program can compute it, the model can ask for it.</p></div>
+<div class="card"><h4>Retrieval</h4><p>The RAG pipeline, offered as a tool the model can choose to call.</p></div>
 </div>
 
-**Tools let the model outsource what next-token prediction is bad at:** precise computation, current knowledge, and side effects move into software that is good at them. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+**Tools take over what next-token prediction does badly:** exact computation, current knowledge, and actions with side effects. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -103,10 +103,10 @@ Prompted base models imitate the format; finetuned models are reliable enough to
 
 ## Function Calling
 
-Every major API ships the same shape:
+The major APIs all work the same way:
 
 <div class="metric-box">
-<p>The developer sends <strong>JSON schemas</strong> describing the available tools. The model returns a call matching one of the schemas. <strong>Constrained decoding</strong> masks invalid tokens during sampling, so the call is guaranteed to parse: the schema is compiled into a grammar, and the grammar filters the logits.</p>
+<p>The developer sends <strong>JSON schemas</strong> that describe the available tools. The model returns a call that matches one of them. With <strong>constrained decoding</strong>, the schema is compiled into a grammar that masks invalid tokens during sampling, so the call always parses.</p>
 </div>
 
-A tool call is constrained generation with a runtime listening: Module 5's sampling loop plus Module 6's format finetuning plus structured output. <!-- .element: class="text-lg" -->
+A tool call combines three things from earlier: the sampling loop (Module 4), format finetuning (Module 6), and structured output. <!-- .element: class="text-lg" -->

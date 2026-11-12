@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>PX Support</title>
+<style>
+  /* A mock support site for a fictional printer. Built only to be screenshotted */
+  /* for the Module 11 computer-use slide. The state comes from ?state=1|2|3.    */
+  body { margin: 0; font-family: Helvetica, Arial, sans-serif; background: #f4f5f7; color: #1c2230; }
+  header { background: #1f3a68; color: #fff; padding: 14px 28px; font-size: 24px; font-weight: 700; }
+  header span { font-weight: 400; font-size: 17px; margin-left: 14px; opacity: 0.85; }
+  main { padding: 22px 28px; }
+  #search { width: 560px; font-size: 22px; padding: 10px 14px; border: 2px solid #9aa5b8; border-radius: 6px; }
+  #go { font-size: 22px; padding: 10px 20px; margin-left: 8px; border: 0; border-radius: 6px; background: #1f3a68; color: #fff; }
+  h2 { font-size: 24px; margin: 24px 0 10px; }
+  li, p { font-size: 20px; line-height: 1.45; }
+  a { color: #1f5fbf; }
+  #order { font-size: 22px; padding: 12px 22px; border: 0; border-radius: 6px; background: #1f7a3d; color: #fff; }
+  #veil { position: fixed; inset: 0; background: rgba(10, 14, 26, 0.55); }
+  #dialog { position: fixed; left: 170px; top: 150px; width: 460px; background: #fff; border-radius: 10px; padding: 22px 26px; box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+  #dialog h3 { margin: 0 0 8px; font-size: 24px; }
+  #dialog button { font-size: 21px; padding: 10px 20px; border-radius: 6px; border: 1px solid #9aa5b8; background: #fff; margin-right: 10px; }
+  #dialog #place { background: #1f7a3d; color: #fff; border: 0; }
+  .marker { position: fixed; width: 44px; height: 44px; margin: -25px 0 0 -25px; border: 3px solid #e0303f; border-radius: 50%; background: rgba(224, 48, 63, 0.18); pointer-events: none; }
+</style>
+</head>
+<body>
+<header>PX Support <span>PX-series laser printers</span></header>
+<main>
+  <input id="search" placeholder="Search error codes, parts, how-to"><button id="go">Search</button>
+  <div id="content"></div>
+</main>
+<script>
+  // Which of the three screens to draw.
+  var state = new URLSearchParams(location.search).get('state') || '1';
+  var content = document.getElementById('content');
+  if (state === '1') {
+    // Screen 1: the home page, before the agent has done anything.
+    content.innerHTML = '<h2>Popular topics</h2><ul>' +
+      '<li><a href="#">Clearing a paper jam</a></li>' +
+      '<li><a href="#">Replacing the toner cartridge</a></li>' +
+      '<li><a href="#">Connecting to Wi-Fi</a></li></ul>';
+  } else {
+    // Screens 2 and 3: the article the search found (text from the exercise corpus).
+    document.getElementById('search').value = 'E-341';
+    content.innerHTML = '<h2>Error E-341: fuser temperature fault</h2>' +
+      '<p>Error E-341 means the fuser did not reach operating temperature. Power the printer off, ' +
+      'wait ten minutes for the fuser to cool, then restart. If E-341 appears again, the fuser ' +
+      'assembly has failed and must be replaced.</p>' +
+      '<button id="order">Order fuser assembly FA-7700</button>';
+  }
+  if (state === '3') {
+    // Screen 3: the confirmation dialog that appears after clicking the order button.
+    document.body.insertAdjacentHTML('beforeend', '<div id="veil"></div><div id="dialog">' +
+      '<h3>Place this order?</h3><p>1 x Fuser assembly FA-7700<br>Ships to the address on file.</p>' +
+      '<button>Cancel</button><button id="place">Place order</button></div>');
+  }
+</script>
+</body>
+</html>
