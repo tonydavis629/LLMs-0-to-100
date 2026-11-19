@@ -1,4 +1,4 @@
-:::divider id="divider-diffusion" title="Assumption One: Text Is Generated Left to Right" sub="Diffusion language models"
+:::divider id="divider-diffusion" title="Generating Text Out of Order" sub="Assumption one: text is generated left to right"
 :::
 
 ---
@@ -51,7 +51,7 @@ Diffusion appeared earlier in the course for images. Here it competes for text g
 
 <!-- .slide: id="diffusion-mechanics" -->
 
-## Diffusion: Generation Without an Ordering
+## Diffusion Generates Without an Ordering
 
 Start fully masked. Unmask iteratively, refining the whole sequence over a few dozen steps.
 
@@ -116,7 +116,7 @@ Eight tokens cost eight passes on top and four on the bottom. Lengthen the seque
 
 <!-- .slide: id="diffusion-status" -->
 
-## Current Status
+## How Far Diffusion Has Scaled
 
 Note what each piece of evidence actually shows.
 

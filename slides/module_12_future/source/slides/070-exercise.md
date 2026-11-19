@@ -62,7 +62,7 @@ The tag sits on the step's header line. The tests check only that step's own lin
 
 <!-- .slide: id="exercise-overview" -->
 
-## Exercise Overview: No Training Involved
+## The Exercise Involves No Training
 
 No dataset. Inputs are random tensors from a fixed seed: the measurement is about the **arithmetic**, not any text.
 
@@ -213,7 +213,7 @@ Softmax normalized the weights for you. Here you do it by hand, or later positio
 
 ---
 
-:::terminal id="exercise-output-1" title="After Step 3: The Parallel Form Runs" cmd="uv run python module_12_future/src/main.py" caption="The masked scores are zero above the diagonal. The parallel form runs, and its output differs from softmax attention's by as much as 1.38, because linear attention is a different function."
+:::terminal id="exercise-output-1" title="The Parallel Form Runs After Step 3" cmd="uv run python module_12_future/src/main.py" caption="The masked scores are zero above the diagonal. The parallel form runs, and its output differs from softmax attention's by as much as 1.38, because linear attention is a different function."
 <span class="header">=== Step 1: feature_map() ===</span> <span class="success">CORRECT</span>
 <span class="skipped">  ...</span>
 <span class="header">=== Step 2: masked_scores() ===</span> <span class="success">CORRECT</span>
@@ -323,7 +323,7 @@ Notice what is missing: no loop over past tokens, no $n \times n$ matrix, no dep
 
 ---
 
-:::terminal id="exercise-output-2" title="After Step 5: Both Forms Exist" cmd="uv run python module_12_future/src/main.py" caption="Two different algorithms, run on the same 256 tokens, land within 3.58e-07 of each other. Step 6 decides whether that counts as a match."
+:::terminal id="exercise-output-2" title="Both Forms Exist After Step 5" cmd="uv run python module_12_future/src/main.py" caption="Two different algorithms, run on the same 256 tokens, land within 3.58e-07 of each other. Step 6 decides whether that counts as a match."
 <span class="header">=== Step 1: feature_map() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 2: masked_scores() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 3: parallel_linear_attention() ===</span> <span class="success">CORRECT</span>
@@ -385,7 +385,7 @@ Why a tolerance rather than `==`? The two forms are algebraically identical but 
 
 ---
 
-:::terminal id="exercise-output-verdict" title="After Step 6: The Verdict" cmd="uv run python module_12_future/src/main.py" caption="Two completely different algorithms, agreeing to within 3.6e-07. That is the theorem."
+:::terminal id="exercise-output-verdict" title="The Verdict After Step 6" cmd="uv run python module_12_future/src/main.py" caption="Two completely different algorithms, agreeing to within 3.6e-07. That is the theorem."
 <span class="header">=== Step 1: feature_map() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 2: masked_scores() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 3: parallel_linear_attention() ===</span> <span class="success">CORRECT</span>
@@ -457,7 +457,7 @@ Two details make this honest: the warm-up absorbs one-time allocation costs, and
 
 ---
 
-:::terminal id="exercise-output-3" title="After Step 7: The Cost Curves" cmd="uv run python module_12_future/src/main.py" caption="Read the last column downward, then read the slopes."
+:::terminal id="exercise-output-3" title="The Cost Curves After Step 7" cmd="uv run python module_12_future/src/main.py" caption="Read the last column downward, then read the slopes."
 <span class="header">=== Step 1: feature_map() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 2: masked_scores() ===</span> <span class="success">CORRECT</span>
 <span class="header">=== Step 3: parallel_linear_attention() ===</span> <span class="success">CORRECT</span>

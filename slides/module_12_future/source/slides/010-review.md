@@ -1,6 +1,6 @@
 <!-- .slide: id="review-purpose" -->
 
-## Review First, Then Four Open Questions
+## What This Module Covers
 
 :::columns cols="2" gap="34px"
 **First: the review**
@@ -13,6 +13,8 @@
 
 - Is attention the right primitive?
 - Three assumptions the course treated as fixed
+- Whether networks can run programs
+- Where agents go next
 :::
 
 This module covers active research. Parts of it will be out of date within a few years. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
@@ -117,7 +119,7 @@ The foundations at the bottom of the table stay useful the longest. <!-- .elemen
 
 <!-- .slide: id="review-scaling" -->
 
-## Scaling, Updated
+## Data Now Limits Scaling
 
 The power laws still hold. The supply of cheap training data does not.
 
@@ -132,7 +134,7 @@ The power laws still hold. The supply of cheap training data does not.
 
 - **Curate harder.** Filtered, textbook-quality data beats raw web text per token
 - **Generate data.** Caveat: train on your own output and the tails disappear (model collapse)
-- **Spend at inference.** The axis that actually moved, and it returns later in this lecture
+- **Spend at inference.** The axis that actually moved
 :::
 
 ---
@@ -163,13 +165,16 @@ Any nodes work: image patches, atoms, functions, users. The GNN literature cover
 
 <!-- .slide: id="review-roadmap" -->
 
-## Lecture Roadmap: Four Questions
+## Lecture Roadmap
 
 <div class="card-grid cols-4">
-<div class="card"><h4>Efficiency</h4><p>Is <strong>attention</strong> the right primitive? The $O(n^2)$ cost, and what replaces it.</p></div>
-<div class="card"><h4>Assumption one</h4><p>Text is generated <strong>left to right</strong>. The causal mask and the chain-rule factorization.</p></div>
-<div class="card"><h4>Assumption two</h4><p>Every token gets the <strong>same computation</strong>. Depth is fixed at training time.</p></div>
-<div class="card"><h4>Assumption three</h4><p>Learning <strong>stops at deployment</strong>. The weights never change again.</p></div>
+<div class="card"><h4>Units</h4><p>What should a model <strong>predict</strong>? Bytes, tokens, or whole sentences.</p></div>
+<div class="card"><h4>Efficiency</h4><p>Is <strong>attention</strong> the right primitive? Linear attention, state-space models, and hybrids.</p></div>
+<div class="card"><h4>Assumption one</h4><p>Text is generated <strong>left to right</strong>. Diffusion drops the ordering.</p></div>
+<div class="card"><h4>Assumption two</h4><p>Every token gets the <strong>same computation</strong>. Looped depth and latent reasoning.</p></div>
+<div class="card"><h4>Programs in networks</h4><p>Can a network <strong>execute an algorithm</strong> exactly? Compilers, logic, and tools.</p></div>
+<div class="card"><h4>Assumption three</h4><p>Learning <strong>stops at deployment</strong>. Test-time training and nested optimizers.</p></div>
+<div class="card"><h4>Agents</h4><p>Many models and many <strong>people</strong> on one task, then agents that pay their own way.</p></div>
 </div>
 
-The first question is how to compute the distribution more cheaply. The other three question design choices the course presented as fixed. <!-- .element: class="text-lg" style="margin-top: 14px;" -->
+The first two sections ask what a model predicts and what that costs. Three question design choices the course presented as fixed. The last looks past the single model. <!-- .element: class="text-lg" style="margin-top: 14px;" -->

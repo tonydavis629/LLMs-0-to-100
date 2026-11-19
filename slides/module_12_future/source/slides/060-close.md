@@ -16,7 +16,7 @@ You now have enough background to read most LLM papers and, where you cannot fol
 
 <!-- .slide: id="close-shannon" -->
 
-## Shannon, Revisited
+## Back to Shannon
 
 In 1951, Shannon measured the information in English text by having people **guess the next character.** He landed on roughly one bit each.
 
@@ -32,4 +32,12 @@ In 1951, Shannon measured the information in English text by having people **gue
 - Every step descended the same curve
 :::
 
-Frontier labs now spend nine figures of compute on that curve. It has not flattened yet. Where it does is an open question. <!-- .element: class="text-lg" style="margin-top: 14px;" -->
+Frontier labs now spend nine figures of compute on that curve. <!-- .element: class="text-lg" style="margin-top: 14px;" -->
+
+---
+
+<!-- .slide: id="close-final" -->
+
+<div style="display: flex; align-items: center; justify-content: center; height: 600px;">
+<p style="color: var(--text-color); font-size: 2.6rem; line-height: 1.45; text-align: center; font-weight: 600; margin: 0;">Now get out there and<br>build new AI systems so we can<br>all live in a smarter world</p>
+</div>
