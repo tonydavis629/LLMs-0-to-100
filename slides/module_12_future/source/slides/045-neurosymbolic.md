@@ -3,6 +3,74 @@
 
 ---
 
+:::figure img="images/alan_turing.jpg" name="Alan Turing" kicker="On Computable Numbers (1936), Computing Machinery and Intelligence (1950)" alt="Alan Turing"
+Defined what it means to compute. His 1936 machine has a tape, a head that reads and writes one cell at a time, and a finite table of rules. Anything a modern computer can calculate, that machine can too.
+
+In 1950 he asked whether a machine could hold a conversation that people could not tell apart from a human's.
+:::
+
+---
+
+<!-- .slide: id="neuro-turing-complete" -->
+
+## Transformers Are Turing Complete
+
+Pérez, Marinković, and Barceló (2019) proved that a transformer can simulate any Turing machine.
+
+:::columns cols="2" gap="34px"
+**What the proof assumes**
+
+- Numbers with unlimited precision
+- Each attention head picks exactly one position
+- The model writes its intermediate steps as tokens, and that growing output serves as the tape
++++
+**What real models have**
+
+- 16-bit numbers, soft attention, and a finite context
+- With no written steps, a fixed-depth transformer only solves problems that shallow parallel circuits can (Merrill and Sabharwal, 2023)
+- With a polynomial number of chain-of-thought steps, it solves exactly the problems a computer solves in polynomial time (Merrill and Sabharwal, 2024)
+:::
+
+Chain of thought is what turns a fixed-depth network into a general computer. Turing completeness says the weights exist; training still has to find them. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+
+---
+
+<!-- .slide: id="neuro-machine" -->
+
+## A Transformer Is a New Kind of Computer
+
+<div class="svg-figure">
+<svg viewBox="0 0 1000 330" role="img" aria-label="Left, a Turing machine: a tape of cells, a head under one cell, and a rule table written by hand that tells the head what to write and where to move. Right, a transformer: a row of tokens, a block of learned weights that reads every token at once through attention, and an arrow writing one new token at the end. Below, three comparisons. Read: the head reads one cell, attention reads every token. Write: the head writes anywhere, the transformer appends one token. Memory: the tape is unbounded, the context window is bounded.">
+  <text x="250" y="34" fill="#f5a623" font-size="20" font-family="Inter, sans-serif" text-anchor="middle">Turing machine (1936)</text>
+  <text x="750" y="34" fill="#4a9eff" font-size="20" font-family="Inter, sans-serif" text-anchor="middle">Transformer (2017)</text>
+  <g fill="none" stroke="#8892a4" stroke-width="2"><rect x="40" y="64" width="55" height="44" /><rect x="95" y="64" width="55" height="44" /><rect x="150" y="64" width="55" height="44" /><rect x="205" y="64" width="55" height="44" /><rect x="260" y="64" width="55" height="44" /><rect x="315" y="64" width="55" height="44" /><rect x="370" y="64" width="55" height="44" /><rect x="425" y="64" width="55" height="44" /><rect x="540" y="64" width="55" height="44" /><rect x="595" y="64" width="55" height="44" /><rect x="650" y="64" width="55" height="44" /><rect x="705" y="64" width="55" height="44" /><rect x="760" y="64" width="55" height="44" /><rect x="815" y="64" width="55" height="44" /></g>
+  <rect x="870" y="64" width="55" height="44" fill="#50c878" fill-opacity="0.25" stroke="#50c878" stroke-width="2" stroke-dasharray="5 4" />
+  <g fill="#e8eaf0" font-size="19" font-family="Inter, sans-serif" text-anchor="middle"><text x="67" y="93">1</text><text x="122" y="93">0</text><text x="177" y="93">1</text><text x="232" y="93">1</text><text x="287" y="93">0</text><text x="342" y="93">_</text><text x="397" y="93">_</text><text x="452" y="93">_</text><text x="567" y="93">12</text><text x="622" y="93">+</text><text x="677" y="93">34</text><text x="732" y="93">=</text><text x="787" y="93">4</text><text x="842" y="93">6</text></g>
+  <text x="897" y="93" fill="#50c878" font-size="19" font-family="Inter, sans-serif" text-anchor="middle">?</text>
+  <path d="M 232 114 l -10 16 l 20 0 z" fill="#f5a623" />
+  <path d="M 232 130 L 232 160" stroke="#f5a623" stroke-width="2" fill="none" />
+  <rect x="142" y="160" width="180" height="56" rx="6" fill="none" stroke="#f5a623" stroke-width="2" />
+  <text x="232" y="185" fill="#f5a623" font-size="18" font-family="Inter, sans-serif" text-anchor="middle">rule table</text>
+  <text x="232" y="206" fill="#8892a4" font-size="15" font-family="Inter, sans-serif" text-anchor="middle">written by hand</text>
+  <g stroke="#a06bd4" stroke-width="1.5" fill="none"><path d="M 740 160 L 567 110" /><path d="M 740 160 L 622 110" /><path d="M 740 160 L 677 110" /><path d="M 740 160 L 732 110" /><path d="M 740 160 L 787 110" /><path d="M 740 160 L 842 110" /></g>
+  <rect x="650" y="160" width="180" height="56" rx="6" fill="none" stroke="#4a9eff" stroke-width="2" />
+  <text x="740" y="185" fill="#4a9eff" font-size="18" font-family="Inter, sans-serif" text-anchor="middle">weights</text>
+  <text x="740" y="206" fill="#8892a4" font-size="15" font-family="Inter, sans-serif" text-anchor="middle">learned from data</text>
+  <path d="M 830 188 L 897 188 L 897 118" stroke="#50c878" stroke-width="2" fill="none" />
+  <path d="M 897 110 l -6 10 l 12 0 z" fill="#50c878" />
+  <line x1="20" y1="236" x2="980" y2="236" stroke="#2a3450" stroke-width="2" />
+  <g font-family="Inter, sans-serif" font-size="17">
+    <text x="500" y="266" fill="#8892a4" text-anchor="middle">read</text><text x="250" y="266" fill="#e8eaf0" text-anchor="middle">the head reads one cell</text><text x="750" y="266" fill="#e8eaf0" text-anchor="middle">attention reads every token at once</text>
+    <text x="500" y="294" fill="#8892a4" text-anchor="middle">write</text><text x="250" y="294" fill="#e8eaf0" text-anchor="middle">writes any cell, moves one step</text><text x="750" y="294" fill="#e8eaf0" text-anchor="middle">appends one token to the end</text>
+    <text x="500" y="322" fill="#8892a4" text-anchor="middle">memory</text><text x="250" y="322" fill="#e8eaf0" text-anchor="middle">the tape never runs out</text><text x="750" y="322" fill="#e8eaf0" text-anchor="middle">the context window has a limit</text>
+  </g>
+</svg>
+</div>
+
+The loop is the same: read memory, look up what to do, write. The transformer reads all of its memory at every step, and its rule table was learned instead of programmed. <!-- .element: class="text-lg" -->
+
+---
+
 <!-- .slide: id="neuro-gap" -->
 
 ## Networks Approximate Algorithms

@@ -1,4 +1,4 @@
-:::divider id="divider-looped" title="Spending More Compute on Hard Tokens" sub="Assumption two: every token gets the same computation"
+:::divider id="divider-looped" title="Spending More Compute on Hard Tokens" sub="Assumption: every token gets the same computation"
 :::
 
 ---

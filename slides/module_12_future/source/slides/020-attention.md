@@ -31,25 +31,23 @@ Removing these costs requires giving something up. <!-- .element: class="text-lg
 
 ## Linear Attention Removes the Softmax
 
-Replace the exponential with any positive feature map $\phi$. The same computation now has **two forms.**
+$$\text{softmax attention:} \quad \mathbf y_t = \frac{\sum_{i \le t} \textcolor{#f5a623}{\exp(\mathbf q_t^\top \mathbf k_i)} \mathbf v_i}{\sum_{i \le t} \textcolor{#f5a623}{\exp(\mathbf q_t^\top \mathbf k_i)}}$$
 
-$$\mathbf y_t = \frac{\phi(\mathbf q_t)^\top \sum_{i \le t} \phi(\mathbf k_i) \mathbf v_i^\top}{\phi(\mathbf q_t)^\top \sum_{i \le t} \phi(\mathbf k_i)}$$
+$$\text{linear attention:} \quad \mathbf y_t = \frac{\sum_{i \le t} \textcolor{#f5a623}{\phi(\mathbf q_t)^\top \phi(\mathbf k_i)} \mathbf v_i}{\sum_{i \le t} \textcolor{#f5a623}{\phi(\mathbf q_t)^\top \phi(\mathbf k_i)}}$$
 
 :::columns cols="2" gap="34px"
-**As a matrix**
+**The terms**
 
-- Build the $n \times n$ score matrix, mask, normalize, multiply by values
-- Standard attention minus the softmax
-- Cost: $O(n^2)$
+- $\mathbf q_t$: the query of the current token $t$. $\mathbf k_i, \mathbf v_i$: the key and value of an earlier token $i$
+- $\phi$: a function applied to each entry that keeps it positive. A common choice equals $x + 1$ for $x > 0$ and $e^x$ for $x \le 0$
+- Top: earlier values, weighted by score. Bottom: the total weight, so the weights add to 1
 +++
-**As a running sum**
+**Why the change matters**
 
-- Keep $\mathbf S_t = \mathbf S_{t-1} + \phi(\mathbf k_t)\mathbf v_t^\top$
-- An **RNN** with a matrix hidden state
-- Cost: $O(n)$ time, $O(1)$ memory
+- $\exp(\mathbf q_t^\top \mathbf k_i)$ cannot be split into a query part and a key part
+- In the new score, $\phi(\mathbf q_t)$ is the same for every $i$, so it factors out of the sum
+- The query still sets the output. It is applied once, after the sum, instead of once per earlier token
 :::
-
-Both produce the same numbers. Katharopoulos et al. (2020) titled the paper "Transformers are RNNs": the equivalence is a theorem. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
 
 ---
 
@@ -79,33 +77,7 @@ Both produce the same numbers. Katharopoulos et al. (2020) titled the paper "Tra
 </svg>
 </div>
 
-Matrix multiplication is associative, so both orders give the same answer. Only one of them ever builds the big object. <!-- .element: class="text-lg" -->
-
----
-
-<!-- .slide: id="attention-numerator" -->
-
-## The Running Sum Is Attention Regrouped
-
-Take the top of the linear-attention formula and move the parentheses.
-
-$$\mathbf y_t^\top = \sum_{i \le t} \big(\phi(\mathbf q_t)^\top \phi(\mathbf k_i)\big) \mathbf v_i^\top = \phi(\mathbf q_t)^\top \textcolor{#4a9eff}{\Big(\sum_{i \le t} \phi(\mathbf k_i) \mathbf v_i^\top\Big)} = \phi(\mathbf q_t)^\top \textcolor{#4a9eff}{\mathbf S_t}$$
-
-:::columns cols="2" gap="34px"
-**Left side: attention**
-
-- Score the query against every past key
-- Mix the past values using those scores
-- The work at step $t$ grows with $t$
-+++
-**Right side: a memory**
-
-- Fold each key and value into $\textcolor{#4a9eff}{\mathbf S_t}$ as it arrives
-- Answer each query with one matrix product
-- The scores are never computed, but $\mathbf S_t$ gives the same result
-:::
-
-The bottom of the formula works the same way, with a running sum of keys $\mathbf z_t = \sum_{i \le t} \phi(\mathbf k_i)$. <!-- .element: class="text-lg" style="margin-top: 12px;" -->
+Matrix multiplication is associative, so both orders give the same answer. Only one of them ever builds the big object. Katharopoulos et al. (2020) called the paper "Transformers are RNNs" for this reason. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -142,7 +114,7 @@ The bottom of the formula works the same way, with a running sum of keys $\mathb
 </svg>
 </div>
 
-This $\mathbf S$ is the linear-attention state. Every linear-attention variant since 2020 changes one thing: the rule for writing to it. <!-- .element: class="text-lg" -->
+This $\mathbf S_t = \sum_{i \le t} \phi(\mathbf k_i) \mathbf v_i^\top$ is the linear-attention state. Every variant since 2020 changes one thing: the rule for writing to it. <!-- .element: class="text-lg" -->
 
 ---
 
@@ -189,7 +161,7 @@ Plain linear attention only adds. A full memory needs a way to **forget** and a 
 </table>
 </div>
 
-The feature map $\phi$ is dropped for readability. Each row keeps the same $O(n)$ recurrence and the same fixed-size state. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+In this table, $\mathbf k_t$ stands for $\phi(\mathbf k_t)$. Every rule still updates one fixed-size $\mathbf S$ per token, so the cost grows linearly with sequence length. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -198,37 +170,38 @@ The feature map $\phi$ is dropped for readability. Each row keeps the same $O(n)
 ## The Delta Rule Overwrites a Row
 
 <div class="svg-figure">
-<svg viewBox="0 0 1000 300" role="img" aria-label="The city row holds Paris, and a new token says the city is now Rome. An additive write adds Rome to the row, which then holds Paris plus Rome, and a read returns a blend. A delta write first reads the row and gets Paris, computes the error Rome minus Paris, and adds that error, so the row holds Rome.">
-  <text x="20" y="30" fill="#8892a4" font-size="19" font-family="Inter, sans-serif">The city row holds Paris. A new token says: key city, value Rome.</text>
-  <text x="20" y="88" fill="#4a9eff" font-size="20" font-family="Inter, sans-serif">Additive</text>
-  <rect x="170" y="62" width="200" height="40" fill="none" stroke="#8892a4" stroke-width="2" />
-  <text x="270" y="88" fill="#e8eaf0" font-size="19" font-family="Inter, sans-serif" text-anchor="middle">row: Paris</text>
-  <path d="M 370 82 L 452 82" stroke="#8892a4" stroke-width="2" fill="none" />
-  <path d="M 460 82 l -12 -6 l 0 12 z" fill="#8892a4" />
-  <text x="415" y="72" fill="#8892a4" font-size="16" font-family="Inter, sans-serif" text-anchor="middle">+ Rome</text>
-  <rect x="460" y="62" width="250" height="40" fill="none" stroke="#e06c75" stroke-width="2" />
-  <text x="585" y="88" fill="#e06c75" font-size="19" font-family="Inter, sans-serif" text-anchor="middle">row: Paris + Rome</text>
-  <text x="730" y="88" fill="#e06c75" font-size="18" font-family="Inter, sans-serif">reads return a blend</text>
-  <line x1="20" y1="132" x2="980" y2="132" stroke="#2a3450" stroke-width="2" />
-  <text x="20" y="200" fill="#50c878" font-size="20" font-family="Inter, sans-serif">Delta</text>
+<svg viewBox="0 0 1000 350" role="img" aria-label="Earlier the sentence I live in Paris wrote Paris into the city row. A new sentence, Actually, I moved to Rome, arrives; its token Rome has key city and value Rome. An additive write adds Rome to the row, which then holds Paris plus Rome, and a read returns a blend. A delta write first reads the row and gets Paris, computes the error Rome minus Paris, and adds that error, so the row holds Rome.">
+  <text x="20" y="30" fill="#8892a4" font-size="18" font-family="Inter, sans-serif">Earlier in the chat:</text><text x="200" y="30" fill="#e8eaf0" font-size="18" font-family="Inter, sans-serif">"I live in Paris." The token "Paris" wrote key city, value Paris.</text><text x="20" y="62" fill="#8892a4" font-size="18" font-family="Inter, sans-serif">New sentence:</text><text x="200" y="62" fill="#e8eaf0" font-size="18" font-family="Inter, sans-serif">"Actually, I moved to Rome." The token "Rome" writes key city, value Rome.</text>
+  <text x="20" y="138" fill="#4a9eff" font-size="20" font-family="Inter, sans-serif">Additive</text>
+  <rect x="170" y="112" width="200" height="40" fill="none" stroke="#8892a4" stroke-width="2" />
+  <text x="270" y="138" fill="#e8eaf0" font-size="19" font-family="Inter, sans-serif" text-anchor="middle">row: Paris</text>
+  <path d="M 370 132 L 452 132" stroke="#8892a4" stroke-width="2" fill="none" />
+  <path d="M 460 132 l -12 -6 l 0 12 z" fill="#8892a4" />
+  <text x="415" y="122" fill="#8892a4" font-size="16" font-family="Inter, sans-serif" text-anchor="middle">+ Rome</text>
+  <rect x="460" y="112" width="250" height="40" fill="none" stroke="#e06c75" stroke-width="2" />
+  <text x="585" y="138" fill="#e06c75" font-size="19" font-family="Inter, sans-serif" text-anchor="middle">row: Paris + Rome</text>
+  <text x="730" y="138" fill="#e06c75" font-size="18" font-family="Inter, sans-serif">reads return a blend</text>
+  <line x1="20" y1="182" x2="980" y2="182" stroke="#2a3450" stroke-width="2" />
+  <text x="20" y="250" fill="#50c878" font-size="20" font-family="Inter, sans-serif">Delta</text>
   <g fill="none" stroke-width="2">
-    <rect x="110" y="160" width="190" height="64" stroke="#8892a4" /><rect x="340" y="160" width="190" height="64" stroke="#4a9eff" /><rect x="570" y="160" width="190" height="64" stroke="#f5a623" /><rect x="800" y="160" width="180" height="64" stroke="#50c878" stroke-width="3" />
+    <rect x="110" y="210" width="190" height="64" stroke="#8892a4" /><rect x="340" y="210" width="190" height="64" stroke="#4a9eff" /><rect x="570" y="210" width="190" height="64" stroke="#f5a623" /><rect x="800" y="210" width="180" height="64" stroke="#50c878" stroke-width="3" />
   </g>
   <g font-family="Inter, sans-serif" text-anchor="middle">
-    <text x="205" y="188" fill="#e8eaf0" font-size="18">row: Paris</text><text x="205" y="212" fill="#8892a4" font-size="15">before</text>
-    <text x="435" y="188" fill="#4a9eff" font-size="18">1. read: Paris</text><text x="435" y="212" fill="#8892a4" font-size="15">what the row returns now</text>
-    <text x="665" y="188" fill="#f5a623" font-size="18">2. Rome − Paris</text><text x="665" y="212" fill="#8892a4" font-size="15">the error</text>
-    <text x="890" y="188" fill="#50c878" font-size="18">3. row: Rome</text><text x="890" y="212" fill="#8892a4" font-size="15">Paris + error</text>
+    <text x="205" y="238" fill="#e8eaf0" font-size="18">row: Paris</text><text x="205" y="262" fill="#8892a4" font-size="15">before</text>
+    <text x="435" y="238" fill="#4a9eff" font-size="18">1. read: Paris</text><text x="435" y="262" fill="#8892a4" font-size="15">read with key city</text>
+    <text x="665" y="238" fill="#f5a623" font-size="18">2. Rome − Paris</text><text x="665" y="262" fill="#8892a4" font-size="15">the error</text>
+    <text x="890" y="238" fill="#50c878" font-size="18">3. row: Rome</text><text x="890" y="262" fill="#8892a4" font-size="15">Paris + error</text>
   </g>
-  <g stroke="#8892a4" stroke-width="2" fill="none"><path d="M 300 192 L 332 192" /><path d="M 530 192 L 562 192" /><path d="M 760 192 L 792 192" /></g>
-  <g fill="#8892a4"><path d="M 340 192 l -10 -5 l 0 10 z" /><path d="M 570 192 l -10 -5 l 0 10 z" /><path d="M 800 192 l -10 -5 l 0 10 z" /></g>
-  <text x="20" y="276" fill="#8892a4" font-size="18" font-family="Inter, sans-serif">Writing the error instead of the value is the whole change. Adding the error to Paris lands exactly on Rome.</text>
+  <g stroke="#8892a4" stroke-width="2" fill="none"><path d="M 300 242 L 332 242" /><path d="M 530 242 L 562 242" /><path d="M 760 242 L 792 242" /></g>
+  <g fill="#8892a4"><path d="M 340 242 l -10 -5 l 0 10 z" /><path d="M 570 242 l -10 -5 l 0 10 z" /><path d="M 800 242 l -10 -5 l 0 10 z" /></g>
+  <text x="20" y="326" fill="#8892a4" font-size="18" font-family="Inter, sans-serif">Writing the error instead of the value is the whole change. Adding the error to Paris lands exactly on Rome.</text>
 </svg>
 </div>
 
 - DeltaNet's rule: $\mathbf S_t = \mathbf S_{t-1} + \beta_t \mathbf k_t (\mathbf v_t - \mathbf S_{t-1}^\top \mathbf k_t)^\top$. The term in parentheses is the error
 - $\beta_t$ sets how much of the error to write: $\beta_t = 1$ replaces the value, $\beta_t = 0.5$ moves it halfway
 - If the key is new, the read returns about zero, so the error is just $\mathbf v_t$ and the write is an ordinary add
+- The model learns during training to give both sentences' tokens a similar key, so the second write lands in the same row
 
 ---
 
@@ -269,12 +242,12 @@ Co-author Tri Dao wrote FlashAttention, the work that made exact attention fast 
 
 ## S4 Starts From a Differential Equation
 
-S4 stands for **Structured State Space Sequence** model (Gu, Goel, and Ré, 2021). A state-space model is a tool from control theory for tracking a signal over time.
+S4 stands for **Structured State Space Sequence** model (Gu, Goel, and Ré, 2021).
 
 $$h'(t) = A h(t) + B x(t) \qquad y(t) = C h(t)$$
 
 <div class="svg-figure">
-<svg viewBox="0 0 1000 150" role="img" aria-label="Block diagram. The input x of t is scaled by B and added into the state h of t. The state feeds back into itself through A. C reads the output y of t from the state.">
+<svg viewBox="0 0 1000 156" role="img" aria-label="Block diagram. The input x of t is scaled by B and added to A times the state, giving the rate of change h prime of t, which integrates into the state h of t. The state is read out by C to give y of t, and the same state signal feeds back through A. The junction adds; the sign comes from A, whose entries are chosen so the state decays toward zero when there is no input.">
   <text x="60" y="71" fill="#f5a623" font-size="20" font-family="Inter, sans-serif" text-anchor="middle">x(t)</text>
   <path d="M 90 65 L 142 65" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 150 65 l -10 -5 l 0 10 z" fill="#8892a4" />
   <rect x="150" y="40" width="80" height="50" fill="none" stroke="#f5a623" stroke-width="2" />
@@ -282,17 +255,17 @@ $$h'(t) = A h(t) + B x(t) \qquad y(t) = C h(t)$$
   <path d="M 230 65 L 295 65" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 303 65 l -10 -5 l 0 10 z" fill="#8892a4" />
   <circle cx="325" cy="65" r="22" fill="none" stroke="#e8eaf0" stroke-width="2" />
   <text x="325" y="73" fill="#e8eaf0" font-size="24" font-family="Inter, sans-serif" text-anchor="middle">+</text>
-  <path d="M 347 65 L 412 65" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 420 65 l -10 -5 l 0 10 z" fill="#8892a4" />
+  <path d="M 347 65 L 412 65" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 420 65 l -10 -5 l 0 10 z" fill="#8892a4" /><text x="383" y="55" fill="#8892a4" font-size="15" font-family="Inter, sans-serif" text-anchor="middle">h′(t)</text>
   <rect x="420" y="35" width="180" height="60" fill="none" stroke="#4a9eff" stroke-width="3" />
   <text x="510" y="62" fill="#4a9eff" font-size="20" font-family="Inter, sans-serif" text-anchor="middle">state h(t)</text>
-  <text x="510" y="84" fill="#8892a4" font-size="15" font-family="Inter, sans-serif" text-anchor="middle">about 64 numbers</text>
+  <text x="510" y="84" fill="#8892a4" font-size="15" font-family="Inter, sans-serif" text-anchor="middle">integrates h′(t)</text>
   <path d="M 600 65 L 682 65" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 690 65 l -10 -5 l 0 10 z" fill="#8892a4" />
   <rect x="690" y="40" width="80" height="50" fill="none" stroke="#50c878" stroke-width="2" />
   <text x="730" y="72" fill="#50c878" font-size="20" font-family="Inter, sans-serif" text-anchor="middle">C</text>
   <path d="M 770 65 L 832 65" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 840 65 l -10 -5 l 0 10 z" fill="#8892a4" />
   <text x="875" y="71" fill="#50c878" font-size="20" font-family="Inter, sans-serif" text-anchor="middle">y(t)</text>
-  <path d="M 510 95 L 510 132 L 325 132 L 325 97" stroke="#a06bd4" stroke-width="2" fill="none" /><path d="M 325 88 l -5 10 l 10 0 z" fill="#a06bd4" />
-  <text x="418" y="125" fill="#a06bd4" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">A: feedback</text>
+  <circle cx="640" cy="65" r="5" fill="#8892a4" /><path d="M 640 65 L 640 128 L 528 128" stroke="#a06bd4" stroke-width="2" fill="none" /><path d="M 520 128 l 10 -5 l 0 10 z" fill="#a06bd4" /><rect x="440" y="106" width="80" height="44" fill="none" stroke="#a06bd4" stroke-width="2" /><text x="480" y="135" fill="#a06bd4" font-size="20" font-family="Inter, sans-serif" text-anchor="middle">A</text><path d="M 440 128 L 325 128 L 325 97" stroke="#a06bd4" stroke-width="2" fill="none" /><path d="M 325 88 l -5 10 l 10 0 z" fill="#a06bd4" />
+  
 </svg>
 </div>
 
@@ -301,13 +274,13 @@ $$h'(t) = A h(t) + B x(t) \qquad y(t) = C h(t)$$
 
 - $x$: the input, one number per channel
 - $h$: the state, a running summary of the input so far
-- $A$ decides how the state changes on its own. $B$ writes the input in. $C$ reads the output
+- $A$ feeds the state back into its own rate of change. $B$ writes the input in. $C$ reads the output
 +++
 **What each word of the name means**
 
 - **State space**: the model is this equation
 - **Structured**: $A$ has a special form (**HiPPO**) so $h$ summarizes the whole history and is fast to compute
-- **Sequence**: built for long sequences such as audio, pixels, and text
+- **Sequence**: built for long inputs like audio and text
 :::
 
 ---

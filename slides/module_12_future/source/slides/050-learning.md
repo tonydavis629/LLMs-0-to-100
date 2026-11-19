@@ -1,4 +1,4 @@
-:::divider id="divider-learning" title="Models That Keep Learning" sub="Assumption three: learning stops at deployment"
+:::divider id="divider-learning" title="Models That Keep Learning" sub="Assumption: learning stops at deployment"
 :::
 
 ---
@@ -51,22 +51,20 @@ None of the three is a solved recipe at this scale. <!-- .element: class="text-l
 
 <!-- .slide: id="learning-ttt" -->
 
-## Training Inside the Forward Pass
+## Test-Time Training Fine-Tunes on Each Input
 
-Make the hidden state a **small neural network**. Update it with real gradient steps as the context streams past.
+<div class="svg-figure">
+<svg viewBox="0 0 1000 240" role="img" aria-label="Two pipelines. Standard inference: the input goes through frozen weights to the answer. Test-time training: from the input, build a small training task; take a few gradient steps on a copy of the weights; answer with the updated copy; then throw the update away.">
+  <text x="20" y="66" fill="#8892a4" font-size="18" font-family="Inter, sans-serif">standard</text>
+  <rect x="170" y="32" width="110" height="56" rx="6" fill="none" stroke="#e8eaf0" stroke-width="2" /><text x="225" y="66" fill="#e8eaf0" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">input</text><path d="M 280 60 L 322 60" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 330 60 l -10 -5 l 0 10 z" fill="#8892a4" /><rect x="330" y="32" width="200" height="56" rx="6" fill="none" stroke="#4a9eff" stroke-width="2" /><text x="430" y="66" fill="#4a9eff" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">frozen weights</text><path d="M 530 60 L 572 60" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 580 60 l -10 -5 l 0 10 z" fill="#8892a4" /><rect x="580" y="32" width="120" height="56" rx="6" fill="none" stroke="#e8eaf0" stroke-width="2" /><text x="640" y="66" fill="#e8eaf0" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">answer</text>
+  <text x="20" y="171" fill="#50c878" font-size="18" font-family="Inter, sans-serif">test-time</text><text x="20" y="193" fill="#50c878" font-size="18" font-family="Inter, sans-serif">training</text>
+  <rect x="170" y="133" width="110" height="64" rx="6" fill="none" stroke="#e8eaf0" stroke-width="2" /><text x="225" y="171" fill="#e8eaf0" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">input</text><path d="M 280 165 L 302 165" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 310 165 l -10 -5 l 0 10 z" fill="#8892a4" /><rect x="310" y="133" width="190" height="64" rx="6" fill="none" stroke="#f5a623" stroke-width="2" /><text x="405" y="162" fill="#f5a623" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">make a task</text><text x="405" y="183" fill="#8892a4" font-size="14" font-family="Inter, sans-serif" text-anchor="middle">from the input</text><path d="M 500 165 L 522 165" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 530 165 l -10 -5 l 0 10 z" fill="#8892a4" /><rect x="530" y="133" width="200" height="64" rx="6" fill="none" stroke="#50c878" stroke-width="3" /><text x="630" y="162" fill="#50c878" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">gradient steps</text><text x="630" y="183" fill="#8892a4" font-size="14" font-family="Inter, sans-serif" text-anchor="middle">on a copy of the weights</text><path d="M 730 165 L 752 165" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 760 165 l -10 -5 l 0 10 z" fill="#8892a4" /><rect x="760" y="133" width="100" height="64" rx="6" fill="none" stroke="#e8eaf0" stroke-width="2" /><text x="810" y="171" fill="#e8eaf0" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">answer</text><path d="M 860 165 L 882 165" stroke="#8892a4" stroke-width="2" fill="none" /><path d="M 890 165 l -10 -5 l 0 10 z" fill="#8892a4" /><rect x="890" y="133" width="95" height="64" rx="6" fill="none" stroke="#8892a4" stroke-width="2" /><text x="937" y="162" fill="#8892a4" font-size="17" font-family="Inter, sans-serif" text-anchor="middle">discard</text><text x="937" y="183" fill="#8892a4" font-size="14" font-family="Inter, sans-serif" text-anchor="middle">the update</text>
+</svg>
+</div>
 
-:::columns cols="2" gap="34px"
-**What the state was**
-
-A summary: a fixed-size buffer written by a hand-designed update rule.
-+++
-**What the state becomes**
-
-A **model**, trained on this document by gradient descent while the document is read.
-:::
-
-- Sanity check: with a linear inner model, this reduces to linear attention. You write that update by hand in the exercise.
-- The ancestor is Schmidhuber's fast weights (**1992**): a network that generates weight updates for another network during the forward pass.
+- **Sun et al. (2020)**: an image classifier adapts to each test image by predicting how the image was rotated, a label it can make for itself
+- **Akyürek et al. (2024)**: before answering an ARC puzzle, an 8B language model fine-tunes on that puzzle's worked examples. Accuracy rose up to 6 times over fine-tuned baselines
+- The update is thrown away after the answer, so the model learns nothing that lasts
 
 ---
 
@@ -75,7 +73,7 @@ A **model**, trained on this document by gradient descent while the document is 
 ## Test-Time Training Nests Two Loops
 
 <div class="svg-figure">
-<svg viewBox="0 0 1000 360" role="img" aria-label="An outer loop of pretraining runs once over a corpus and produces weights. Inside the deployed model, an inner loop runs at inference, taking a gradient step per token on the sequence in front of it.">
+<svg viewBox="0 0 1000 360" role="img" aria-label="An outer loop of pretraining runs once over a corpus and produces weights. At inference, an inner loop takes gradient steps on each input, then discards them.">
   <rect x="20" y="24" width="960" height="310" rx="10" fill="none" stroke="#4a9eff" stroke-width="2" />
   <text x="44" y="58" fill="#4a9eff" font-size="22" font-family="Inter, sans-serif">Outer loop: pretraining</text>
   <text x="44" y="88" fill="#8892a4" font-size="19" font-family="Inter, sans-serif">runs once, over a corpus, for months</text>
@@ -84,16 +82,38 @@ A **model**, trained on this document by gradient descent while the document is 
   <path d="M 300 190 l -5 -10 l 10 0 z" fill="#4a9eff" />
   <text x="316" y="178" fill="#8892a4" font-size="18" font-family="Inter, sans-serif">produces the deployed model</text>
   <rect x="60" y="200" width="880" height="112" rx="8" fill="none" stroke="#50c878" stroke-width="2" />
-  <text x="84" y="236" fill="#50c878" font-size="22" font-family="Inter, sans-serif">Inner loop: at inference</text>
-  <text x="84" y="266" fill="#8892a4" font-size="19" font-family="Inter, sans-serif">runs per token, on this one sequence, for microseconds</text>
-  <text x="84" y="296" fill="#8892a4" font-size="19" font-family="Inter, sans-serif">learns the document in front of it, then throws it away</text>
+  <text x="84" y="236" fill="#50c878" font-size="22" font-family="Inter, sans-serif">Inner loop: on each test input</text>
+  <text x="84" y="266" fill="#8892a4" font-size="19" font-family="Inter, sans-serif">a few gradient steps on the input, or one per token in a TTT layer</text>
+  <text x="84" y="296" fill="#8892a4" font-size="19" font-family="Inter, sans-serif">adapts to this input, then the update is thrown away</text>
   <path d="M 890 226 a 30 30 0 1 1 -22 -29" stroke="#50c878" stroke-width="2" fill="none" />
   <path d="M 868 197 l 2 11 l 9 -6 z" fill="#50c878" />
-  <text x="862" y="292" fill="#50c878" font-size="18" font-family="Inter, sans-serif" text-anchor="middle">per token</text>
+  <text x="862" y="292" fill="#50c878" font-size="18" font-family="Inter, sans-serif" text-anchor="middle">per input</text>
 </svg>
 </div>
 
-This is the test-time training picture: a training phase, then a fast loop at inference that forgets each document. Nested learning removes the boundary between the two. <!-- .element: class="text-lg" -->
+This is the test-time training picture: a training phase, then a fast loop at inference that forgets each input. Nested learning removes the boundary between the two. <!-- .element: class="text-lg" -->
+
+---
+
+<!-- .slide: id="learning-ttt-layers" -->
+
+## TTT Layers Train a Small Model at Every Token
+
+Sun et al. (2024) put the same idea inside a layer. The layer's memory is the **weights $W$ of a small model** $f_W$.
+
+:::columns cols="2" gap="34px"
+**Each token**
+
+- Training example: input $\mathbf k_t$, target $\mathbf v_t$, both projections of the token
+- Update: one gradient step on $\lVert f_W(\mathbf k_t) - \mathbf v_t \rVert^2$
+- Output: $f_W(\mathbf q_t)$, the small model applied to the query
++++
+**The choice of small model**
+
+- **Linear** $f_W$: the update becomes the delta rule, a cousin of linear attention
+- **Two-layer MLP** $f_W$: more capacity than any fixed-size matrix memory
+- Ancestor: Schmidhuber's fast weights (1992), one network writing another's weights
+:::
 
 ---
 
@@ -259,15 +279,48 @@ Momentum is a second, faster learner inside the optimizer. Gradient descent with
 
 ---
 
+<!-- .slide: id="learning-deep-momentum" -->
+
+## Deep Optimizers Are Neural Networks
+
+<div class="svg-figure">
+<svg viewBox="0 0 1000 250" role="img" aria-label="Two optimizers side by side. Top, standard momentum: the gradient goes into a fixed rule that keeps one running-average vector, and that vector updates the weights. Bottom, deep momentum: the gradient goes into a small neural network with its own weights, whose output updates the model's weights. A loop shows the small network taking its own gradient step every time, learning to store the gradients it has seen.">
+  <text x="20" y="56" fill="#4a9eff" font-size="19" font-family="Inter, sans-serif">momentum</text>
+  <text x="20" y="78" fill="#8892a4" font-size="15" font-family="Inter, sans-serif">a fixed rule</text>
+  <text x="20" y="156" fill="#50c878" font-size="19" font-family="Inter, sans-serif">deep momentum</text>
+  <text x="20" y="178" fill="#8892a4" font-size="15" font-family="Inter, sans-serif">DMGD</text>
+  <g fill="none" stroke="#8892a4" stroke-width="2"><rect x="180" y="40" width="130" height="50" rx="6" /><rect x="180" y="140" width="130" height="50" rx="6" /><rect x="720" y="40" width="160" height="50" rx="6" /><rect x="720" y="140" width="160" height="50" rx="6" /></g>
+  <rect x="370" y="34" width="290" height="62" rx="6" fill="none" stroke="#4a9eff" stroke-width="2" />
+  <rect x="370" y="134" width="290" height="62" rx="6" fill="none" stroke="#50c878" stroke-width="3" />
+  <g font-family="Inter, sans-serif" text-anchor="middle">
+    <text x="245" y="71" fill="#e8eaf0" font-size="18">gradient</text><text x="245" y="171" fill="#e8eaf0" font-size="18">gradient</text>
+    <text x="800" y="71" fill="#e8eaf0" font-size="18">update weights</text><text x="800" y="171" fill="#e8eaf0" font-size="18">update weights</text>
+    <text x="515" y="62" fill="#4a9eff" font-size="18">m ← βm + gradient</text><text x="515" y="85" fill="#8892a4" font-size="15">one vector, a running average</text>
+    <text x="515" y="162" fill="#50c878" font-size="18">small neural network</text><text x="515" y="185" fill="#8892a4" font-size="15">has its own weights</text>
+  </g>
+  <g stroke="#8892a4" stroke-width="2" fill="none"><path d="M 310 65 L 362 65" /><path d="M 660 65 L 712 65" /><path d="M 310 165 L 362 165" /><path d="M 660 165 L 712 165" /></g>
+  <g fill="#8892a4"><path d="M 370 65 l -10 -5 l 0 10 z" /><path d="M 720 65 l -10 -5 l 0 10 z" /><path d="M 370 165 l -10 -5 l 0 10 z" /><path d="M 720 165 l -10 -5 l 0 10 z" /></g>
+  <path d="M 600 196 L 600 222 L 430 222 L 430 204" stroke="#50c878" stroke-width="2" fill="none" />
+  <path d="M 430 196 l -6 10 l 12 0 z" fill="#50c878" />
+  <text x="515" y="244" fill="#50c878" font-size="15" font-family="Inter, sans-serif" text-anchor="middle">each step, its weights take their own gradient step to store the new gradient</text>
+</svg>
+</div>
+
+- Momentum stores past gradients in one vector, updated by a fixed rule. Deep momentum (DMGD) stores them in a small **neural network**
+- Every optimizer step, that network trains on the new gradient with its own loss. The model's weights then move by the network's output
+- A classic learned optimizer is trained once and frozen. This one keeps learning while it optimizes, which is the point for continual learning
+
+---
+
 <!-- .slide: id="learning-deep-optimizers" -->
 
-## Better Memories Make Better Optimizers
+## Nested Learning Upgrades Optimizer Memory
 
-If momentum is a memory, every memory upgrade from the attention section applies to it.
+If momentum is a memory, the upgrades that improved linear attention apply to it too.
 
 <div class="bench-table dense">
 <table>
-<thead><tr><th>Optimizer memory</th><th>Upgrade</th><th>Attention-section analogue</th></tr></thead>
+<thead><tr><th>Optimizer memory</th><th>Upgrade</th><th>Linear-attention analogue</th></tr></thead>
 <tbody>
 <tr><td><strong>Standard momentum</strong></td><td>A fading running sum of gradients</td><td>Linear attention with decay</td></tr>
 <tr><td><strong>Adam</strong></td><td>Also stores each gradient's running variance</td><td>A second running sum, used as a normalizer</td></tr>
@@ -278,7 +331,7 @@ If momentum is a memory, every memory upgrade from the attention section applies
 </table>
 </div>
 
-The authors present M3 as a proof of concept. Its main use here is to show that an optimizer can be designed with the same vocabulary as an architecture. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
+The authors present M3 as a proof of concept. <!-- .element: class="text-lg" style="margin-top: 10px;" -->
 
 ---
 
@@ -355,7 +408,7 @@ The authors present M3 as a proof of concept. Its main use here is to show that 
 
 <!-- .slide: id="learning-hope" -->
 
-## Hope Stacks a Fast Learner on a Slow Memory
+## HOPE Stacks a Fast Learner on a Slow Memory
 
 <div class="svg-figure">
 <svg viewBox="0 0 1000 260" role="img" aria-label="Tokens enter a self-modifying Titans module, which is small but learns its own update rule. Its output passes through a continuum memory system of three MLP blocks that update at fast, medium, and slow frequencies. The result is the output.">
@@ -387,7 +440,7 @@ The authors present M3 as a proof of concept. Its main use here is to show that 
 </svg>
 </div>
 
-- In continual-learning tests, Hope beat in-context learning alone and elastic weight consolidation
+- In continual-learning tests, HOPE beat in-context learning alone and elastic weight consolidation
 - On a sequence of new languages learned one after another, adding more memory levels reduced forgetting
 - The paper itself asks "Is catastrophic forgetting solved?" and does not claim it is
 

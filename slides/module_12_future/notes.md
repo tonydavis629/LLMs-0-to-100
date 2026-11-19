@@ -43,37 +43,12 @@ important they were to the course:
 - Loss falls predictably with compute (Kaplan et al., 2020, arXiv:2001.08361).
 - You cannot improve what you cannot measure (Module 9).
 
-Four of the five come from the first half of the course, which is what the
-half-life slide that follows is about.
-
 **The half-life sort.** This is an editorial judgment rather than a citable
 result, and should be presented as such. The ordering is: the mathematics of
 Modules 1 and 2 is permanent; the transformer is dominant but genuinely
 contested (which section b then substantiates); the training recipe of Modules 5
 through 7 is converging while still moving; and the Module 11 application layer
 turns over yearly.
-
-**Scaling, updated.** This pays the forward reference made in Module 5g. Three
-claims, each with a source:
-
-- Compute-optimal training balances parameters against tokens, at roughly 20
-  tokens per parameter (Hoffmann et al., 2022, arXiv:2203.15556).
-- The stock of usable public human text is finite, with exhaustion estimated in
-  roughly this decade (Villalobos et al., 2022, arXiv:2211.04325). The slide
-  says "roughly this decade" rather than naming a year, because the published
-  range is wide and moves with each revision. When teaching, say that the exact
-  year is contested and the direction is not.
-- Training on model-generated data degrades the tails of the distribution
-  (Shumailov et al., 2023, arXiv:2305.17493), which is the caveat on synthetic
-  data as a response. Module 6's side quest introduced this as model collapse.
-- The axis that actually moved is inference-time compute (Snell et al., 2024,
-  arXiv:2408.03314). This is the setup for section d, and it is also where
-  Module 7's forward reference about reasoning models is discharged.
-
-The slides do not claim that scaling laws have broken, because no such
-measurement exists. The narrower claim is that the cheap fuel of more web text
-into a bigger transformer is spent, and that the frontier now scales along
-several axes at once.
 
 **Side quest: transformers are graph neural networks.** Attention is message
 passing on a fully connected graph, where tokens are nodes, attention weights
@@ -83,6 +58,12 @@ edges per input, which is why it needs no graph and why it costs $O(n^2)$. The
 accessible reference is Joshi, "Transformers are Graph Neural Networks" (The
 Gradient, 2020). The payoff for students is transfer: the same machinery applies
 to image patches (Module 8), molecules, and code graphs.
+
+**The assumptions table ("Assumptions Built Into Today's LLMs").** The seven
+rows are our summary of design choices shared by every model built in Modules 1
+to 11, each paired with the research direction covered in this lecture that
+relaxes it. The table is a framing device, not a claim that any assumption has
+been overturned in production.
 
 ## Section a2: What should a model predict?
 
@@ -96,6 +77,28 @@ Character-level tasks such as spelling and letter counting are hard because
 characters are hidden inside multi-character tokens; Pagnoni et al. (2024) cite
 this as a motivation for byte-level models. Uniform compute per token returns
 in section d.
+
+**Byte-level models ("Byte Models Drop the Tokenizer" and "MEGABYTE Splits
+Bytes Into Patches").**
+- ByT5 (Xue et al., 2022, TACL; arXiv:2105.13626) runs the T5 encoder-decoder
+  directly on UTF-8 bytes with no tokenizer, shifting parameters into a deeper
+  encoder (about three times the decoder's depth). It is competitive with mT5
+  and more robust to noise and spelling-sensitive tasks, at the cost of longer
+  sequences and slower inference.
+- MEGABYTE (Yu et al., 2023, arXiv:2305.07185) splits a byte sequence into
+  fixed-size patches. A global transformer runs over patch embeddings, and a
+  small local transformer predicts the bytes within each patch conditioned on
+  the global output for the preceding patch. With patch size $P$ the global
+  sequence has length $T/P$, so its self-attention costs $(T/P)^2$, a factor of
+  $P^2$ less, and the paper models sequences of over a million bytes. The
+  figure uses $P = 4$ for readability.
+- BLT (Pagnoni et al., 2024, arXiv:2412.09871) places patch boundaries where a
+  small byte model's next-byte entropy is high and reports the first
+  FLOP-controlled scaling study of a byte-level model, matching Llama 3 up to 8B
+  parameters.
+- H-Net (Hwang, Wang, and Gu, 2025, arXiv:2507.07955) learns chunk boundaries
+  end to end with a dynamic chunking module inside a hierarchical network, and
+  reports outperforming a BPE-tokenized transformer at matched compute.
 
 **Concept models ("Concept Models Predict Bigger Units Than Tokens" and "Concept
 Models Plan by the Sentence").** The Byte Latent Transformer (Pagnoni et al.,
@@ -151,6 +154,13 @@ RNNs" (2020, arXiv:2006.16236), and the exercise has students verify it
 numerically. The denominator is the normalizer that softmax otherwise provides
 for free.
 
+The slide "Linear Attention Removes the Softmax" shows the softmax and linear
+forms one above the other, coloring only the score term, the one thing that
+changes. The feature map described on the slide is $\phi(x) = \mathrm{elu}(x) + 1$, which
+equals $x + 1$ for $x > 0$ and $e^x$ for $x \le 0$, the choice in
+Katharopoulos et al. (2020, section 3.2.1); any map with positive outputs keeps
+the weights nonnegative so the normalized output is still a weighted average.
+
 **What the softmax bought.** Students often assume linear attention approximates
 softmax attention. It computes a different function, and two things go missing.
 First, sharpness: the exponential lets
@@ -159,16 +169,6 @@ the recurrent form's state is fixed-size, so it cannot reproduce an arbitrary
 earlier token, whereas a KV cache can. The exercise makes the first point
 measurable through the attention-entropy extra credit and prints the second as a
 large numerical gap between linear and softmax outputs.
-
-**Regrouping the sum ("The Running Sum Is Attention Regrouped").** The
-numerator of linear attention is $\sum_{i \le t} (\phi(\mathbf q_t)^\top
-\phi(\mathbf k_i)) \mathbf v_i^\top$, a similarity-weighted sum of values, as in
-softmax attention. Because the score is a dot product, the query factors out of
-the sum: $\phi(\mathbf q_t)^\top \sum_{i \le t} \phi(\mathbf k_i)\mathbf
-v_i^\top = \phi(\mathbf q_t)^\top \mathbf S_t$. The denominator factors the same
-way with $\mathbf z_t = \sum_{i \le t} \phi(\mathbf k_i)$. This is the per-token
-version of the associativity slide before it (Katharopoulos et al., 2020,
-Section 3.2).
 
 **The state as a key-value memory ("The State Works Like a Lookup Table").** The
 one-hot city, color, and time example is illustrative: with one-hot keys $\mathbf
@@ -502,6 +502,35 @@ diffusion exists so diffusion can keep the KV cache).
 
 ## Section d2: Can a network run a program?
 
+**Alan Turing (notable figure).** Turing, "On Computable Numbers, with an
+Application to the Entscheidungsproblem," Proceedings of the London
+Mathematical Society (1936), defined the machine of tape, read-write head, and
+finite rule table; the Church-Turing thesis is the claim that it captures
+everything effectively computable. Turing, "Computing Machinery and
+Intelligence," Mind 59 (1950), proposed the imitation game. The portrait is
+"Alan Turing Aged 16" from Wikimedia Commons, public domain.
+
+**Turing completeness ("Transformers Are Turing Complete").** Pérez,
+Marinković, and Barceló (2019, ICLR; arXiv:1901.03429; extended as "Attention
+is Turing Complete," JMLR 2021) show that a transformer with hard attention and
+arbitrary-precision arithmetic can simulate a Turing machine, with the decoder's
+growing output acting as the tape. Real models use fixed precision and soft
+attention. Merrill and Sabharwal (2023, TACL; arXiv:2207.00729) show that
+log-precision transformers without intermediate steps fall in uniform
+$\mathsf{TC}^0$, a class of constant-depth threshold circuits. Merrill and
+Sabharwal (2024, ICLR; arXiv:2310.07923) show that with a polynomial number of
+chain-of-thought steps the class becomes exactly $\mathsf P$. Schuurmans (2023,
+arXiv:2301.04589) shows an LLM paired with an external read-write memory can
+simulate a universal Turing machine. "Chain of thought is what turns a
+fixed-depth network into a general computer" summarizes the 2024 result.
+
+**The tape-machine comparison ("A Transformer Is a New Kind of Computer").**
+The diagram and the three read, write, and memory rows are our framing, not a
+formal correspondence from a paper. The calling of the transformer a "new kind
+of computer" is an analogy: the loop of reading state, applying a fixed rule,
+and writing is the same, while the access pattern (all of memory at once), the
+write pattern (append only), and the origin of the rules (learned) differ.
+
 This section follows the Graves slide, which introduces Neural Turing Machines
 as the second of his two early questions. It moves from differentiable memory to
 the line of work that writes programs directly into transformer weights, then to
@@ -610,31 +639,38 @@ consolidation, Kirkpatrick et al., 2017, arXiv:1612.00796), and isolating new
 learning in added parameters, which is Module 6's LoRA reused as a memory
 mechanism rather than an efficiency trick. None is a solved recipe at LLM scale.
 
-**Test-time training.** Sun et al. (2024, arXiv:2407.04620) make the hidden
-state a small model updated by gradient steps on the context as it streams. The
-paper's framing is that the update rule of a linear recurrent layer can be read
-as one step of gradient descent on a reconstruction loss, so TTT with a linear
-inner model recovers linear attention, and using an MLP as the inner model is
-strictly more expressive.
+**Test-time training ("Test-Time Training Fine-Tunes on Each Input").** The
+term comes from Sun et al. (2020, ICML; arXiv:1909.13231): turn one unlabeled
+test sample into a self-supervised problem, update the model's parameters on
+it, then predict. Their image classifiers used rotation prediction as the
+self-supervised task. Akyürek et al. (2024, arXiv:2411.07279) apply the same
+idea to language models: before answering, fine-tune temporarily (with LoRA
+adapters) on the in-context examples of the task, augmented by transformations.
+On ARC this gave up to six times the accuracy of fine-tuned baselines, 53.0% on
+the public validation set with an 8B model and 61.9% when ensembled with
+program synthesis. The diagram's "discard the update" step reflects that both
+papers reset to the original weights for the next input.
 
-Teaching note on ordering: the slides deliberately keep linear attention in
-section b and mention this reduction only as a sanity check here, so that section
-e is about the frozen-weights problem rather than about attention. The full
-derivation is available to interested students as the last extra-credit item in
-the exercise, where they rewrite the state update as a gradient step and confirm
-it reproduces the same state numerically.
+**TTT layers ("TTT Layers Train a Small Model at Every Token").** Sun et al.
+(2024, arXiv:2407.04620) build test-time training into a sequence layer: "make
+the hidden state a machine learning model itself, and the update rule a step of
+self-supervised learning." The inner loss is a reconstruction of one learned
+projection of the token from another, which the slide writes as key and value,
+and the output applies the inner model to a third projection, the query. With a
+linear inner model the gradient step on the squared loss is the delta rule; the
+paper shows linear attention is a special case (linear model, batch gradient
+descent, zero initialization). TTT-MLP uses a two-layer MLP and scales to 1.3B
+parameters, where it keeps improving with longer context past the point where
+Mamba stops.
 
 The historical ancestor is Schmidhuber's fast weights (1992), in which one
-network generates weight updates for another during the forward pass. Module 4
-introduced Schmidhuber for LSTM and for his priority arguments; this is a case
-where the priority claim is well founded, and it is worth one line rather than a
-second figure slide.
+network generates weight updates for another during the forward pass.
 
 **The test-time training picture ("Test-Time Training Nests Two Loops").** In
 the test-time training literature (Sun et al., 2024, arXiv:2407.04620), the
 outer loop is ordinary training, learning weights that make the inner loop
-useful, and the inner loop runs at inference on one sequence and is discarded
-afterward. The slide presents this as the TTT framing only. Nested learning,
+useful, and the inner loop runs at inference on one input, as a few gradient steps or one
+step per token in a TTT layer, and is discarded afterward. The slide presents this as the TTT framing only. Nested learning,
 covered later in the section, rejects the hard split between the two phases.
 
 **Titans and nested learning.** Titans (Behrouz, Zhong, and Mirrokni,
@@ -647,7 +683,7 @@ memory-writing policy rather than a loss.
 Nested Learning (Behrouz et al., "Nested Learning: The Illusion of Deep Learning
 Architectures," NeurIPS 2025, arXiv:2512.24695) generalizes the frame: a model
 and its optimizer are levels of one optimization running at different update
-frequencies, with the associated Hope model built as a self-modifying variant of
+frequencies, with the associated HOPE model built as a self-modifying variant of
 Titans. The Google Research post of 7 November 2025 is the more readable entry
 point and the earlier stable public reference; the arXiv posting is a late
 camera-ready. Label this clearly on the slide as a research program rather than a
@@ -682,7 +718,7 @@ introduction: a current LLM's long-term memory is fixed at the end of
 pretraining, and information in the context window never reaches it. The left
 and right panels and the tick spacings (every 4 and 12 tokens) are illustrative.
 The "rarely, but never stops" row describes the direction the paper advocates,
-pipelines that "do not rely on test/training phase"; Hope itself is still
+pipelines that "do not rely on test/training phase"; HOPE itself is still
 trained on a corpus before evaluation.
 
 **Momentum as memory ("Momentum Is a Short Memory of Gradients").** With
@@ -700,7 +736,23 @@ directions, after many steps on a new task the momentum points along the new
 task's direction and retains nothing about the old one, so the optimizer has no
 memory of the subspace it should avoid.
 
-**Optimizer upgrades ("Better Memories Make Better Optimizers").** From
+**Deep optimizers ("Deep Optimizers Are Neural Networks").**
+Google Research introduced nested learning as "a new ML paradigm for continual
+learning" (Google Research blog, 7 November 2025). The paper's abstract lists
+"expressive optimizers" with deep memory as one of three contributions, alongside a self-modifying
+sequence model and the continuum memory system. The paper's Deep Momentum Gradient Descent (section 4.4,
+Equation 50) replaces the matrix-valued momentum with an MLP:
+$W_{i+1} = W_i + \mathbf m_{i+1}(\mathbf u_i)$ and $\mathbf m_{i+1} = \alpha_{i+1}
+\mathbf m_i - \eta_t \nabla \mathcal L^{(2)}(\mathbf m_i; \mathbf u_i)$, where
+$\mathbf u_i$ is the gradient and $\mathcal L^{(2)}$ is momentum's internal
+objective. The motivation is capacity: a linear momentum can only learn linear
+mappings of past gradients. The paper cautions that the internal loss and the
+network must be designed carefully. The contrast with learned optimizers is from
+the paper's discussion of "Optimizers vs. Learned Optimizers": a learned optimizer's parameters are trained with the
+model and sit in the lowest-frequency level, while a deep momentum's parameters
+form their own level with their own gradient flow, updated every step.
+
+**Optimizer upgrades ("Nested Learning Upgrades Optimizer Memory").** From
 section 4.4 of the paper: delta-rule momentum ("Delta Momentum"), momentum
 with higher-order feature maps, Deep Momentum Gradient Descent (DMGD), which
 replaces the matrix-valued momentum with an MLP (Equation 50), and, in
@@ -724,13 +776,13 @@ The 4 and 16 token schedules on the slide are illustrative. The brain-wave
 analogy, with gamma at 30 to 150 Hz and delta and theta at 0.5 to 8 Hz, is from
 the paper's introduction.
 
-**Hope ("Hope Stacks a Fast Learner on a Slow Memory").** Hope (section 8) is
+**HOPE ("HOPE Stacks a Fast Learner on a Slow Memory").** HOPE (section 8) is
 self-modifying Titans followed by a continuum memory system. The paper's
 motivation, which the slide paraphrases, is that the self-modifying Titans has a
 small capacity but an expressive learned update rule, while the CMS has larger
 capacity and a simple rule, so the two are complementary. Results summarized on
 the slide: on class-incremental classification (CLINC, Banking, DBpedia),
-Hope-augmented Llama 3 models outperform in-context learning alone, elastic
+HOPE-augmented Llama 3 models outperform in-context learning alone, elastic
 weight consolidation, and external-learner baselines; on learning several
 languages in sequence, variants with more levels forget less. The paper poses
 "Is catastrophic forgetting solved?" as a question and does not claim a
@@ -1151,3 +1203,12 @@ Agent payments and autonomy
 - Backlund and Petersson, "Vending-Bench: A Benchmark for Long-Term Coherence of Autonomous Agents" (2025), arXiv:2502.15840
 - Black et al., "RepliBench: Evaluating the Autonomous Replication Capabilities of Language Model Agents" (2025), arXiv:2504.18565
 - UK AI Security Institute, "Frontier AI Trends Report" (2025), aisi.gov.uk
+
+Computability
+
+- Turing, "On Computable Numbers, with an Application to the Entscheidungsproblem" (1936), Proceedings of the London Mathematical Society
+- Turing, "Computing Machinery and Intelligence" (1950), Mind 59
+- Pérez, Marinković, and Barceló, "On the Turing Completeness of Modern Neural Network Architectures" (2019), arXiv:1901.03429
+- Merrill and Sabharwal, "The Parallelism Tradeoff: Limitations of Log-Precision Transformers" (2023), arXiv:2207.00729
+- Merrill and Sabharwal, "The Expressive Power of Transformers with Chain of Thought" (2024), arXiv:2310.07923
+- Schuurmans, "Memory Augmented Large Language Models are Computationally Universal" (2023), arXiv:2301.04589

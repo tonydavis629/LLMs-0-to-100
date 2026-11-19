@@ -90,7 +90,6 @@ None of these depend on any particular architecture.
 <div class="card"><h4>Attention</h4><p>Attention is $\mathrm{softmax}(QK^\top/\sqrt{d_k})V$ and nothing more.</p></div>
 <div class="card"><h4>Scaling laws</h4><p>Loss falls <strong>predictably</strong> with compute. That predictability is why anyone spends a billion dollars on a training run.</p></div>
 <div class="card"><h4>Evaluation</h4><p>You cannot improve what you <strong>cannot measure</strong>, and most measurements are worse than they look.</p></div>
-<div class="card"><h4>Where they come from</h4><p>Four of the five are from the first half of the course, before any of this was about language models.</p></div>
 </div>
 
 ---
@@ -114,28 +113,6 @@ Which parts of the course are worth relearning in five years, and which are not.
 </div>
 
 The foundations at the bottom of the table stay useful the longest. <!-- .element: class="text-lg" style="margin-top: 14px;" -->
-
----
-
-<!-- .slide: id="review-scaling" -->
-
-## Data Now Limits Scaling
-
-The power laws still hold. The supply of cheap training data does not.
-
-:::columns cols="2" gap="34px"
-**The constraint**
-
-- Chinchilla: more compute wants proportionally more tokens
-- Usable public text is finite; estimates put exhaustion in this decade
-- Each constant step down in loss costs a **constant multiple** of compute
-+++
-**The responses**
-
-- **Curate harder.** Filtered, textbook-quality data beats raw web text per token
-- **Generate data.** Caveat: train on your own output and the tails disappear (model collapse)
-- **Spend at inference.** The axis that actually moved
-:::
 
 ---
 
@@ -165,16 +142,21 @@ Any nodes work: image patches, atoms, functions, users. The GNN literature cover
 
 <!-- .slide: id="review-roadmap" -->
 
-## Lecture Roadmap
+## Assumptions Built Into Today's LLMs
 
-<div class="card-grid cols-4">
-<div class="card"><h4>Units</h4><p>What should a model <strong>predict</strong>? Bytes, tokens, or whole sentences.</p></div>
-<div class="card"><h4>Efficiency</h4><p>Is <strong>attention</strong> the right primitive? Linear attention, state-space models, and hybrids.</p></div>
-<div class="card"><h4>Assumption one</h4><p>Text is generated <strong>left to right</strong>. Diffusion drops the ordering.</p></div>
-<div class="card"><h4>Assumption two</h4><p>Every token gets the <strong>same computation</strong>. Looped depth and latent reasoning.</p></div>
-<div class="card"><h4>Programs in networks</h4><p>Can a network <strong>execute an algorithm</strong> exactly? Compilers, logic, and tools.</p></div>
-<div class="card"><h4>Assumption three</h4><p>Learning <strong>stops at deployment</strong>. Test-time training and nested optimizers.</p></div>
-<div class="card"><h4>Agents</h4><p>Many models and many <strong>people</strong> on one task, then agents that pay their own way.</p></div>
+Every model in this course made the same seven choices. Each one is being tested.
+
+<div class="bench-table dense">
+<table>
+<thead><tr><th>The assumption</th><th>What replaces it</th></tr></thead>
+<tbody>
+<tr><td>The model predicts <strong>tokens</strong> from a fixed vocabulary</td><td>Byte-level models and concept models</td></tr>
+<tr><td>Every token <strong>attends to every earlier token</strong></td><td>Linear attention, state-space models, and hybrids</td></tr>
+<tr><td>Text is generated <strong>left to right</strong></td><td>Diffusion language models</td></tr>
+<tr><td>Every token gets the <strong>same computation</strong></td><td>Looped depth and latent reasoning</td></tr>
+<tr><td>Networks <strong>approximate</strong> rather than run exact programs</td><td>Compiled transformers and neurosymbolic systems</td></tr>
+<tr><td>Learning <strong>stops at deployment</strong></td><td>Test-time training and nested learning</td></tr>
+<tr><td>One model serves <strong>one user</strong> and spends a person's money</td><td>Agent swarms, shared sessions, and self-funding agents</td></tr>
+</tbody>
+</table>
 </div>
-
-The first two sections ask what a model predicts and what that costs. Three question design choices the course presented as fixed. The last looks past the single model. <!-- .element: class="text-lg" style="margin-top: 14px;" -->

@@ -1,4 +1,4 @@
-:::divider id="divider-diffusion" title="Generating Text Out of Order" sub="Assumption one: text is generated left to right"
+:::divider id="divider-diffusion" title="Generating Text Out of Order" sub="Assumption: text is generated left to right"
 :::
 
 ---
